@@ -1,0 +1,190 @@
+{
+  "nav": {
+    "examples": "Ejemplos",
+    "howItWorks": "Cómo Funciona",
+    "pricing": "Precios",
+    "login": "Iniciar sesión",
+    "professionalPhotos": "Fotos Profesionales",
+    "blog": "Blog",
+    "tools": "Herramientas"
+  },
+  "hero": {
+    "badge": "+75k fotos generadas",
+    "title": "Fotos profesionales en minutos, no días",
+    "subtitle": "Olvídate del fotógrafo. Sube tus selfies y recibe retratos listos para LinkedIn, CV o tu marca personal.",
+    "cta": "Crea tus fotos ahora",
+    "guarantee": "Garantía de reembolso total"
+  },
+  "examples": {
+    "title": "Ejemplos de fotos profesionales con IA",
+    "subtitle": "Estas fotos parecen reales pero fueron creadas con IA."
+  },
+  "comparison": {
+    "badge": "Foto profesional con IA sin perder tiempo",
+    "mainTitle": {
+      "part1": "Las sesiones fotográficas tradicionales están hechas para",
+      "models": "modelos",
+      "part2": ", no para profesionales ocupados."
+    },
+    "traditional": {
+      "title": "Sesiones Fotográficas Tradicionales",
+      "items": [
+        "Buscar fotógrafo, agendar cita, esperar semanas por disponibilidad",
+        "Desplazarte al estudio (tiempo + gasolina + estrés del tráfico)",
+        "2-3 horas de tu día para la sesión de fotos",
+        "Pagar $150-$500 por sesión (sin garantía de buenos resultados)",
+        "Sentirte incómodo posando (la mayoría no somos modelos)",
+        "Esperar 7-14 días para recibir las fotos editadas"
+      ],
+      "cost": "Costo promedio: $150-$500"
+    },
+    "ai": {
+      "title": "Tu Sesión de Fotos con AIselfi.es",
+      "items": [
+        "Sube selfies desde tu celular (5 minutos)",
+        "Elige entre 100+ poses e ideas profesionales",
+        "Recibe 40-100 fotos profesionales en 5 minutos",
+        "Paga una vez $29-$39 (100% reembolsable)",
+        "Sin poses incómodas - la IA hace el trabajo",
+        "Resultados instantáneos, descarga inmediata"
+      ],
+      "stats": "Más de 75.523 fotos profesionales creadas"
+    }
+  },
+  "styles": {
+    "title": "Más de 100 Estilos Que Capturan Quién Eres",
+    "subtitle": "Tu marca personal, tu estilo. Elige entre más de 100 atuendos seleccionados y crea el look profesional perfecto para cualquier ocasión—rápido, fácil y adaptado a ti.",
+    "testimonial": "Me dio hasta ideas para vestirme que no había pensado antes.",
+    "cta": "Crea Tus Fotos Ahora"
+  },
+  "howItWorks": {
+    "title": "Cómo funciona AISelfi.es",
+    "steps": [
+      {
+        "title": "Sube tus Selfies",
+        "description": "Simplemente sube algunas fotos tuyas para que la IA aprenda tu rostro."
+      },
+      {
+        "title": "Elige tu Estilo",
+        "description": "Explora más de 100+ vestuarios y elige el que se adapte a tu estilo único."
+      },
+      {
+        "title": "Deja que la IA Haga su Magia",
+        "description": "Nuestra tecnología de IA crea tus fotos, ajustando la iluminación, el fondo y el atuendo para darte fotos profesionales que generan confianza."
+      },
+      {
+        "title": "Descarga y Comparte",
+        "description": "En cuestión de minutos, descarga tus fotos de alta calidad (4K), listas para usar y ¡comienza a mostrar tu mejor versión!"
+      }
+    ],
+    "cta": "Crea Tus Fotos Ahora"
+  },
+  "pricing": {
+    "title": "Tu foto profesional por 5x menos que una sesión de estudio",
+    "subtitle": "Transformá tus selfies en una foto profesional con IA de alta calidad. Pagás una sola vez y recibís entre 40 y 100 imágenes listas en minutos - sin estudios, sin fotógrafos, sin costos ocultos.",
+    "features": {
+      "title": "Destaca tu marca personal",
+      "items": [
+        "Luce profesional instantáneamente",
+        "Úsalas en tus redes sociales y sitio web",
+        "Potencia tu marca personal",
+        "Elige entre 100+ estilos",
+        "100% reembolsable",
+        "Simple de usar"
+      ]
+    },
+    "plans": {
+      "starter": {
+        "name": "Starter Pack",
+        "photos": "40 fotos",
+        "price": "$29",
+        "currency": "USD",
+        "note": "Pago único. Sin suscripción."
+      },
+      "pro": {
+        "name": "Pro Pack",
+        "photos": "100 fotos (Calidad 4k)",
+        "price": "$39",
+        "oldPrice": "$49",
+        "currency": "USD",
+        "note": "Pago único. Sin suscripción.",
+        "badge": "Popular"
+      }
+    }
+  },
+  "faq": {
+    "title": "Preguntas Frecuentes",
+    "questions": [
+      {
+        "q": "¿Cuánto se demoran en entrenar un modelo de IA con mis fotos?",
+        "a": "Con el nuevo modelo de entrenamiento, el tiempo de entrenamiento es instantáneo. Sube fotos y ya puedes generar tus fotos."
+      },
+      {
+        "q": "¿Cuánto se demoran en generar las fotos de perfil?",
+        "a": "Las fotos están listas entre 1 y 2 minutos. Previamente hay que entrenar el modelo con tus selfies."
+      },
+      {
+        "q": "¿Qué tipo de fotos debo subir para crear fotos de perfil con IA?",
+        "a": "Recomendamos subir fotos con alta variedad, una mezcla de selfies en primer plano y fotos de cuerpo completo en diferentes lugares, ángulos, ropa y expresiones. No subas fotos con baja variedad, fotos grupales, otras personas, gafas de sol, sombreros, fotos en las que tu cara esté cortada o no sea visible."
+      },
+      {
+        "q": "¿Cuánto se parecerán las fotos a mí?",
+        "a": "La semejanza de las fotos contigo depende de la calidad y la variedad de las fotos que subas. Cuanto mejores y más variadas sean tus fotos, más precisa podrá ser la IA para entender y representar tus características únicas. Seguimos mejorando nuestros modelos todos los días."
+      },
+      {
+        "q": "¿Está segura mi información? ¿Mis fotos y modelos permanecen privados?",
+        "a": "¡Sí! Los modelos que creas y las fotos que subes y tomas permanecen privadas. Tus datos personales, imágenes y modelos de IA se almacenan de manera segura, y nuestro sistema está diseñado para proteger tu información de accesos no autorizados."
+      },
+      {
+        "q": "¿Quiénes pueden usar mis fotos de perfil ia?",
+        "a": "Nadie. Tus fotos serán solo tuyas. Al cabo de 30 días serán eliminadas de nuestros servidores."
+      },
+      {
+        "q": "¿Puedo obtener un reembolso?",
+        "a": "Sí, ofrecemos garantía de reembolso total si no estás satisfecho con los resultados."
+      }
+    ],
+    "viewAll": "Ver todas las preguntas →"
+  },
+  "footer": {
+    "cta": "Crear mis fotos profesionales",
+    "product": {
+      "title": "Producto",
+      "login": "Login",
+      "examples": "Ejemplos",
+      "blog": "Blog",
+      "history": "Historia",
+      "pricing": "Precios",
+      "contact": "Contacto",
+      "faq": "Preguntas Frecuentes"
+    },
+    "legal": {
+      "title": "Legal",
+      "terms": "Términos de servicio",
+      "privacy": "Política de privacidad",
+      "refund": "Politica de reembolso"
+    },
+    "tools": {
+      "title": "Herramientas",
+      "freeTool": "📸 Foto Profesional con IA Gratis",
+      "pfpMaker": "🎨 PFP Maker",
+      "analyzer": "🔍 Analizador de fotos de perfil",
+      "headlineGen": "✍️ Generador de Titulares",
+      "linkedinFormatter": "✏️ Formateador de Publicaciones en Linkedin",
+      "aiDirectory": "🤖 Directorio de herramientas de IA"
+    },
+    "other": {
+      "affiliates": "💰 Afiliados — Gana el 30% de cada venta",
+      "vibeCoding": "🤖 Aprende Vibe Coding"
+    },
+    "social": {
+      "title": "Síguenos",
+      "linkedin": "LinkedIn",
+      "executives": "Ejecutivos",
+      "corporate": "Corporativas",
+      "entrepreneurs": "Emprendedores",
+      "aiPhotoshoot": "Sesión de Fotos con IA"
+    },
+    "language": "🇬🇧 English"
+  }
+}

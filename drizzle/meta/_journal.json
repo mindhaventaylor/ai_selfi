@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1763416378086,
+      "tag": "0000_dry_union_jack",
+      "breakpoints": true
+    }
+  ]
+}

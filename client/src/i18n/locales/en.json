@@ -1,0 +1,190 @@
+{
+  "nav": {
+    "examples": "Examples",
+    "howItWorks": "How It Works",
+    "pricing": "Pricing",
+    "login": "Sign in",
+    "professionalPhotos": "Professional Photos",
+    "blog": "Blog",
+    "tools": "Tools"
+  },
+  "hero": {
+    "badge": "+75k photos generated",
+    "title": "Professional photos in minutes, not days",
+    "subtitle": "Forget the photographer. Upload your selfies and receive portraits ready for LinkedIn, CV or your personal brand.",
+    "cta": "Create your photos now",
+    "guarantee": "Full refund guarantee"
+  },
+  "examples": {
+    "title": "Examples of professional AI photos",
+    "subtitle": "These photos look real but were created with AI."
+  },
+  "comparison": {
+    "badge": "Professional AI photo without wasting time",
+    "mainTitle": {
+      "part1": "Traditional photo shoots are made for",
+      "models": "models",
+      "part2": ", not for busy professionals."
+    },
+    "traditional": {
+      "title": "Traditional Photo Sessions",
+      "items": [
+        "Find photographer, schedule appointment, wait weeks for availability",
+        "Travel to the studio (time + gas + traffic stress)",
+        "2-3 hours of your day for the photo session",
+        "Pay $150-$500 per session (no guarantee of good results)",
+        "Feel uncomfortable posing (most of us aren't models)",
+        "Wait 7-14 days to receive edited photos"
+      ],
+      "cost": "Average cost: $150-$500"
+    },
+    "ai": {
+      "title": "Your Photo Session with AIselfi",
+      "items": [
+        "Upload selfies from your phone (5 minutes)",
+        "Choose from 100+ professional poses and ideas",
+        "Receive 40-100 professional photos in 5 minutes",
+        "Pay once $29-$39 (100% refundable)",
+        "No awkward poses - AI does the work",
+        "Instant results, immediate download"
+      ],
+      "stats": "Over 75,523 professional photos created"
+    }
+  },
+  "styles": {
+    "title": "Over 100 Styles That Capture Who You Are",
+    "subtitle": "Your personal brand, your style. Choose from over 100 curated outfits and create the perfect professional look for any occasion—fast, easy and tailored to you.",
+    "testimonial": "It even gave me outfit ideas I hadn't thought of before.",
+    "cta": "Create Your Photos Now"
+  },
+  "howItWorks": {
+    "title": "How AISelfi works",
+    "steps": [
+      {
+        "title": "Upload your Selfies",
+        "description": "Simply upload some photos of yourself so the AI can learn your face."
+      },
+      {
+        "title": "Choose your Style",
+        "description": "Explore over 100+ outfits and choose the one that fits your unique style."
+      },
+      {
+        "title": "Let AI Do Its Magic",
+        "description": "Our AI technology creates your photos, adjusting lighting, background and outfit to give you professional photos that build trust."
+      },
+      {
+        "title": "Download and Share",
+        "description": "In minutes, download your high-quality (4K) photos, ready to use and start showing your best version!"
+      }
+    ],
+    "cta": "Create Your Photos Now"
+  },
+  "pricing": {
+    "title": "Your professional photo for 5x less than a studio session",
+    "subtitle": "Transform your selfies into high-quality AI professional photos. Pay once and receive between 40 and 100 ready images in minutes - no studios, no photographers, no hidden costs.",
+    "features": {
+      "title": "Highlight your personal brand",
+      "items": [
+        "Look professional instantly",
+        "Use on your social media and website",
+        "Boost your personal brand",
+        "Choose from 100+ styles",
+        "100% refundable",
+        "Simple to use"
+      ]
+    },
+    "plans": {
+      "starter": {
+        "name": "Starter Pack",
+        "photos": "40 photos",
+        "price": "$29",
+        "currency": "USD",
+        "note": "One-time payment. No subscription."
+      },
+      "pro": {
+        "name": "Pro Pack",
+        "photos": "100 photos (4k Quality)",
+        "price": "$39",
+        "oldPrice": "$49",
+        "currency": "USD",
+        "note": "One-time payment. No subscription.",
+        "badge": "Popular"
+      }
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "questions": [
+      {
+        "q": "How long does it take to train an AI model with my photos?",
+        "a": "With the new training model, training time is instant. Upload photos and you can already generate your photos."
+      },
+      {
+        "q": "How long does it take to generate profile photos?",
+        "a": "Photos are ready in 1 to 2 minutes. Previously you need to train the model with your selfies."
+      },
+      {
+        "q": "What type of photos should I upload to create AI profile photos?",
+        "a": "We recommend uploading photos with high variety, a mix of close-up selfies and full-body photos in different places, angles, clothes and expressions. Don't upload photos with low variety, group photos, other people, sunglasses, hats, photos where your face is cut off or not visible."
+      },
+      {
+        "q": "How much will the photos look like me?",
+        "a": "The similarity of the photos to you depends on the quality and variety of the photos you upload. The better and more varied your photos are, the more accurate the AI can be in understanding and representing your unique features. We continue to improve our models every day."
+      },
+      {
+        "q": "Is my information secure? Do my photos and models remain private?",
+        "a": "Yes! The models you create and the photos you upload and take remain private. Your personal data, images and AI models are stored securely, and our system is designed to protect your information from unauthorized access."
+      },
+      {
+        "q": "Who can use my AI profile photos?",
+        "a": "No one. Your photos will be yours only. After 30 days they will be deleted from our servers."
+      },
+      {
+        "q": "Can I get a refund?",
+        "a": "Yes, we offer a full refund guarantee if you are not satisfied with the results."
+      }
+    ],
+    "viewAll": "View all questions →"
+  },
+  "footer": {
+    "cta": "Create my professional photos",
+    "product": {
+      "title": "Product",
+      "login": "Login",
+      "examples": "Examples",
+      "blog": "Blog",
+      "history": "History",
+      "pricing": "Pricing",
+      "contact": "Contact",
+      "faq": "FAQ"
+    },
+    "legal": {
+      "title": "Legal",
+      "terms": "Terms of service",
+      "privacy": "Privacy policy",
+      "refund": "Refund policy"
+    },
+    "tools": {
+      "title": "Tools",
+      "freeTool": "📸 Free AI Professional Photo",
+      "pfpMaker": "🎨 PFP Maker",
+      "analyzer": "🔍 Profile Photo Analyzer",
+      "headlineGen": "✍️ Headline Generator",
+      "linkedinFormatter": "✏️ LinkedIn Post Formatter",
+      "aiDirectory": "🤖 AI Tools Directory"
+    },
+    "other": {
+      "affiliates": "💰 Affiliates — Earn 30% per sale",
+      "vibeCoding": "🤖 Learn Vibe Coding"
+    },
+    "social": {
+      "title": "Follow us",
+      "linkedin": "LinkedIn",
+      "executives": "Executives",
+      "corporate": "Corporate",
+      "entrepreneurs": "Entrepreneurs",
+      "aiPhotoshoot": "AI Photo Shoot"
+    },
+    "language": "🇬🇧 English"
+  }
+}
