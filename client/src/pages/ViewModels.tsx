@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,47 +24,20 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 
-// Mock data - will be replaced with actual API call
-interface Model {
-  id: number;
-  name: string;
-  status: "training" | "ready" | "failed";
-  gender?: "hombre" | "mujer";
-  createdAt: string;
-  previewImage?: string;
-}
-
-const mockModels: Model[] = [
-  {
-    id: 1,
-    name: "Modelo Personal",
-    status: "ready",
-    gender: "hombre",
-    createdAt: "2024-01-15",
-    previewImage: "/image.webp",
-  },
-  {
-    id: 2,
-    name: "Modelo Profesional",
-    status: "training",
-    gender: "mujer",
-    createdAt: "2024-01-20",
-    previewImage: "/image_1.webp",
-  },
-  {
-    id: 3,
-    name: "Modelo Casual",
-    status: "failed",
-    gender: "hombre",
-    createdAt: "2024-01-18",
-  },
-];
-
 export default function ViewModels() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [filterStatus, setFilterStatus] = useState<"all" | "training" | "ready" | "failed">("all");
-  const [models] = useState<Model[]>(mockModels); // TODO: Fetch from API
+  
+  // Fetch models from backend
+  const { data: modelsData, isLoading, refetch } = trpc.model.list.useQuery();
+  const deleteModelMutation = trpc.model.delete.useMutation({
+    onSuccess: () => {
+      refetch();
+    },
+  });
+
+  const models = modelsData || [];
 
   const filteredModels =
     filterStatus === "all"
@@ -96,9 +70,9 @@ export default function ViewModels() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("es-ES", {
+  const formatDate = (date: Date | string) => {
+    const dateObj = typeof date === "string" ? new Date(date) : date;
+    return dateObj.toLocaleDateString("es-ES", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -110,10 +84,13 @@ export default function ViewModels() {
     setLocation(`/dashboard/generate?modelId=${modelId}`);
   };
 
-  const handleDeleteModel = (modelId: number) => {
-    // TODO: Implement delete functionality
+  const handleDeleteModel = async (modelId: number) => {
     if (confirm("¿Estás seguro de que quieres eliminar este modelo?")) {
-      console.log("Deleting model:", modelId);
+      try {
+        await deleteModelMutation.mutateAsync({ modelId });
+      } catch (error: any) {
+        alert(error?.message || "Error al eliminar el modelo");
+      }
     }
   };
 
@@ -162,8 +139,18 @@ export default function ViewModels() {
           </span>
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <p className="text-sm text-muted-foreground">Cargando modelos...</p>
+            </div>
+          </div>
+        )}
+
         {/* Models Grid */}
-        {filteredModels.length === 0 ? (
+        {!isLoading && filteredModels.length === 0 ? (
           <Card className="bg-card/50 border-border">
             <CardContent className="p-12 text-center">
               <div className="flex flex-col items-center gap-4">
@@ -194,7 +181,7 @@ export default function ViewModels() {
               </div>
             </CardContent>
           </Card>
-        ) : (
+        ) : !isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredModels.map((model) => (
               <Card
@@ -205,9 +192,9 @@ export default function ViewModels() {
                   <div className="space-y-4">
                     {/* Preview Image */}
                     <div className="relative aspect-square rounded-lg overflow-hidden bg-muted border-2 border-border">
-                      {model.previewImage ? (
+                      {model.previewImageUrl ? (
                         <img
-                          src={model.previewImage}
+                          src={model.previewImageUrl}
                           alt={model.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
@@ -275,6 +262,7 @@ export default function ViewModels() {
                         variant="outline"
                         size="sm"
                         className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full"
+                        disabled={deleteModelMutation.isPending}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -284,7 +272,7 @@ export default function ViewModels() {
               </Card>
             ))}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

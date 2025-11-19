@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,15 +34,16 @@ import {
   Glasses,
   Palette,
   Scissors,
-  Download
+  Download,
+  AlertCircle
 } from "lucide-react";
 
 export default function GenerateImages() {
   const { user } = useAuth();
   const [gender, setGender] = useState<"man" | "woman">("man");
+  const [selectedImages, setSelectedImages] = useState<number[]>([]);
   const [selectedBackgrounds, setSelectedBackgrounds] = useState<string[]>([]);
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
-  const [selectedImages, setSelectedImages] = useState<number[]>([]);
   const [aspectRatio, setAspectRatio] = useState<"1:1" | "9:16" | "16:9">("9:16");
   const [modelId, setModelId] = useState<string>("");
   const [glasses, setGlasses] = useState<string>("no");
@@ -54,6 +56,17 @@ export default function GenerateImages() {
   const [completedImages, setCompletedImages] = useState(0);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Fetch user's models
+  const { data: modelsData, isLoading: isLoadingModels } = trpc.model.list.useQuery();
+  const generateMutation = trpc.photo.generate.useMutation();
+  
+  // Fetch training images for selected model
+  const { data: trainingImages } = trpc.model.getTrainingImages.useQuery(
+    { modelId: parseInt(modelId) },
+    { enabled: !!modelId && modelId !== "" }
+  );
 
   const backgrounds = ["office", "neutral", "studio"];
   const styles = ["formal", "casual", "elegant", "professional"];
@@ -67,6 +80,12 @@ export default function GenerateImages() {
     { id: 6, url: "/image_102.jpg", badge: "Premium" },
   ];
 
+  const toggleImage = (id: number) => {
+    setSelectedImages((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
+
   const toggleBackground = (bg: string) => {
     setSelectedBackgrounds((prev) =>
       prev.includes(bg) ? prev.filter((b) => b !== bg) : [...prev, bg]
@@ -79,79 +98,108 @@ export default function GenerateImages() {
     );
   };
 
-  const toggleImage = (id: number) => {
-    setSelectedImages((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
-  };
 
+  // Calculate credits needed based on selected example images (4 variations per selected image)
   const imageCount = selectedImages.length;
   const totalImagesToGenerate = imageCount * 4; // 4 images per selected image
   const creditsNeeded = totalImagesToGenerate; // 1 credit per generated image
   const userCredits = user?.credits ?? 0;
   const hasEnoughCredits = creditsNeeded <= userCredits;
-  const canGenerate = imageCount > 0 && hasEnoughCredits && modelId !== "";
+  const selectedModelStatus = modelsData?.find((m) => m.id.toString() === modelId)?.status;
+  const isModelReady = selectedModelStatus === "ready";
+  const canGenerate = imageCount > 0 && hasEnoughCredits && modelId !== "" && isModelReady;
 
-  const handleGenerate = () => {
-    if (!canGenerate) return;
+  const handleGenerate = async () => {
+    if (!canGenerate || !modelId) return;
+    
+    // Get selected model
+    const selectedModel = modelsData?.find((m) => m.id.toString() === modelId);
+    if (!selectedModel) {
+      alert("Por favor selecciona un modelo válido");
+      return;
+    }
+
+    // Build reference image URLs:
+    // 1. First, add the model's training images (up to 4) - these are sent in the background
+    // 2. Then, add the selected example images for style reference
+    const referenceImageUrls: string[] = [];
+    
+    // Add model's training images (up to 4) - these are used for the actual person
+    if (trainingImages && trainingImages.length > 0) {
+      referenceImageUrls.push(...trainingImages.slice(0, 4));
+    } else if (selectedModel.previewImageUrl) {
+      // Fallback to preview image if training images aren't loaded yet
+      referenceImageUrls.push(selectedModel.previewImageUrl);
+    }
+    
+    if (referenceImageUrls.length === 0) {
+      alert("No se encontraron imágenes de entrenamiento para este modelo");
+      return;
+    }
+    
+    // Add selected example images for style reference
+    const selectedExampleImages = exampleImages.filter((img) => selectedImages.includes(img.id));
+    const exampleImageUrls = selectedExampleImages.map((img) => {
+      // Convert relative URLs to absolute URLs
+      if (img.url.startsWith('http://') || img.url.startsWith('https://')) {
+        return img.url;
+      }
+      if (img.url.startsWith('/')) {
+        return `${window.location.origin}${img.url}`;
+      }
+      return img.url;
+    });
+    
+    // Combine: training images first (for the person), then example images (for style)
+    const absoluteUrls = [...referenceImageUrls, ...exampleImageUrls];
     
     // Reset state
     setIsGenerating(true);
     setGenerationProgress(0);
     setCompletedImages(0);
     setGeneratedImages([]);
+    setErrorMessage(null);
     setShowModal(true);
     
-    // Simulate image generation with progress
-    const totalImages = totalImagesToGenerate; // 4 images per selected image
-    
-    // Generate placeholder images (using example images for now)
-    const placeholderImages = [
-      "/image.webp",
-      "/image_1.webp",
-      "/image_10.webp",
-      "/image_100.jpg",
-      "/image_101.jpg",
-      "/image_102.jpg",
-    ];
-    
-    let currentProgress = 0;
-    let imagesAdded = 0;
-    
-    const progressInterval = setInterval(() => {
-      currentProgress += 2;
-      if (currentProgress > 100) currentProgress = 100;
-      setGenerationProgress(currentProgress);
-      
-      // Calculate completed images based on progress
-      const completed = Math.floor((currentProgress / 100) * totalImages);
-      setCompletedImages(Math.min(completed, totalImages));
-      
-      // Add images as they complete
-      if (completed > imagesAdded && completed <= totalImages) {
-        const newImage = placeholderImages[imagesAdded % placeholderImages.length];
-        setGeneratedImages((prev) => [...prev, newImage]);
-        imagesAdded++;
-      }
-      
-      if (currentProgress >= 100) {
-        clearInterval(progressInterval);
-        setIsGenerating(false);
-        // Ensure all images are shown
-        setGeneratedImages((prev) => {
-          if (prev.length < totalImages) {
-            const remaining = totalImages - prev.length;
-            const finalImages = [...prev];
-            for (let i = 0; i < remaining; i++) {
-              finalImages.push(placeholderImages[(prev.length + i) % placeholderImages.length]);
-            }
-            return finalImages;
-          }
-          return prev;
+    try {
+      // Simulate progress updates while generating
+      const progressInterval = setInterval(() => {
+        setGenerationProgress((prev) => {
+          if (prev >= 90) return prev; // Don't go to 100% until done
+          return prev + 2;
         });
-        setCompletedImages(totalImages);
-      }
-    }, 100); // Update every 100ms for smooth animation
+      }, 200);
+
+      // Call the API
+      const result = await generateMutation.mutateAsync({
+        modelId: parseInt(modelId),
+        referenceImageUrls: absoluteUrls,
+        aspectRatio,
+        glasses: glasses as "yes" | "no",
+        hairColor: hairColor !== "default" ? hairColor : undefined,
+        hairStyle: hairStyle !== "no-preference" ? hairStyle : undefined,
+        backgrounds: selectedBackgrounds,
+        styles: selectedStyles,
+        numImagesPerReference: 4,
+      });
+
+      clearInterval(progressInterval);
+      setGenerationProgress(100);
+      setGeneratedImages(result.imageUrls);
+      setCompletedImages(result.imageUrls.length);
+      setIsGenerating(false);
+    } catch (error: any) {
+      console.error("Error generating images:", error);
+      clearInterval(progressInterval);
+      setIsGenerating(false);
+      
+      // Show error in modal instead of alert
+      const errorMsg = error?.message || "Error al generar las imágenes. Por favor intenta de nuevo.";
+      setErrorMessage(errorMsg);
+      
+      // Don't close modal on error - let user see the error and retry
+      // setShowModal(false);
+    }
   };
 
   const handleDownloadImage = (imageUrl: string, index: number) => {
@@ -252,9 +300,12 @@ export default function GenerateImages() {
               </CardContent>
             </Card>
 
-            {/* Example Images Grid */}
+            {/* Example Images Grid - User selects style images */}
             <div className="space-y-3">
-              <h2 className="text-lg font-semibold">Imágenes de Referencia</h2>
+              <h2 className="text-lg font-semibold">Imágenes de Entrenamiento del Modelo</h2>
+              <p className="text-sm text-muted-foreground">
+                Selecciona las imágenes de referencia para elegir el estilo de tus fotos generadas
+              </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {exampleImages.map((image) => (
                   <div
@@ -316,20 +367,41 @@ export default function GenerateImages() {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 mb-2">
                           <User className="h-4 w-4 text-muted-foreground" />
-                          <label className="text-sm font-medium">ID del Modelo</label>
+                          <label className="text-sm font-medium">Modelo</label>
                         </div>
                         <Select value={modelId} onValueChange={setModelId}>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Seleccionar modelo" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="model-1">Modelo 1</SelectItem>
-                            <SelectItem value="model-2">Modelo 2</SelectItem>
-                            <SelectItem value="model-3">Modelo 3</SelectItem>
+                            {isLoadingModels ? (
+                              <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                                Cargando modelos...
+                              </div>
+                            ) : modelsData && modelsData.length > 0 ? (
+                              modelsData.map((model) => (
+                                <SelectItem 
+                                  key={model.id} 
+                                  value={model.id.toString()}
+                                  disabled={model.status !== "ready"}
+                                >
+                                  {model.name} {model.gender ? `(${model.gender})` : ""} 
+                                  {model.status === "training" && " - Entrenando..."}
+                                  {model.status === "failed" && " - Fallido"}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                                No hay modelos disponibles
+                              </div>
+                            )}
                           </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground mt-1.5">
-                          Identificador del modelo entrenado
+                          {!modelId && modelsData && modelsData.length === 0 && "Primero necesitas entrenar un modelo"}
+                          {!modelId && modelsData && modelsData.length > 0 && "Selecciona un modelo para generar imágenes"}
+                          {modelId && modelsData?.find((m) => m.id.toString() === modelId)?.status === "training" && "Este modelo aún está entrenando. Espera a que termine."}
+                          {modelId && modelsData?.find((m) => m.id.toString() === modelId)?.status === "failed" && "Este modelo falló. Por favor entrena uno nuevo."}
                         </p>
                       </div>
 
@@ -479,24 +551,76 @@ export default function GenerateImages() {
           </DialogHeader>
           
           <div className="px-6 py-4 space-y-4 flex-shrink-0">
-            {/* Progress Bar */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Progreso</span>
-                <span className={`text-sm font-bold ${generationProgress === 100 ? 'text-green-500' : 'text-primary'}`}>
-                  {generationProgress}%
-                </span>
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="bg-destructive/10 border border-destructive/50 rounded-lg p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <p className="text-sm font-medium text-destructive">
+                      Error al generar imágenes
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {errorMessage}
+                    </p>
+                    {errorMessage.includes('rate limit') && (
+                      <div className="flex gap-2 mt-3">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setErrorMessage(null);
+                            setGenerationProgress(0);
+                            setCompletedImages(0);
+                            setGeneratedImages([]);
+                            handleGenerate();
+                          }}
+                        >
+                          Reintentar
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setShowModal(false)}
+                        >
+                          Cerrar
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <Progress value={generationProgress} className="h-2" />
-              <p className="text-sm text-muted-foreground">
-                {completedImages} de {totalImagesToGenerate} imágenes completadas
-              </p>
-            </div>
+            )}
 
-            {/* Info Message */}
-            <p className="text-sm text-muted-foreground">
-              Puedes cerrar esta ventana. Tus fotos aparecen en galería
-            </p>
+            {/* Progress Bar - Only show if not error */}
+            {!errorMessage && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Progreso</span>
+                  <span className={`text-sm font-bold ${generationProgress === 100 ? 'text-green-500' : 'text-primary'}`}>
+                    {generationProgress}%
+                  </span>
+                </div>
+                <Progress value={generationProgress} className="h-2" />
+                <p className="text-sm text-muted-foreground">
+                  {completedImages} de {totalImagesToGenerate} imágenes completadas
+                </p>
+              </div>
+            )}
+
+            {/* Info Message - Only show if not error and generating */}
+            {!errorMessage && isGenerating && (
+              <p className="text-sm text-muted-foreground">
+                Generando tus fotos profesionales... Por favor espera.
+              </p>
+            )}
+
+            {/* Success Message */}
+            {!errorMessage && !isGenerating && generatedImages.length > 0 && (
+              <p className="text-sm text-muted-foreground">
+                Puedes cerrar esta ventana. Tus fotos aparecen en galería
+              </p>
+            )}
           </div>
 
           {/* Images Grid - Scrollable */}

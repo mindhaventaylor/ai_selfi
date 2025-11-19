@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -7,27 +8,46 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Download, Check, Image as ImageIcon } from "lucide-react";
+import { Download, Check, Image as ImageIcon, Trash2, Heart } from "lucide-react";
 
 export default function Gallery() {
   const [sortBy, setSortBy] = useState<"newest" | "favourites">("newest");
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set());
-  const [hasImages] = useState(true); // Change to false to show empty state
 
-  // Placeholder images - using a mix of the existing images in the public folder
-  const placeholderImages = Array.from({ length: 16 }, (_, i) => {
-    const imageIndex = i % 10;
-    const imageName = imageIndex === 0 ? "image.webp" : `image_${imageIndex}.webp`;
-    return {
-      id: i + 1,
-      url: `/${imageName}`,
-      alt: `Gallery image ${i + 1}`,
-    };
+  // Fetch photos from database
+  const { data, isLoading, refetch } = trpc.photo.list.useQuery({
+    sortBy,
+    limit: 50,
+    offset: 0,
   });
 
-  const totalImages = 1128;
-  const displayedImages = hasImages ? placeholderImages : [];
+  const deletePhotoMutation = trpc.photo.delete.useMutation({
+    onSuccess: () => {
+      refetch();
+      setSelectedImages(new Set());
+    },
+  });
+
+  const deleteManyMutation = trpc.photo.deleteMany.useMutation({
+    onSuccess: () => {
+      refetch();
+      setSelectedImages(new Set());
+      setIsSelectMode(false);
+    },
+  });
+
+  const toggleFavoriteMutation = trpc.photo.toggleFavorite.useMutation({
+    onSuccess: () => {
+      refetch();
+    },
+  });
+
+  const incrementDownloadMutation = trpc.photo.incrementDownload.useMutation();
+
+  const photos = data?.photos || [];
+  const totalImages = data?.total || 0;
+  const hasImages = photos.length > 0;
 
   const toggleImageSelection = (id: number) => {
     if (!isSelectMode) return;
@@ -50,8 +70,54 @@ export default function Gallery() {
   };
 
   const handleDownloadAll = () => {
-    // Placeholder for download functionality
-    console.log("Downloading all images");
+    if (selectedImages.size === 0) return;
+    
+    // Download each selected image
+    selectedImages.forEach((photoId) => {
+      const photo = photos.find((p) => p.id === photoId);
+      if (photo?.url) {
+        // Increment download count
+        incrementDownloadMutation.mutate({ photoId });
+        
+        // Trigger download
+        const link = document.createElement("a");
+        link.href = photo.url;
+        link.download = `photo-${photoId}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    });
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedImages.size === 0) return;
+    
+    if (selectedImages.size === 1) {
+      const photoId = Array.from(selectedImages)[0];
+      if (confirm("¿Estás seguro de que quieres eliminar esta foto?")) {
+        deletePhotoMutation.mutate({ photoId });
+      }
+    } else {
+      if (confirm(`¿Estás seguro de que quieres eliminar ${selectedImages.size} fotos?`)) {
+        deleteManyMutation.mutate({ photoIds: Array.from(selectedImages) });
+      }
+    }
+  };
+
+  const handleDownloadImage = (photoId: number, url: string) => {
+    incrementDownloadMutation.mutate({ photoId });
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `photo-${photoId}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleToggleFavorite = (e: React.MouseEvent, photoId: number) => {
+    e.stopPropagation();
+    toggleFavoriteMutation.mutate({ photoId });
   };
 
   return (
@@ -86,6 +152,17 @@ export default function Gallery() {
               >
                 {isSelectMode ? "Cancel" : "Select"}
               </Button>
+              {isSelectMode && selectedImages.size > 0 && (
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteSelected}
+                  className="rounded-full"
+                  disabled={deletePhotoMutation.isPending || deleteManyMutation.isPending}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete ({selectedImages.size})
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={handleDownloadAll}
@@ -93,23 +170,33 @@ export default function Gallery() {
                 disabled={selectedImages.size === 0 && !isSelectMode}
               >
                 <Download className="w-4 h-4 mr-2" />
-                Download All ({selectedImages.size})
+                Download ({selectedImages.size})
               </Button>
             </div>
           )}
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <p className="text-sm text-muted-foreground">Loading gallery...</p>
+            </div>
+          </div>
+        )}
+
         {/* Image Count (when filled) */}
-        {hasImages && displayedImages.length > 0 && (
+        {!isLoading && hasImages && (
           <div className="mb-6">
             <p className="text-sm text-muted-foreground">
-              Showing {displayedImages.length} of {totalImages} images
+              Showing {photos.length} of {totalImages} images
             </p>
           </div>
         )}
 
         {/* Empty State */}
-        {!hasImages && (
+        {!isLoading && !hasImages && (
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center space-y-4">
               <div className="w-24 h-24 mx-auto rounded-full bg-muted flex items-center justify-center">
@@ -124,13 +211,13 @@ export default function Gallery() {
         )}
 
         {/* Image Grid */}
-        {hasImages && displayedImages.length > 0 && (
+        {!isLoading && hasImages && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {displayedImages.map((image) => {
-              const isSelected = selectedImages.has(image.id);
+            {photos.map((photo) => {
+              const isSelected = selectedImages.has(photo.id);
               return (
                 <div
-                  key={image.id}
+                  key={photo.id}
                   className={`relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer group border-2 transition-all ${
                     isSelectMode && isSelected
                       ? "border-primary ring-2 ring-primary/50"
@@ -138,19 +225,62 @@ export default function Gallery() {
                       ? "border-border hover:border-primary/50"
                       : "border-transparent hover:border-primary/50"
                   }`}
-                  onClick={() => toggleImageSelection(image.id)}
+                  onClick={() => {
+                    if (isSelectMode) {
+                      toggleImageSelection(photo.id);
+                    } else {
+                      handleDownloadImage(photo.id, photo.url || "");
+                    }
+                  }}
                 >
-                  <img
-                    src={image.url}
-                    alt={image.alt}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    onError={(e) => {
-                      // Fallback to a placeholder if image doesn't exist
-                      const target = e.target as HTMLImageElement;
-                      target.src = `https://picsum.photos/400/600?random=${image.id}`;
-                    }}
-                  />
+                  {photo.url ? (
+                    <img
+                      src={photo.url}
+                      alt={`Photo ${photo.id}`}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://picsum.photos/400/600?random=${photo.id}`;
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-muted flex items-center justify-center">
+                      <ImageIcon className="w-12 h-12 text-muted-foreground" />
+                    </div>
+                  )}
+                  
+                  {/* Favorite Badge */}
+                  {photo.isFavorite && !isSelectMode && (
+                    <div className="absolute top-2 left-2 bg-primary rounded-full p-1.5">
+                      <Heart className="w-4 h-4 text-white fill-white" />
+                    </div>
+                  )}
+
+                  {/* Action Buttons (when not in select mode) */}
+                  {!isSelectMode && (
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                      <button
+                        onClick={(e) => handleToggleFavorite(e, photo.id)}
+                        className={`bg-background/90 rounded-full p-1.5 ${
+                          photo.isFavorite ? "text-primary" : "text-muted-foreground"
+                        }`}
+                      >
+                        <Heart className={`w-4 h-4 ${photo.isFavorite ? "fill-current" : ""}`} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm("¿Estás seguro de que quieres eliminar esta foto?")) {
+                            deletePhotoMutation.mutate({ photoId: photo.id });
+                          }
+                        }}
+                        className="bg-background/90 rounded-full p-1.5 text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                   
                   {/* Selection Overlay */}
                   {isSelectMode && (

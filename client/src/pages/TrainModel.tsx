@@ -1,5 +1,7 @@
 import { useState, useRef } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -104,7 +106,9 @@ export default function TrainModel() {
     });
   };
 
-  const handleUpload = () => {
+  const createModelMutation = trpc.model.create.useMutation();
+
+  const handleUpload = async () => {
     if (!modelName.trim()) {
       alert("Por favor ingresa un nombre para el modelo");
       return;
@@ -125,15 +129,75 @@ export default function TrainModel() {
       return;
     }
 
-    // TODO: Implement actual upload logic
-    console.log("Uploading model:", {
-      modelName,
-      gender,
-      files: uploadedFiles.map((f) => f.file),
-    });
+    try {
+      // Upload images to Supabase Storage
+      // IMPORTANT: Upload in order to preserve the sequence - first uploaded = first in array
+      const uploadedUrls: string[] = [];
+      const baseTimestamp = Date.now();
+      
+      for (let i = 0; i < uploadedFiles.length; i++) {
+        const file = uploadedFiles[i].file;
+        // Use baseTimestamp + index to ensure order is preserved
+        const fileName = `training/${user?.id}/${baseTimestamp}-${i}-${file.name}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("model-training-images")
+          .upload(fileName, file, {
+            contentType: file.type,
+            upsert: false,
+          });
 
-    // Show success modal
-    setShowSuccessModal(true);
+        if (uploadError) {
+          console.error("Error uploading image:", uploadError);
+          throw new Error(`Error al subir la imagen: ${uploadError.message}`);
+        }
+
+        // Get signed URL for private bucket (valid for 1 hour)
+        // For private buckets, we need signed URLs instead of public URLs
+        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+          .from("model-training-images")
+          .createSignedUrl(fileName, 3600); // 1 hour expiry
+
+        if (signedUrlError || !signedUrlData) {
+          console.error("Error creating signed URL:", signedUrlError);
+          throw new Error(`Error al crear URL firmada: ${signedUrlError?.message || 'Unknown error'}`);
+        }
+
+        uploadedUrls.push(signedUrlData.signedUrl);
+      }
+
+      // Ensure we have at least one image
+      if (uploadedUrls.length === 0) {
+        throw new Error("No se pudieron subir las imágenes");
+      }
+
+      // Create model record in database
+      // IMPORTANT: The first image uploaded (uploadedFiles[0]) becomes uploadedUrls[0]
+      // This first image will be used as previewImageUrl in the model
+      console.log("Uploading model with images:", {
+        firstImage: uploadedUrls[0],
+        totalImages: uploadedUrls.length,
+        firstFile: uploadedFiles[0]?.file?.name
+      });
+      
+      await createModelMutation.mutateAsync({
+        name: modelName,
+        gender: gender as "hombre" | "mujer",
+        trainingImageUrls: uploadedUrls, // Array order matches uploadedFiles order - [0] is first uploaded
+        trainingCreditsUsed: 0, // For now, training is free
+      });
+
+      // Show success modal
+      setShowSuccessModal(true);
+      
+      // Reset form
+      setModelName("");
+      setGender("");
+      setUploadedFiles([]);
+    } catch (error: any) {
+      console.error("Error uploading model:", error);
+      alert(error?.message || "Error al subir el modelo. Por favor intenta de nuevo.");
+    }
   };
 
   // Good photos examples
