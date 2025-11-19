@@ -23,6 +23,7 @@ import SupportReportBug from "./pages/SupportReportBug";
 import SupportSuggestFeature from "./pages/SupportSuggestFeature";
 import SupportWhatsApp from "./pages/SupportWhatsApp";
 import SupportReviews from "./pages/SupportReviews";
+import Afiliados from "./pages/Afiliados";
 import Login from "./pages/Login";
 import OAuthCallback from "./pages/OAuthCallback";
 import Terms from "./pages/Terms";
@@ -40,7 +41,7 @@ function Router() {
 
   return (
     <>
-      {!isDashboard && <Header />}
+      {!isDashboard && location !== "/afiliados" && <Header />}
       <main>
         <Switch>
           <Route path={"/"} component={Home} />
@@ -48,6 +49,8 @@ function Router() {
           <Route path={"/oauth/callback"} component={OAuthCallback} />
           <Route path={"/terms"} component={Terms} />
           <Route path={"/privacy"} component={Privacy} />
+          <Route path={"/afiliados"} component={Afiliados} />
+          <Route path={"/dashboard/afiliados"} component={Afiliados} />
           <Route path={"/dashboard"}>
             <ProtectedRoute>
               <DashboardLayout>
@@ -164,8 +167,8 @@ function Router() {
           <Route component={NotFound} />
         </Switch>
       </main>
-      {!isDashboard && <Footer />}
-      {!isDashboard && <WhatsAppButton />}
+      {!isDashboard && location !== "/afiliados" && <Footer />}
+      {!isDashboard && location !== "/afiliados" && <WhatsAppButton />}
     </>
   );
 }

@@ -85,9 +85,11 @@ export function Header() {
           </DropdownMenu>
 
           {/* Login Button */}
-          <Button variant="outline" size="sm">
-            {t("nav.login")}
-          </Button>
+          {!isAuthenticated && (
+            <Button asChild variant="outline" size="sm">
+              <a href="/login">{t("nav.login")}</a>
+            </Button>
+          )}
         </div>
       </div>
     </header>

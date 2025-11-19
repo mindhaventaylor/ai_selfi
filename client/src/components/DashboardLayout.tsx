@@ -55,7 +55,7 @@ import { Button } from "./ui/button";
 const menuItems = [
   { icon: HelpCircle, label: "Start Here", path: "/dashboard/start" },
   { icon: FlaskConical, label: "Models", path: "/dashboard/models" },
-  { icon: PlusCircle, label: "Create", path: "/dashboard" },
+  { icon: PlusCircle, label: "Create", path: "/dashboard/generate" },
   { icon: ImageIcon, label: "Gallery", path: "/dashboard/gallery" },
   { icon: Sparkles, label: "Funciones PRO", path: "/dashboard/pro" },
 ];
@@ -471,7 +471,7 @@ function DashboardLayoutContent({
               <SidebarMenuButton
                 tooltip="Afiliados"
                 className="h-10 transition-all font-normal"
-                onClick={() => setLocation("/dashboard/afiliados")}
+                onClick={() => setLocation("/afiliados")}
               >
                 <DollarSign className="h-4 w-4" />
                 <span>Afiliados</span>

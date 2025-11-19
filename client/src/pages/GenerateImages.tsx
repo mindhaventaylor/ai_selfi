@@ -71,9 +71,9 @@ export default function GenerateImages() {
   const creditsNeeded = imageCount * 4; // 4 variations per image
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-[1400px] mx-auto px-6 py-6">
-        <div className="flex gap-6">
+    <div className="min-h-screen bg-background w-full">
+      <div className="w-full max-w-[1400px] mx-auto px-6 py-6">
+        <div className="flex flex-col lg:flex-row gap-6 w-full">
           {/* Main Content Area */}
           <div className="flex-1 min-w-0 space-y-6">
             {/* Title */}
@@ -204,8 +204,8 @@ export default function GenerateImages() {
           </div>
 
           {/* Parameters Sidebar - Fixed to the right */}
-          <div className="w-[380px] shrink-0">
-            <Card className="bg-card/50 border-border sticky top-20">
+          <div className="w-full lg:w-[380px] shrink-0 flex-shrink-0">
+            <Card className="bg-card/50 border-border lg:sticky lg:top-20 w-full">
               <CardContent className="p-0">
                 <Collapsible defaultOpen>
                   <CollapsibleTrigger className="w-full px-6 py-4 flex items-center justify-between hover:bg-accent/50 transition-colors border-b border-border">
