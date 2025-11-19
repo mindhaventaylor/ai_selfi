@@ -29,7 +29,7 @@ export const appRouter = router({
           }
 
           // Verify Supabase session and sync user
-          const { data: { user }, error } = await supabaseServer.auth.getUser(input.accessToken);
+          const { data: { user }, error } = await (supabaseServer.auth as any).getUser(input.accessToken);
           
           if (error) {
             console.error("[Auth] Token verification error:", {
@@ -191,7 +191,7 @@ export const appRouter = router({
             return [];
           }
           
-          return (data || []).map(img => img.imageUrl);
+          return (data || []).map((img: any) => img.imageUrl);
         }
         
         // Verify ownership
@@ -847,7 +847,7 @@ export const appRouter = router({
 
           console.log(`[Photo Generate] ✅ Successfully added ${insertedPhotos?.length || photoRecords.length} photo(s) to gallery`);
           if (insertedPhotos && insertedPhotos.length > 0) {
-            insertedPhotos.forEach((photo, index) => {
+            insertedPhotos.forEach((photo: any, index: number) => {
               console.log(`[Photo Generate]    Photo ${index + 1}: ID=${photo.id}, URL=${photo.url}`);
             });
           }

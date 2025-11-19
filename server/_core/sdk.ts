@@ -26,7 +26,8 @@ class SDKServer {
 
   async authenticateRequest(req: Request): Promise<User> {
     // Parse Supabase auth cookie
-    const cookies = this.parseCookies(req.headers.cookie);
+    const cookieHeader = (req as any).headers?.cookie || (req.headers as any)?.cookie;
+    const cookies = this.parseCookies(cookieHeader);
     const authCookie = cookies.get(AUTH_COOKIE_NAME);
 
     if (!authCookie) {

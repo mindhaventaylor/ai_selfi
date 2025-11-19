@@ -48,7 +48,7 @@ export function registerOAuthRoutes(app: Express) {
     }
 
     try {
-      const { data, error } = await supabaseServer.auth.exchangeCodeForSession(code);
+      const { data, error } = await (supabaseServer.auth as any).exchangeCodeForSession(code);
       if (error) throw error;
 
       const supabaseUser = data.user;
