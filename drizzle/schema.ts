@@ -42,7 +42,7 @@ export const creditPacks = pgTable("credit_packs", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
-// Define coupons and giftCards first (before transactions references them)
+// Define coupons first (before transactions references them)
 export const coupons = pgTable("coupons", {
   id: serial("id").primaryKey(),
   code: text("code").notNull().unique(),
@@ -57,6 +57,22 @@ export const coupons = pgTable("coupons", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
+// Define transactions before giftCards to avoid circular reference
+// Note: giftCardId reference will be added after giftCards is defined
+export const transactions = pgTable("transactions", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  packId: integer("packId").references(() => creditPacks.id),
+  couponId: integer("couponId").references(() => coupons.id, { onDelete: "set null" }),
+  giftCardId: integer("giftCardId"),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  creditsAwarded: integer("creditsAwarded").default(0),
+  status: transactionStatusEnum("status").default("pending").notNull(),
+  stripePaymentId: text("stripePaymentId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+// Define giftCards after transactions (references transactions which is now defined)
 export const giftCards = pgTable("gift_cards", {
   id: serial("id").primaryKey(),
   code: text("code").notNull().unique(),
@@ -71,19 +87,6 @@ export const giftCards = pgTable("gift_cards", {
   redeemedAt: timestamp("redeemedAt"),
   expiresAt: timestamp("expiresAt"),
   transactionId: integer("transactionId").references(() => transactions.id, { onDelete: "set null" }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-
-export const transactions = pgTable("transactions", {
-  id: serial("id").primaryKey(),
-  userId: integer("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  packId: integer("packId").references(() => creditPacks.id),
-  couponId: integer("couponId").references(() => coupons.id, { onDelete: "set null" }),
-  giftCardId: integer("giftCardId").references(() => giftCards.id, { onDelete: "set null" }),
-  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
-  creditsAwarded: integer("creditsAwarded").default(0),
-  status: transactionStatusEnum("status").default("pending").notNull(),
-  stripePaymentId: text("stripePaymentId"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

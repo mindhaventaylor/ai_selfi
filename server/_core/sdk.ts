@@ -41,7 +41,7 @@ class SDKServer {
         throw new Error("Invalid session format");
       }
 
-      const { data: { user }, error } = await supabaseServer.auth.getUser(session.access_token);
+      const { data: { user }, error } = await (supabaseServer.auth as any).getUser(session.access_token);
       if (error || !user) {
         throw new Error("Invalid access token");
       }
