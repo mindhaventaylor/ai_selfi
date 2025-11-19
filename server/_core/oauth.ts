@@ -2,7 +2,10 @@ import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import type { Express, Request, Response } from "express";
 import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
-import { sdk } from "./sdk";
+import { supabaseServer } from "./lib/supabase";
+
+const PROJECT_REF = "gxwtcdplfkjfidwyrunk";
+const AUTH_COOKIE_NAME = `sb-${PROJECT_REF}-auth-token`;
 
 function getQueryParam(req: Request, key: string): string | undefined {
   const value = req.query[key];
@@ -11,38 +14,73 @@ function getQueryParam(req: Request, key: string): string | undefined {
 
 export function registerOAuthRoutes(app: Express) {
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
-    const code = getQueryParam(req, "code");
-    const state = getQueryParam(req, "state");
+    // Supabase OAuth can send code as query param or in the URL hash
+    // Check both query params and hash fragment
+    let code = getQueryParam(req, "code");
+    
+    // If no code in query, check if it's in the hash (Supabase sometimes uses hash)
+    if (!code && req.url.includes("#")) {
+      const hashMatch = req.url.match(/[#&]code=([^&]+)/);
+      if (hashMatch) {
+        code = decodeURIComponent(hashMatch[1]);
+      }
+    }
 
-    if (!code || !state) {
-      res.status(400).json({ error: "code and state are required" });
+    // Also check for error in hash
+    if (!code) {
+      const errorMatch = req.url.match(/[#&]error=([^&]+)/);
+      if (errorMatch) {
+        const error = decodeURIComponent(errorMatch[1]);
+        console.error("[OAuth] Error in callback:", error);
+        res.status(400).json({ error: `OAuth error: ${error}` });
+        return;
+      }
+    }
+
+    if (!code) {
+      console.error("[OAuth] No code found in request:", {
+        url: req.url,
+        query: req.query,
+        headers: req.headers,
+      });
+      res.status(400).json({ error: "code is required" });
       return;
     }
 
     try {
-      const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-      const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
+      const { data, error } = await supabaseServer.auth.exchangeCodeForSession(code);
+      if (error) throw error;
 
-      if (!userInfo.openId) {
-        res.status(400).json({ error: "openId missing from user info" });
+      const supabaseUser = data.user;
+      if (!supabaseUser.id) {
+        res.status(400).json({ error: "user id missing from Supabase response" });
         return;
       }
 
-      await db.upsertUser({
-        openId: userInfo.openId,
-        name: userInfo.name || null,
-        email: userInfo.email ?? null,
-        loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
+      const userInfo = {
+        openId: supabaseUser.id,
+        name: supabaseUser.user_metadata?.name || supabaseUser.user_metadata?.full_name || null,
+        email: supabaseUser.email ?? null,
+        loginMethod: supabaseUser.app_metadata?.provider || "oauth",
         lastSignedIn: new Date(),
-      });
+      };
 
-      const sessionToken = await sdk.createSessionToken(userInfo.openId, {
-        name: userInfo.name || "",
-        expiresInMs: ONE_YEAR_MS,
-      });
+      await db.upsertUser(userInfo);
 
+      // Set Supabase auth cookie
       const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      const sessionData = {
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+        expires_in: data.session.expires_in,
+        token_type: data.session.token_type,
+      };
+      const cookieValue = Buffer.from(JSON.stringify(sessionData)).toString("base64");
+      const expiresMs = data.session.expires_in * 1000;
+      res.cookie(AUTH_COOKIE_NAME, cookieValue, { 
+        ...cookieOptions, 
+        maxAge: expiresMs 
+      });
 
       res.redirect(302, "/");
     } catch (error) {

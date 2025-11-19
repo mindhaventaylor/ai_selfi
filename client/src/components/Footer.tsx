@@ -1,6 +1,6 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
-import { APP_LOGO, getLoginUrl } from "@/const";
+import { APP_LOGO } from "@/const";
 
 export function Footer() {
   const { t } = useTranslation();

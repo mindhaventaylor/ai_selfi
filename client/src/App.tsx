@@ -1,3 +1,5 @@
+import { jsxLocPlugin } from "@builder.io/vite-plugin-jsx-loc";
+
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -7,6 +9,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
+import OAuthCallback from "./pages/OAuthCallback";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import { Header } from "./components/Header";
@@ -23,6 +26,7 @@ function Router() {
         <Switch>
           <Route path={"/"} component={Home} />
           <Route path={"/login"} component={Login} />
+          <Route path={"/oauth/callback"} component={OAuthCallback} />
           <Route path={"/terms"} component={Terms} />
           <Route path={"/privacy"} component={Privacy} />
           <Route path={"/dashboard"}>
@@ -46,6 +50,7 @@ function Router() {
 // - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
 
 function App() {
+
   return (
     <ErrorBoundary>
       <ThemeProvider

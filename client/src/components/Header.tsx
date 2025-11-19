@@ -1,6 +1,6 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { APP_LOGO, getLoginUrl } from "@/const";
+import { APP_LOGO } from "@/const";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import {

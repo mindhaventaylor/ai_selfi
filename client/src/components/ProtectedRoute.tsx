@@ -1,5 +1,4 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 
@@ -14,7 +13,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   useEffect(() => {
     if (!loading && !user) {
       // Redirecionar para login se não estiver autenticado
-      window.location.href = getLoginUrl();
+      setLocation("/login");
     }
   }, [user, loading, setLocation]);
 

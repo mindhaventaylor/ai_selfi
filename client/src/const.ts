@@ -4,18 +4,9 @@ export const APP_TITLE = import.meta.env.VITE_APP_TITLE || "App";
 
 export const APP_LOGO = "/aiselfies_logo.png";
 
-// Generate login URL at runtime so redirect URI reflects the current origin.
+// Note: Supabase OAuth should be called directly via signInWithOAuth()
+// This function is kept for backward compatibility but should not be used
 export const getLoginUrl = () => {
-  const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
-  const appId = import.meta.env.VITE_APP_ID;
-  const redirectUri = `${window.location.origin}/api/oauth/callback`;
-  const state = btoa(redirectUri);
-
-  const url = new URL(`${oauthPortalUrl}/app-auth`);
-  url.searchParams.set("appId", appId);
-  url.searchParams.set("redirectUri", redirectUri);
-  url.searchParams.set("state", state);
-  url.searchParams.set("type", "signIn");
-
-  return url.toString();
+  // Return a placeholder - actual OAuth should use signInWithOAuth() from useAuth hook
+  return "#";
 };

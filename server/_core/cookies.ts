@@ -39,10 +39,15 @@ export function getSessionCookieOptions(
   //       ? hostname
   //       : undefined;
 
+  const isSecure = isSecureRequest(req);
+  const isLocalhost = req.hostname === "localhost" || req.hostname === "127.0.0.1";
+  
   return {
     httpOnly: true,
     path: "/",
-    sameSite: "none",
-    secure: isSecureRequest(req),
+    // For localhost, use 'lax' instead of 'none' since we don't need cross-site cookies
+    // 'none' requires secure: true, which doesn't work on http://localhost
+    sameSite: isLocalhost ? "lax" : "none",
+    secure: isSecure,
   };
 }
