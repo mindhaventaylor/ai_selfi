@@ -11,8 +11,16 @@ try {
   console.log("[Vercel] Initializing Express app...");
   
   // Import the createApp function
-  // Note: Using .js extension for ESM compatibility after TypeScript compilation
-  const serverModule = require("../server/_core/index.js");
+  // Try both source and dist paths since Vercel compiles TypeScript
+  let serverModule;
+  try {
+    // First try the source path (Vercel will compile it)
+    serverModule = require("../server/_core/index");
+  } catch (e) {
+    // Fallback to dist if source doesn't work
+    serverModule = require("../../dist/index.js");
+  }
+  
   const createApp = serverModule.createApp || serverModule.default;
   
   if (typeof createApp !== "function") {
