@@ -57,13 +57,26 @@ export function registerOAuthRoutes(app: Express) {
         return;
       }
 
-      const userInfo = {
+      // Check if user already exists
+      const { data: existingUser } = await supabaseServer
+        .from('users')
+        .select('id')
+        .eq('openId', supabaseUser.id)
+        .maybeSingle();
+
+      const userInfo: any = {
         openId: supabaseUser.id,
         name: supabaseUser.user_metadata?.name || supabaseUser.user_metadata?.full_name || null,
         email: supabaseUser.email ?? null,
+        avatarUrl: supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.picture || null,
         loginMethod: supabaseUser.app_metadata?.provider || "oauth",
         lastSignedIn: new Date(),
       };
+
+      // Only give credits to new users
+      if (!existingUser) {
+        userInfo.credits = 100; // Give new users 100 credits for testing
+      }
 
       await db.upsertUser(userInfo);
 

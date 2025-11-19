@@ -1,8 +1,10 @@
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FlaskConical } from "lucide-react";
 
 export default function Models() {
+  const [, setLocation] = useLocation();
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -39,6 +41,7 @@ export default function Models() {
                 <Button
                   className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
+                  onClick={() => setLocation("/dashboard/models/train")}
                 >
                   Entrenar Modelo
                 </Button>
@@ -69,6 +72,7 @@ export default function Models() {
                 <Button
                   className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
+                  onClick={() => setLocation("/dashboard/models/view")}
                 >
                   Ver Modelos
                 </Button>

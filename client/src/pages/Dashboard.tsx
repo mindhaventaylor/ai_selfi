@@ -34,10 +34,10 @@ export default function Dashboard() {
           <Alert className="bg-green-500/20 border-green-500/50 text-green-50 max-w-4xl mx-auto">
             <Sparkles className="h-4 w-4 text-green-400" />
             <AlertDescription className="flex items-center justify-between w-full">
-              <div>
+          <div>
                 <div className="font-semibold">Nuevo modelo de IA disponible</div>
                 <div className="text-sm opacity-90">Fotos más realistas y calidad 4k</div>
-              </div>
+          </div>
               <button
                 onClick={() => setShowAlert(false)}
                 className="ml-4 hover:opacity-70 transition-opacity"
@@ -61,10 +61,10 @@ export default function Dashboard() {
                       alt={`Photo ${idx + 1}`}
                       className="w-full h-full object-cover"
                     />
-                  </div>
-                ))}
-              </div>
             </div>
+                ))}
+          </div>
+        </div>
 
             <div className="relative z-10 text-center space-y-4 md:space-y-6">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">AISelfi.es</h1>
@@ -107,21 +107,21 @@ export default function Dashboard() {
                     onClick={() => setLocation("/dashboard/generate")}
                   >
                     Generar Imágenes →
-                  </Button>
+            </Button>
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center z-20">
                   <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
                     <Play className="w-8 h-8 md:w-10 md:h-10 text-primary ml-1" />
                   </div>
-                </div>
+                  </div>
                 <div className="absolute bottom-4 left-4 right-4 z-30">
                   <div className="bg-background/80 backdrop-blur-sm rounded-lg px-4 py-2 text-sm max-w-fit mx-auto">
                     0:00 / 1:11
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
 
           {/* Feature Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
@@ -172,8 +172,8 @@ export default function Dashboard() {
                         className="w-full h-full object-cover"
                       />
                     </div>
-                  ))}
-                </div>
+              ))}
+            </div>
                 <Button
                   className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full text-sm md:text-base"
                   size="lg"
@@ -200,8 +200,8 @@ export default function Dashboard() {
                 >
                   Más Información →
                 </Button>
-              </CardContent>
-            </Card>
+          </CardContent>
+        </Card>
           </div>
         </div>
       </div>

@@ -1,7 +1,16 @@
 import { useState } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -23,10 +32,12 @@ import {
   Image as ImageIcon,
   Glasses,
   Palette,
-  Scissors
+  Scissors,
+  Download
 } from "lucide-react";
 
 export default function GenerateImages() {
+  const { user } = useAuth();
   const [gender, setGender] = useState<"man" | "woman">("man");
   const [selectedBackgrounds, setSelectedBackgrounds] = useState<string[]>([]);
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
@@ -36,6 +47,13 @@ export default function GenerateImages() {
   const [glasses, setGlasses] = useState<string>("no");
   const [hairColor, setHairColor] = useState<string>("default");
   const [hairStyle, setHairStyle] = useState<string>("no-preference");
+  
+  // Generation modal state
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [completedImages, setCompletedImages] = useState(0);
+  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [showModal, setShowModal] = useState(false);
 
   const backgrounds = ["office", "neutral", "studio"];
   const styles = ["formal", "casual", "elegant", "professional"];
@@ -68,7 +86,83 @@ export default function GenerateImages() {
   };
 
   const imageCount = selectedImages.length;
-  const creditsNeeded = imageCount * 4; // 4 variations per image
+  const totalImagesToGenerate = imageCount * 4; // 4 images per selected image
+  const creditsNeeded = totalImagesToGenerate; // 1 credit per generated image
+  const userCredits = user?.credits ?? 0;
+  const hasEnoughCredits = creditsNeeded <= userCredits;
+  const canGenerate = imageCount > 0 && hasEnoughCredits && modelId !== "";
+
+  const handleGenerate = () => {
+    if (!canGenerate) return;
+    
+    // Reset state
+    setIsGenerating(true);
+    setGenerationProgress(0);
+    setCompletedImages(0);
+    setGeneratedImages([]);
+    setShowModal(true);
+    
+    // Simulate image generation with progress
+    const totalImages = totalImagesToGenerate; // 4 images per selected image
+    
+    // Generate placeholder images (using example images for now)
+    const placeholderImages = [
+      "/image.webp",
+      "/image_1.webp",
+      "/image_10.webp",
+      "/image_100.jpg",
+      "/image_101.jpg",
+      "/image_102.jpg",
+    ];
+    
+    let currentProgress = 0;
+    let imagesAdded = 0;
+    
+    const progressInterval = setInterval(() => {
+      currentProgress += 2;
+      if (currentProgress > 100) currentProgress = 100;
+      setGenerationProgress(currentProgress);
+      
+      // Calculate completed images based on progress
+      const completed = Math.floor((currentProgress / 100) * totalImages);
+      setCompletedImages(Math.min(completed, totalImages));
+      
+      // Add images as they complete
+      if (completed > imagesAdded && completed <= totalImages) {
+        const newImage = placeholderImages[imagesAdded % placeholderImages.length];
+        setGeneratedImages((prev) => [...prev, newImage]);
+        imagesAdded++;
+      }
+      
+      if (currentProgress >= 100) {
+        clearInterval(progressInterval);
+        setIsGenerating(false);
+        // Ensure all images are shown
+        setGeneratedImages((prev) => {
+          if (prev.length < totalImages) {
+            const remaining = totalImages - prev.length;
+            const finalImages = [...prev];
+            for (let i = 0; i < remaining; i++) {
+              finalImages.push(placeholderImages[(prev.length + i) % placeholderImages.length]);
+            }
+            return finalImages;
+          }
+          return prev;
+        });
+        setCompletedImages(totalImages);
+      }
+    }, 100); // Update every 100ms for smooth animation
+  };
+
+  const handleDownloadImage = (imageUrl: string, index: number) => {
+    // Create a temporary anchor element to trigger download
+    const link = document.createElement('a');
+    link.href = imageUrl;
+    link.download = `generated-image-${index + 1}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="min-h-screen bg-background w-full">
@@ -340,19 +434,28 @@ export default function GenerateImages() {
                       {/* Generate Button */}
                       <div className="pt-4 border-t border-border">
                         <Button
-                          className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+                          className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                           size="lg"
-                          disabled={imageCount === 0}
+                          disabled={!canGenerate}
+                          onClick={handleGenerate}
                         >
                           <Sparkles className="w-5 h-5 mr-2" />
-                          Generar {imageCount * 4} Imágenes
+                          Generar {totalImagesToGenerate} Imágenes
                         </Button>
                         
                         {/* Credits Usage */}
                         <div className="mt-3 flex items-center justify-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg px-4 py-2">
                           <Sparkles className="h-4 w-4" />
-                          <span>Esto usará {creditsNeeded} créditos</span>
-                          <span className="text-xs font-medium">({creditsNeeded})</span>
+                          <span>
+                            {imageCount === 0 
+                              ? "Selecciona imágenes para generar"
+                              : !hasEnoughCredits
+                              ? `No tienes suficientes créditos (necesitas ${creditsNeeded}, tienes ${userCredits})`
+                              : modelId === ""
+                              ? "Selecciona un modelo primero"
+                              : `Esto usará ${creditsNeeded} ${creditsNeeded === 1 ? 'crédito' : 'créditos'}`
+                            }
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -363,6 +466,90 @@ export default function GenerateImages() {
           </div>
         </div>
       </div>
+
+      {/* Generation Progress Modal */}
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-hidden flex flex-col p-0">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-2xl font-bold">
+                Tus fotos profesionales están casi listas
+              </DialogTitle>
+            </div>
+          </DialogHeader>
+          
+          <div className="px-6 py-4 space-y-4 flex-shrink-0">
+            {/* Progress Bar */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Progreso</span>
+                <span className={`text-sm font-bold ${generationProgress === 100 ? 'text-green-500' : 'text-primary'}`}>
+                  {generationProgress}%
+                </span>
+              </div>
+              <Progress value={generationProgress} className="h-2" />
+              <p className="text-sm text-muted-foreground">
+                {completedImages} de {totalImagesToGenerate} imágenes completadas
+              </p>
+            </div>
+
+            {/* Info Message */}
+            <p className="text-sm text-muted-foreground">
+              Puedes cerrar esta ventana. Tus fotos aparecen en galería
+            </p>
+          </div>
+
+          {/* Images Grid - Scrollable */}
+          <div className="px-6 pb-6 flex-1 overflow-y-auto">
+            <div className="grid grid-cols-2 gap-4">
+              {/* Show generated images */}
+              {generatedImages.map((imageUrl, index) => (
+                <div
+                  key={`generated-${index}`}
+                  className="relative group aspect-square rounded-lg overflow-hidden border-2 border-border hover:border-primary transition-all cursor-pointer"
+                  onClick={() => handleDownloadImage(imageUrl, index)}
+                >
+                  <img
+                    src={imageUrl}
+                    alt={`Generated image ${index + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = `https://picsum.photos/400/400?random=${index}`;
+                    }}
+                  />
+                  {/* Download Overlay */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <div className="bg-background/90 rounded-full p-3">
+                      <Download className="w-5 h-5 text-foreground" />
+                    </div>
+                  </div>
+                  {/* Download Badge */}
+                  <div className="absolute top-2 right-2 bg-background/90 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Download className="w-4 h-4 text-foreground" />
+                  </div>
+                </div>
+              ))}
+              
+              {/* Show loading placeholders for remaining images */}
+              {Array.from({ length: totalImagesToGenerate - generatedImages.length }).map((_, index) => (
+                <div
+                  key={`loading-${index}`}
+                  className="relative aspect-square rounded-lg overflow-hidden border-2 border-border"
+                >
+                  <Skeleton className="w-full h-full" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center space-y-2">
+                      <Sparkles className="w-6 h-6 text-muted-foreground mx-auto animate-pulse" />
+                      <p className="text-xs text-muted-foreground">Generando...</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

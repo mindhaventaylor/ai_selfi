@@ -52,6 +52,7 @@ export const appRouter = router({
             openId: user.id,
             name: user.user_metadata?.name || user.user_metadata?.full_name || null,
             email: user.email ?? null,
+            avatarUrl: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
             loginMethod: user.app_metadata?.provider || "oauth",
             lastSignedIn: new Date(),
           });

@@ -52,6 +52,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
       if (user.name !== undefined) values.name = user.name;
       if (user.email !== undefined) values.email = user.email;
+      if (user.avatarUrl !== undefined) values.avatarUrl = user.avatarUrl;
       if (user.loginMethod !== undefined) values.loginMethod = user.loginMethod;
       if (user.credits !== undefined) values.credits = user.credits;
       if (user.role !== undefined) {
@@ -116,7 +117,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     };
     const updateSet: Record<string, unknown> = {};
 
-    const textFields = ["name", "email", "loginMethod"] as const;
+    const textFields = ["name", "email", "avatarUrl", "loginMethod"] as const;
     type TextField = (typeof textFields)[number];
 
     const assignNullable = (field: TextField) => {

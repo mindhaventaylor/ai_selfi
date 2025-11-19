@@ -88,7 +88,7 @@ export function Header() {
           {!isAuthenticated && (
             <Button asChild variant="outline" size="sm">
               <a href="/login">{t("nav.login")}</a>
-            </Button>
+          </Button>
           )}
         </div>
       </div>

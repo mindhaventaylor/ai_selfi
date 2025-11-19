@@ -16,6 +16,8 @@ import BuyCredits from "./pages/BuyCredits";
 import Pro from "./pages/Pro";
 import Gallery from "./pages/Gallery";
 import Models from "./pages/Models";
+import TrainModel from "./pages/TrainModel";
+import ViewModels from "./pages/ViewModels";
 import StartHere from "./pages/StartHere";
 import SettingsGeneral from "./pages/SettingsGeneral";
 import SupportGeneral from "./pages/SupportGeneral";
@@ -83,6 +85,20 @@ function Router() {
             <ProtectedRoute>
               <DashboardLayout>
                 <Models />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/models/train"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <TrainModel />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/models/view"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <ViewModels />
               </DashboardLayout>
             </ProtectedRoute>
           </Route>

@@ -239,14 +239,14 @@ function DashboardLayoutContent({
                 </div>
               ) : (
                 <>
-                  <img
-                    src={APP_LOGO}
+                    <img
+                      src={APP_LOGO}
                     className="h-10 w-10 rounded-lg object-cover shrink-0"
-                    alt="Logo"
-                  />
+                      alt="Logo"
+                    />
                   <span className="font-bold text-lg bg-gradient-to-r from-pink-400 to-orange-500 bg-clip-text text-transparent">
                     Alselfi.es
-                  </span>
+                    </span>
                 </>
               )}
             </div>
@@ -256,15 +256,15 @@ function DashboardLayoutContent({
               <div className="mt-6 space-y-3">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12 border-2 border-border">
-                    <AvatarImage src={user?.avatar_url} alt={user?.name} />
+                    <AvatarImage src={user?.avatarUrl || undefined} alt={user?.name || "User"} />
                     <AvatarFallback className="text-sm font-medium">
-                      {user?.name?.charAt(0).toUpperCase() || "U"}
+                      {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">0 Credits</span>
+                  <span className="text-muted-foreground">{user?.credits ?? 0} Credits</span>
                 </div>
               </div>
             )}
@@ -460,7 +460,7 @@ function DashboardLayoutContent({
                       }`}
                     >
                       Reviews
-                    </button>
+                </button>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
@@ -567,14 +567,14 @@ function DashboardLayoutContent({
               className="h-9 rounded-full px-4 gap-2"
             >
               <Clock className="h-4 w-4" />
-              <span>Credits: 0</span>
+              <span>Credits: {user?.credits ?? 0}</span>
             </Button>
 
             {/* User Avatar */}
             <Avatar className="h-9 w-9 border-2 border-border cursor-pointer hover:ring-2 hover:ring-primary transition-all">
-              <AvatarImage src={user?.avatar_url} alt={user?.name} />
+              <AvatarImage src={user?.avatarUrl || undefined} alt={user?.name || "User"} />
               <AvatarFallback className="text-xs font-medium">
-                {user?.name?.charAt(0).toUpperCase() || "U"}
+                {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
               </AvatarFallback>
             </Avatar>
           </div>
