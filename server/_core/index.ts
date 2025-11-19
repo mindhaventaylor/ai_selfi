@@ -76,6 +76,6 @@ if (process.env.VERCEL !== "1") {
   startServer().catch(console.error);
 }
 
-// Export for Vercel serverless functions
-// Export both the function (for Vercel) and the app instance (for direct import)
-export default createApp();
+// Export the function for Vercel serverless functions
+// Don't call it at module level - let the API handler call it
+export default createApp;
