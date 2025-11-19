@@ -3,29 +3,40 @@
 process.env.VERCEL = "1";
 process.env.NODE_ENV = process.env.NODE_ENV || "production";
 
-// Import the Express app from the built dist folder
-// Vercel will compile this TypeScript file, so we need to import from the source
-// but the actual runtime will use the built version
+// Import and create the Express app
+// Using require to avoid ESM/TypeScript compilation issues
 let app: any;
 
 try {
-  // Try to import from source (will be compiled by Vercel)
-  const { createApp } = require("../server/_core/index");
-  app = createApp();
-  console.log("[Vercel] Express app created successfully");
-} catch (error: any) {
-  console.error("[Vercel] Failed to create Express app:", error);
-  console.error("[Vercel] Error stack:", error?.stack);
+  console.log("[Vercel] Initializing Express app...");
   
-  // Create a minimal error handler app
+  // Import the createApp function
+  // Note: Using .js extension for ESM compatibility after TypeScript compilation
+  const serverModule = require("../server/_core/index.js");
+  const createApp = serverModule.createApp || serverModule.default;
+  
+  if (typeof createApp !== "function") {
+    throw new Error(`createApp is not a function. Got: ${typeof createApp}`);
+  }
+  
+  app = createApp();
+  console.log("[Vercel] Express app initialized successfully");
+} catch (error: any) {
+  console.error("[Vercel] Failed to initialize Express app");
+  console.error("[Vercel] Error:", error?.message);
+  console.error("[Vercel] Stack:", error?.stack);
+  
+  // Fallback: Create a minimal Express app that shows the error
   const express = require("express");
   app = express();
+  
   app.use((req: any, res: any) => {
-    console.error("[Vercel] Express app initialization failed, returning error");
-    res.status(500).json({ 
+    console.error("[Vercel] Request received but app failed to initialize");
+    res.status(500).json({
       error: "Server initialization failed",
       message: error?.message || "Unknown error",
-      stack: process.env.NODE_ENV === "development" ? error?.stack : undefined
+      // Only show stack in development
+      ...(process.env.NODE_ENV === "development" && { stack: error?.stack })
     });
   });
 }
