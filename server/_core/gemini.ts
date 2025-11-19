@@ -3,7 +3,7 @@
  * Used for generating AI images from reference photos
  */
 
-import { getServerString } from "./strings";
+import { getServerString } from "./strings.js";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyDgr4bTtfgdr09sUXM9quvrCi0ov-XJYkc";
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";

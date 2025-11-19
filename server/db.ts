@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { InsertUser, users } from "../drizzle/schema";
-import { ENV } from './_core/env';
-import { supabaseServer } from './_core/lib/supabase';
+import { InsertUser, users } from "../drizzle/schema.js";
+import { ENV } from './_core/env.js';
+import { supabaseServer } from './_core/lib/supabase.js';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 let _useRestApi = false;

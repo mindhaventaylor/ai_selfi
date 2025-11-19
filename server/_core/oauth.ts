@@ -1,8 +1,8 @@
 import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import type { Express, Request, Response } from "express";
-import * as db from "../db";
-import { getSessionCookieOptions } from "./cookies";
-import { supabaseServer } from "./lib/supabase";
+import * as db from "../db.js";
+import { getSessionCookieOptions } from "./cookies.js";
+import { supabaseServer } from "./lib/supabase.js";
 
 const PROJECT_REF = "gxwtcdplfkjfidwyrunk";
 const AUTH_COOKIE_NAME = `sb-${PROJECT_REF}-auth-token`;

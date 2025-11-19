@@ -1,14 +1,14 @@
 import { COOKIE_NAME } from "@shared/const";
 import { desc, eq, and, inArray } from "drizzle-orm";
 import { z } from "zod";
-import { creditPacks, models, photos, transactions, users, modelTrainingImages, photoGenerationBatches } from "../drizzle/schema";
-import { getDb, upsertUser } from "./db";
-import { getSessionCookieOptions } from "./_core/cookies";
-import { supabaseServer } from "./_core/lib/supabase";
-import { systemRouter } from "./_core/systemRouter";
-import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { generateImagesWithGemini } from "./_core/gemini";
-import { getServerString } from "./_core/strings";
+import { creditPacks, models, photos, transactions, users, modelTrainingImages, photoGenerationBatches } from "../drizzle/schema.js";
+import { getDb, upsertUser } from "./db.js";
+import { getSessionCookieOptions } from "./_core/cookies.js";
+import { supabaseServer } from "./_core/lib/supabase.js";
+import { systemRouter } from "./_core/systemRouter.js";
+import { protectedProcedure, publicProcedure, router } from "./_core/trpc.js";
+import { generateImagesWithGemini } from "./_core/gemini.js";
+import { getServerString } from "./_core/strings.js";
 
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
