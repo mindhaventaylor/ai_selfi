@@ -3,11 +3,12 @@ import { jsxLocPlugin } from "@builder.io/vite-plugin-jsx-loc";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
+import GenerateImages from "./pages/GenerateImages";
 import Login from "./pages/Login";
 import OAuthCallback from "./pages/OAuthCallback";
 import Terms from "./pages/Terms";
@@ -16,12 +17,16 @@ import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { WhatsAppButton } from "./components/WhatsAppButton";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import DashboardLayout from "./components/DashboardLayout";
 import "./i18n/config";
 
 function Router() {
+  const [location] = useLocation();
+  const isDashboard = location.startsWith("/dashboard");
+
   return (
     <>
-      <Header />
+      {!isDashboard && <Header />}
       <main>
         <Switch>
           <Route path={"/"} component={Home} />
@@ -31,15 +36,24 @@ function Router() {
           <Route path={"/privacy"} component={Privacy} />
           <Route path={"/dashboard"}>
             <ProtectedRoute>
-              <Dashboard />
+              <DashboardLayout>
+                <Dashboard />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/generate"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <GenerateImages />
+              </DashboardLayout>
             </ProtectedRoute>
           </Route>
           <Route path={"/404"} component={NotFound} />
           <Route component={NotFound} />
         </Switch>
       </main>
-      <Footer />
-      <WhatsAppButton />
+      {!isDashboard && <Footer />}
+      {!isDashboard && <WhatsAppButton />}
     </>
   );
 }

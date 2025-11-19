@@ -1,11 +1,16 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
@@ -21,15 +26,38 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_LOGO, APP_TITLE } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
+import {
+  HelpCircle,
+  FlaskConical,
+  PlusCircle,
+  Image as ImageIcon,
+  Sparkles,
+  CreditCard,
+  Settings,
+  ChevronRight,
+  ChevronDown,
+  DollarSign,
+  LogOut,
+  PanelLeft,
+  Clock,
+  Linkedin,
+  Twitter,
+  Youtube,
+  Instagram,
+  Globe,
+  BookOpen,
+} from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Page 1", path: "/" },
-  { icon: Users, label: "Page 2", path: "/some-path" },
+  { icon: HelpCircle, label: "Start Here", path: "/dashboard" },
+  { icon: FlaskConical, label: "Models", path: "/dashboard/models" },
+  { icon: PlusCircle, label: "Create", path: "/dashboard/generate" },
+  { icon: ImageIcon, label: "Gallery", path: "/dashboard/gallery" },
+  { icon: Sparkles, label: "Funciones PRO", path: "/dashboard/pro" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -123,6 +151,10 @@ function DashboardLayoutContent({
   const sidebarRef = useRef<HTMLDivElement>(null);
   const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
+  const [creditsOpen, setCreditsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
 
   useEffect(() => {
     if (isCollapsed) {
@@ -168,47 +200,57 @@ function DashboardLayoutContent({
           className="border-r-0"
           disableTransition={isResizing}
         >
-          <SidebarHeader className="h-16 justify-center">
-            <div className="flex items-center gap-3 pl-2 group-data-[collapsible=icon]:px-0 transition-all w-full">
+          <SidebarHeader className="h-auto p-4 pb-6">
+            <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
               {isCollapsed ? (
                 <div className="relative h-8 w-8 shrink-0 group">
                   <img
                     src={APP_LOGO}
-                    className="h-8 w-8 rounded-md object-cover ring-1 ring-border"
+                    className="h-8 w-8 rounded-lg object-cover"
                     alt="Logo"
                   />
                   <button
                     onClick={toggleSidebar}
-                    className="absolute inset-0 flex items-center justify-center bg-accent rounded-md ring-1 ring-border opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="absolute inset-0 flex items-center justify-center bg-accent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <PanelLeft className="h-4 w-4 text-foreground" />
                   </button>
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center gap-3 min-w-0">
-                    <img
-                      src={APP_LOGO}
-                      className="h-8 w-8 rounded-md object-cover ring-1 ring-border shrink-0"
-                      alt="Logo"
-                    />
-                    <span className="font-semibold tracking-tight truncate">
-                      {APP_TITLE}
-                    </span>
-                  </div>
-                  <button
-                    onClick={toggleSidebar}
-                    className="ml-auto h-8 w-8 flex items-center justify-center hover:bg-accent rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
-                  >
-                    <PanelLeft className="h-4 w-4 text-muted-foreground" />
-                  </button>
+                  <img
+                    src={APP_LOGO}
+                    className="h-10 w-10 rounded-lg object-cover shrink-0"
+                    alt="Logo"
+                  />
+                  <span className="font-bold text-lg bg-gradient-to-r from-pink-400 to-orange-500 bg-clip-text text-transparent">
+                    Alselfi.es
+                  </span>
                 </>
               )}
             </div>
+            
+            {/* User Profile Section */}
+            {!isCollapsed && (
+              <div className="mt-6 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-12 w-12 border-2 border-border">
+                    <AvatarImage src={user?.avatar_url} alt={user?.name} />
+                    <AvatarFallback className="text-sm font-medium">
+                      {user?.name?.charAt(0).toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">0 Credits</span>
+                </div>
+              </div>
+            )}
           </SidebarHeader>
 
-          <SidebarContent className="gap-0">
-            <SidebarMenu className="px-2 py-1">
+          <SidebarContent className="gap-0 flex-1 overflow-y-auto">
+            <SidebarMenu className="px-2 py-2">
               {menuItems.map(item => {
                 const isActive = location === item.path;
                 return (
@@ -217,7 +259,7 @@ function DashboardLayoutContent({
                       isActive={isActive}
                       onClick={() => setLocation(item.path)}
                       tooltip={item.label}
-                      className={`h-10 transition-all font-normal`}
+                      className="h-10 transition-all font-normal"
                     >
                       <item.icon
                         className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
@@ -227,38 +269,154 @@ function DashboardLayoutContent({
                   </SidebarMenuItem>
                 );
               })}
+              
+              {/* Credits with Dropdown */}
+              <SidebarMenuItem>
+                <Collapsible open={creditsOpen} onOpenChange={setCreditsOpen}>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton
+                      tooltip="Credits"
+                      className="h-10 transition-all font-normal w-full"
+                    >
+                      <CreditCard className="h-4 w-4" />
+                      <span>Credits</span>
+                      {creditsOpen ? (
+                        <ChevronDown className="ml-auto h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="ml-auto h-4 w-4" />
+                      )}
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="pl-6 py-1 space-y-1">
+                      <button className="text-sm text-muted-foreground hover:text-foreground w-full text-left px-2 py-1 rounded-md hover:bg-accent">
+                        Buy Credits
+                      </button>
+                      <button className="text-sm text-muted-foreground hover:text-foreground w-full text-left px-2 py-1 rounded-md hover:bg-accent">
+                        Credit History
+                      </button>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
 
-          <SidebarFooter className="p-3">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 rounded-lg px-1 py-1 hover:bg-accent/50 transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                  <Avatar className="h-9 w-9 border shrink-0">
-                    <AvatarFallback className="text-xs font-medium">
-                      {user?.name?.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                    <p className="text-sm font-medium truncate leading-none">
-                      {user?.name || "-"}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate mt-1.5">
-                      {user?.email || "-"}
-                    </p>
+          <SidebarFooter className="p-3 space-y-2 border-t border-border">
+            {/* Settings with Dropdown */}
+            <SidebarMenuItem>
+              <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton
+                    tooltip="Settings"
+                    className="h-10 transition-all font-normal w-full"
+                  >
+                    <Settings className="h-4 w-4" />
+                    <span>Settings</span>
+                    {settingsOpen ? (
+                      <ChevronDown className="ml-auto h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="ml-auto h-4 w-4" />
+                    )}
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="pl-6 py-1 space-y-1">
+                    <button className="text-sm text-muted-foreground hover:text-foreground w-full text-left px-2 py-1 rounded-md hover:bg-accent">
+                      Account
+                    </button>
+                    <button className="text-sm text-muted-foreground hover:text-foreground w-full text-left px-2 py-1 rounded-md hover:bg-accent">
+                      Preferences
+                    </button>
                   </div>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem
-                  onClick={logout}
-                  className="cursor-pointer text-destructive focus:text-destructive"
+                </CollapsibleContent>
+              </Collapsible>
+            </SidebarMenuItem>
+
+            {/* Support with Dropdown */}
+            <SidebarMenuItem>
+              <Collapsible open={supportOpen} onOpenChange={setSupportOpen}>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton
+                    tooltip="Support"
+                    className="h-10 transition-all font-normal w-full"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                    <span>Support</span>
+                    {supportOpen ? (
+                      <ChevronDown className="ml-auto h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="ml-auto h-4 w-4" />
+                    )}
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="pl-6 py-1 space-y-1">
+                    <button className="text-sm text-muted-foreground hover:text-foreground w-full text-left px-2 py-1 rounded-md hover:bg-accent">
+                      Help Center
+                    </button>
+                    <button className="text-sm text-muted-foreground hover:text-foreground w-full text-left px-2 py-1 rounded-md hover:bg-accent">
+                      Contact Us
+                    </button>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            </SidebarMenuItem>
+
+            {/* Afiliados */}
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                tooltip="Afiliados"
+                className="h-10 transition-all font-normal"
+                onClick={() => setLocation("/dashboard/afiliados")}
+              >
+                <DollarSign className="h-4 w-4" />
+                <span>Afiliados</span>
+                <span className="ml-auto">💰</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            {/* Social Media Links */}
+            <div className="pt-2 border-t border-border">
+              <div className="flex items-center justify-center gap-3 px-2">
+                <a
+                  href="https://linkedin.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="LinkedIn"
                 >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sign out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <Linkedin className="h-4 w-4" />
+                </a>
+                <a
+                  href="https://twitter.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Twitter"
+                >
+                  <Twitter className="h-4 w-4" />
+                </a>
+                <a
+                  href="https://youtube.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="YouTube"
+                >
+                  <Youtube className="h-4 w-4" />
+                </a>
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="h-4 w-4" />
+                </a>
+              </div>
+            </div>
           </SidebarFooter>
         </Sidebar>
         <div
@@ -272,6 +430,53 @@ function DashboardLayoutContent({
       </div>
 
       <SidebarInset>
+        {/* Top Header Bar */}
+        <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:backdrop-blur">
+          <div className="flex h-14 items-center justify-end gap-3 px-6">
+            {/* Language Selector */}
+            <DropdownMenu open={languageOpen} onOpenChange={setLanguageOpen}>
+              <DropdownMenuTrigger asChild>
+                <button className="h-9 w-9 rounded-full border border-border hover:bg-accent transition-colors flex items-center justify-center">
+                  <span className="text-lg">🇪🇸</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setLanguageOpen(false)}>
+                  🇪🇸 Español
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguageOpen(false)}>
+                  🇧🇷 Português
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguageOpen(false)}>
+                  🇬🇧 English
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Help/Book Icon */}
+            <button className="h-9 w-9 rounded-full border border-border hover:bg-accent transition-colors flex items-center justify-center">
+              <BookOpen className="h-4 w-4" />
+            </button>
+
+            {/* Credits Button */}
+            <Button
+              variant="outline"
+              className="h-9 rounded-full px-4 gap-2"
+            >
+              <Clock className="h-4 w-4" />
+              <span>Credits: 0</span>
+            </Button>
+
+            {/* User Avatar */}
+            <Avatar className="h-9 w-9 border-2 border-border cursor-pointer hover:ring-2 hover:ring-primary transition-all">
+              <AvatarImage src={user?.avatar_url} alt={user?.name} />
+              <AvatarFallback className="text-xs font-medium">
+                {user?.name?.charAt(0).toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        </div>
+
         {isMobile && (
           <div className="flex border-b h-14 items-center justify-between bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
             <div className="flex items-center gap-2">
@@ -286,7 +491,7 @@ function DashboardLayoutContent({
             </div>
           </div>
         )}
-        <main className="flex-1 p-4">{children}</main>
+        <main className="flex-1">{children}</main>
       </SidebarInset>
     </>
   );

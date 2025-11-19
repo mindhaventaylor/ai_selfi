@@ -387,15 +387,15 @@ export default function ComponentsShowcase() {
             <Card>
               <CardContent className="pt-6">
                 <div className="flex flex-wrap gap-4">
-                  <Button>Default</Button>
+                  <Button className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">Default</Button>
                   <Button variant="secondary">Secondary</Button>
                   <Button variant="destructive">Destructive</Button>
                   <Button variant="outline">Outline</Button>
                   <Button variant="ghost">Ghost</Button>
                   <Button variant="link">Link</Button>
-                  <Button size="sm">Small</Button>
-                  <Button size="lg">Large</Button>
-                  <Button size="icon">
+                  <Button size="sm" className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">Small</Button>
+                  <Button size="lg" className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">Large</Button>
+                  <Button size="icon" className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">
                     <Check className="h-4 w-4" />
                   </Button>
                 </div>
@@ -911,7 +911,7 @@ export default function ComponentsShowcase() {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button>Save changes</Button>
+                    <Button className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">Save changes</Button>
                   </CardFooter>
                 </Card>
               </TabsContent>
@@ -934,7 +934,7 @@ export default function ComponentsShowcase() {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button>Save password</Button>
+                    <Button className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">Save password</Button>
                   </CardFooter>
                 </Card>
               </TabsContent>
@@ -1051,7 +1051,7 @@ export default function ComponentsShowcase() {
                         >
                           Cancel
                         </Button>
-                        <Button onClick={handleDialogSubmit}>Submit</Button>
+                        <Button onClick={handleDialogSubmit} className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">Submit</Button>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -1083,7 +1083,7 @@ export default function ComponentsShowcase() {
                         </DrawerDescription>
                       </DrawerHeader>
                       <DrawerFooter>
-                        <Button>Submit</Button>
+                        <Button className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">Submit</Button>
                         <DrawerClose asChild>
                           <Button variant="outline">Cancel</Button>
                         </DrawerClose>

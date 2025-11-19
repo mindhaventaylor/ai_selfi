@@ -188,10 +188,23 @@
   }
 }
 
+@keyframes glow-light {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(217, 70, 239, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(217, 70, 239, 0.5);
+  }
+}
+
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
 
 .animate-glow {
   animation: glow 2s ease-in-out infinite;
+}
+
+.animate-glow-light {
+  animation: glow-light 2s ease-in-out infinite;
 }

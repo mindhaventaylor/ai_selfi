@@ -10,7 +10,7 @@ export function Footer() {
       {/* CTA Section */}
       <div className="container py-16 text-center">
         <h2 className="text-3xl md:text-4xl font-bold mb-6">{t("footer.cta")}</h2>
-        <Button asChild size="lg" className="text-lg px-8 py-6">
+        <Button asChild size="lg" className="text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">
           <a href="/login">{t("hero.cta")} ✨</a>
         </Button>
       </div>

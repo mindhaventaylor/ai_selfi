@@ -52,7 +52,7 @@ export function Header() {
         <div className="flex items-center gap-4">
           {/* Auth Button */}
           {!isAuthenticated ? (
-            <Button asChild variant="default" size="sm">
+            <Button asChild variant="default" size="sm" className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">
               <a href="/login">Iniciar sessão</a>
             </Button>
           ) : (

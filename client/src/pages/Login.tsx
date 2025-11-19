@@ -179,7 +179,7 @@ export default function Login() {
             <Button
               onClick={handleSignIn}
               disabled={isSigningIn}
-              className="w-full h-12 text-base font-semibold"
+              className="w-full h-12 text-base font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light"
               size="lg"
             >
               {isSigningIn ? (

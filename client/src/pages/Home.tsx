@@ -370,7 +370,7 @@ export default function Home() {
             </div>
 
             <div className="text-center">
-              <Button asChild size="lg" className="text-lg px-8 py-6">
+              <Button asChild size="lg" className="text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">
                 <a href="/login">{t("styles.cta")} →</a>
               </Button>
             </div>
@@ -406,7 +406,7 @@ export default function Home() {
             </div>
 
             <div className="text-center">
-              <Button asChild size="lg" className="text-lg px-8 py-6">
+              <Button asChild size="lg" className="text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">
                 <a href="/login">{t("howItWorks.cta")} →</a>
               </Button>
             </div>
@@ -440,7 +440,7 @@ export default function Home() {
                   <p className="text-sm text-muted-foreground mb-6">
                     {t("pricing.plans.starter.note")}
                   </p>
-                  <Button asChild className="w-full" size="lg">
+                  <Button asChild className="w-full rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light" size="lg">
                     <a href="/login">{t("hero.cta")}</a>
                   </Button>
                 </Card>
@@ -468,7 +468,7 @@ export default function Home() {
                   <p className="text-sm text-muted-foreground mb-6">
                     {t("pricing.plans.pro.note")}
                   </p>
-                  <Button asChild className="w-full" size="lg">
+                  <Button asChild className="w-full rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light" size="lg">
                     <a href="/login">{t("hero.cta")}</a>
                   </Button>
                 </Card>
