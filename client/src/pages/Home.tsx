@@ -73,7 +73,7 @@ export default function Home() {
               >
                 <img
                   src="/image.webp"
-                  alt="Professional AI Photo"
+                  alt={t("home.altText.professionalPhoto")}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -89,7 +89,7 @@ export default function Home() {
               >
                 <img
                   src="/image_1.webp"
-                  alt="Professional AI Photo"
+                  alt={t("home.altText.professionalPhoto")}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -104,7 +104,7 @@ export default function Home() {
               >
                 <img
                   src="/image_100.jpg"
-                  alt="Professional AI Photo"
+                  alt={t("home.altText.professionalPhoto")}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -175,7 +175,7 @@ export default function Home() {
               >
                 <img
                   src="/image_10.webp"
-                  alt="Professional AI Photo"
+                  alt={t("home.altText.professionalPhoto")}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -191,7 +191,7 @@ export default function Home() {
               >
                 <img
                   src="/image_101.jpg"
-                  alt="Professional AI Photo"
+                  alt={t("home.altText.professionalPhoto")}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -225,23 +225,7 @@ export default function Home() {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {[
-                {
-                  name: "Alba Ripoll Cucó",
-                  title: "Technology and Automation Consultant",
-                  img: "/image_1.png",
-                },
-                {
-                  name: "Marta Gimenez Carrion",
-                  title: "Fundadora conmdemarketing",
-                  img: "/image_10.jpg",
-                },
-                {
-                  name: "Jorge Bosch Alés",
-                  title: "Creador de Cosas de Freelance",
-                  img: "/image_100.jpg",
-                },
-              ].map((person, idx) => (
+              {(t("home.examples", { returnObjects: true }) as Array<{ name: string; title: string; img: string }>).map((person, idx) => (
                 <AnimatedSection key={idx} delay={idx * 100}>
                   <Card className="overflow-hidden hover:shadow-xl transition-shadow">
                     <div className="aspect-square overflow-hidden">
@@ -361,7 +345,7 @@ export default function Home() {
                   <div className="aspect-[3/4] rounded-xl overflow-hidden shadow-lg">
                     <img
                       src={img}
-                      alt={`Style ${idx + 1}`}
+                      alt={`${t("home.altText.style")} ${idx + 1}`}
                       className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                     />
                   </div>

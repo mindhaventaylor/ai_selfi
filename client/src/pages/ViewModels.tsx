@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ import {
 } from "lucide-react";
 
 export default function ViewModels() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [filterStatus, setFilterStatus] = useState<"all" | "training" | "ready" | "failed">("all");
@@ -50,21 +52,21 @@ export default function ViewModels() {
         return (
           <Badge className="bg-green-500/20 text-green-400 border-green-500/50">
             <CheckCircle2 className="w-3 h-3 mr-1" />
-            Listo
+            {t("viewModels.ready")}
           </Badge>
         );
       case "training":
         return (
           <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/50">
             <Clock className="w-3 h-3 mr-1 animate-spin" />
-            Entrenando
+            {t("viewModels.training")}
           </Badge>
         );
       case "failed":
         return (
           <Badge className="bg-red-500/20 text-red-400 border-red-500/50">
             <XCircle className="w-3 h-3 mr-1" />
-            Fallido
+            {t("viewModels.failed")}
           </Badge>
         );
     }
@@ -85,11 +87,11 @@ export default function ViewModels() {
   };
 
   const handleDeleteModel = async (modelId: number) => {
-    if (confirm("¿Estás seguro de que quieres eliminar este modelo?")) {
+    if (confirm(t("viewModels.areYouSureDeleteModel"))) {
       try {
         await deleteModelMutation.mutateAsync({ modelId });
       } catch (error: any) {
-        alert(error?.message || "Error al eliminar el modelo");
+        alert(error?.message || t("viewModels.errorDeletingModel"));
       }
     }
   };
@@ -106,10 +108,10 @@ export default function ViewModels() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold mb-2">
-              Modelos Entrenados
+              {t("viewModels.title")}
             </h1>
             <p className="text-muted-foreground">
-              Gestiona y utiliza tus modelos de IA entrenados
+              {t("viewModels.subtitle")}
             </p>
           </div>
           <Button
@@ -117,7 +119,7 @@ export default function ViewModels() {
             className="bg-blue-500 hover:bg-blue-600 text-white rounded-full h-11 px-6 font-semibold shadow-lg hover:shadow-xl transition-all"
           >
             <Plus className="w-5 h-5 mr-2" />
-            Entrenar Nuevo Modelo
+            {t("viewModels.trainNewModel")}
           </Button>
         </div>
 
@@ -125,17 +127,17 @@ export default function ViewModels() {
         <div className="mb-6 flex items-center gap-4">
           <Select value={filterStatus} onValueChange={(value: typeof filterStatus) => setFilterStatus(value)}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filtrar por estado" />
+              <SelectValue placeholder={t("viewModels.filterByStatus")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos los modelos</SelectItem>
-              <SelectItem value="ready">Listos</SelectItem>
-              <SelectItem value="training">Entrenando</SelectItem>
-              <SelectItem value="failed">Fallidos</SelectItem>
+              <SelectItem value="all">{t("viewModels.allModels")}</SelectItem>
+              <SelectItem value="ready">{t("viewModels.ready")}</SelectItem>
+              <SelectItem value="training">{t("viewModels.training")}</SelectItem>
+              <SelectItem value="failed">{t("viewModels.failed")}</SelectItem>
             </SelectContent>
           </Select>
           <span className="text-sm text-muted-foreground">
-            {filteredModels.length} {filteredModels.length === 1 ? "modelo" : "modelos"}
+            {filteredModels.length} {filteredModels.length === 1 ? t("viewModels.model") : t("viewModels.models")}
           </span>
         </div>
 
@@ -144,7 +146,7 @@ export default function ViewModels() {
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center space-y-4">
               <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-              <p className="text-sm text-muted-foreground">Cargando modelos...</p>
+              <p className="text-sm text-muted-foreground">{t("viewModels.loadingModels")}</p>
             </div>
           </div>
         )}
@@ -160,13 +162,13 @@ export default function ViewModels() {
                 <div>
                   <h3 className="text-xl font-semibold mb-2">
                     {filterStatus === "all"
-                      ? "No tienes modelos entrenados"
-                      : `No hay modelos con estado "${filterStatus}"`}
+                      ? t("viewModels.noTrainedModels")
+                      : `${t("viewModels.noModelsWithStatus")} "${filterStatus}"`}
                   </h3>
                   <p className="text-sm text-muted-foreground mb-6">
                     {filterStatus === "all"
-                      ? "Comienza entrenando tu primer modelo de IA"
-                      : "Intenta con otro filtro o crea un nuevo modelo"}
+                      ? t("viewModels.startTrainingFirst")
+                      : t("viewModels.tryAnotherFilter")}
                   </p>
                   {filterStatus === "all" && (
                     <Button
@@ -174,7 +176,7 @@ export default function ViewModels() {
                       className="bg-blue-500 hover:bg-blue-600 text-white rounded-full"
                     >
                       <Plus className="w-5 h-5 mr-2" />
-                      Entrenar Primer Modelo
+                      {t("viewModels.trainFirstModel")}
                     </Button>
                   )}
                 </div>
@@ -224,7 +226,7 @@ export default function ViewModels() {
                         </p>
                       )}
                       <p className="text-xs text-muted-foreground">
-                        Creado: {formatDate(model.createdAt)}
+                        {t("viewModels.created")}: {formatDate(model.createdAt)}
                       </p>
                     </div>
 
@@ -237,7 +239,7 @@ export default function ViewModels() {
                           size="sm"
                         >
                           <Sparkles className="w-4 h-4 mr-1" />
-                          Usar Modelo
+                          {t("viewModels.useModel")}
                         </Button>
                       )}
                       {model.status === "failed" && (
@@ -248,13 +250,13 @@ export default function ViewModels() {
                           size="sm"
                         >
                           <RefreshCw className="w-4 h-4 mr-1" />
-                          Reentrenar
+                          {t("viewModels.retrain")}
                         </Button>
                       )}
                       {model.status === "training" && (
                         <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
                           <Clock className="w-4 h-4 mr-1 animate-spin" />
-                          Entrenando...
+                          {t("viewModels.training")}...
                         </div>
                       )}
                       <Button

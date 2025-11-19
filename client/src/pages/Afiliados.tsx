@@ -1,3 +1,4 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,33 +7,9 @@ import { Footer } from "@/components/Footer";
 import { Zap, Hand, Share2, DollarSign, Check } from "lucide-react";
 
 export default function Afiliados() {
-
-  const faqItems = [
-    {
-      question: "¿Cómo funciona el programa de afiliados?",
-      answer:
-        "Obtendrás un enlace único de afiliado para compartir. Cuando alguien se registre usando tu enlace y haga una compra, ganarás una comisión del 30% por cada venta que generes.",
-    },
-    {
-      question: "¿Cuándo me pagan?",
-      answer:
-        "Procesamos los pagos mensualmente para todas las comisiones ganadas en el mes anterior.",
-    },
-    {
-      question: "¿Hay un pago mínimo?",
-      answer:
-        "Sí, el pago mínimo es de $25. Una vez que alcances este umbral, procesaremos tu pago en el siguiente ciclo de pagos.",
-    },
-  ];
-
-  const benefits = [
-    "30% de comisión por cada venta que generes",
-    "Ingresos pasivos",
-    "Período de atribución de 60 días",
-    "Pagos mensuales",
-    "Páginas de destino de alta conversión",
-    "Soporte dedicado para afiliados",
-  ];
+  const { t } = useTranslation();
+  const faqItems = t("afiliados.faq", { returnObjects: true }) as Array<{ q: string; a: string }>;
+  const benefits = t("afiliados.benefits", { returnObjects: true }) as string[];
 
   return (
     <div className="min-h-screen bg-background">
@@ -48,21 +25,19 @@ export default function Afiliados() {
                 <div className="flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-purple-500/10 to-blue-500/10 backdrop-blur-sm border border-white/10 rounded-full">
                   <Zap className="w-4 h-4 mr-2 text-purple-400" />
                   <span className="text-sm font-medium text-white/90">
-                    Programa de Afiliados
+                    {t("afiliados.badge")}
                   </span>
                 </div>
               </div>
 
               {/* Title */}
               <h1 className="text-3xl font-black leading-tight tracking-tight md:text-5xl md:leading-tight mb-8">
-                Gana el 30% de Comisión por cada venta que generes
+                {t("afiliados.title")}
               </h1>
 
               {/* Description */}
               <p className="text-lg text-muted-foreground max-w-3xl mb-8">
-                Únete al programa de afiliados de AISelfi.es y comienza a generar
-                ingresos pasivos promocionando nuestra herramienta de creación de
-                fotos de perfil con IA.
+                {t("afiliados.subtitle")}
               </p>
             </div>
 
@@ -72,7 +47,7 @@ export default function Afiliados() {
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => window.open("https://aiselfies.tolt.io/", "_blank")}
             >
-              ¡Regístrate como Afiliado!
+              {t("afiliados.registerAsAffiliate")}
             </Button>
           </div>
         </div>
@@ -81,7 +56,7 @@ export default function Afiliados() {
         <div className="container mx-auto max-w-6xl p-6 py-24">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-black leading-tight tracking-tight md:text-5xl md:leading-tight mb-12">
-              Cómo Funciona
+              {t("afiliados.howItWorks")}
             </h2>
           </div>
 
@@ -90,17 +65,15 @@ export default function Afiliados() {
             <Card className="p-6 bg-gradient-to-r from-purple-500/10 to-blue-500/10 backdrop-blur-sm border border-white/10">
               <CardContent className="p-0">
                 <div className="flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-sm border border-white/20 rounded-full w-fit mb-4">
-                  <span className="text-sm font-medium text-white/90">Paso 1</span>
+                  <span className="text-sm font-medium text-white/90">{t("afiliados.step1")}</span>
                 </div>
                 <h3 className="text-2xl font-black mb-2 flex items-center gap-2">
                   <Hand className="w-6 h-6" />
-                  Regístrate
+                  {t("afiliados.step1Title")}
                 </h3>
-                <p className="text-lg mb-4">Crea tu cuenta de afiliado gratuita</p>
+                <p className="text-lg mb-4">{t("afiliados.step1Subtitle")}</p>
                 <p className="text-base text-muted-foreground">
-                  Regístrate en solo unos minutos. No se requiere tarjeta de crédito.
-                  Obtén acceso instantáneo a tu panel de afiliado y materiales de
-                  marketing.
+                  {t("afiliados.step1Desc")}
                 </p>
               </CardContent>
             </Card>
@@ -109,18 +82,17 @@ export default function Afiliados() {
             <Card className="p-6 bg-gradient-to-r from-purple-500/10 to-blue-500/10 backdrop-blur-sm border border-white/10">
               <CardContent className="p-0">
                 <div className="flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-sm border border-white/20 rounded-full w-fit mb-4">
-                  <span className="text-sm font-medium text-white/90">Paso 2</span>
+                  <span className="text-sm font-medium text-white/90">{t("afiliados.step2")}</span>
                 </div>
                 <h3 className="text-2xl font-black mb-2 flex items-center gap-2">
                   <Share2 className="w-6 h-6" />
-                  Comparte
+                  {t("afiliados.step2Title")}
                 </h3>
                 <p className="text-lg mb-4">
-                  Promociona AISelfi.es con tu enlace único
+                  {t("afiliados.step2Subtitle")}
                 </p>
                 <p className="text-base text-muted-foreground">
-                  Comparte tu enlace único de afiliado en tu blog, redes sociales o
-                  con tu red de contactos.
+                  {t("afiliados.step2Desc")}
                 </p>
               </CardContent>
             </Card>
@@ -129,18 +101,17 @@ export default function Afiliados() {
             <Card className="p-6 bg-gradient-to-r from-purple-500/10 to-blue-500/10 backdrop-blur-sm border border-white/10">
               <CardContent className="p-0">
                 <div className="flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-sm border border-white/20 rounded-full w-fit mb-4">
-                  <span className="text-sm font-medium text-white/90">Paso 3</span>
+                  <span className="text-sm font-medium text-white/90">{t("afiliados.step3")}</span>
                 </div>
                 <h3 className="text-2xl font-black mb-2 flex items-center gap-2">
                   <DollarSign className="w-6 h-6" />
-                  Gana
+                  {t("afiliados.step3Title")}
                 </h3>
                 <p className="text-lg mb-4">
-                  Obtén el 30% de comisión por cada venta que generes
+                  {t("afiliados.step3Subtitle")}
                 </p>
                 <p className="text-base text-muted-foreground">
-                  Nuestras páginas de destino de alta conversión y excelente producto
-                  garantizan grandes tasas de conversión.
+                  {t("afiliados.step3Desc")}
                 </p>
               </CardContent>
             </Card>
@@ -151,7 +122,7 @@ export default function Afiliados() {
         <div className="container mx-auto max-w-6xl p-6 py-24">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-black leading-tight tracking-tight md:text-5xl md:leading-tight mb-12">
-              ¿Por Qué Unirse a Nuestro Programa de Afiliados?
+              {t("afiliados.whyJoin")}
             </h2>
           </div>
 
@@ -169,7 +140,7 @@ export default function Afiliados() {
         <div className="container mx-auto max-w-6xl p-6 py-24">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-black leading-tight tracking-tight md:text-5xl md:leading-tight mb-12">
-              Preguntas Frecuentes
+              {t("afiliados.faqTitle")}
             </h2>
           </div>
 
@@ -191,11 +162,10 @@ export default function Afiliados() {
         <div className="container mx-auto max-w-6xl p-6 py-24">
           <div className="text-center">
             <h2 className="text-3xl font-black leading-tight tracking-tight md:text-5xl md:leading-tight mb-6">
-              ¿Listo para Empezar a Ganar?
+              {t("afiliados.readyToStart")}
             </h2>
             <p className="text-lg mb-12">
-              ¡Únete hoy a nuestro programa de afiliados y comienza a generar
-              ingresos pasivos!
+              {t("afiliados.readyToStartDesc")}
             </p>
           </div>
           <div className="py-20 text-center">
@@ -204,7 +174,7 @@ export default function Afiliados() {
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => window.open("https://aiselfies.tolt.io/", "_blank")}
             >
-              ¡Únete al Programa de Afiliados!
+              {t("afiliados.joinAffiliateProgram")}
             </Button>
           </div>
         </div>

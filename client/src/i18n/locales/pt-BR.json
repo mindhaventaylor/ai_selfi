@@ -144,7 +144,8 @@
         "a": "Sim, oferecemos garantia de reembolso total se você não estiver satisfeito com os resultados."
       }
     ],
-    "viewAll": "Ver todas as perguntas →"
+    "viewAll": "Ver todas as perguntas →",
+    "hideAll": "Ocultar todas"
   },
   "footer": {
     "cta": "Criar minhas fotos profissionais",
@@ -185,6 +186,999 @@
       "entrepreneurs": "Empreendedores",
       "aiPhotoshoot": "Sessão de Fotos com IA"
     },
-    "language": "🇬🇧 English"
+    "language": "🇬🇧 English",
+    "copyright": "© 2025 AIselfi. Todos os direitos reservados.",
+    "featuredOn": "Destaque em Fazier"
+  },
+  "header": {
+    "signIn": "Iniciar sessão",
+    "dashboard": "Dashboard",
+    "language": "Idioma"
+  },
+  "dashboard": {
+    "title": "AISelfi.es",
+    "subtitle": "Transforme suas selfies em fotos profissionais",
+    "generateImages": "Gerar Imagens →",
+    "newModelAvailable": "Novo modelo de IA disponível",
+    "moreRealisticPhotos": "Fotos mais realistas e qualidade 4k",
+    "in60Seconds": "AISelfi.es em 60\"",
+    "trainModel": "Treinar um modelo",
+    "newAIModel": "Novo modelo de IA",
+    "createCustomAI": "Crie sua IA personalizada",
+    "startTraining": "Começar Treinamento →",
+    "gallery": "Galeria",
+    "exploreCreations": "Explore criações",
+    "viewGallery": "Ver Galeria →",
+    "howItWorks": "Como funciona",
+    "learnProcess": "Aprenda o processo",
+    "moreInfo": "Mais Informações →"
+  },
+  "generateImages": {
+    "title": "Escolha suas Imagens",
+    "selectGender": "Selecionar Gênero",
+    "man": "Homem",
+    "woman": "Mulher",
+    "background": "Fundo",
+    "style": "Estilo",
+    "multipleVariations": "Múltiplas Variações",
+    "multipleVariationsDesc": "Cada imagem selecionada gerará 4 variações únicas nesse estilo. Clique nas imagens de referência favoritas para começar!",
+    "modelTrainingImages": "Imagens de Treinamento do Modelo",
+    "selectReferenceImages": "Selecione as imagens de referência para escolher o estilo de suas fotos geradas",
+    "parameters": "Parâmetros",
+    "model": "Modelo",
+    "selectModel": "Selecionar modelo",
+    "loadingModels": "Carregando modelos...",
+    "noModelsAvailable": "Não há modelos disponíveis",
+    "training": "Treinando...",
+    "failed": "Falhou",
+    "firstNeedToTrain": "Primeiro você precisa treinar um modelo",
+    "selectModelToGenerate": "Selecione um modelo para gerar imagens",
+    "modelStillTraining": "Este modelo ainda está treinando. Aguarde até terminar.",
+    "modelFailed": "Este modelo falhou. Por favor, treine um novo.",
+    "imageDimensions": "Dimensões da Imagem",
+    "aspectRatio": "Proporção da imagem",
+    "doYouWearGlasses": "Você usa óculos",
+    "no": "Não",
+    "yes": "Sim",
+    "addGlassesToImages": "Adicionar óculos às imagens geradas",
+    "hairColor": "Cor do Cabelo (opcional)",
+    "default": "Padrão",
+    "black": "Preto",
+    "brown": "Marrom",
+    "blonde": "Loiro",
+    "red": "Ruivo",
+    "chooseHairColor": "Escolha a cor do cabelo para suas imagens geradas",
+    "hairStyle": "Estilo de Cabelo (opcional)",
+    "noPreference": "Sem preferência",
+    "short": "Curto",
+    "medium": "Médio",
+    "long": "Longo",
+    "curly": "Cacheado",
+    "selectHairStyle": "Selecione um estilo de cabelo específico para as imagens geradas",
+    "generate": "Gerar",
+    "selectImagesToGenerate": "Selecione imagens para gerar",
+    "notEnoughCredits": "Você não tem créditos suficientes",
+    "needCredits": "precisa",
+    "haveCredits": "tem",
+    "selectModelFirst": "Selecione um modelo primeiro",
+    "willUseCredits": "Isso usará",
+    "credit": "crédito",
+    "credits": "créditos",
+    "professionalPhotosAlmostReady": "Suas fotos profissionais estão quase prontas",
+    "errorGeneratingImages": "Erro ao gerar imagens",
+    "progress": "Progresso",
+    "of": "de",
+    "imagesCompleted": "imagens concluídas",
+    "generatingProfessionalPhotos": "Gerando suas fotos profissionais... Por favor aguarde.",
+    "canCloseWindow": "Você pode fechar esta janela. Suas fotos aparecem na galeria",
+    "retry": "Tentar novamente",
+    "close": "Fechar",
+    "generating": "Gerando...",
+    "pleaseSelectValidModel": "Por favor selecione um modelo válido",
+    "noTrainingImagesFound": "Nenhuma imagem de treinamento encontrada para este modelo",
+    "errorGenerating": "Erro ao gerar as imagens. Por favor tente novamente."
+  },
+  "login": {
+    "loading": "Carregando...",
+    "stats": "70K+ FOTOS PROFISSIONAIS GERADAS",
+    "title": "Transforme Selfies em Fotos Profissionais",
+    "subtitle": "Cadastre-se para criar suas fotos",
+    "redirecting": "Redirecionando...",
+    "signInWithGoogle": "Entrar com Google",
+    "moneyBackGuarantee": "100% de garantia de reembolso",
+    "photosUnder30Minutes": "Suas fotos em menos de 30 minutos",
+    "foundedInEurope": "Fundado na Europa. Respeitamos sua privacidade",
+    "thousandsHappyCustomers": "Milhares de clientes satisfeitos",
+    "bootstrapped": "100% bootstrapped e financiado independentemente",
+    "termsAgreement": "Ao continuar, você concorda com nossos",
+    "termsOfService": "Termos de Serviço",
+    "and": "e",
+    "privacyPolicy": "Política de Privacidade"
+  },
+  "notFound": {
+    "title": "404",
+    "heading": "Página Não Encontrada",
+    "description": "Desculpe, a página que você está procurando não existe.",
+    "description2": "Ela pode ter sido movida ou excluída.",
+    "goHome": "Ir para Início"
+  },
+  "trainModel": {
+    "title": "Treinar Novo Modelo",
+    "uploadImages": "Envie suas imagens",
+    "uploadImagesDesc": "Envie de 1 a 5 fotos da pessoa que você deseja gerar. Essas imagens serão usadas para treinar seu modelo.",
+    "modelName": "Nome do Modelo",
+    "enterModelName": "Digite o nome do modelo",
+    "type": "Tipo",
+    "selectGender": "Selecione o gênero",
+    "male": "Homem",
+    "female": "Mulher",
+    "uploadYourImages": "Envie suas imagens",
+    "orDragAndDrop": "ou arraste e solte. JPG ou PNG até 3MB cada",
+    "minMaxImages": "Mínimo 1 imagem, máximo 5 imagens",
+    "previewImages": "Visualizar Imagens",
+    "needTrainingCredits": "Você precisa de créditos de treinamento para enviar imagens.",
+    "buyCredits": "Comprar Créditos",
+    "uploadImagesButton": "Enviar Imagens",
+    "availableTrainingCredits": "Créditos de treinamento disponíveis",
+    "tipsForBestResults": "Dicas para obter os melhores resultados",
+    "goodPhotos": "Fotos Boas",
+    "recentPhotos": "Fotos recentes dos últimos 2 anos",
+    "mixCloseupsFullBody": "Mistura de close-ups e fotos de corpo inteiro",
+    "preferablyHighQuality": "Preferencialmente fotos de alta qualidade",
+    "varietyAnglesExpressions": "Variedade de ângulos, expressões e roupas",
+    "onlyOnePerson": "Apenas uma pessoa na foto",
+    "tipSelectGoodPhotos": "DICA: Selecione fotos onde você está BEM",
+    "badPhotos": "Fotos Ruins",
+    "screenshotsZoomInstagram": "Capturas de tela do Zoom, Instagram ou Facebook",
+    "badLightBlurry": "Má iluminação, desfocadas, pixeladas, baixa qualidade, fora de foco ou com muita maquiagem",
+    "groupPhotosOthers": "Fotos em grupo, outras pessoas ou animais de estimação",
+    "funnyExpressions": "Expressões engraçadas",
+    "veryOldPhotos": "Fotos muito antigas que não te representam mais",
+    "subjectCutOff": "Assunto cortado ou não totalmente visível",
+    "accessoriesGlasses": "Usar acessórios como óculos, chapéus ou máscaras",
+    "busyBackgrounds": "Fundos ocupados ou cenas com padrões",
+    "photosFromFarAway": "Fotos tiradas de muito longe",
+    "tipDontSelectBadPhotos": "DICA: NÃO selecione fotos onde você está MAL",
+    "uploadSuccess": "Upload Bem-sucedido! 👏",
+    "imagesUploadedSuccessfully": "Suas imagens foram enviadas com sucesso e seu modelo está sendo treinado. Você pode começar a criar suas fotos agora mesmo!",
+    "close": "Fechar",
+    "createMyPhotos": "Criar Minhas Fotos",
+    "onlyJpgPng": "Apenas arquivos JPG ou PNG são permitidos",
+    "fileTooLarge": "O arquivo é muito grande. Máximo 3MB por imagem.",
+    "pleaseEnterModelName": "Por favor digite um nome para o modelo",
+    "pleaseSelectGender": "Por favor selecione o gênero",
+    "pleaseUploadAtLeastOne": "Por favor envie pelo menos uma imagem",
+    "max5Images": "Máximo de 5 imagens permitidas",
+    "errorUploadingImage": "Erro ao enviar a imagem",
+    "errorCreatingSignedUrl": "Erro ao criar URL assinada",
+    "couldNotUploadImages": "Não foi possível enviar as imagens",
+    "errorUploadingModel": "Erro ao enviar o modelo. Por favor tente novamente."
+  },
+  "gallery": {
+    "title": "Sua Galeria",
+    "sortBy": "Ordenar por:",
+    "newest": "Mais recentes",
+    "favourites": "Favoritos",
+    "cancel": "Cancelar",
+    "select": "Selecionar",
+    "delete": "Excluir",
+    "download": "Baixar",
+    "loadingGallery": "Carregando galeria...",
+    "showing": "Mostrando",
+    "of": "de",
+    "images": "imagens",
+    "noImagesFound": "Nenhuma imagem encontrada em sua galeria.",
+    "startCreatingImages": "Comece a criar imagens para vê-las aqui.",
+    "areYouSureDeleteOne": "Tem certeza de que deseja excluir esta foto?",
+    "areYouSureDeleteMany": "Tem certeza de que deseja excluir"
+  },
+  "viewModels": {
+    "title": "Modelos Treinados",
+    "subtitle": "Gerencie e use seus modelos de IA treinados",
+    "trainNewModel": "Treinar Novo Modelo",
+    "filterByStatus": "Filtrar por status",
+    "allModels": "Todos os modelos",
+    "ready": "Pronto",
+    "training": "Treinando",
+    "failed": "Falhou",
+    "model": "modelo",
+    "models": "modelos",
+    "loadingModels": "Carregando modelos...",
+    "noTrainedModels": "Você não tem modelos treinados",
+    "noModelsWithStatus": "Não há modelos com status",
+    "startTrainingFirst": "Comece treinando seu primeiro modelo de IA",
+    "tryAnotherFilter": "Tente com outro filtro ou crie um novo modelo",
+    "trainFirstModel": "Treinar Primeiro Modelo",
+    "created": "Criado",
+    "useModel": "Usar Modelo",
+    "retrain": "Retreinar",
+    "areYouSureDeleteModel": "Tem certeza de que deseja excluir este modelo?",
+    "errorDeletingModel": "Erro ao excluir o modelo"
+  },
+  "buyCredits": {
+    "title": "Créditos",
+    "subtitle": "Compre créditos para criar suas fotos com IA.",
+    "starterFeatures": [
+      "Criar 1 Modelo de IA",
+      "40 fotos",
+      "Escolher Estilos e Roupas",
+      "Imagens em Resolução 2K"
+    ],
+    "proFeatures": [
+      "Criar 1 Modelo de IA",
+      "100 fotos",
+      "Imagens em Alta Resolução 4K",
+      "Escolher Estilos e Roupas",
+      "Estilos Premium"
+    ],
+    "proCreditsFeatures": [
+      "Texto para Imagem",
+      "Edição de Fundo",
+      "Transferência de Estilo",
+      "Miniaturas do YouTube",
+      "e mais"
+    ],
+    "premiumFeatures": [
+      "Criar 2 Modelos de IA",
+      "150 fotos",
+      "Imagens em Alta Resolução 4K",
+      "Escolher Estilos e Roupas",
+      "Estilos Premium",
+      "Suporte premium",
+      "Acesso antecipado a novos recursos"
+    ],
+    "premiumCreditsFeatures": [
+      "Texto para Imagem",
+      "Edição de Fundo",
+      "Transferência de Estilo",
+      "Miniaturas do YouTube",
+      "e mais"
+    ],
+    "giftCards": "Gift Cards",
+    "giftCardsDesc": "Presenteie selfies de IA para amigos e familiares.",
+    "buyGiftCards": "Comprar Gift Cards",
+    "forBusinesses": "Para Empresas",
+    "forBusinessesDesc": "Fotos profissionais de IA para equipes e empresas",
+    "buy": "Comprar",
+    "starterPack": "Starter Pack",
+    "starterCredits": "40 créditos",
+    "proPack": "Pro Pack",
+    "proCredits": "100 créditos",
+    "premiumPack": "Premium Pack",
+    "premiumCredits": "150 créditos",
+    "mostPopular": "Mais Popular",
+    "proCreditsLabel": "40 CRÉDITOS PRO",
+    "premiumCreditsLabel": "60 CRÉDITOS PRO",
+    "oneTimePayment": "Pagamento único. Sem assinatura.",
+    "refundable": "100% reembolsável",
+    "faqTitle": "Perguntas Frequentes",
+    "faq": [
+      {
+        "q": "Os créditos expiram?",
+        "a": "Não, os créditos não expiram. No entanto, o modelo de IA que você treinou expira após 30 dias. Você deve usar seus créditos dentro desse tempo."
+      },
+      {
+        "q": "Que estilo de fotos receberei?",
+        "a": "Depois que seu modelo de IA estiver treinado, você poderá selecionar diferentes estilos na aba Criar. Cada vez que você gerar uma foto em um estilo selecionado, receberá 4 variantes diferentes nesse estilo. Isso permite que você experimente vários looks e escolha seus favoritos."
+      },
+      {
+        "q": "Quanto tempo leva para gerar fotos?",
+        "a": "O processo acontece em duas etapas: Primeiro, treinamos seu modelo de IA, o que leva 15-30 minutos. Depois disso, você pode gerar fotos a qualquer momento, e cada geração leva apenas 1-2 minutos para criar 4 variantes."
+      },
+      {
+        "q": "Vocês oferecem reembolso?",
+        "a": "Sim, oferecemos uma garantia de reembolso de 100% se você não estiver satisfeito com a qualidade de suas fotos. Você pode solicitar um reembolso completo nos primeiros 7 dias após sua compra."
+      },
+      {
+        "q": "Quais métodos de pagamento vocês aceitam?",
+        "a": "Processamos todas as transações usando Stripe. Você pode pagar com cartão de crédito, PayPal, Apple Pay, Google Pay e mais."
+      },
+      {
+        "q": "Como garantir a qualidade das minhas fotos?",
+        "a": "Antes de treinar um modelo, recomendamos ler nosso guia. Dessa forma, você garantirá que as fotos geradas sejam da melhor qualidade possível."
+      },
+      {
+        "q": "Quem pode usar minhas fotos e e a privacidade?",
+        "a": "Suas fotos são exclusivamente suas. Priorizamos sua privacidade e excluímos automaticamente todas as fotos geradas de nosso banco de dados após 30 dias. As fotos que você gerar são para seu uso pessoal e não serão compartilhadas ou acessíveis a mais ninguém."
+      },
+      {
+        "q": "E se as fotos geradas não se parecerem comigo?",
+        "a": "Se você seguir nossas instruções para selecionar as imagens de treinamento, deve obter cerca de 80% de fotos utilizáveis que se pareçam com você. Atualizamos continuamente nossos modelos para melhorar a precisão. Se tiver dúvidas antes de começar, não hesite em nos contatar para orientação."
+      },
+      {
+        "q": "A IA aprenderá minhas características únicas?",
+        "a": "Sim, nossa IA é excelente para entender e replicar o que torna você único. Você também pode ajustar características específicas ao gerar imagens, como se você usa óculos ou outras características distintivas."
+      },
+      {
+        "q": "Onde posso usar essas fotos?",
+        "a": "As fotos são versáteis e podem ser usadas em qualquer lugar onde você precise de uma imagem profissional sua. São perfeitas para fotos de perfil profissional (LinkedIn, sites de empresas), redes sociais (Instagram, Facebook, Twitter) ou marca pessoal. Você pode escolher diferentes dimensões como formato quadrado para fotos de perfil ou modo retrato para histórias do Instagram e outros designs verticais."
+      }
+    ]
+  },
+  "models": {
+    "title": "Modelos",
+    "trainNewModel": "Treinar Novo Modelo",
+    "trainNewModelDesc": "Comece treinando seu primeiro modelo",
+    "trainModel": "Treinar Modelo",
+    "viewTrainedModels": "Ver Modelos Treinados",
+    "viewTrainedModelsDesc": "Verifique o status de seus modelos treinados ou ajuste suas imagens",
+    "viewModels": "Ver Modelos"
+  },
+  "dashboardLayout": {
+    "startHere": "Começar Aqui",
+    "models": "Modelos",
+    "create": "Criar",
+    "gallery": "Galeria",
+    "proFeatures": "Recursos PRO",
+    "credits": "Créditos",
+    "buyCredits": "Comprar Créditos",
+    "giftCards": "Gift Cards",
+    "businesses": "Empresas",
+    "coupons": "Cupons",
+    "settings": "Configurações",
+    "general": "Geral",
+    "support": "Suporte",
+    "reportBug": "Reportar Bug",
+    "suggestFeature": "Sugerir Recurso",
+    "whatsapp": "WhatsApp",
+    "reviews": "Avaliações",
+    "affiliates": "Afiliados",
+    "pleaseSignIn": "Por favor, faça login para continuar",
+    "signIn": "Entrar",
+    "creditsLabel": "Créditos",
+    "spanish": "Español",
+    "portuguese": "Português",
+    "english": "English",
+    "italian": "Italiano"
+  },
+  "oauthCallback": {
+    "authenticationError": "Erro de Autenticação",
+    "returnToLogin": "Voltar ao Login",
+    "completingSignIn": "Completando login...",
+    "noSessionFound": "Nenhuma sessão encontrada. Por favor, tente fazer login novamente.",
+    "failedToSyncSession": "Falha ao sincronizar sessão",
+    "networkError": "Erro de rede: Não foi possível conectar ao servidor. Por favor, certifique-se de que o servidor está em execução e tente novamente.",
+    "databaseError": "Erro de conexão com o banco de dados: Não foi possível conectar ao banco de dados do Supabase. Por favor, verifique DATABASE_URL em seu arquivo .env e certifique-se de que está configurado corretamente.",
+    "apiKeyError": "Erro de configuração do servidor: Chave API do Supabase inválida. Por favor, verifique SUPABASE_SERVICE_ROLE_KEY em seu arquivo .env.",
+    "tokenError": "Falha na autenticação: Não foi possível verificar sua sessão. Por favor, tente fazer login novamente."
+  },
+  "startHere": {
+    "title": "Comece Aqui: Aprenda como funciona o AISelfi.es",
+    "subtitle": "Se esta é sua primeira vez aqui, sugiro assistir ao seguinte vídeo curto para aprender como o aplicativo funciona.",
+    "aiselfies": "AISelfies",
+    "convertSelfiesToProfessional": "Transforme seus selfies em fotos profissionais",
+    "generateImages": "Gerar Imagens →",
+    "aiselfiIn60Seconds": "AISelfi.es em menos de 60'",
+    "explainHowAppWorks": "Explique como o aplicativo funciona em menos de 60 segundos",
+    "videoPlaceholder": "Espaço reservado para vídeo",
+    "videoWillPlayHere": "O vídeo será reproduzido aqui",
+    "howItWorks": "Como funciona",
+    "learnProcess": "Aprenda o processo",
+    "content": "Conteúdo",
+    "step1": "Passo 1: Comprar Créditos",
+    "step2": "Passo 2: Treinar um Modelo de IA - Dicas para Melhores Resultados",
+    "step3": "Passo 3: Criando Suas Fotos",
+    "step4": "Passo 4: Galeria - Suas Fotos",
+    "step1Title": "Passo 1: Comprar Créditos",
+    "step1Desc": "Escolha entre nossos pacotes de pagamento único. Cada pacote inclui créditos tanto para treinar modelos de IA quanto para gerar fotos.",
+    "step1Desc2": "Selecione o pacote que melhor se adapta às suas necessidades.",
+    "step1Includes": "Cada pacote inclui:",
+    "step1Includes1": "Créditos para treinar modelos de IA (1 ou 5 - dependendo do pacote escolhido)",
+    "step1Includes2": "Créditos para gerar fotos (1 crédito = 1 foto) [estes são os créditos que você vê em seu perfil]",
+    "step1Notes": "Notas importantes:",
+    "step1Notes1": "Todos os pacotes são de pagamento único - sem assinaturas",
+    "step1Notes2": "Os créditos nunca expiram",
+    "step1Notes3": "Para sua privacidade e proteção de dados, os modelos de IA treinados expiram automaticamente após 30 dias.",
+    "buyCredits": "Comprar Créditos →",
+    "step2Title": "Passo 2: Treinar um Modelo de IA - Dicas para Melhores Resultados",
+    "step2Subtitle": "Dicas e erros a evitar ao treinar seu modelo de IA. Quais fotos escolher para treinar seu modelo.",
+    "goodPhotosForTraining": "Boa fotos para treinamento:",
+    "goodPhoto1": "Fotos claras e bem iluminadas do seu rosto",
+    "goodPhoto2": "Fotos tiradas de diferentes ângulos",
+    "goodPhoto3": "Expressões naturais",
+    "goodPhoto4": "Diferentes condições de iluminação",
+    "goodPhoto5": "Fundos simples, sem distrações",
+    "goodPhoto6": "Imagens de alta qualidade e nitidez",
+    "goodPhoto7": "Close-ups que mostram claramente seu rosto",
+    "photosToAvoid": "Fotos a evitar:",
+    "badPhoto1": "Fotos em grupo",
+    "badPhoto2": "Fotos desfocadas ou de baixa qualidade",
+    "badPhoto3": "Fotos com filtros ou edições pesadas",
+    "badPhoto4": "Fotos com óculos de sol",
+    "badPhoto5": "Fotos com objetos que cobrem o rosto",
+    "badPhoto6": "Selfies extremos ou distorcidos",
+    "badPhoto7": "Fotos com maquiagem excessiva",
+    "badPhoto8": "Fotos muito antigas ou de baixa resolução",
+    "forBestResults": "Para melhores resultados:",
+    "bestResult1": "Envie 10-20 fotos de qualidade",
+    "bestResult2": "Certifique-se de que seu rosto esteja claramente visível",
+    "bestResult3": "Varie expressões e ângulos",
+    "bestResult4": "Use fotos recentes que o representem bem",
+    "bestResult5": "Evite fotos muito semelhantes entre si",
+    "trainYourAIModel": "Treinar Seu Modelo de IA →",
+    "step3Title": "Passo 3: Criando Suas Fotos",
+    "step3Subtitle": "Aprenda como criar fotos incríveis com IA.",
+    "step3Desc": "Assista ao vídeo acima para aprender como criar suas fotos com IA.",
+    "howToCreatePhotos": "Como criar fotos:",
+    "createPhoto1": "Vá para a seção Criar",
+    "createPhoto2": "Escolha seu gênero (masculino/feminino)",
+    "createPhoto3": "Use filtros para encontrar estilos que você goste",
+    "createPhoto4": "Clique nos estilos que deseja replicar (cada estilo selecionado cria 4 variantes)",
+    "chooseParameters": "Escolha os parâmetros:",
+    "param1": "Proporção da imagem (1:1 ou 9:16)",
+    "param2": "Usar óculos (opcional)",
+    "param3": "Cor do cabelo (opcional)",
+    "param4": "Estilo do cabelo (opcional)",
+    "tipsForBestResults": "Dicas para melhores resultados:",
+    "tip1": "Comece com uma foto de teste sem parâmetros",
+    "tip2": "Se os resultados precisarem de ajustes, modifique os parâmetros",
+    "tip3": "Experimente diferentes categorias de estilo",
+    "tip4": "Experimente vários looks",
+    "tip5": "Gere múltiplos conjuntos",
+    "importantNotes": "Notas importantes:",
+    "note1": "Cada foto selecionada usará 4 créditos (4 fotos são criadas por estilo selecionado)",
+    "note2": "Você pode gerar quantas fotos tiver créditos",
+    "note3": "As fotos estarão disponíveis na Galeria 1-2 minutos após a confirmação",
+    "note4": "As fotos são automaticamente salvas em sua galeria",
+    "createYourPhotosWithAI": "Criar Suas Fotos com IA →",
+    "step4Title": "Passo 4: Galeria - Suas Fotos",
+    "step4Subtitle": "Sua galeria é onde todas as suas fotos geradas são automaticamente salvas",
+    "whatYouCanDo": "O que você pode fazer na galeria:",
+    "galleryFeature1": "Explorar todas as suas fotos geradas",
+    "galleryFeature2": "Ver fotos em tela cheia",
+    "galleryFeature3": "Fazer zoom para ver detalhes",
+    "galleryFeature4": "Marcar e salvar favoritos",
+    "galleryFeature5": "Baixar fotos em alta qualidade",
+    "galleryFeature6": "Excluir fotos indesejadas",
+    "galleryFeature7": "Filtrar por data de criação",
+    "galleryFeature8": "Ordenar por diferentes critérios",
+    "tipsToOrganize": "Dicas para organizar suas fotos:",
+    "organizeTip1": "Marque seus favoritos para acesso rápido",
+    "organizeTip2": "Use o filtro de favoritos para ver apenas as melhores",
+    "organizeTip3": "Baixe as fotos de que mais gosta",
+    "organizeTip4": "Exclua fotos que não precisa para liberar espaço",
+    "importantInfo": "Informação importante:",
+    "importantInfoText": "Todas as suas fotos são privadas e apenas você pode acessá-las. As fotos permanecem em sua galeria até que você as exclua.",
+    "viewYourGallery": "Ver Sua Galeria →"
+  },
+  "supportGeneral": {
+    "title": "Centro de Suporte",
+    "contactUs": "Entre em Contato",
+    "contactUsDesc": "Precisa de ajuda? Nossa equipe de suporte está aqui para ajudá-lo.",
+    "email": "hola@aiselfi.es",
+    "faq": "Perguntas Frequentes",
+    "howDoIStart": "Como começo?",
+    "howDoIStartAnswer": "Cadastre-se para obter uma conta e siga nosso guia de início rápido para começar a usar nossos serviços.",
+    "whatPaymentMethods": "Quais métodos de pagamento vocês aceitam?",
+    "whatPaymentMethodsAnswer": "Aceitamos todos os principais cartões de crédito e PayPal",
+    "documentation": "Documentação",
+    "documentationDesc": "Explore nossa documentação completa para obter guias e tutoriais detalhados.",
+    "viewTutorial": "Ver Tutorial"
+  },
+  "settingsGeneral": {
+    "title": "Configurações",
+    "language": "Idioma",
+    "languageDesc": "Escolha seu idioma preferido",
+    "spanish": "Español",
+    "portuguese": "Português",
+    "english": "English",
+    "account": "Conta",
+    "accountDesc": "Gerencie sua conta e sessão",
+    "signOut": "Sair"
+  },
+  "pro": {
+    "title": "Recursos Pro",
+    "subtitle": "Acesse recursos PRO - exclusivos para pacotes Pro e Premium.",
+    "textToImage": "Texto para Imagem",
+    "textToImageDesc": "Gere imagens usando prompts",
+    "generateImages": "Gerar Imagens",
+    "backgroundRemoval": "Remoção de Fundo",
+    "backgroundRemovalDesc": "Remova o fundo e personalize sua foto",
+    "removeBackgrounds": "Remover Fundos",
+    "styleTransfer": "Transferência de Estilo",
+    "styleTransferDesc": "Envie uma imagem para copiar seu estilo usando seu modelo de IA.",
+    "tryStyleTransfer": "Experimentar Transferência de Estilo",
+    "imageRestoration": "Restauração de Imagens",
+    "imageRestorationDesc": "Restaure e melhore fotos antigas ou danificadas com IA",
+    "restoreImages": "Restaurar Imagens",
+    "youtubeThumbnails": "Miniaturas do YouTube",
+    "youtubeThumbnailsDesc": "Crie miniaturas atraentes para seus vídeos do YouTube com IA",
+    "proSubscriptionRequired": "Assinatura Pro necessária",
+    "imageUpscaling": "Ampliação de Imagem",
+    "imageUpscalingDesc": "Melhore a resolução da imagem até 4x com IA",
+    "comingSoon": "Em Breve"
+  },
+  "afiliados": {
+    "title": "Ganhe 30% de Comissão por cada venda que você gerar",
+    "subtitle": "Junte-se ao programa de afiliados do AISelfi.es e comece a gerar renda passiva promovendo nossa ferramenta de criação de fotos de perfil com IA.",
+    "badge": "Programa de Afiliados",
+    "registerAsAffiliate": "Registre-se como Afiliado!",
+    "howItWorks": "Como Funciona",
+    "step1": "Passo 1",
+    "step1Title": "Registre-se",
+    "step1Subtitle": "Crie sua conta de afiliado gratuita",
+    "step1Desc": "Registre-se em apenas alguns minutos. Não é necessário cartão de crédito. Obtenha acesso instantâneo ao seu painel de afiliado e materiais de marketing.",
+    "step2": "Passo 2",
+    "step2Title": "Compartilhe",
+    "step2Subtitle": "Promova AISelfi.es com seu link único",
+    "step2Desc": "Compartilhe seu link único de afiliado em seu blog, redes sociais ou com sua rede de contatos.",
+    "step3": "Passo 3",
+    "step3Title": "Ganhe",
+    "step3Subtitle": "Obtenha 30% de comissão por cada venda que você gerar",
+    "step3Desc": "Nossas páginas de destino de alta conversão e excelente produto garantem grandes taxas de conversão.",
+    "whyJoin": "Por Que Se Juntar ao Nosso Programa de Afiliados?",
+    "benefits": [
+      "30% de comissão por cada venda que você gerar",
+      "Renda passiva",
+      "Período de atribuição de 60 dias",
+      "Pagamentos mensais",
+      "Páginas de destino de alta conversão",
+      "Suporte dedicado para afiliados"
+    ],
+    "faqTitle": "Perguntas Frequentes",
+    "faq": [
+      {
+        "q": "Como funciona o programa de afiliados?",
+        "a": "Você receberá um link único de afiliado para compartilhar. Quando alguém se registrar usando seu link e fizer uma compra, você ganhará uma comissão de 30% em cada venda que gerar."
+      },
+      {
+        "q": "Quando recebo o pagamento?",
+        "a": "Processamos os pagamentos mensalmente para todas as comissões ganhas no mês anterior."
+      },
+      {
+        "q": "Há um pagamento mínimo?",
+        "a": "Sim, o pagamento mínimo é de $25. Uma vez que você atinja esse limite, processaremos seu pagamento no próximo ciclo de pagamentos."
+      }
+    ],
+    "readyToStart": "Pronto para Começar a Ganhar?",
+    "readyToStartDesc": "Junte-se hoje ao nosso programa de afiliados e comece a gerar renda passiva!",
+    "joinAffiliateProgram": "Junte-se ao Programa de Afiliados!"
+  },
+  "coupons": {
+    "title": "Resgatar Cupom",
+    "subtitle": "Digite seu código de cupom abaixo para resgatá-lo.",
+    "couponCode": "Código do Cupom",
+    "enterCode": "Digite o código",
+    "redeeming": "Resgatando...",
+    "redeemCoupon": "Resgatar Cupom",
+    "pleaseEnterCode": "Por favor, digite um código de cupom",
+    "invalidCode": "Código de cupom inválido."
+  },
+  "empresas": {
+    "title": "Planos Empresariais",
+    "subtitle": "Fotos profissionais de IA para equipes e empresas (mínimo 5 pessoas)",
+    "businessPlan": "Plano Empresarial",
+    "creditsPerPerson": "40 créditos por pessoa",
+    "perPerson": "por pessoa",
+    "features": [
+      "Criar 1 Modelo de IA",
+      "40 créditos",
+      "40 fotos",
+      "Escolher 10 Estilos e Roupas",
+      "Suporte premium"
+    ],
+    "buyCredits": "Comprar Créditos",
+    "oneTimePayment": "Pagamento único. Sem assinatura.",
+    "refundable": "100% reembolsável",
+    "needCustomQuote": "Precisa de uma Cotação Personalizada?",
+    "needCustomQuoteDesc": "Para pedidos grandes, pacotes de equipe ou requisitos personalizados, entre em contato conosco.",
+    "contactEmail": "hola@aiselfi.es"
+  },
+  "giftCards": {
+    "title": "Gift Cards",
+    "subtitle": "Presenteie AISelfi.es para amigos e familiares.",
+    "buyGiftCard": "Comprar Gift Card",
+    "faqTitle": "Perguntas Frequentes",
+    "faq": [
+      {
+        "q": "Como funcionam os gift cards?",
+        "a": "Quando você compra um gift card, receberá um código único que pode compartilhar com qualquer pessoa. O destinatário pode usar este código durante o checkout para resgatar o valor completo do pacote do gift card."
+      },
+      {
+        "q": "Os gift cards podem ser usados várias vezes?",
+        "a": "Não, cada código de gift card só pode ser usado uma vez. O valor completo do pacote será aplicado quando o código for resgatado."
+      },
+      {
+        "q": "Os gift cards expiram?",
+        "a": "Não, nossos gift cards nunca expiram. O destinatário pode usá-los quando estiver pronto para criar suas fotos geradas por IA."
+      },
+      {
+        "q": "E se eu comprar o pacote errado?",
+        "a": "Cada gift card é específico para o pacote comprado (Starter, Pro ou Premium). O destinatário receberá exatamente o que está incluído nesse pacote."
+      },
+      {
+        "q": "Como receberei o gift card?",
+        "a": "Após o pagamento bem-sucedido, você será redirecionado para uma página de confirmação que exibe seu código único de gift card. Você pode copiar este código e compartilhá-lo com o destinatário."
+      },
+      {
+        "q": "Que estilo de fotos receberei?",
+        "a": "Depois que seu modelo de IA estiver treinado, você poderá selecionar diferentes estilos na aba Criar. Cada vez que você gerar uma foto em um estilo selecionado, receberá 4 variantes diferentes nesse estilo. Isso permite que você experimente vários looks e escolha seus favoritos."
+      },
+      {
+        "q": "Quanto tempo leva para gerar fotos?",
+        "a": "O processo acontece em duas etapas: Primeiro, treinamos seu modelo de IA, o que leva 15-25 minutos. Depois disso, você pode gerar fotos a qualquer momento, e cada geração leva apenas 1-2 minutos para criar 4 variantes."
+      },
+      {
+        "q": "Vocês oferecem reembolso?",
+        "a": "Sim, oferecemos uma garantia de reembolso de 100% se você não estiver satisfeito com a qualidade de suas fotos. Você pode solicitar um reembolso completo nos primeiros 7 dias após sua compra."
+      },
+      {
+        "q": "Quais métodos de pagamento vocês aceitam?",
+        "a": "Processamos todas as transações usando Stripe. Você pode pagar com cartão de crédito, PayPal, Apple Pay, Google Pay e mais."
+      },
+      {
+        "q": "Como garantir a qualidade das minhas fotos?",
+        "a": "Antes de treinar um modelo, recomendamos ler nosso guia. Dessa forma, você garantirá que as fotos geradas sejam da melhor qualidade possível."
+      },
+      {
+        "q": "Quem pode usar minhas fotos e e a privacidade?",
+        "a": "Suas fotos são exclusivamente suas. Priorizamos sua privacidade e excluímos automaticamente todas as fotos geradas de nosso banco de dados após 30 dias. As fotos que você gerar são para seu uso pessoal e não serão compartilhadas ou acessíveis a mais ninguém."
+      },
+      {
+        "q": "E se as fotos geradas não se parecerem comigo?",
+        "a": "Se você seguir nossas instruções para selecionar as imagens de treinamento, deve obter cerca de 80% de fotos utilizáveis que se pareçam com você. Atualizamos continuamente nossos modelos para melhorar a precisão. Se tiver dúvidas antes de começar, não hesite em nos contatar para orientação."
+      },
+      {
+        "q": "A IA aprenderá minhas características únicas?",
+        "a": "Sim, nossa IA é excelente para entender e replicar o que torna você único. Você também pode ajustar características específicas ao gerar imagens, como se você usa óculos ou outras características distintivas."
+      },
+      {
+        "q": "Onde posso usar essas fotos?",
+        "a": "As fotos são versáteis e podem ser usadas em qualquer lugar onde você precise de uma imagem profissional sua. São perfeitas para fotos de perfil profissional (LinkedIn, sites de empresas), redes sociais (Instagram, Facebook, Twitter) ou marca pessoal. Você pode escolher diferentes dimensões como formato quadrado para fotos de perfil ou modo retrato para histórias do Instagram e outros designs verticais."
+      }
+    ]
+  },
+  "supportReportBug": {
+    "title": "Reportar um Bug",
+    "comingSoon": "Formulário de relatório de bugs em breve..."
+  },
+  "supportSuggestFeature": {
+    "title": "Sugerir um Recurso",
+    "comingSoon": "Formulário de sugestões em breve..."
+  },
+  "supportWhatsApp": {
+    "redirecting": "Redirecionando para WhatsApp...",
+    "notRedirected": "Se você não for redirecionado automaticamente,",
+    "clickHere": "clique aqui"
+  },
+  "supportReviews": {
+    "leaveReview": "Deixar uma Avaliação",
+    "weWouldLove": "Adoraríamos saber sua experiência com AISelfies!",
+    "doYouEnjoy": "Você gosta de usar aiselfi.es?",
+    "howWouldYouRate": "Em uma escala de 1 a 5, como você nos classificaria?",
+    "continue": "Continuar",
+    "whatUsersSay": "O Que os Usuários Dizem",
+    "readCommunity": "Leia o que nossa comunidade diz sobre AISelfies",
+    "readMore": "Ler mais",
+    "seeMore": "Ver mais",
+    "reviews": [
+      {
+        "name": "Marta Giménez Carrión",
+        "title": "Fundadora conmdemarketing",
+        "review": "40 fotacas profesionales por 30 euros. Pues ¿Qué quieres que te diga?... ¡Es una pasada! Ideal para quien empieza con su marca y no puede pagar una sesión profesional que cuesta por encima de los 250€....",
+        "date": "Oct 8, 2025"
+      },
+      {
+        "name": "Alba Ripoll Cucó",
+        "title": "Technology and Automation Co...",
+        "review": "Fotos nuevas en 15 minutos. Hace un tiempo probé una IA para generar fotos profesionales, pero el resultado me pareció poco natural para mi estilo. Gracias a Laura Pérez Hoyos y Jorge Bosch...",
+        "date": "May 22, 2025"
+      },
+      {
+        "name": "Jorge Bosch Alés",
+        "title": "Creador de Cosas de Freelance",
+        "review": "He renovado todas mis fotos en 15 minutos. 4 pasos para que tú puedes hacerlo 1 Selecciona 10 - 20 fotos Que sean de calidad y donde salgas...",
+        "date": "Mar 18, 2025"
+      },
+      {
+        "name": "Faby U",
+        "title": "CEO @BizGrow Growth Partner",
+        "review": "No solo me encantó — me sacó una sonrisa de oreja a oreja. Fue rápido, y el nivel de detalle... ¡Una locura! Hasta las uñas rosadas me dejó perfectas 💅 Real. Profesional. MIL GRACIAS!",
+        "date": "Apr 25, 2025"
+      },
+      {
+        "name": "Andres Montano",
+        "title": "Marketing Expert",
+        "review": "Subí un par de fotos para alimentar al modelo (realmente me costó encontrar fotos mías) y, para mi sorpresa, en unos minutos ya tenía una galería de fotos que parecían hechas en estudio. Nada de filtros exagerados. Solo una versión...",
+        "date": "Jul 29, 2025"
+      },
+      {
+        "name": "Andrea P.",
+        "title": "I Help you land a job at Big Tec...",
+        "review": "Hoy en día no hay excusas para tener una foto poco profesional. Y es que yo misma acabo de crear 40 fotos mías en solo 10 minutos. Todo ello gracias aiselfi, una herramienta de inteligencia artificial que crea fotos...",
+        "date": "Apr 25, 2025"
+      },
+      {
+        "name": "Pamela Salas",
+        "title": "Te ayudo a encontrar trabajo al...",
+        "review": "mi foto es de aiselfi.es y wow con lo real",
+        "date": "Oct 6, 2025"
+      },
+      {
+        "name": "Ingrid Mora Rodríguez",
+        "title": "Transformo Culturas",
+        "review": "Totalmente recomendado: Por el resultado, por la atención y por la experiencia de sentir que detrás de cada proceso digital, todavía hay personas que hacen la diferencia. Hace 5 meses, cuando decidí transformar mi...",
+        "date": "Apr 25, 2025"
+      },
+      {
+        "name": "Samuel Tavira",
+        "title": "",
+        "review": "La calidad de las fotos es estupenda, muy contento. Utilizo estas fotos para perfil profesional de redes. Incluso he recibido comentarios positivos sobre ellas. Gracias!",
+        "date": "Nov 5, 2025"
+      }
+    ]
+  },
+  "privacy": {
+    "title": "Política de Privacidade",
+    "section1": {
+      "title": "1. Informações que Coletamos",
+      "description": "Coletamos as seguintes informações quando você usa o AISelfi:",
+      "items": [
+        "Informações de conta: nome, e-mail e método de login",
+        "Fotos enviadas: selfies que você fornece para processamento",
+        "Dados de pagamento: processados de forma segura por nossos parceiros",
+        "Dados de uso: como você interage com nossa plataforma"
+      ]
+    },
+    "section2": {
+      "title": "2. Como Usamos Suas Informações",
+      "description": "Utilizamos suas informações para:",
+      "items": [
+        "Processar suas fotos usando nossa tecnologia de IA",
+        "Gerenciar sua conta e fornecer suporte ao cliente",
+        "Processar pagamentos e prevenir fraudes",
+        "Melhorar nossos serviços e desenvolver novos recursos",
+        "Enviar atualizações importantes sobre o serviço"
+      ]
+    },
+    "section3": {
+      "title": "3. Armazenamento e Segurança",
+      "description": "Suas fotos são armazenadas de forma segura em servidores criptografados. Implementamos medidas de segurança técnicas e organizacionais para proteger seus dados contra acesso não autorizado, perda ou alteração. Suas fotos originais são mantidas apenas pelo tempo necessário para o processamento e podem ser excluídas mediante solicitação."
+    },
+    "section4": {
+      "title": "4. Compartilhamento de Dados",
+      "description": "Não vendemos suas informações pessoais. Podemos compartilhar dados apenas com:",
+      "items": [
+        "Provedores de serviços que nos ajudam a operar a plataforma",
+        "Processadores de pagamento para transações financeiras",
+        "Autoridades legais quando exigido por lei"
+      ]
+    },
+    "section5": {
+      "title": "5. Seus Direitos",
+      "description": "Você tem o direito de:",
+      "items": [
+        "Acessar suas informações pessoais",
+        "Corrigir dados incorretos ou incompletos",
+        "Solicitar a exclusão de suas fotos e dados",
+        "Exportar seus dados em formato legível",
+        "Retirar consentimento para processamento de dados"
+      ]
+    },
+    "section6": {
+      "title": "6. Cookies e Tecnologias Similares",
+      "description": "Utilizamos cookies e tecnologias similares para melhorar sua experiência, analisar o uso do site e personalizar conteúdo. Você pode gerenciar suas preferências de cookies através das configurações do seu navegador."
+    },
+    "section7": {
+      "title": "7. Retenção de Dados",
+      "description": "Mantemos suas informações apenas pelo tempo necessário para fornecer nossos serviços e cumprir obrigações legais. Fotos processadas são armazenadas em sua conta até que você decida excluí-las."
+    },
+    "section8": {
+      "title": "8. Alterações nesta Política",
+      "description": "Podemos atualizar esta Política de Privacidade periodicamente. Notificaremos você sobre mudanças significativas por e-mail ou através de aviso em nosso site."
+    },
+    "section9": {
+      "title": "9. Contato",
+      "description": "Para questões sobre privacidade ou para exercer seus direitos, entre em contato conosco através dos canais disponíveis em nosso site."
+    },
+    "lastUpdated": "Última atualização:"
+  },
+  "terms": {
+    "title": "Termos de Serviço",
+    "section1": {
+      "title": "1. Aceitação dos Termos",
+      "description": "Ao acessar e usar o AISelfi, você concorda em cumprir e estar vinculado a estes Termos de Serviço. Se você não concordar com qualquer parte destes termos, não deverá usar nossos serviços."
+    },
+    "section2": {
+      "title": "2. Descrição do Serviço",
+      "description": "O AISelfi é uma plataforma que utiliza inteligência artificial para gerar fotos profissionais a partir de selfies fornecidas pelos usuários. Oferecemos diferentes pacotes de fotos com diversos estilos disponíveis."
+    },
+    "section3": {
+      "title": "3. Uso das Imagens",
+      "description": "Ao enviar suas fotos para o AISelfi, você:",
+      "items": [
+        "Garante que possui todos os direitos sobre as imagens enviadas",
+        "Concede ao AISelfi licença para processar suas imagens usando IA",
+        "Mantém todos os direitos de propriedade sobre as fotos geradas",
+        "Concorda que não usará o serviço para conteúdo ilegal ou ofensivo"
+      ]
+    },
+    "section4": {
+      "title": "4. Privacidade e Segurança",
+      "description": "Levamos sua privacidade a sério. Suas fotos são processadas de forma segura e não são compartilhadas com terceiros. Consulte nossa Política de Privacidade para mais detalhes sobre como tratamos seus dados."
+    },
+    "section5": {
+      "title": "5. Pagamentos e Reembolsos",
+      "description": "Todos os pagamentos são processados de forma segura. Nossa política de reembolso:",
+      "items": [
+        "Reembolso total se houver falha técnica em nosso serviço",
+        "Não oferecemos reembolsos por insatisfação com resultados subjetivos",
+        "Processamento de reembolsos em até 7 dias úteis"
+      ]
+    },
+    "section6": {
+      "title": "6. Limitação de Responsabilidade",
+      "description": "O AISelfi não se responsabiliza por danos indiretos, incidentais ou consequenciais decorrentes do uso ou incapacidade de usar nossos serviços. As fotos geradas são criadas por IA e podem não atender perfeitamente às expectativas de todos os usuários."
+    },
+    "section7": {
+      "title": "7. Modificações dos Termos",
+      "description": "Reservamo-nos o direito de modificar estes termos a qualquer momento. Notificaremos os usuários sobre mudanças significativas por e-mail ou através de aviso em nosso site."
+    },
+    "section8": {
+      "title": "8. Contato",
+      "description": "Para questões sobre estes Termos de Serviço, entre em contato conosco através do WhatsApp ou e-mail disponíveis em nosso site."
+    },
+    "lastUpdated": "Última atualização:"
+  },
+  "supportWhatsApp": {
+    "redirecting": "Redirecionando para WhatsApp...",
+    "notRedirected": "Se você não for redirecionado automaticamente,",
+    "clickHere": "clique aqui",
+    "message": "Olá, preciso de ajuda com AISelfi.es"
+  },
+  "home": {
+    "examples": [
+      {
+        "name": "Alba Ripoll Cucó",
+        "title": "Technology and Automation Consultant",
+        "img": "/image_1.png"
+      },
+      {
+        "name": "Marta Gimenez Carrion",
+        "title": "Fundadora conmdemarketing",
+        "img": "/image_10.jpg"
+      },
+      {
+        "name": "Jorge Bosch Alés",
+        "title": "Creador de Cosas de Freelance",
+        "img": "/image_100.jpg"
+      }
+    ],
+    "altText": {
+      "professionalPhoto": "Foto Profissional de IA",
+      "style": "Estilo"
+    }
+  },
+  "login": {
+    "loading": "Carregando...",
+    "stats": "70K+ FOTOS PROFISSIONAIS GERADAS",
+    "title": "Transforme Selfies em Fotos Profissionais",
+    "subtitle": "Cadastre-se para criar suas fotos",
+    "redirecting": "Redirecionando...",
+    "signInWithGoogle": "Entrar com Google",
+    "moneyBackGuarantee": "Garantia de reembolso de 100%",
+    "photosUnder30Minutes": "Suas fotos em menos de 30 minutos",
+    "foundedInEurope": "Fundado na Europa. Respeitamos sua privacidade",
+    "thousandsHappyCustomers": "Milhares de clientes satisfeitos",
+    "bootstrapped": "100% autofinanciado e financiado individualmente",
+    "termsAgreement": "Ao continuar, você concorda com nossos",
+    "termsOfService": "Termos de Serviço",
+    "and": "e",
+    "privacyPolicy": "Política de Privacidade",
+    "testimonials": [
+      {
+        "text": "Já estava na hora de atualizar minhas fotos do trabalho e LinkedIn e consegui!",
+        "author": "Cristian",
+        "stars": 5
+      },
+      {
+        "text": "Qualidade incrível, minhas fotos profissionais em minutos. Totalmente recomendado!",
+        "author": "María",
+        "stars": 5
+      },
+      {
+        "text": "Perfeito para meu perfil profissional. As fotos ficaram espetaculares!",
+        "author": "Carlos",
+        "stars": 5
+      },
+      {
+        "text": "Economizei muito tempo e dinheiro. As fotos são de qualidade profissional!",
+        "author": "Ana",
+        "stars": 5
+      }
+    ]
+  },
+  "dashboard": {
+    "title": "AISelfi.es",
+    "subtitle": "Transforme seus selfies em fotos profissionais",
+    "generateImages": "Gerar Imagens →",
+    "newModelAvailable": "Novo modelo de IA disponível",
+    "moreRealisticPhotos": "Fotos mais realistas e qualidade 4k",
+    "in60Seconds": "AISelfi.es em 60\"",
+    "trainModel": "Treinar um modelo",
+    "newAIModel": "Novo modelo de IA",
+    "createCustomAI": "Crie sua IA personalizada",
+    "startTraining": "Iniciar Treinamento →",
+    "gallery": "Galeria",
+    "exploreCreations": "Explorar criações",
+    "viewGallery": "Ver Galeria →",
+    "howItWorks": "Como funciona",
+    "learnProcess": "Aprenda o processo",
+    "moreInfo": "Mais Informações →",
+    "aiselfies": "AISelfies",
+    "videoTime": "0:00 / 1:11"
+  },
+  "generateImages": {
+    "title": "Escolha suas Imagens",
+    "selectGender": "Selecionar Gênero",
+    "man": "Homem",
+    "woman": "Mulher",
+    "background": "Fundo",
+    "style": "Estilo",
+    "multipleVariations": "Múltiplas Variações",
+    "multipleVariationsDesc": "Cada imagem selecionada gerará 4 variações únicas nesse estilo. Clique em suas imagens de referência favoritas para começar!",
+    "modelTrainingImages": "Imagens de Treinamento do Modelo",
+    "selectReferenceImages": "Selecione imagens de referência para escolher o estilo de suas fotos geradas",
+    "parameters": "Parâmetros",
+    "model": "Modelo",
+    "selectModel": "Selecionar modelo",
+    "loadingModels": "Carregando modelos...",
+    "noModelsAvailable": "Nenhum modelo disponível",
+    "training": "Treinando...",
+    "failed": "Falhou",
+    "firstNeedToTrain": "Primeiro você precisa treinar um modelo",
+    "selectModelToGenerate": "Selecione um modelo para gerar imagens",
+    "modelStillTraining": "Este modelo ainda está sendo treinado. Aguarde até terminar.",
+    "modelFailed": "Este modelo falhou. Por favor, treine um novo.",
+    "imageDimensions": "Dimensões da Imagem",
+    "aspectRatio": "Proporção",
+    "doYouWearGlasses": "Você usa óculos?",
+    "no": "Não",
+    "yes": "Sim",
+    "addGlassesToImages": "Adicionar óculos às imagens geradas",
+    "hairColor": "Cor do Cabelo (opcional)",
+    "default": "Padrão",
+    "black": "Preto",
+    "brown": "Castanho",
+    "blonde": "Loiro",
+    "red": "Ruivo",
+    "chooseHairColor": "Escolha a cor do cabelo para suas imagens geradas",
+    "hairStyle": "Estilo de Cabelo (opcional)",
+    "noPreference": "Sem preferência",
+    "short": "Curto",
+    "medium": "Médio",
+    "long": "Longo",
+    "curly": "Cacheado",
+    "selectHairStyle": "Selecione um estilo de cabelo específico para as imagens geradas",
+    "generate": "Gerar",
+    "selectImagesToGenerate": "Selecione imagens para gerar",
+    "notEnoughCredits": "Você não tem créditos suficientes",
+    "needCredits": "precisa",
+    "haveCredits": "tem",
+    "selectModelFirst": "Selecione um modelo primeiro",
+    "willUseCredits": "Isso usará",
+    "credit": "crédito",
+    "credits": "créditos",
+    "professionalPhotosAlmostReady": "Suas fotos profissionais estão quase prontas",
+    "errorGeneratingImages": "Erro ao gerar imagens",
+    "progress": "Progresso",
+    "of": "de",
+    "imagesCompleted": "imagens concluídas",
+    "generatingProfessionalPhotos": "Gerando suas fotos profissionais... Por favor aguarde.",
+    "canCloseWindow": "Você pode fechar esta janela. Suas fotos aparecem na galeria",
+    "retry": "Tentar novamente",
+    "close": "Fechar",
+    "generating": "Gerando...",
+    "pleaseSelectValidModel": "Por favor selecione um modelo válido",
+    "noTrainingImagesFound": "Nenhuma imagem de treinamento encontrada para este modelo",
+    "errorGenerating": "Erro ao gerar imagens. Por favor tente novamente.",
+    "badges": {
+      "premium": "Premium",
+      "new": "Novo",
+      "popular": "Popular"
+    },
+    "altText": {
+      "reference": "Referência"
+    }
   }
 }

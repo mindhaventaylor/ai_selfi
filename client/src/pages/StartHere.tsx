@@ -1,3 +1,4 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 
 export default function StartHere() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -33,28 +35,28 @@ export default function StartHere() {
   const steps = [
     {
       id: 1,
-      title: "Paso 1: Comprar Créditos",
+      title: t("startHere.step1"),
       icon: CreditCard,
       color: "blue",
       buttonColor: "bg-blue-500 hover:bg-blue-600",
     },
     {
       id: 2,
-      title: "Paso 2: Entrenar un Modelo de IA - Consejos para Mejores Resultados",
+      title: t("startHere.step2"),
       icon: FlaskConical,
       color: "yellow",
       buttonColor: "bg-yellow-500 hover:bg-yellow-600",
     },
     {
       id: 3,
-      title: "Paso 3: Creando tus Fotos",
+      title: t("startHere.step3"),
       icon: Sparkles,
       color: "purple",
       buttonColor: "bg-purple-500 hover:bg-purple-600",
     },
     {
       id: 4,
-      title: "Paso 4: Galería - Tus Fotos",
+      title: t("startHere.step4"),
       icon: ImageIcon,
       color: "green",
       buttonColor: "bg-green-500 hover:bg-green-600",
@@ -74,11 +76,10 @@ export default function StartHere() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-3">
-            Empieza aquí: Aprende cómo funciona AISelfi.es
+            {t("startHere.title")}
           </h1>
           <p className="text-lg text-muted-foreground">
-            Si es tu primera vez aquí, te sugiero ver el siguiente corto video
-            para aprender cómo funciona la app.
+            {t("startHere.subtitle")}
           </p>
         </div>
 
@@ -109,9 +110,9 @@ export default function StartHere() {
             <div className="relative z-10 space-y-6">
               {/* Title Section */}
               <div className="text-center space-y-4">
-                <h2 className="text-4xl md:text-5xl font-bold">AISelfies</h2>
+                <h2 className="text-4xl md:text-5xl font-bold">{t("startHere.aiselfies")}</h2>
                 <p className="text-lg md:text-xl text-muted-foreground">
-                  Convierte tus selfies en fotos profesionales
+                  {t("startHere.convertSelfiesToProfessional")}
                 </p>
                 <Button
                   size="lg"
@@ -119,7 +120,7 @@ export default function StartHere() {
                   onClick={() => setLocation("/dashboard/generate")}
                 >
                   <Sparkles className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-                  Generar Imágenes →
+                  {t("startHere.generateImages")}
                 </Button>
               </div>
 
@@ -130,10 +131,10 @@ export default function StartHere() {
                   {!isPlaying ? (
                     <div className="relative z-10 text-center space-y-4 px-4">
                       <h3 className="text-2xl md:text-3xl font-bold">
-                        AISelfi.es en menos de 60'
+                        {t("startHere.aiselfiIn60Seconds")}
                       </h3>
                       <p className="text-base md:text-lg text-muted-foreground">
-                        Explique cómo funciona la app en menos de 60 segundos
+                        {t("startHere.explainHowAppWorks")}
                       </p>
                       <button
                         onClick={() => setIsPlaying(true)}
@@ -146,10 +147,10 @@ export default function StartHere() {
                     <div className="relative z-10 w-full h-full flex flex-col items-center justify-center">
                       <div className="text-center space-y-2 mb-4">
                         <p className="text-sm text-muted-foreground">
-                          Video placeholder
+                          {t("startHere.videoPlaceholder")}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Video will play here
+                          {t("startHere.videoWillPlayHere")}
                         </p>
                       </div>
                       <div className="w-full px-4">
@@ -169,10 +170,10 @@ export default function StartHere() {
                 <div className="mt-4 text-center">
                   <div className="flex items-center justify-center gap-2 text-muted-foreground">
                     <Sparkles className="w-4 h-4" />
-                    <span className="text-sm">Cómo funciona</span>
+                    <span className="text-sm">{t("startHere.howItWorks")}</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Aprende el proceso
+                    {t("startHere.learnProcess")}
                   </p>
                 </div>
               </div>
@@ -183,7 +184,7 @@ export default function StartHere() {
         {/* Contenido Section */}
         <Card className="bg-card/50 border-border mb-8">
           <CardContent className="p-6">
-            <h2 className="text-2xl font-bold mb-6">Contenido</h2>
+            <h2 className="text-2xl font-bold mb-6">{t("startHere.content")}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {steps.map((step) => {
                 const IconComponent = step.icon;

@@ -24,6 +24,7 @@ export function Header() {
     { code: "pt-BR", label: "🇧🇷 Português" },
     { code: "es", label: "🇪🇸 Español" },
     { code: "en", label: "🇬🇧 English" },
+    { code: "it", label: "🇮🇹 Italiano" },
   ];
 
   return (
@@ -53,11 +54,11 @@ export function Header() {
           {/* Auth Button */}
           {!isAuthenticated ? (
             <Button asChild variant="default" size="sm" className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">
-              <a href="/login">Iniciar sessão</a>
+              <a href="/login">{t("header.signIn")}</a>
             </Button>
           ) : (
             <Button asChild variant="outline" size="sm">
-              <a href="/dashboard">Dashboard</a>
+              <a href="/dashboard">{t("header.dashboard")}</a>
             </Button>
           )}
 
@@ -67,7 +68,10 @@ export function Header() {
               <Button variant="ghost" size="sm" className="gap-2">
                 <Globe className="h-4 w-4" />
                 <span className="hidden sm:inline">
-                  {languages.find((l) => l.code === currentLanguage)?.label.split(" ")[1] || "Language"}
+                  {(() => {
+                    const currentLang = languages.find((l) => l.code === currentLanguage);
+                    return currentLang ? currentLang.label.split(" ")[1] : t("header.language");
+                  })()}
                 </span>
               </Button>
             </DropdownMenuTrigger>

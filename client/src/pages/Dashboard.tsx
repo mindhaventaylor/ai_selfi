@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const [showAlert, setShowAlert] = useState(true);
   const [, setLocation] = useLocation();
 
@@ -35,8 +37,8 @@ export default function Dashboard() {
             <Sparkles className="h-4 w-4 text-green-400" />
             <AlertDescription className="flex items-center justify-between w-full">
           <div>
-                <div className="font-semibold">Nuevo modelo de IA disponible</div>
-                <div className="text-sm opacity-90">Fotos más realistas y calidad 4k</div>
+                <div className="font-semibold">{t("dashboard.newModelAvailable")}</div>
+                <div className="text-sm opacity-90">{t("dashboard.moreRealisticPhotos")}</div>
           </div>
               <button
                 onClick={() => setShowAlert(false)}
@@ -67,9 +69,9 @@ export default function Dashboard() {
         </div>
 
             <div className="relative z-10 text-center space-y-4 md:space-y-6">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">AISelfi.es</h1>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">{t("dashboard.title")}</h1>
               <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground">
-                Convierte tus selfies en fotos profesionales
+                {t("dashboard.subtitle")}
               </p>
               <Button
                 size="lg"
@@ -77,7 +79,7 @@ export default function Dashboard() {
                 onClick={() => setLocation("/dashboard/generate")}
               >
                 <Sparkles className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-                Generar Imágenes →
+                {t("dashboard.generateImages")}
               </Button>
             </div>
           </CardContent>
@@ -87,7 +89,7 @@ export default function Dashboard() {
         <div className="space-y-6 max-w-6xl mx-auto">
           {/* Title with Arrow */}
           <div className="flex items-center gap-4 justify-center md:justify-start">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold">AISelfi.es en 60"</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold">{t("dashboard.in60Seconds")}</h2>
             <ArrowDown className="h-5 w-5 md:h-6 md:w-6 animate-bounce" />
           </div>
 
@@ -97,16 +99,16 @@ export default function Dashboard() {
               <div className="aspect-video bg-muted rounded-lg relative overflow-hidden flex items-center justify-center max-w-4xl mx-auto">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5" />
                 <div className="relative z-10 text-center space-y-3 md:space-y-4 px-4">
-                  <h3 className="text-2xl md:text-3xl font-bold">AISelfies</h3>
+                  <h3 className="text-2xl md:text-3xl font-bold">{t("dashboard.aiselfies")}</h3>
                   <p className="text-base md:text-lg text-muted-foreground">
-                    Convierte tus selfies en fotos profesionales
+                    {t("dashboard.subtitle")}
                   </p>
                   <Button
                     size="lg"
                     className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light"
                     onClick={() => setLocation("/dashboard/generate")}
                   >
-                    Generar Imágenes →
+                    {t("dashboard.generateImages")}
             </Button>
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center z-20">
@@ -116,7 +118,7 @@ export default function Dashboard() {
                   </div>
                 <div className="absolute bottom-4 left-4 right-4 z-30">
                   <div className="bg-background/80 backdrop-blur-sm rounded-lg px-4 py-2 text-sm max-w-fit mx-auto">
-                    0:00 / 1:11
+                    {t("dashboard.videoTime")}
                   </div>
                 </div>
             </div>
@@ -128,16 +130,16 @@ export default function Dashboard() {
             {/* Train Model Card */}
             <Card className="bg-card/50">
               <CardContent className="p-4 md:p-6 space-y-3 md:space-y-4">
-                <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2 md:gap-3">
                     <Brain className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                    <h3 className="text-lg md:text-xl font-bold">Entrenar un modelo</h3>
+                    <h3 className="text-lg md:text-xl font-bold">{t("dashboard.trainModel")}</h3>
                   </div>
                   <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50 text-xs">
-                    Nuevo modelo de IA
+                    {t("dashboard.newAIModel")}
                   </Badge>
                 </div>
-                <p className="text-sm md:text-base text-muted-foreground">Crea tu IA personalizada</p>
+                <p className="text-sm md:text-base text-muted-foreground">{t("dashboard.createCustomAI")}</p>
                 <div className="aspect-video bg-muted rounded-lg overflow-hidden mb-3 md:mb-4">
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-yellow-500/20 to-yellow-500/5">
                     <div className="text-center space-y-2">
@@ -150,7 +152,7 @@ export default function Dashboard() {
                   className="w-full bg-yellow-500 hover:bg-yellow-600 text-white rounded-full text-sm md:text-base"
                   size="lg"
                 >
-                  Comenzar Entrenamiento →
+                  {t("dashboard.startTraining")}
                 </Button>
               </CardContent>
             </Card>
@@ -160,9 +162,9 @@ export default function Dashboard() {
               <CardContent className="p-4 md:p-6 space-y-3 md:space-y-4">
                 <div className="flex items-center gap-2 md:gap-3">
                   <ImageIcon className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                  <h3 className="text-lg md:text-xl font-bold">Galería</h3>
+                  <h3 className="text-lg md:text-xl font-bold">{t("dashboard.gallery")}</h3>
                 </div>
-                <p className="text-sm md:text-base text-muted-foreground">Explora creaciones</p>
+                <p className="text-sm md:text-base text-muted-foreground">{t("dashboard.exploreCreations")}</p>
                 <div className="aspect-video bg-muted rounded-lg overflow-hidden mb-3 md:mb-4 grid grid-cols-3 gap-1">
                   {gridPhotos.slice(0, 6).map((photo, idx) => (
                     <div key={idx} className="aspect-square overflow-hidden">
@@ -178,7 +180,7 @@ export default function Dashboard() {
                   className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full text-sm md:text-base"
                   size="lg"
                 >
-                  Ver Galería →
+                  {t("dashboard.viewGallery")}
                 </Button>
               </CardContent>
             </Card>
@@ -188,9 +190,9 @@ export default function Dashboard() {
               <CardContent className="p-4 md:p-6 space-y-3 md:space-y-4">
                 <div className="flex items-center gap-2 md:gap-3">
                   <HelpCircle className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                  <h3 className="text-lg md:text-xl font-bold">Cómo funciona</h3>
+                  <h3 className="text-lg md:text-xl font-bold">{t("dashboard.howItWorks")}</h3>
                 </div>
-                <p className="text-sm md:text-base text-muted-foreground">Aprende el proceso</p>
+                <p className="text-sm md:text-base text-muted-foreground">{t("dashboard.learnProcess")}</p>
                 <div className="aspect-video bg-muted rounded-lg overflow-hidden mb-3 md:mb-4 flex items-center justify-center bg-gradient-to-br from-green-500/20 to-green-500/5">
                   <Play className="w-10 h-10 md:w-12 md:h-12 text-green-400" />
                 </div>
@@ -198,7 +200,7 @@ export default function Dashboard() {
                   className="w-full bg-green-500 hover:bg-green-600 text-white rounded-full text-sm md:text-base"
                   size="lg"
                 >
-                  Más Información →
+                  {t("dashboard.moreInfo")}
                 </Button>
           </CardContent>
         </Card>

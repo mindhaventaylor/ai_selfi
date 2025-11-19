@@ -1,3 +1,4 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,60 +13,59 @@ import {
 } from "lucide-react";
 
 export default function Pro() {
+  const { t } = useTranslation();
   const features = [
     {
       id: 1,
-      title: "Texto a Imagen",
-      description: "Genera imágenes usando prompts",
+      title: t("pro.textToImage"),
+      description: t("pro.textToImageDesc"),
       icon: Type,
-      buttonText: "Generar Imágenes",
+      buttonText: t("pro.generateImages"),
       buttonColor: "bg-purple-500 hover:bg-purple-600",
       comingSoon: false,
     },
     {
       id: 2,
-      title: "Eliminación de Fondo",
-      description: "Elimina el fondo y personaliza tu foto",
+      title: t("pro.backgroundRemoval"),
+      description: t("pro.backgroundRemovalDesc"),
       icon: ImageIcon,
-      buttonText: "Eliminar Fondos",
+      buttonText: t("pro.removeBackgrounds"),
       buttonColor: "bg-yellow-500 hover:bg-yellow-600",
       comingSoon: false,
     },
     {
       id: 3,
-      title: "Transferencia de Estilo",
-      description:
-        "Sube una imagen para copiar su estilo usando tu modelo de IA.",
+      title: t("pro.styleTransfer"),
+      description: t("pro.styleTransferDesc"),
       icon: Brain,
-      buttonText: "Probar Transferencia de Estilo",
+      buttonText: t("pro.tryStyleTransfer"),
       buttonColor: "bg-purple-500 hover:bg-purple-600",
       comingSoon: false,
     },
     {
       id: 4,
-      title: "Restauración de Imágenes",
-      description: "Restaura y mejora fotos antiguas o dañadas con IA",
+      title: t("pro.imageRestoration"),
+      description: t("pro.imageRestorationDesc"),
       icon: Camera,
-      buttonText: "Restaurar Imágenes",
+      buttonText: t("pro.restoreImages"),
       buttonColor: "bg-orange-500 hover:bg-orange-600",
       comingSoon: false,
     },
     {
       id: 5,
-      title: "Miniaturas de YouTube",
-      description:
-        "Crea miniaturas llamativas para tus videos de YouTube con IA",
+      title: t("pro.youtubeThumbnails"),
+      description: t("pro.youtubeThumbnailsDesc"),
       icon: Play,
-      buttonText: "Suscripción Pro requerida",
+      buttonText: t("pro.proSubscriptionRequired"),
       buttonColor: "bg-muted hover:bg-muted/80 text-muted-foreground",
       comingSoon: true,
     },
     {
       id: 6,
-      title: "Escalado de Imagen",
-      description: "Mejora la resolución de imágenes hasta 4x con IA",
+      title: t("pro.imageUpscaling"),
+      description: t("pro.imageUpscalingDesc"),
       icon: Zap,
-      buttonText: "Suscripción Pro requerida",
+      buttonText: t("pro.proSubscriptionRequired"),
       buttonColor: "bg-muted hover:bg-muted/80 text-muted-foreground",
       comingSoon: true,
     },
@@ -87,10 +87,10 @@ export default function Pro() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Funciones Pro
+            {t("pro.title")}
           </h1>
           <p className="text-lg text-muted-foreground">
-            Accede a las funciones PRO - exclusivas para packs Pro y Premium.
+            {t("pro.subtitle")}
           </p>
         </div>
 
@@ -118,7 +118,7 @@ export default function Pro() {
                     {feature.comingSoon && (
                       <div className="absolute top-4 right-4 z-20">
                         <Badge className="bg-orange-500 text-orange-900 border-orange-500">
-                          Próximamente
+                          {t("pro.comingSoon")}
                         </Badge>
                       </div>
                     )}

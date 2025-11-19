@@ -8,6 +8,7 @@ import { supabaseServer } from "./_core/lib/supabase";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { generateImagesWithGemini } from "./_core/gemini";
+import { getServerString } from "./_core/strings";
 
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -22,7 +23,7 @@ export const appRouter = router({
           
           // Check if Supabase is configured
           if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-            const errorMsg = "Supabase not configured: Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY";
+            const errorMsg = getServerString("supabaseNotConfigured");
             console.error("[Auth]", errorMsg);
             throw new Error(errorMsg);
           }
@@ -38,12 +39,12 @@ export const appRouter = router({
             });
             // Include the error message in a way that will be visible to the client
             const errorMsg = error.message || "Unknown error";
-            throw new Error(`Token verification failed: ${errorMsg}`);
+            throw new Error(`${getServerString("tokenVerificationFailed")}: ${errorMsg}`);
           }
           
           if (!user) {
             console.error("[Auth] No user returned from token verification");
-            throw new Error("Invalid access token: no user found");
+            throw new Error(getServerString("invalidAccessToken"));
           }
 
           console.log("[Auth] Syncing user:", user.id, user.email);
@@ -81,7 +82,7 @@ export const appRouter = router({
           });
           // Re-throw with a more user-friendly message if it's a configuration error
           if (error?.message?.includes("not configured")) {
-            throw new Error("Server configuration error. Please contact support.");
+            throw new Error(getServerString("serverConfigurationError"));
           }
           throw error;
         }
@@ -110,12 +111,12 @@ export const appRouter = router({
       .input(z.object({ packId: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
-        if (!db) throw new Error("Database not available");
+        if (!db) throw new Error(getServerString("databaseNotAvailable"));
         
         const packResult = await db.select().from(creditPacks).where(eq(creditPacks.id, input.packId)).limit(1);
         const pack = packResult[0];
 
-        if (!pack) throw new Error("Pack not found");
+        if (!pack) throw new Error(getServerString("packNotFound"));
 
         // Mock transaction creation - in real app, integrate Stripe here
         await db.insert(transactions).values({
@@ -175,7 +176,7 @@ export const appRouter = router({
             .single();
           
           if (!model) {
-            throw new Error("Model not found or access denied");
+            throw new Error(getServerString("modelNotFound"));
           }
           
           // Fetch training images via REST API
@@ -201,7 +202,7 @@ export const appRouter = router({
           .limit(1);
         
         if (!model) {
-          throw new Error("Model not found or access denied");
+          throw new Error(getServerString("modelNotFound"));
         }
         
         // Fetch training images
@@ -212,7 +213,7 @@ export const appRouter = router({
           .orderBy(modelTrainingImages.imageOrder);
         
         return trainingImages.map(img => img.imageUrl);
-      }),
+    }),
     create: protectedProcedure
       .input(z.object({ 
         name: z.string(), 
@@ -225,7 +226,7 @@ export const appRouter = router({
         
         // Check if user has enough credits
         if ((ctx.user.credits || 0) < input.trainingCreditsUsed) {
-          throw new Error("Insufficient credits for training");
+          throw new Error(getServerString("insufficientCreditsForTraining"));
         }
 
         // Use Supabase REST API if direct DB connection is not available
@@ -237,7 +238,7 @@ export const appRouter = router({
               .update({ credits: (ctx.user.credits || 0) - input.trainingCreditsUsed })
               .eq('id', ctx.user.id);
             
-            if (updateError) throw new Error(`Failed to update credits: ${updateError.message}`);
+            if (updateError) throw new Error(`${getServerString("failedToUpdateCredits")}: ${updateError.message}`);
           }
 
           // Create model via REST API
@@ -255,7 +256,7 @@ export const appRouter = router({
             .select()
             .single();
 
-          if (modelError) throw new Error(`Failed to create model: ${modelError.message}`);
+          if (modelError) throw new Error(`${getServerString("failedToCreateModel")}: ${modelError.message}`);
 
           // Insert training images via REST API
           if (modelData && input.trainingImageUrls.length > 0) {
@@ -269,7 +270,7 @@ export const appRouter = router({
               .from('model_training_images')
               .insert(trainingImagesData);
 
-            if (imagesError) throw new Error(`Failed to insert training images: ${imagesError.message}`);
+            if (imagesError) throw new Error(`${getServerString("failedToInsertTrainingImages")}: ${imagesError.message}`);
           }
 
           // Simulate training: Update status to "ready" after random delay (20-40 seconds)
@@ -396,7 +397,7 @@ export const appRouter = router({
             .single();
 
           if (fetchError || !model) {
-            throw new Error("Model not found or access denied");
+            throw new Error(getServerString("modelNotFound"));
           }
 
           // Delete training images first (cascade might not work via REST API)
@@ -418,7 +419,7 @@ export const appRouter = router({
             .eq('userId', ctx.user.id);
 
           if (deleteError) {
-            throw new Error(`Failed to delete model: ${deleteError.message}`);
+            throw new Error(`${getServerString("failedToDeleteModel")}: ${deleteError.message}`);
           }
 
           return { success: true };
@@ -433,7 +434,7 @@ export const appRouter = router({
           .limit(1);
 
         if (!model) {
-          throw new Error("Model not found or access denied");
+          throw new Error(getServerString("modelNotFound"));
         }
 
         // Delete model (cascade will delete training images)
@@ -488,16 +489,21 @@ export const appRouter = router({
         backgrounds: z.array(z.string()).default([]),
         styles: z.array(z.string()).default([]),
         numImagesPerReference: z.number().default(4),
+        totalImagesToGenerate: z.number().optional(), // Frontend-calculated total (based on selected example images only)
       }))
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
         
-        const totalImages = input.referenceImageUrls.length * input.numImagesPerReference;
+        // Use frontend-calculated total if provided, otherwise fall back to old calculation
+        // The frontend calculates this based on selected example images only (not training images)
+        const totalImages = input.totalImagesToGenerate ?? (input.referenceImageUrls.length * input.numImagesPerReference);
         const creditsNeeded = totalImages;
+        
+        console.log(`[Photo Generate] Total images to generate: ${totalImages}, Credits needed: ${creditsNeeded}, Reference images: ${input.referenceImageUrls.length}`);
 
         // Check credits
         if ((ctx.user.credits || 0) < creditsNeeded) {
-           throw new Error("Insufficient credits");
+           throw new Error(getServerString("insufficientCredits"));
         }
 
         // Use Supabase REST API if direct DB connection is not available
@@ -511,11 +517,11 @@ export const appRouter = router({
             .single();
 
           if (modelError || !model) {
-            throw new Error("Model not found or access denied");
+            throw new Error(getServerString("modelNotFound"));
           }
 
           if (model.status !== "ready") {
-            throw new Error("Model is not ready yet. Please wait for training to complete.");
+            throw new Error(getServerString("modelNotReady"));
           }
         } else {
           // Get model to verify ownership (direct DB connection)
@@ -526,19 +532,25 @@ export const appRouter = router({
             .limit(1);
 
           if (!model) {
-            throw new Error("Model not found or access denied");
+            throw new Error(getServerString("modelNotFound"));
           }
 
           if (model.status !== "ready") {
-            throw new Error("Model is not ready yet. Please wait for training to complete.");
+            throw new Error(getServerString("modelNotReady"));
           }
         }
 
         // Fetch reference images and convert to base64
         // For private buckets, we need to download directly from Supabase Storage using service role
+        console.log(`\n${'='.repeat(80)}`);
+        console.log(`[Photo Generate] 📥 Fetching ${input.referenceImageUrls.length} reference image(s)`);
+        console.log(`${'='.repeat(80)}\n`);
+        
         const referenceImages = await Promise.all(
-          input.referenceImageUrls.map(async (url) => {
+          input.referenceImageUrls.map(async (url, index) => {
             try {
+              console.log(`[Image Fetch] 🔍 [${index + 1}/${input.referenceImageUrls.length}] Processing: ${url.substring(0, 80)}...`);
+              
               // Check if this is a Supabase Storage URL
               // Pattern: https://[project].supabase.co/storage/v1/object/public/[bucket]/[path]
               // Or: https://[project].supabase.co/storage/v1/object/sign/[bucket]/[path]?[params]
@@ -560,7 +572,7 @@ export const appRouter = router({
                   }
                   const decodedPath = decodeURIComponent(cleanPath);
                 
-                  console.log(`[Image Fetch] Detected Supabase Storage URL - Bucket: ${bucketName}, Path: ${decodedPath}`);
+                  console.log(`[Image Fetch] ✅ [${index + 1}] Detected Supabase Storage - Bucket: ${bucketName}, Path: ${decodedPath}`);
                   
                   // Download directly from Supabase Storage using service role (bypasses RLS)
                   const { data, error } = await supabaseServer.storage
@@ -568,12 +580,13 @@ export const appRouter = router({
                     .download(decodedPath);
                 
                   if (error) {
-                    console.error(`[Image Fetch] Supabase download error:`, error);
-                    throw new Error(`Failed to download image from storage: ${error.message}`);
+                    console.error(`[Image Fetch] ❌ [${index + 1}] Supabase download error:`, error);
+                    throw new Error(`${getServerString("failedToDownloadImage")}: ${error.message}`);
                   }
                   
                   if (!data) {
-                    throw new Error(`Failed to download image from storage: No data returned`);
+                    console.error(`[Image Fetch] ❌ [${index + 1}] No data returned from Supabase`);
+                    throw new Error(getServerString("noDataReturned"));
                   }
                   
                   // Convert blob to buffer
@@ -588,7 +601,9 @@ export const appRouter = router({
                   else if (lowerPath.endsWith('.webp')) contentType = "image/webp";
                   else if (lowerPath.endsWith('.jpg') || lowerPath.endsWith('.jpeg')) contentType = "image/jpeg";
                   
-                  console.log(`[Image Fetch] Successfully downloaded image from ${bucketName}/${decodedPath}`);
+                  const imageSizeKB = Math.round(buffer.length / 1024);
+                  const base64SizeKB = Math.round(base64.length * 0.75 / 1024);
+                  console.log(`[Image Fetch] ✅ [${index + 1}] Successfully downloaded: ${imageSizeKB}KB (base64: ~${base64SizeKB}KB), type: ${contentType}`);
                   
                   return {
                     data: base64,
@@ -598,27 +613,36 @@ export const appRouter = router({
               }
               
               // Not a Supabase Storage URL, try regular HTTP fetch
-              console.log(`[Image Fetch] Not a Supabase URL, trying HTTP fetch: ${url}`);
+              console.log(`[Image Fetch] 🌐 [${index + 1}] Not a Supabase URL, trying HTTP fetch: ${url}`);
               const response = await fetch(url);
+              
               if (!response.ok) {
-                throw new Error(`Failed to fetch image: ${url} (${response.status} ${response.statusText})`);
+                console.error(`[Image Fetch] ❌ [${index + 1}] HTTP fetch failed: ${response.status} ${response.statusText}`);
+                throw new Error(`${getServerString("failedToFetchImage")}: ${url} (${response.status} ${response.statusText})`);
               }
+              
               const arrayBuffer = await response.arrayBuffer();
               const buffer = Buffer.from(arrayBuffer);
               const base64 = buffer.toString("base64");
               
               const contentType = response.headers.get("content-type") || "image/jpeg";
+              const imageSizeKB = Math.round(buffer.length / 1024);
+              const base64SizeKB = Math.round(base64.length * 0.75 / 1024);
+              
+              console.log(`[Image Fetch] ✅ [${index + 1}] Successfully fetched via HTTP: ${imageSizeKB}KB (base64: ~${base64SizeKB}KB), type: ${contentType}`);
               
               return {
                 data: base64,
                 mimeType: contentType,
               };
             } catch (error) {
-              console.error(`[Image Fetch] Error fetching reference image ${url}:`, error);
-              throw new Error(`Failed to fetch reference image: ${url}. ${error instanceof Error ? error.message : 'Unknown error'}`);
+              console.error(`[Image Fetch] ❌ [${index + 1}] Error fetching reference image:`, error);
+              throw new Error(`${getServerString("failedToFetchReferenceImage")}: ${url}. ${error instanceof Error ? error.message : 'Unknown error'}`);
             }
           })
         );
+        
+        console.log(`\n[Photo Generate] ✅ Successfully fetched ${referenceImages.length} reference image(s)\n`);
 
         // Build prompt from selected options
         let prompt = `Create a photorealistic professional portrait image of the person in the reference photos.`;
@@ -649,47 +673,115 @@ export const appRouter = router({
         // Note: Rate limiting may occur - the API will retry automatically
         let generatedImages;
         try {
+          console.log(`\n${'='.repeat(80)}`);
+          console.log(`[Photo Generate] 🚀 Starting image generation process`);
+          console.log(`[Photo Generate]    - User ID: ${ctx.user.id}`);
+          console.log(`[Photo Generate]    - Model ID: ${input.modelId}`);
+          console.log(`[Photo Generate]    - Reference images: ${referenceImages.length}`);
+          console.log(`[Photo Generate]    - Target images: ${totalImages}`);
+          console.log(`[Photo Generate]    - Aspect ratio: ${input.aspectRatio}`);
+          console.log(`[Photo Generate]    - Prompt: ${prompt.substring(0, 100)}...`);
+          console.log(`${'='.repeat(80)}\n`);
+          
           generatedImages = await generateImagesWithGemini({
             referenceImages,
             prompt,
             aspectRatio: input.aspectRatio,
             numImages: totalImages,
           });
+          
+          console.log(`\n${'='.repeat(80)}`);
+          console.log(`[Photo Generate] ✅ Gemini API returned ${generatedImages.length} image(s)`);
+          console.log(`${'='.repeat(80)}\n`);
+          
+          if (generatedImages.length === 0) {
+            throw new Error(getServerString("noImagesGenerated"));
+          }
+          
+          if (generatedImages.length < totalImages) {
+            console.warn(`[Photo Generate] Warning: Requested ${totalImages} images but only received ${generatedImages.length}`);
+          }
         } catch (error) {
+          console.error(`[Photo Generate] Error generating images:`, error);
           // Provide user-friendly error message for rate limits
-          if (error instanceof Error && error.message.includes('rate limit')) {
-            throw new Error('The image generation service is currently experiencing high demand. Please wait a few minutes and try again. Your credits have not been deducted.');
+          if (error instanceof Error && (error.message.includes('rate limit') || error.message.includes('429'))) {
+            throw new Error(getServerString("highDemandRetry"));
+          }
+          // Provide more specific error messages
+          if (error instanceof Error) {
+            throw new Error(`${getServerString("failedToGenerateImages")}: ${error.message}`);
           }
           throw error;
         }
 
         // Upload generated images to Supabase Storage
+        console.log(`\n${'='.repeat(80)}`);
+        console.log(`[Photo Generate] 📤 Starting upload to Supabase Storage`);
+        console.log(`[Photo Generate]    - Images to upload: ${generatedImages.length}`);
+        console.log(`${'='.repeat(80)}\n`);
+        
         const uploadedUrls: string[] = [];
+        const baseTimestamp = Date.now();
         
         for (let i = 0; i < generatedImages.length; i++) {
           const image = generatedImages[i];
-          const imageBuffer = Buffer.from(image.data, "base64");
-          const fileName = `generated/${ctx.user.id}/${Date.now()}-${i}.png`;
           
-          const { data: uploadData, error: uploadError } = await supabaseServer.storage
-            .from("generated-photos")
-            .upload(fileName, imageBuffer, {
-              contentType: image.mimeType,
-              upsert: false,
-            });
-
-          if (uploadError) {
-            console.error("Error uploading image to Supabase:", uploadError);
-            throw new Error(`Failed to upload generated image: ${uploadError.message}`);
+          // Validate image data
+          if (!image.data || image.data.length === 0) {
+            console.error(`[Photo Generate] ❌ Invalid image data at index ${i} - skipping`);
+            continue; // Skip invalid images
           }
+          
+          try {
+            const imageBuffer = Buffer.from(image.data, "base64");
+            
+            // Validate buffer
+            if (imageBuffer.length === 0) {
+              console.error(`[Photo Generate] ❌ Empty buffer at index ${i} - skipping`);
+              continue;
+            }
+            
+            const fileName = `generated/${ctx.user.id}/${baseTimestamp}-${i}.png`;
+            const imageSizeKB = Math.round(imageBuffer.length / 1024);
+            
+            console.log(`[Photo Generate] 📤 Uploading image ${i + 1}/${generatedImages.length}: ${fileName} (${imageSizeKB}KB, ${image.mimeType})`);
+            
+            const { data: uploadData, error: uploadError } = await supabaseServer.storage
+              .from("generated-photos")
+              .upload(fileName, imageBuffer, {
+                contentType: image.mimeType || "image/png",
+                upsert: false,
+              });
 
-          // Get public URL
-          const { data: urlData } = supabaseServer.storage
-            .from("generated-photos")
-            .getPublicUrl(fileName);
+            if (uploadError) {
+              console.error(`[Photo Generate] ❌ Upload failed for image ${i + 1}:`, uploadError);
+              throw new Error(`${getServerString("failedToUploadGeneratedImage")} ${i + 1}: ${uploadError.message}`);
+            }
 
-          uploadedUrls.push(urlData.publicUrl);
+            // Get public URL
+            const { data: urlData } = supabaseServer.storage
+              .from("generated-photos")
+              .getPublicUrl(fileName);
+
+            uploadedUrls.push(urlData.publicUrl);
+            console.log(`[Photo Generate] ✅ Successfully uploaded image ${i + 1}: ${urlData.publicUrl}`);
+          } catch (error) {
+            console.error(`[Photo Generate] ❌ Error processing image ${i + 1}:`, error);
+            // Continue with other images instead of failing completely
+            if (uploadedUrls.length === 0) {
+              throw error; // Only throw if no images were uploaded at all
+            }
+          }
         }
+        
+        if (uploadedUrls.length === 0) {
+          console.error(`[Photo Generate] ❌ Failed to upload any images`);
+          throw new Error(getServerString("failedToUploadAnyImages"));
+        }
+        
+        console.log(`\n${'='.repeat(80)}`);
+        console.log(`[Photo Generate] ✅ Upload complete: ${uploadedUrls.length}/${generatedImages.length} images uploaded`);
+        console.log(`${'='.repeat(80)}\n`);
 
         // Create generation batch and photo records
         let batchId: number | undefined;
@@ -717,13 +809,13 @@ export const appRouter = router({
             .single();
 
           if (batchError) {
-            throw new Error(`Failed to create generation batch: ${batchError.message}`);
+            throw new Error(`${getServerString("failedToCreateGenerationBatch")}: ${batchError.message}`);
           }
 
           batchId = batchData?.id;
 
-          // Create photo records
-          const photoRecords = uploadedUrls.map((url) => ({
+          // Create photo records for gallery
+          const photoRecords = uploadedUrls.map((url, index) => ({
             userId: ctx.user.id,
             modelId: input.modelId,
             generationBatchId: batchId,
@@ -736,14 +828,28 @@ export const appRouter = router({
             hairStyle: input.hairStyle || null,
             backgrounds: input.backgrounds,
             styles: input.styles,
+            prompt: prompt, // Save the prompt used for generation
           }));
 
-          const { error: photosError } = await supabaseServer
+          console.log(`\n${'='.repeat(80)}`);
+          console.log(`[Photo Generate] 📸 Adding ${photoRecords.length} photo(s) to gallery`);
+          console.log(`${'='.repeat(80)}\n`);
+
+          const { data: insertedPhotos, error: photosError } = await supabaseServer
             .from('photos')
-            .insert(photoRecords);
+            .insert(photoRecords)
+            .select();
 
           if (photosError) {
-            throw new Error(`Failed to create photo records: ${photosError.message}`);
+            console.error(`[Photo Generate] ❌ Failed to add photos to gallery:`, photosError);
+            throw new Error(`${getServerString("failedToCreatePhotoRecords")}: ${photosError.message}`);
+          }
+
+          console.log(`[Photo Generate] ✅ Successfully added ${insertedPhotos?.length || photoRecords.length} photo(s) to gallery`);
+          if (insertedPhotos && insertedPhotos.length > 0) {
+            insertedPhotos.forEach((photo, index) => {
+              console.log(`[Photo Generate]    Photo ${index + 1}: ID=${photo.id}, URL=${photo.url}`);
+            });
           }
 
           // Deduct credits
@@ -753,7 +859,7 @@ export const appRouter = router({
             .eq('id', ctx.user.id);
 
           if (creditsError) {
-            throw new Error(`Failed to deduct credits: ${creditsError.message}`);
+            throw new Error(`${getServerString("failedToDeductCredits")}: ${creditsError.message}`);
           }
         } else {
           // Use direct database connection
@@ -775,7 +881,7 @@ export const appRouter = router({
 
           batchId = batch?.id;
 
-          // Create photo records
+          // Create photo records for gallery
           const photoRecords = uploadedUrls.map((url) => ({
             userId: ctx.user.id,
             modelId: input.modelId,
@@ -789,9 +895,19 @@ export const appRouter = router({
             hairStyle: input.hairStyle || null,
             backgrounds: input.backgrounds,
             styles: input.styles,
+            prompt: prompt, // Save the prompt used for generation
           }));
 
-          await db.insert(photos).values(photoRecords);
+          console.log(`\n${'='.repeat(80)}`);
+          console.log(`[Photo Generate] 📸 Adding ${photoRecords.length} photo(s) to gallery`);
+          console.log(`${'='.repeat(80)}\n`);
+
+          const insertedPhotos = await db.insert(photos).values(photoRecords).returning();
+
+          console.log(`[Photo Generate] ✅ Successfully added ${insertedPhotos.length} photo(s) to gallery`);
+          insertedPhotos.forEach((photo, index) => {
+            console.log(`[Photo Generate]    Photo ${index + 1}: ID=${photo.id}, URL=${photo.url}`);
+          });
 
           // Deduct credits
           await db
@@ -820,12 +936,12 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
-        if (!db) throw new Error("Database not available");
+        if (!db) throw new Error(getServerString("databaseNotAvailable"));
 
         // Check credits
         const creditsNeeded = input.totalImages;
         if ((ctx.user.credits || 0) < creditsNeeded) {
-          throw new Error("Insufficient credits");
+           throw new Error(getServerString("insufficientCredits"));
         }
 
         // Create generation batch
@@ -874,7 +990,7 @@ export const appRouter = router({
       .input(z.object({ photoId: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
-        if (!db) throw new Error("Database not available");
+        if (!db) throw new Error(getServerString("databaseNotAvailable"));
 
         // Verify ownership
         const [photo] = await db
@@ -884,7 +1000,7 @@ export const appRouter = router({
           .limit(1);
 
         if (!photo) {
-          throw new Error("Photo not found or access denied");
+          throw new Error(getServerString("photoNotFound"));
         }
 
         // Toggle favorite
@@ -899,7 +1015,7 @@ export const appRouter = router({
       .input(z.object({ photoId: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
-        if (!db) throw new Error("Database not available");
+        if (!db) throw new Error(getServerString("databaseNotAvailable"));
 
         // Verify ownership
         const [photo] = await db
@@ -909,7 +1025,7 @@ export const appRouter = router({
           .limit(1);
 
         if (!photo) {
-          throw new Error("Photo not found or access denied");
+          throw new Error(getServerString("photoNotFound"));
         }
 
         // Delete photo
@@ -921,7 +1037,7 @@ export const appRouter = router({
       .input(z.object({ photoIds: z.array(z.number()) }))
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
-        if (!db) throw new Error("Database not available");
+        if (!db) throw new Error(getServerString("databaseNotAvailable"));
 
         if (input.photoIds.length === 0) {
           return { success: true };
@@ -941,7 +1057,7 @@ export const appRouter = router({
       .input(z.object({ photoId: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
-        if (!db) throw new Error("Database not available");
+        if (!db) throw new Error(getServerString("databaseNotAvailable"));
 
         // Verify ownership and increment download count
         const [photo] = await db
@@ -951,7 +1067,7 @@ export const appRouter = router({
           .limit(1);
 
         if (!photo) {
-          throw new Error("Photo not found or access denied");
+          throw new Error(getServerString("photoNotFound"));
         }
 
         await db

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,15 +13,48 @@ import {
 import { Globe, LogOut } from "lucide-react";
 
 export default function SettingsGeneral() {
+  const { t, changeLanguage, currentLanguage } = useTranslation();
   const { logout } = useAuth();
-  const [language, setLanguage] = useState("es");
+  const [language, setLanguage] = useState(currentLanguage || "it");
+  
+  // Sync language state with currentLanguage
+  useEffect(() => {
+    if (currentLanguage) {
+      setLanguage(currentLanguage);
+    }
+  }, [currentLanguage]);
+  
+  const handleLanguageChange = (newLang: string) => {
+    setLanguage(newLang);
+    changeLanguage(newLang);
+  };
+  
+  const getLanguageLabel = (code: string) => {
+    const labels: Record<string, string> = {
+      "es": t("settingsGeneral.spanish"),
+      "pt-BR": t("settingsGeneral.portuguese"),
+      "en": t("settingsGeneral.english"),
+      "it": t("settingsGeneral.italian"),
+    };
+    return labels[code] || code;
+  };
+  
+  const getLanguageFlag = (code: string) => {
+    const flags: Record<string, string> = {
+      "es": "🇪🇸",
+      "pt-BR": "🇧🇷",
+      "en": "🇬🇧",
+      "it": "🇮🇹",
+    };
+    return flags[code] || "🌐";
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold">Ajustes</h1>
+          <h1 className="text-3xl md:text-4xl font-bold">{t("settingsGeneral.title")}</h1>
         </div>
 
         <div className="space-y-6">
@@ -33,34 +67,45 @@ export default function SettingsGeneral() {
                     <Globe className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold">Idioma</h2>
+                    <h2 className="text-xl font-semibold">{t("settingsGeneral.language")}</h2>
                     <p className="text-sm text-muted-foreground">
-                      Elige tu idioma preferido
+                      {t("settingsGeneral.languageDesc")}
                     </p>
                   </div>
                 </div>
 
-                <Select value={language} onValueChange={setLanguage}>
+                <Select value={language} onValueChange={handleLanguageChange}>
                   <SelectTrigger className="w-full max-w-xs">
-                    <SelectValue />
+                    <SelectValue>
+                      <div className="flex items-center gap-2">
+                        <span>{getLanguageFlag(language)}</span>
+                        <span>{getLanguageLabel(language)}</span>
+                      </div>
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="es">
                       <div className="flex items-center gap-2">
                         <span>🇪🇸</span>
-                        <span>Español</span>
+                        <span>{t("settingsGeneral.spanish")}</span>
                       </div>
                     </SelectItem>
-                    <SelectItem value="pt">
+                    <SelectItem value="pt-BR">
                       <div className="flex items-center gap-2">
                         <span>🇧🇷</span>
-                        <span>Português</span>
+                        <span>{t("settingsGeneral.portuguese")}</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="en">
                       <div className="flex items-center gap-2">
                         <span>🇬🇧</span>
-                        <span>English</span>
+                        <span>{t("settingsGeneral.english")}</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="it">
+                      <div className="flex items-center gap-2">
+                        <span>🇮🇹</span>
+                        <span>{t("settingsGeneral.italian")}</span>
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -78,9 +123,9 @@ export default function SettingsGeneral() {
                     <LogOut className="w-5 h-5 text-red-400" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold">Cuenta</h2>
+                    <h2 className="text-xl font-semibold">{t("settingsGeneral.account")}</h2>
                     <p className="text-sm text-muted-foreground">
-                      Gestiona tu cuenta y sesión
+                      {t("settingsGeneral.accountDesc")}
                     </p>
                   </div>
                 </div>
@@ -91,7 +136,7 @@ export default function SettingsGeneral() {
                   onClick={logout}
                 >
                   <LogOut className="w-4 h-4 mr-2" />
-                  Cerrar sesión
+                  {t("settingsGeneral.signOut")}
                 </Button>
               </div>
             </CardContent>

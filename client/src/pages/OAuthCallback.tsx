@@ -1,9 +1,11 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { supabase } from "@/lib/supabase";
 import { trpc } from "@/lib/trpc";
 
 export default function OAuthCallback() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [error, setError] = useState<string | null>(null);
   const utils = trpc.useUtils();
@@ -78,29 +80,29 @@ export default function OAuthCallback() {
               syncError?.data?.message || 
               syncError?.shape?.message ||
               syncError?.cause?.message ||
-              "Failed to sync session";
+              t("oauthCallback.failedToSyncSession");
             
             // Check if it's a network error
             if (errorMessage.includes("fetch") || errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError")) {
-              errorMessage = "Network error: Could not connect to server. Please ensure the server is running and try again.";
+              errorMessage = t("oauthCallback.networkError");
             } 
             // Check if it's a database connection error
             else if (errorMessage.includes("ENOTFOUND") || errorMessage.includes("getaddrinfo") || errorMessage.includes("Failed query")) {
-              errorMessage = "Database connection error: Could not connect to Supabase database. Please check DATABASE_URL in your .env file and ensure it's correctly configured.";
+              errorMessage = t("oauthCallback.databaseError");
             }
             // Check if it's an API key error
             else if (errorMessage.includes("Invalid API key") || errorMessage.includes("API key")) {
-              errorMessage = "Server configuration error: Invalid Supabase API key. Please check SUPABASE_SERVICE_ROLE_KEY in your .env file.";
+              errorMessage = t("oauthCallback.apiKeyError");
             }
             // Check if it's a token verification error
             else if (errorMessage.includes("Token verification failed") || errorMessage.includes("Invalid access token")) {
-              errorMessage = "Authentication failed: Could not verify your session. Please try signing in again.";
+              errorMessage = t("oauthCallback.tokenError");
             }
             
             setError(errorMessage);
           }
         } else {
-          setError("No session found. Please try signing in again.");
+          setError(t("oauthCallback.noSessionFound"));
         }
       } catch (err) {
         console.error("Callback error:", err);
@@ -116,10 +118,10 @@ export default function OAuthCallback() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4 text-destructive">Authentication Error</h1>
+          <h1 className="text-2xl font-bold mb-4 text-destructive">{t("oauthCallback.authenticationError")}</h1>
           <p className="text-muted-foreground mb-4">{error}</p>
           <a href="/login" className="text-primary hover:underline">
-            Return to Login
+            {t("oauthCallback.returnToLogin")}
           </a>
         </div>
       </div>
@@ -130,7 +132,7 @@ export default function OAuthCallback() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
         <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-muted-foreground">Completing sign in...</p>
+        <p className="text-muted-foreground">{t("oauthCallback.completingSignIn")}</p>
       </div>
     </div>
   );

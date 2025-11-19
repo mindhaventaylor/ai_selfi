@@ -103,11 +103,6 @@ export function Footer() {
                   {t("footer.social.linkedin")}
                 </a>
               </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  Twitter
-                </a>
-              </li>
             </ul>
           </div>
         </div>
@@ -118,11 +113,11 @@ export function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <img src={APP_LOGO} alt="AISelfi" className="h-6 w-auto" />
-            <span>© 2025 AIselfi. All rights reserved.</span>
+            <span>{t("footer.copyright")}</span>
           </div>
           <div className="flex gap-4">
             <a href="#" className="hover:text-primary transition-colors">
-              Featured on Fazier
+              {t("footer.featuredOn")}
             </a>
           </div>
         </div>

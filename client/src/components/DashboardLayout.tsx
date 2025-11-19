@@ -1,3 +1,4 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -52,13 +53,7 @@ import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
-const menuItems = [
-  { icon: HelpCircle, label: "Start Here", path: "/dashboard/start" },
-  { icon: FlaskConical, label: "Models", path: "/dashboard/models" },
-  { icon: PlusCircle, label: "Create", path: "/dashboard/generate" },
-  { icon: ImageIcon, label: "Gallery", path: "/dashboard/gallery" },
-  { icon: Sparkles, label: "Funciones PRO", path: "/dashboard/pro" },
-];
+// menuItems will be created inside component to use translation
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
 const DEFAULT_WIDTH = 280;
@@ -70,6 +65,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
@@ -101,7 +97,7 @@ export default function DashboardLayout({
             <div className="text-center space-y-2">
               <h1 className="text-2xl font-bold tracking-tight">{APP_TITLE}</h1>
               <p className="text-sm text-muted-foreground">
-                Please sign in to continue
+                {t("dashboardLayout.pleaseSignIn")}
               </p>
             </div>
           </div>
@@ -112,7 +108,7 @@ export default function DashboardLayout({
             size="lg"
             className="w-full shadow-lg hover:shadow-xl transition-all"
           >
-            Sign in
+            {t("dashboardLayout.signIn")}
           </Button>
         </div>
       </div>
@@ -143,14 +139,23 @@ function DashboardLayoutContent({
   children,
   setSidebarWidth,
 }: DashboardLayoutContentProps) {
+  const { t, changeLanguage, currentLanguage } = useTranslation();
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
+  
+  const menuItems = [
+    { icon: HelpCircle, label: t("dashboardLayout.startHere"), path: "/dashboard/start" },
+    { icon: FlaskConical, label: t("dashboardLayout.models"), path: "/dashboard/models" },
+    { icon: PlusCircle, label: t("dashboardLayout.create"), path: "/dashboard/generate" },
+    { icon: ImageIcon, label: t("dashboardLayout.gallery"), path: "/dashboard/gallery" },
+    { icon: Sparkles, label: t("dashboardLayout.proFeatures"), path: "/dashboard/pro" },
+  ];
+  const activeMenuItem = menuItems.find(item => item.path === location);
   const [creditsOpen, setCreditsOpen] = useState(() => {
     return location.startsWith("/dashboard/credits");
   });
@@ -264,7 +269,7 @@ function DashboardLayoutContent({
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">{user?.credits ?? 0} Credits</span>
+                  <span className="text-muted-foreground">{user?.credits ?? 0} {t("dashboardLayout.creditsLabel")}</span>
                 </div>
               </div>
             )}
@@ -296,11 +301,11 @@ function DashboardLayoutContent({
                 <Collapsible open={creditsOpen} onOpenChange={setCreditsOpen}>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
-                      tooltip="Credits"
+                      tooltip={t("dashboardLayout.credits")}
                       className="h-10 transition-all font-normal w-full"
                     >
                       <CreditCard className="h-4 w-4" />
-                      <span>Credits</span>
+                      <span>{t("dashboardLayout.credits")}</span>
                       {creditsOpen ? (
                         <ChevronDown className="ml-auto h-4 w-4" />
                       ) : (
@@ -318,7 +323,7 @@ function DashboardLayoutContent({
                             : "text-muted-foreground hover:text-foreground"
                         }`}
                       >
-                        Buy Credits
+                        {t("dashboardLayout.buyCredits")}
                       </button>
                       <button 
                         onClick={() => setLocation("/dashboard/credits/gift-cards")}
@@ -328,7 +333,7 @@ function DashboardLayoutContent({
                             : "text-muted-foreground hover:text-foreground"
                         }`}
                       >
-                        Gift Cards
+                        {t("dashboardLayout.giftCards")}
                       </button>
                       <button 
                         onClick={() => setLocation("/dashboard/credits/empresas")}
@@ -338,7 +343,7 @@ function DashboardLayoutContent({
                             : "text-muted-foreground hover:text-foreground"
                         }`}
                       >
-                        Empresas
+                        {t("dashboardLayout.businesses")}
                       </button>
                       <button 
                         onClick={() => setLocation("/dashboard/credits/coupons")}
@@ -348,7 +353,7 @@ function DashboardLayoutContent({
                             : "text-muted-foreground hover:text-foreground"
                         }`}
                       >
-                        Coupons
+                        {t("dashboardLayout.coupons")}
                       </button>
                     </div>
                   </CollapsibleContent>
@@ -363,11 +368,11 @@ function DashboardLayoutContent({
               <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
-                    tooltip="Settings"
+                    tooltip={t("dashboardLayout.settings")}
                     className="h-10 transition-all font-normal w-full"
                   >
                     <Settings className="h-4 w-4" />
-                    <span>Settings</span>
+                    <span>{t("dashboardLayout.settings")}</span>
                     {settingsOpen ? (
                       <ChevronDown className="ml-auto h-4 w-4" />
                     ) : (
@@ -385,7 +390,7 @@ function DashboardLayoutContent({
                           : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      General
+                      {t("dashboardLayout.general")}
                     </button>
                   </div>
                 </CollapsibleContent>
@@ -397,11 +402,11 @@ function DashboardLayoutContent({
               <Collapsible open={supportOpen} onOpenChange={setSupportOpen}>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
-                    tooltip="Support"
+                    tooltip={t("dashboardLayout.support")}
                     className="h-10 transition-all font-normal w-full"
                   >
                     <ChevronRight className="h-4 w-4" />
-                    <span>Support</span>
+                    <span>{t("dashboardLayout.support")}</span>
                     {supportOpen ? (
                       <ChevronDown className="ml-auto h-4 w-4" />
                     ) : (
@@ -419,7 +424,7 @@ function DashboardLayoutContent({
                           : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      General
+                      {t("dashboardLayout.general")}
                     </button>
                     <button
                       onClick={() => setLocation("/dashboard/support/report-bug")}
@@ -429,7 +434,7 @@ function DashboardLayoutContent({
                           : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      Report a Bug
+                      {t("dashboardLayout.reportBug")}
                     </button>
                     <button
                       onClick={() => setLocation("/dashboard/support/suggest-feature")}
@@ -439,7 +444,7 @@ function DashboardLayoutContent({
                           : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      Suggest a Feature
+                      {t("dashboardLayout.suggestFeature")}
                     </button>
                     <button
                       onClick={() => setLocation("/dashboard/support/whatsapp")}
@@ -449,7 +454,7 @@ function DashboardLayoutContent({
                           : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      WhatsApp
+                      {t("dashboardLayout.whatsapp")}
                     </button>
                     <button
                       onClick={() => setLocation("/dashboard/support/reviews")}
@@ -459,7 +464,7 @@ function DashboardLayoutContent({
                           : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      Reviews
+                      {t("dashboardLayout.reviews")}
                 </button>
                   </div>
                 </CollapsibleContent>
@@ -469,12 +474,12 @@ function DashboardLayoutContent({
             {/* Afiliados */}
             <SidebarMenuItem>
               <SidebarMenuButton
-                tooltip="Afiliados"
+                tooltip={t("dashboardLayout.affiliates")}
                 className="h-10 transition-all font-normal"
                 onClick={() => setLocation("/afiliados")}
               >
                 <DollarSign className="h-4 w-4" />
-                <span>Afiliados</span>
+                <span>{t("dashboardLayout.affiliates")}</span>
                 <span className="ml-auto">💰</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -540,18 +545,49 @@ function DashboardLayoutContent({
             <DropdownMenu open={languageOpen} onOpenChange={setLanguageOpen}>
               <DropdownMenuTrigger asChild>
                 <button className="h-9 w-9 rounded-full border border-border hover:bg-accent transition-colors flex items-center justify-center">
-                  <span className="text-lg">🇪🇸</span>
+                  <span className="text-lg">
+                    {currentLanguage === "es" ? "🇪🇸" : 
+                     currentLanguage === "pt-BR" ? "🇧🇷" : 
+                     currentLanguage === "it" ? "🇮🇹" : "🇬🇧"}
+                  </span>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setLanguageOpen(false)}>
-                  🇪🇸 Español
+                <DropdownMenuItem 
+                  onClick={() => {
+                    changeLanguage("es");
+                    setLanguageOpen(false);
+                  }}
+                  className={currentLanguage === "es" ? "bg-accent" : ""}
+                >
+                  🇪🇸 {t("dashboardLayout.spanish")}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguageOpen(false)}>
-                  🇧🇷 Português
+                <DropdownMenuItem 
+                  onClick={() => {
+                    changeLanguage("pt-BR");
+                    setLanguageOpen(false);
+                  }}
+                  className={currentLanguage === "pt-BR" ? "bg-accent" : ""}
+                >
+                  🇧🇷 {t("dashboardLayout.portuguese")}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguageOpen(false)}>
-                  🇬🇧 English
+                <DropdownMenuItem 
+                  onClick={() => {
+                    changeLanguage("en");
+                    setLanguageOpen(false);
+                  }}
+                  className={currentLanguage === "en" ? "bg-accent" : ""}
+                >
+                  🇬🇧 {t("dashboardLayout.english")}
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    changeLanguage("it");
+                    setLanguageOpen(false);
+                  }}
+                  className={currentLanguage === "it" ? "bg-accent" : ""}
+                >
+                  🇮🇹 {t("dashboardLayout.italian")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -567,7 +603,7 @@ function DashboardLayoutContent({
               className="h-9 rounded-full px-4 gap-2"
             >
               <Clock className="h-4 w-4" />
-              <span>Credits: {user?.credits ?? 0}</span>
+              <span>{t("dashboardLayout.creditsLabel")}: {user?.credits ?? 0}</span>
             </Button>
 
             {/* User Avatar */}

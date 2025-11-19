@@ -1,33 +1,11 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useTranslation } from "@/hooks/useTranslation";
 import { APP_LOGO } from "@/const";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { Check } from "lucide-react";
 
-// Testimonials data
-const testimonials = [
-  {
-    text: "Ya me tocaba un upgrade en las fotos del trabajo y LinkedIn y vaya que lo he logrado!",
-    author: "Cristian",
-    stars: 5,
-  },
-  {
-    text: "Increíble calidad, mis fotos profesionales en minutos. Totalmente recomendado!",
-    author: "María",
-    stars: 5,
-  },
-  {
-    text: "Perfecto para mi perfil profesional. Las fotos quedaron espectaculares!",
-    author: "Carlos",
-    stars: 5,
-  },
-  {
-    text: "Me ahorré mucho tiempo y dinero. Las fotos son de calidad profesional!",
-    author: "Ana",
-    stars: 5,
-  },
-];
 
 // Images for carousel
 const carouselImages = [
@@ -38,6 +16,7 @@ const carouselImages = [
 ];
 
 export default function Login() {
+  const { t } = useTranslation();
   const { user, loading, signIn } = useAuth();
   const [, setLocation] = useLocation();
   const [isSigningIn, setIsSigningIn] = useState(false);
@@ -91,12 +70,13 @@ export default function Login() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando...</p>
+          <p className="text-muted-foreground">{t("login.loading")}</p>
         </div>
       </div>
     );
   }
 
+  const testimonials = t("login.testimonials", { returnObjects: true }) as Array<{ text: string; author: string; stars: number }>;
   const currentTestimonial = testimonials[currentTestimonialIndex];
 
   return (
@@ -161,16 +141,16 @@ export default function Login() {
 
           {/* Stats Banner */}
           <div className="mb-6 text-left">
-            <p className="text-sm font-semibold text-primary">70K+ PROFESSIONAL PHOTOS GENERATED</p>
+            <p className="text-sm font-semibold text-primary">{t("login.stats")}</p>
           </div>
 
           {/* Main Heading */}
           <div className="space-y-4 mb-8 text-left">
             <h1 className="text-4xl lg:text-5xl font-bold">
-              Transform Selfies into Professional Photos
+              {t("login.title")}
             </h1>
             <p className="text-lg text-muted-foreground">
-              Sign up to create your photos
+              {t("login.subtitle")}
             </p>
           </div>
 
@@ -183,7 +163,7 @@ export default function Login() {
               size="lg"
             >
               {isSigningIn ? (
-                "Redirecionando..."
+                t("login.redirecting")
               ) : (
                 <>
                   <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -204,7 +184,7 @@ export default function Login() {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  Sign in with Google
+                  {t("login.signInWithGoogle")}
                 </>
               )}
             </Button>
@@ -214,32 +194,32 @@ export default function Login() {
           <div className="space-y-3 mb-8">
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5 text-primary flex-shrink-0" />
-              <span className="text-sm">100% money-back guarantee</span>
+              <span className="text-sm">{t("login.moneyBackGuarantee")}</span>
             </div>
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5 text-primary flex-shrink-0" />
-              <span className="text-sm">Your photos in under 30 minutes</span>
+              <span className="text-sm">{t("login.photosUnder30Minutes")}</span>
             </div>
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5 text-primary flex-shrink-0" />
-              <span className="text-sm">Founded in Europe. We respect your privacy</span>
+              <span className="text-sm">{t("login.foundedInEurope")}</span>
             </div>
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5 text-primary flex-shrink-0" />
-              <span className="text-sm">Thousands of happy customers</span>
+              <span className="text-sm">{t("login.thousandsHappyCustomers")}</span>
             </div>
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5 text-primary flex-shrink-0" />
-              <span className="text-sm">100% bootstrapped and solo funded</span>
+              <span className="text-sm">{t("login.bootstrapped")}</span>
             </div>
           </div>
 
           {/* Terms */}
           <p className="text-xs text-left text-muted-foreground">
-            Ao continuar, você concorda com nossos{" "}
-            <a href="/terms" className="underline hover:text-primary">Termos de Serviço</a>
-            {" "}e{" "}
-            <a href="/privacy" className="underline hover:text-primary">Política de Privacidade</a>
+            {t("login.termsAgreement")}{" "}
+            <a href="/terms" className="underline hover:text-primary">{t("login.termsOfService")}</a>
+            {" "}{t("login.and")}{" "}
+            <a href="/privacy" className="underline hover:text-primary">{t("login.privacyPolicy")}</a>
           </p>
         </div>
       </div>

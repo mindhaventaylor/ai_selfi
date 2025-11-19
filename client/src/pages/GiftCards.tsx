@@ -1,3 +1,4 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,128 +11,22 @@ import {
 import { Check, Gift, Star, Zap } from "lucide-react";
 
 export default function GiftCards() {
-  const starterFeatures = [
-    "Crea 1 Modelo IA",
-    "40 fotos",
-    "Imágenes en Resolución 2K",
-    "Elige Estilos y Outfits",
-  ];
-
-  const proFeatures = [
-    "Crea 1 Modelo IA",
-    "100 fotos",
-    "Imágenes en Alta Resolución 4K",
-    "Elige Estilos y Outfits",
-    "Estilos Premium",
-  ];
-
-  const proCreditsFeatures = [
-    "Texto a Imagen",
-    "Edición de Fondo",
-    "Transferencia de Estilo",
-    "Miniaturas de YouTube",
-    "y más",
-  ];
-
-  const premiumFeatures = [
-    "Crea 2 Modelos IA",
-    "150 fotos",
-    "Imágenes en Alta Resolución 4K",
-    "Elige Estilos y Outfits",
-    "Estilos Premium",
-    "Soporte premium",
-    "Acceso anticipado a nuevas funciones",
-  ];
-
-  const premiumCreditsFeatures = [
-    "Texto a Imagen",
-    "Edición de Fondo",
-    "Transferencia de Estilo",
-    "Miniaturas de YouTube",
-    "y más",
-  ];
-
-  const faqItems = [
-    {
-      question: "¿Cómo funcionan las tarjetas de regalo?",
-      answer:
-        "Cuando compras una tarjeta de regalo, recibirás un código único que puedes compartir con cualquier persona. El destinatario puede usar este código durante la compra para canjear el valor completo del paquete de la tarjeta de regalo.",
-    },
-    {
-      question: "¿Se pueden usar las tarjetas de regalo varias veces?",
-      answer:
-        "No, cada código de tarjeta de regalo solo se puede usar una vez. El valor completo del paquete se aplicará cuando se canjee el código.",
-    },
-    {
-      question: "¿Expiran las tarjetas de regalo?",
-      answer:
-        "No, nuestras tarjetas de regalo nunca expiran. El destinatario puede usarlas cuando esté listo para crear sus fotos generadas por IA.",
-    },
-    {
-      question: "¿Qué pasa si compro el paquete equivocado?",
-      answer:
-        "Cada tarjeta de regalo es específica al paquete comprado (Inicial, Pro o Premium). El destinatario recibirá exactamente lo que está incluido en ese paquete.",
-    },
-    {
-      question: "¿Cómo recibiré la tarjeta de regalo?",
-      answer:
-        "Después del pago exitoso, serás redirigido a una página de confirmación que muestra tu código único de tarjeta de regalo. Puedes copiar este código y compartirlo con el destinatario.",
-    },
-    {
-      question: "¿Qué estilo de fotos recibiré?",
-      answer:
-        "Una vez que tu modelo de IA esté entrenado, podrás seleccionar diferentes estilos desde la pestaña Crear. Cada vez que generes una foto en un estilo seleccionado, recibirás 4 variantes diferentes en ese estilo. Esto te permite experimentar con varios looks y elegir tus favoritos.",
-    },
-    {
-      question: "¿Cuánto se demoran en generar las fotos?",
-      answer:
-        "El proceso ocurre en dos pasos: Primero, entrenamos tu modelo de IA, lo que toma entre 15-25 minutos. Después de eso, puedes generar fotos en cualquier momento, y cada generación toma solo 1-2 minutos para crear 4 variantes.",
-    },
-    {
-      question: "¿Ofrecen reembolso?",
-      answer:
-        "Sí, ofrecemos una garantía de devolución del 100% si no estás satisfecho con la calidad de tus fotos. Puedes solicitar un reembolso completo dentro de los primeros 7 días después de tu compra.",
-    },
-    {
-      question: "¿Qué métodos de pago aceptan?",
-      answer:
-        "Procesamos todas las transacciones utilizando Stripe. Puedes pagar usando tarjeta de crédito, PayPal, Apple Pay, Google Pay y más.",
-    },
-    {
-      question: "¿Cómo aseguro la calidad de mis fotos?",
-      answer:
-        "Antes de entrenar un modelo, te recomendamos leer nuestra guía. De esta manera te asegurarás de que las fotos generadas sean de la mejor calidad posible.",
-    },
-    {
-      question: "¿Quiénes pueden usar mis fotos y qué hay de la privacidad?",
-      answer:
-        "Tus fotos son exclusivamente tuyas. Priorizamos tu privacidad y eliminamos automáticamente todas las fotos generadas de nuestra base de datos después de 30 días. Las fotos que generes son para tu uso personal y no serán compartidas ni accesibles para nadie más.",
-    },
-    {
-      question: "¿Qué pasa si las fotos generadas no se parecen a mí?",
-      answer:
-        "Si sigues nuestras instrucciones para seleccionar las imágenes de entrenamiento, deberías obtener alrededor del 80% de fotos utilizables que se parezcan a ti. Continuamente actualizamos nuestros modelos para mejorar la precisión. Si tienes dudas antes de comenzar, no dudes en contactarnos para obtener orientación.",
-    },
-    {
-      question: "¿El AI aprenderá mis características únicas?",
-      answer:
-        "Sí, nuestra IA es excelente para entender y replicar lo que te hace único. También puedes ajustar características específicas al generar imágenes, como si llevas gafas u otras características distintivas.",
-    },
-    {
-      question: "¿Dónde puedo usar estas fotos?",
-      answer:
-        "Las fotos son versátiles y pueden usarse en cualquier lugar donde necesites una imagen profesional tuya. Son perfectas para fotos de perfil profesional (LinkedIn, sitios web de empresas), redes sociales (Instagram, Facebook, Twitter) o marca personal. Puedes elegir diferentes dimensiones como formato cuadrado para fotos de perfil o modo retrato para historias de Instagram y otros diseños verticales.",
-    },
-  ];
+  const { t } = useTranslation();
+  const starterFeatures = t("buyCredits.starterFeatures", { returnObjects: true }) as string[];
+  const proFeatures = t("buyCredits.proFeatures", { returnObjects: true }) as string[];
+  const proCreditsFeatures = t("buyCredits.proCreditsFeatures", { returnObjects: true }) as string[];
+  const premiumFeatures = t("buyCredits.premiumFeatures", { returnObjects: true }) as string[];
+  const premiumCreditsFeatures = t("buyCredits.premiumCreditsFeatures", { returnObjects: true }) as string[];
+  const faqItems = t("giftCards.faq", { returnObjects: true }) as Array<{ q: string; a: string }>;
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Gift Cards</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">{t("giftCards.title")}</h1>
           <p className="text-lg text-muted-foreground">
-            Regala AlSelfi.es a amigos y familia.
+            {t("giftCards.subtitle")}
           </p>
         </div>
 
@@ -150,8 +45,8 @@ export default function GiftCards() {
 
                 {/* Plan Info */}
                 <div className="text-center space-y-2">
-                  <h2 className="text-2xl font-bold">Starter Pack</h2>
-                  <p className="text-sm text-muted-foreground">40 créditos</p>
+                  <h2 className="text-2xl font-bold">{t("buyCredits.starterPack")}</h2>
+                  <p className="text-sm text-muted-foreground">{t("buyCredits.starterCredits")}</p>
                   <div className="text-4xl font-bold text-primary mt-4">
                     $29
                   </div>
@@ -172,16 +67,16 @@ export default function GiftCards() {
                   className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
                 >
-                  Comprar Gift Card
+                  {t("giftCards.buyGiftCard")}
                 </Button>
 
                 {/* Payment Terms */}
                 <div className="text-center space-y-1 pt-2">
                   <p className="text-xs text-muted-foreground">
-                    Pago único. Sin suscripción.
+                    {t("buyCredits.oneTimePayment")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    100% reembolsable
+                    {t("buyCredits.refundable")}
                   </p>
                 </div>
               </div>
@@ -191,7 +86,7 @@ export default function GiftCards() {
           {/* Pro Pack */}
           <Card className="bg-card/50 border-border relative">
             <Badge className="absolute -top-3 right-4 bg-yellow-500 text-yellow-900 border-yellow-500">
-              Most Popular
+              {t("buyCredits.mostPopular")}
             </Badge>
             <CardContent className="p-8">
               <div className="space-y-6">
@@ -204,8 +99,8 @@ export default function GiftCards() {
 
                 {/* Plan Info */}
                 <div className="text-center space-y-2">
-                  <h2 className="text-2xl font-bold">Pro Pack</h2>
-                  <p className="text-sm text-muted-foreground">100 créditos</p>
+                  <h2 className="text-2xl font-bold">{t("buyCredits.proPack")}</h2>
+                  <p className="text-sm text-muted-foreground">{t("buyCredits.proCredits")}</p>
                   <div className="text-4xl font-bold text-primary mt-4 flex items-center justify-center gap-2">
                     <span>$39</span>
                     <span className="text-xl text-muted-foreground line-through font-normal">
@@ -227,7 +122,7 @@ export default function GiftCards() {
                 {/* PRO Credits Section */}
                 <div className="pt-2 border-t border-border">
                   <p className="text-xs font-semibold text-yellow-400 mb-2">
-                    40 PRO CREDITS
+                    {t("buyCredits.proCreditsLabel")}
                   </p>
                   <div className="space-y-2">
                     {proCreditsFeatures.map((feature, idx) => (
@@ -243,16 +138,16 @@ export default function GiftCards() {
                   className="w-full bg-yellow-500 hover:bg-yellow-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
                 >
-                  Comprar Gift Card
+                  {t("giftCards.buyGiftCard")}
                 </Button>
 
                 {/* Payment Terms */}
                 <div className="text-center space-y-1 pt-2">
                   <p className="text-xs text-muted-foreground">
-                    Pago único. Sin suscripción.
+                    {t("buyCredits.oneTimePayment")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    100% reembolsable
+                    {t("buyCredits.refundable")}
                   </p>
                 </div>
               </div>
@@ -272,8 +167,8 @@ export default function GiftCards() {
 
                 {/* Plan Info */}
                 <div className="text-center space-y-2">
-                  <h2 className="text-2xl font-bold">Premium Pack</h2>
-                  <p className="text-sm text-muted-foreground">150 créditos</p>
+                  <h2 className="text-2xl font-bold">{t("buyCredits.premiumPack")}</h2>
+                  <p className="text-sm text-muted-foreground">{t("buyCredits.premiumCredits")}</p>
                   <div className="text-4xl font-bold text-primary mt-4">
                     $49
                   </div>
@@ -292,7 +187,7 @@ export default function GiftCards() {
                 {/* PRO Credits Section */}
                 <div className="pt-2 border-t border-border">
                   <p className="text-xs font-semibold text-purple-400 mb-2">
-                    60 PRO CREDITS
+                    {t("buyCredits.premiumCreditsLabel")}
                   </p>
                   <div className="space-y-2">
                     {premiumCreditsFeatures.map((feature, idx) => (
@@ -308,16 +203,16 @@ export default function GiftCards() {
                   className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
                 >
-                  Comprar Gift Card
+                  {t("giftCards.buyGiftCard")}
                 </Button>
 
                 {/* Payment Terms */}
                 <div className="text-center space-y-1 pt-2">
                   <p className="text-xs text-muted-foreground">
-                    Pago único. Sin suscripción.
+                    {t("buyCredits.oneTimePayment")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    100% reembolsable
+                    {t("buyCredits.refundable")}
                   </p>
                 </div>
               </div>
@@ -328,7 +223,7 @@ export default function GiftCards() {
         {/* FAQ Section */}
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
-            Preguntas Frecuentes
+            {t("giftCards.faqTitle")}
           </h2>
           <Accordion type="single" collapsible className="w-full space-y-2">
             {faqItems.map((item, idx) => (

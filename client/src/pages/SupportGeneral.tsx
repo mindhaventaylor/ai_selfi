@@ -1,16 +1,18 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Mail, HelpCircle, BookOpen, ArrowRight } from "lucide-react";
 
 export default function SupportGeneral() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold">Centro de Soporte</h1>
+          <h1 className="text-3xl md:text-4xl font-bold">{t("supportGeneral.title")}</h1>
         </div>
 
         {/* Support Cards */}
@@ -27,12 +29,11 @@ export default function SupportGeneral() {
                 </div>
 
                 {/* Title */}
-                <h2 className="text-xl font-bold text-center">Contáctenos</h2>
+                <h2 className="text-xl font-bold text-center">{t("supportGeneral.contactUs")}</h2>
 
                 {/* Description */}
                 <p className="text-sm text-muted-foreground text-center">
-                  ¿Necesita ayuda? Nuestro equipo de soporte está aquí para
-                  ayudarle.
+                  {t("supportGeneral.contactUsDesc")}
                 </p>
 
                 {/* Email Button */}
@@ -40,7 +41,7 @@ export default function SupportGeneral() {
                   className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full"
                   onClick={() => (window.location.href = "mailto:hola@aiselfi.es")}
                 >
-                  hola@aiselfi.es
+                  {t("supportGeneral.email")}
                 </Button>
               </div>
             </CardContent>
@@ -59,28 +60,26 @@ export default function SupportGeneral() {
 
                 {/* Title */}
                 <h2 className="text-xl font-bold text-center">
-                  Preguntas Frecuentes
+                  {t("supportGeneral.faq")}
                 </h2>
 
                 {/* FAQ Items */}
                 <div className="space-y-4 mt-6">
                   <div>
                     <h3 className="font-semibold text-sm mb-2">
-                      ¿Cómo empiezo?
+                      {t("supportGeneral.howDoIStart")}
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                      Regístrese para obtener una cuenta y siga nuestra guía de
-                      inicio rápido para comenzar a usar nuestros servicios.
+                      {t("supportGeneral.howDoIStartAnswer")}
                     </p>
                   </div>
 
                   <div>
                     <h3 className="font-semibold text-sm mb-2">
-                      ¿Qué métodos de pago aceptan?
+                      {t("supportGeneral.whatPaymentMethods")}
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                      Aceptamos todas las tarjetas de crédito principales y
-                      PayPal
+                      {t("supportGeneral.whatPaymentMethodsAnswer")}
                     </p>
                   </div>
                 </div>
@@ -101,13 +100,12 @@ export default function SupportGeneral() {
 
                 {/* Title */}
                 <h2 className="text-xl font-bold text-center">
-                  Documentación
+                  {t("supportGeneral.documentation")}
                 </h2>
 
                 {/* Description */}
                 <p className="text-sm text-muted-foreground text-center">
-                  Explore nuestra documentación completa para obtener guías y
-                  tutoriales detallados.
+                  {t("supportGeneral.documentationDesc")}
                 </p>
 
                 {/* Tutorial Button */}
@@ -115,7 +113,7 @@ export default function SupportGeneral() {
                   className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full"
                   onClick={() => setLocation("/dashboard/start")}
                 >
-                  Ver Tutorial
+                  {t("supportGeneral.viewTutorial")}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>

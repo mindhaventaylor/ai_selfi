@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,6 +41,7 @@ import {
 
 export default function GenerateImages() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [gender, setGender] = useState<"man" | "woman">("man");
   const [selectedImages, setSelectedImages] = useState<number[]>([]);
   const [selectedBackgrounds, setSelectedBackgrounds] = useState<string[]>([]);
@@ -71,13 +73,14 @@ export default function GenerateImages() {
   const backgrounds = ["office", "neutral", "studio"];
   const styles = ["formal", "casual", "elegant", "professional"];
 
+  const badges = t("generateImages.badges", { returnObjects: true }) as { premium: string; new: string; popular: string };
   const exampleImages = [
-    { id: 1, url: "/image.webp", badge: "Premium" },
-    { id: 2, url: "/image_1.webp", badge: "New" },
+    { id: 1, url: "/image.webp", badge: badges.premium },
+    { id: 2, url: "/image_1.webp", badge: badges.new },
     { id: 3, url: "/image_10.webp", badge: null },
-    { id: 4, url: "/image_100.jpg", badge: "Popular" },
+    { id: 4, url: "/image_100.jpg", badge: badges.popular },
     { id: 5, url: "/image_101.jpg", badge: null },
-    { id: 6, url: "/image_102.jpg", badge: "Premium" },
+    { id: 6, url: "/image_102.jpg", badge: badges.premium },
   ];
 
   const toggleImage = (id: number) => {
@@ -115,25 +118,26 @@ export default function GenerateImages() {
     // Get selected model
     const selectedModel = modelsData?.find((m) => m.id.toString() === modelId);
     if (!selectedModel) {
-      alert("Por favor selecciona un modelo válido");
+      alert(t("generateImages.pleaseSelectValidModel"));
       return;
     }
 
     // Build reference image URLs:
-    // 1. First, add the model's training images (up to 4) - these are sent in the background
+    // 1. First, add the model's training images (limited to 1 to minimize token usage and avoid rate limits)
     // 2. Then, add the selected example images for style reference
     const referenceImageUrls: string[] = [];
     
-    // Add model's training images (up to 4) - these are used for the actual person
+    // Add model's training images (max 1 to minimize payload size and token consumption)
+    // Using only 1 training image significantly reduces the payload size and helps avoid rate limits
     if (trainingImages && trainingImages.length > 0) {
-      referenceImageUrls.push(...trainingImages.slice(0, 4));
+      referenceImageUrls.push(trainingImages[0]); // Use only the first training image
     } else if (selectedModel.previewImageUrl) {
       // Fallback to preview image if training images aren't loaded yet
       referenceImageUrls.push(selectedModel.previewImageUrl);
     }
     
     if (referenceImageUrls.length === 0) {
-      alert("No se encontraron imágenes de entrenamiento para este modelo");
+      alert(t("generateImages.noTrainingImagesFound"));
       return;
     }
     
@@ -171,6 +175,7 @@ export default function GenerateImages() {
       }, 200);
 
       // Call the API
+      // Pass totalImagesToGenerate based on selected example images only (not training images)
       const result = await generateMutation.mutateAsync({
         modelId: parseInt(modelId),
         referenceImageUrls: absoluteUrls,
@@ -181,6 +186,7 @@ export default function GenerateImages() {
         backgrounds: selectedBackgrounds,
         styles: selectedStyles,
         numImagesPerReference: 4,
+        totalImagesToGenerate: totalImagesToGenerate, // Pass the calculated total based on selected example images
       });
 
       clearInterval(progressInterval);
@@ -194,7 +200,7 @@ export default function GenerateImages() {
       setIsGenerating(false);
       
       // Show error in modal instead of alert
-      const errorMsg = error?.message || "Error al generar las imágenes. Por favor intenta de nuevo.";
+      const errorMsg = error?.message || t("generateImages.errorGenerating");
       setErrorMessage(errorMsg);
       
       // Don't close modal on error - let user see the error and retry
@@ -219,25 +225,25 @@ export default function GenerateImages() {
           {/* Main Content Area */}
           <div className="flex-1 min-w-0 space-y-6">
             {/* Title */}
-            <h1 className="text-3xl md:text-4xl font-bold">Elige tus Imágenes</h1>
+            <h1 className="text-3xl md:text-4xl font-bold">{t("generateImages.title")}</h1>
 
             {/* Gender Selection */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Seleccionar Género</label>
+              <label className="text-sm font-medium">{t("generateImages.selectGender")}</label>
               <div className="flex gap-3">
                 <Button
                   variant={gender === "man" ? "default" : "outline"}
                   onClick={() => setGender("man")}
                   className={gender === "man" ? "bg-primary" : ""}
                 >
-                  Man
+                  {t("generateImages.man")}
                 </Button>
                 <Button
                   variant={gender === "woman" ? "default" : "outline"}
                   onClick={() => setGender("woman")}
                   className={gender === "woman" ? "bg-primary" : ""}
                 >
-                  Woman
+                  {t("generateImages.woman")}
                 </Button>
               </div>
             </div>
@@ -245,7 +251,7 @@ export default function GenerateImages() {
             {/* Filter Images */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Background</label>
+                <label className="text-sm font-medium">{t("generateImages.background")}</label>
                 <div className="flex flex-wrap gap-2">
                   {backgrounds.map((bg) => (
                     <Button
@@ -264,7 +270,7 @@ export default function GenerateImages() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Style</label>
+                <label className="text-sm font-medium">{t("generateImages.style")}</label>
                 <div className="flex flex-wrap gap-2">
                   {styles.map((style) => (
                     <Button
@@ -290,10 +296,10 @@ export default function GenerateImages() {
                   <Sparkles className="h-5 w-5 text-primary mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm font-medium">
-                      Múltiples Variaciones
+                      {t("generateImages.multipleVariations")}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Cada imagen seleccionada generará 4 variaciones únicas en ese estilo. ¡Clickea las imágenes de referencia favoritas para comenzar!
+                      {t("generateImages.multipleVariationsDesc")}
                     </p>
                   </div>
                 </div>
@@ -302,9 +308,9 @@ export default function GenerateImages() {
 
             {/* Example Images Grid - User selects style images */}
             <div className="space-y-3">
-              <h2 className="text-lg font-semibold">Imágenes de Entrenamiento del Modelo</h2>
+              <h2 className="text-lg font-semibold">{t("generateImages.modelTrainingImages")}</h2>
               <p className="text-sm text-muted-foreground">
-                Selecciona las imágenes de referencia para elegir el estilo de tus fotos generadas
+                {t("generateImages.selectReferenceImages")}
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {exampleImages.map((image) => (
@@ -319,15 +325,15 @@ export default function GenerateImages() {
                   >
                     <img
                       src={image.url}
-                      alt={`Reference ${image.id}`}
+                      alt={`${t("generateImages.altText.reference")} ${image.id}`}
                       className="w-full h-full object-cover"
                     />
                     {image.badge && (
                       <Badge
                         className={`absolute top-2 right-2 ${
-                          image.badge === "Premium"
+                          image.badge === badges.premium
                             ? "bg-purple-500"
-                            : image.badge === "New"
+                            : image.badge === badges.new
                             ? "bg-green-500"
                             : "bg-blue-500"
                         }`}
@@ -356,7 +362,7 @@ export default function GenerateImages() {
                   <CollapsibleTrigger className="w-full px-6 py-4 flex items-center justify-between hover:bg-accent/50 transition-colors border-b border-border">
                     <div className="flex items-center gap-3">
                       <Settings className="h-5 w-5 text-purple-400" />
-                      <h2 className="text-xl font-bold">Parámetros</h2>
+                      <h2 className="text-xl font-bold">{t("generateImages.parameters")}</h2>
                     </div>
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   </CollapsibleTrigger>
@@ -367,16 +373,16 @@ export default function GenerateImages() {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 mb-2">
                           <User className="h-4 w-4 text-muted-foreground" />
-                          <label className="text-sm font-medium">Modelo</label>
+                          <label className="text-sm font-medium">{t("generateImages.model")}</label>
                         </div>
                         <Select value={modelId} onValueChange={setModelId}>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Seleccionar modelo" />
+                            <SelectValue placeholder={t("generateImages.selectModel")} />
                           </SelectTrigger>
                           <SelectContent>
                             {isLoadingModels ? (
                               <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                                Cargando modelos...
+                                {t("generateImages.loadingModels")}
                               </div>
                             ) : modelsData && modelsData.length > 0 ? (
                               modelsData.map((model) => (
@@ -386,22 +392,22 @@ export default function GenerateImages() {
                                   disabled={model.status !== "ready"}
                                 >
                                   {model.name} {model.gender ? `(${model.gender})` : ""} 
-                                  {model.status === "training" && " - Entrenando..."}
-                                  {model.status === "failed" && " - Fallido"}
+                                  {model.status === "training" && ` - ${t("generateImages.training")}`}
+                                  {model.status === "failed" && ` - ${t("generateImages.failed")}`}
                                 </SelectItem>
                               ))
                             ) : (
                               <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                                No hay modelos disponibles
+                                {t("generateImages.noModelsAvailable")}
                               </div>
                             )}
                           </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground mt-1.5">
-                          {!modelId && modelsData && modelsData.length === 0 && "Primero necesitas entrenar un modelo"}
-                          {!modelId && modelsData && modelsData.length > 0 && "Selecciona un modelo para generar imágenes"}
-                          {modelId && modelsData?.find((m) => m.id.toString() === modelId)?.status === "training" && "Este modelo aún está entrenando. Espera a que termine."}
-                          {modelId && modelsData?.find((m) => m.id.toString() === modelId)?.status === "failed" && "Este modelo falló. Por favor entrena uno nuevo."}
+                          {!modelId && modelsData && modelsData.length === 0 && t("generateImages.firstNeedToTrain")}
+                          {!modelId && modelsData && modelsData.length > 0 && t("generateImages.selectModelToGenerate")}
+                          {modelId && modelsData?.find((m) => m.id.toString() === modelId)?.status === "training" && t("generateImages.modelStillTraining")}
+                          {modelId && modelsData?.find((m) => m.id.toString() === modelId)?.status === "failed" && t("generateImages.modelFailed")}
                         </p>
                       </div>
 
@@ -409,7 +415,7 @@ export default function GenerateImages() {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 mb-2">
                           <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                          <label className="text-sm font-medium">Dimensiones de la Imagen</label>
+                          <label className="text-sm font-medium">{t("generateImages.imageDimensions")}</label>
                         </div>
                         <div className="flex gap-2">
                           {(["1:1", "9:16", "16:9"] as const).map((ratio) => (
@@ -429,7 +435,7 @@ export default function GenerateImages() {
                           ))}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1.5">
-                          Aspecto de la imagen
+                          {t("generateImages.aspectRatio")}
                         </p>
                       </div>
 
@@ -437,19 +443,19 @@ export default function GenerateImages() {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 mb-2">
                           <Glasses className="h-4 w-4 text-muted-foreground" />
-                          <label className="text-sm font-medium">Usas Gafas</label>
+                          <label className="text-sm font-medium">{t("generateImages.doYouWearGlasses")}</label>
                         </div>
                         <Select value={glasses} onValueChange={setGlasses}>
                           <SelectTrigger className="w-full">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="no">No</SelectItem>
-                            <SelectItem value="yes">Sí</SelectItem>
+                            <SelectItem value="no">{t("generateImages.no")}</SelectItem>
+                            <SelectItem value="yes">{t("generateImages.yes")}</SelectItem>
                           </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground mt-1.5">
-                          Agregar gafas a las imágenes generadas
+                          {t("generateImages.addGlassesToImages")}
                         </p>
                       </div>
 
@@ -458,7 +464,7 @@ export default function GenerateImages() {
                         <div className="flex items-center gap-2 mb-2">
                           <Palette className="h-4 w-4 text-muted-foreground" />
                           <label className="text-sm font-medium">
-                            Color de Pelo (opcional)
+                            {t("generateImages.hairColor")}
                           </label>
                         </div>
                         <Select value={hairColor} onValueChange={setHairColor}>
@@ -466,15 +472,15 @@ export default function GenerateImages() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="default">Predeterminado</SelectItem>
-                            <SelectItem value="black">Negro</SelectItem>
-                            <SelectItem value="brown">Marrón</SelectItem>
-                            <SelectItem value="blonde">Rubio</SelectItem>
-                            <SelectItem value="red">Rojo</SelectItem>
+                            <SelectItem value="default">{t("generateImages.default")}</SelectItem>
+                            <SelectItem value="black">{t("generateImages.black")}</SelectItem>
+                            <SelectItem value="brown">{t("generateImages.brown")}</SelectItem>
+                            <SelectItem value="blonde">{t("generateImages.blonde")}</SelectItem>
+                            <SelectItem value="red">{t("generateImages.red")}</SelectItem>
                           </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground mt-1.5">
-                          Elige el color de pelo para tus imágenes generadas
+                          {t("generateImages.chooseHairColor")}
                         </p>
                       </div>
 
@@ -483,7 +489,7 @@ export default function GenerateImages() {
                         <div className="flex items-center gap-2 mb-2">
                           <Scissors className="h-4 w-4 text-muted-foreground" />
                           <label className="text-sm font-medium">
-                            Estilo de Pelo (opcional)
+                            {t("generateImages.hairStyle")}
                           </label>
                         </div>
                         <Select value={hairStyle} onValueChange={setHairStyle}>
@@ -491,15 +497,15 @@ export default function GenerateImages() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="no-preference">Sin preferencia</SelectItem>
-                            <SelectItem value="short">Corto</SelectItem>
-                            <SelectItem value="medium">Medio</SelectItem>
-                            <SelectItem value="long">Largo</SelectItem>
-                            <SelectItem value="curly">Rizado</SelectItem>
+                            <SelectItem value="no-preference">{t("generateImages.noPreference")}</SelectItem>
+                            <SelectItem value="short">{t("generateImages.short")}</SelectItem>
+                            <SelectItem value="medium">{t("generateImages.medium")}</SelectItem>
+                            <SelectItem value="long">{t("generateImages.long")}</SelectItem>
+                            <SelectItem value="curly">{t("generateImages.curly")}</SelectItem>
                           </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground mt-1.5">
-                          Selecciona un estilo de pelo específico para las imágenes generadas
+                          {t("generateImages.selectHairStyle")}
                         </p>
                       </div>
 
@@ -512,7 +518,7 @@ export default function GenerateImages() {
                           onClick={handleGenerate}
                         >
                           <Sparkles className="w-5 h-5 mr-2" />
-                          Generar {totalImagesToGenerate} Imágenes
+                          {t("generateImages.generate")} {totalImagesToGenerate} {t("generateImages.images")}
                         </Button>
                         
                         {/* Credits Usage */}
@@ -520,12 +526,12 @@ export default function GenerateImages() {
                           <Sparkles className="h-4 w-4" />
                           <span>
                             {imageCount === 0 
-                              ? "Selecciona imágenes para generar"
+                              ? t("generateImages.selectImagesToGenerate")
                               : !hasEnoughCredits
-                              ? `No tienes suficientes créditos (necesitas ${creditsNeeded}, tienes ${userCredits})`
+                              ? `${t("generateImages.notEnoughCredits")} (${t("generateImages.needCredits")} ${creditsNeeded}, ${t("generateImages.haveCredits")} ${userCredits})`
                               : modelId === ""
-                              ? "Selecciona un modelo primero"
-                              : `Esto usará ${creditsNeeded} ${creditsNeeded === 1 ? 'crédito' : 'créditos'}`
+                              ? t("generateImages.selectModelFirst")
+                              : `${t("generateImages.willUseCredits")} ${creditsNeeded} ${creditsNeeded === 1 ? t("generateImages.credit") : t("generateImages.credits")}`
                             }
                           </span>
                         </div>
@@ -545,7 +551,7 @@ export default function GenerateImages() {
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-2xl font-bold">
-                Tus fotos profesionales están casi listas
+                {t("generateImages.professionalPhotosAlmostReady")}
               </DialogTitle>
             </div>
           </DialogHeader>
@@ -558,7 +564,7 @@ export default function GenerateImages() {
                   <AlertCircle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
                   <div className="flex-1 space-y-2">
                     <p className="text-sm font-medium text-destructive">
-                      Error al generar imágenes
+                      {t("generateImages.errorGeneratingImages")}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {errorMessage}
@@ -576,14 +582,14 @@ export default function GenerateImages() {
                             handleGenerate();
                           }}
                         >
-                          Reintentar
+                          {t("generateImages.retry")}
                         </Button>
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => setShowModal(false)}
                         >
-                          Cerrar
+                          {t("generateImages.close")}
                         </Button>
                       </div>
                     )}
@@ -596,14 +602,14 @@ export default function GenerateImages() {
             {!errorMessage && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Progreso</span>
+                  <span className="text-sm font-medium">{t("generateImages.progress")}</span>
                   <span className={`text-sm font-bold ${generationProgress === 100 ? 'text-green-500' : 'text-primary'}`}>
                     {generationProgress}%
                   </span>
                 </div>
                 <Progress value={generationProgress} className="h-2" />
                 <p className="text-sm text-muted-foreground">
-                  {completedImages} de {totalImagesToGenerate} imágenes completadas
+                  {completedImages} {t("generateImages.of")} {totalImagesToGenerate} {t("generateImages.imagesCompleted")}
                 </p>
               </div>
             )}
@@ -611,14 +617,14 @@ export default function GenerateImages() {
             {/* Info Message - Only show if not error and generating */}
             {!errorMessage && isGenerating && (
               <p className="text-sm text-muted-foreground">
-                Generando tus fotos profesionales... Por favor espera.
+                {t("generateImages.generatingProfessionalPhotos")}
               </p>
             )}
 
             {/* Success Message */}
             {!errorMessage && !isGenerating && generatedImages.length > 0 && (
               <p className="text-sm text-muted-foreground">
-                Puedes cerrar esta ventana. Tus fotos aparecen en galería
+                {t("generateImages.canCloseWindow")}
               </p>
             )}
           </div>
@@ -665,7 +671,7 @@ export default function GenerateImages() {
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center space-y-2">
                       <Sparkles className="w-6 h-6 text-muted-foreground mx-auto animate-pulse" />
-                      <p className="text-xs text-muted-foreground">Generando...</p>
+                      <p className="text-xs text-muted-foreground">{t("generateImages.generating")}</p>
                     </div>
                   </div>
                 </div>

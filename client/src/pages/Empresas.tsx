@@ -1,15 +1,11 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, Mail, Box } from "lucide-react";
 
 export default function Empresas() {
-  const features = [
-    "Crea 1 Modelo IA",
-    "40 créditos",
-    "40 fotos",
-    "Elige 10 Estilos y Atuendos",
-    "Soporte premium",
-  ];
+  const { t } = useTranslation();
+  const features = t("empresas.features", { returnObjects: true }) as string[];
 
   return (
     <div className="min-h-screen bg-background">
@@ -17,10 +13,10 @@ export default function Empresas() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Planes Empresariales
+            {t("empresas.title")}
           </h1>
           <p className="text-lg text-muted-foreground">
-            Fotos profesionales de IA para equipos y empresas (mínimo 5 personas)
+            {t("empresas.subtitle")}
           </p>
         </div>
 
@@ -38,14 +34,14 @@ export default function Empresas() {
 
                 {/* Plan Info */}
                 <div className="text-center space-y-2">
-                  <h2 className="text-2xl font-bold">Plan Empresarial</h2>
+                  <h2 className="text-2xl font-bold">{t("empresas.businessPlan")}</h2>
                   <p className="text-sm text-muted-foreground">
-                    40 créditos por persona
+                    {t("empresas.creditsPerPerson")}
                   </p>
                   <div className="text-4xl font-bold text-primary mt-4">
                     $15
                     <span className="text-lg text-muted-foreground font-normal">
-                      {" "}por persona
+                      {" "}{t("empresas.perPerson")}
                     </span>
                   </div>
                 </div>
@@ -65,16 +61,16 @@ export default function Empresas() {
                   className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
                 >
-                  Comprar Créditos
+                  {t("empresas.buyCredits")}
                 </Button>
 
                 {/* Payment Terms */}
                 <div className="text-center space-y-1 pt-2">
                   <p className="text-xs text-muted-foreground">
-                    Pago único. Sin suscripción.
+                    {t("empresas.oneTimePayment")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    100% reembolsable
+                    {t("empresas.refundable")}
                   </p>
                 </div>
               </div>
@@ -95,11 +91,10 @@ export default function Empresas() {
                 {/* Content */}
                 <div className="text-center space-y-3 flex-1">
                   <h2 className="text-xl font-bold">
-                    ¿Necesitas una Cotización Personalizada?
+                    {t("empresas.needCustomQuote")}
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    Para pedidos grandes, paquetes de equipo o requisitos
-                    personalizados, contáctanos.
+                    {t("empresas.needCustomQuoteDesc")}
                   </p>
                 </div>
 
@@ -107,10 +102,10 @@ export default function Empresas() {
                 <Button
                   className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
-                  onClick={() => (window.location.href = "mailto:hola@aiselfi.es")}
+                  onClick={() => (window.location.href = `mailto:${t("empresas.contactEmail")}`)}
                 >
                   <Mail className="w-5 h-5 mr-2" />
-                  hola@aiselfi.es
+                  {t("empresas.contactEmail")}
                 </Button>
               </div>
             </CardContent>

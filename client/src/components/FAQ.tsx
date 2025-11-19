@@ -47,7 +47,7 @@ export function FAQ() {
             onClick={handleViewAll}
             className="text-primary hover:underline text-lg cursor-pointer"
           >
-            {expandedItems.length === questions.length ? "Ocultar todas" : t("faq.viewAll")}
+            {expandedItems.length === questions.length ? t("faq.hideAll") : t("faq.viewAll")}
           </button>
         </div>
       </div>

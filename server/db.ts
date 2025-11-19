@@ -10,6 +10,11 @@ let _useRestApi = false;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
+  // If we've already determined REST API should be used, skip connection attempt
+  if (_useRestApi) {
+    return null;
+  }
+  
   if (!_db && process.env.DATABASE_URL) {
     try {
       const client = postgres(process.env.DATABASE_URL!, {
@@ -28,7 +33,10 @@ export async function getDb() {
       _useRestApi = false;
       console.log("[Database] Direct connection established");
     } catch (error) {
-      console.warn("[Database] Direct connection failed, using REST API fallback:", error instanceof Error ? error.message : error);
+      const dbUrl = process.env.DATABASE_URL || '';
+      // Mask password in URL for logging
+      const maskedUrl = dbUrl.replace(/:([^:@]+)@/, ':***@');
+      console.warn(`[Database] Direct connection failed (${maskedUrl}), using REST API fallback:`, error instanceof Error ? error.message : error);
       _db = null;
       _useRestApi = true;
     }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +12,7 @@ import {
 import { Download, Check, Image as ImageIcon, Trash2, Heart } from "lucide-react";
 
 export default function Gallery() {
+  const { t } = useTranslation();
   const [sortBy, setSortBy] = useState<"newest" | "favourites">("newest");
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set());
@@ -95,11 +97,11 @@ export default function Gallery() {
     
     if (selectedImages.size === 1) {
       const photoId = Array.from(selectedImages)[0];
-      if (confirm("¿Estás seguro de que quieres eliminar esta foto?")) {
+      if (confirm(t("gallery.areYouSureDeleteOne"))) {
         deletePhotoMutation.mutate({ photoId });
       }
     } else {
-      if (confirm(`¿Estás seguro de que quieres eliminar ${selectedImages.size} fotos?`)) {
+      if (confirm(`${t("gallery.areYouSureDeleteMany")} ${selectedImages.size} ${t("gallery.images")}?`)) {
         deleteManyMutation.mutate({ photoIds: Array.from(selectedImages) });
       }
     }
@@ -126,17 +128,17 @@ export default function Gallery() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <h1 className="text-3xl md:text-4xl font-bold">Your Gallery</h1>
+            <h1 className="text-3xl md:text-4xl font-bold">{t("gallery.title")}</h1>
             {hasImages && (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Sort by:</span>
+                <span className="text-sm text-muted-foreground">{t("gallery.sortBy")}</span>
                 <Select value={sortBy} onValueChange={(value: "newest" | "favourites") => setSortBy(value)}>
                   <SelectTrigger className="w-[140px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="newest">Newest</SelectItem>
-                    <SelectItem value="favourites">Favourites</SelectItem>
+                    <SelectItem value="newest">{t("gallery.newest")}</SelectItem>
+                    <SelectItem value="favourites">{t("gallery.favourites")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -150,7 +152,7 @@ export default function Gallery() {
                 onClick={handleSelectClick}
                 className="rounded-full"
               >
-                {isSelectMode ? "Cancel" : "Select"}
+                {isSelectMode ? t("gallery.cancel") : t("gallery.select")}
               </Button>
               {isSelectMode && selectedImages.size > 0 && (
                 <Button
@@ -160,7 +162,7 @@ export default function Gallery() {
                   disabled={deletePhotoMutation.isPending || deleteManyMutation.isPending}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Delete ({selectedImages.size})
+                  {t("gallery.delete")} ({selectedImages.size})
                 </Button>
               )}
               <Button
@@ -170,7 +172,7 @@ export default function Gallery() {
                 disabled={selectedImages.size === 0 && !isSelectMode}
               >
                 <Download className="w-4 h-4 mr-2" />
-                Download ({selectedImages.size})
+                {t("gallery.download")} ({selectedImages.size})
               </Button>
             </div>
           )}
@@ -181,7 +183,7 @@ export default function Gallery() {
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center space-y-4">
               <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-              <p className="text-sm text-muted-foreground">Loading gallery...</p>
+              <p className="text-sm text-muted-foreground">{t("gallery.loadingGallery")}</p>
             </div>
           </div>
         )}
@@ -190,7 +192,7 @@ export default function Gallery() {
         {!isLoading && hasImages && (
           <div className="mb-6">
             <p className="text-sm text-muted-foreground">
-              Showing {photos.length} of {totalImages} images
+              {t("gallery.showing")} {photos.length} {t("gallery.of")} {totalImages} {t("gallery.images")}
             </p>
           </div>
         )}
@@ -202,9 +204,9 @@ export default function Gallery() {
               <div className="w-24 h-24 mx-auto rounded-full bg-muted flex items-center justify-center">
                 <ImageIcon className="w-12 h-12 text-muted-foreground" />
               </div>
-              <h2 className="text-xl font-semibold">No images found in your gallery.</h2>
+              <h2 className="text-xl font-semibold">{t("gallery.noImagesFound")}</h2>
               <p className="text-sm text-muted-foreground">
-                Start creating images to see them here.
+                {t("gallery.startCreatingImages")}
               </p>
             </div>
           </div>
@@ -271,7 +273,7 @@ export default function Gallery() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (confirm("¿Estás seguro de que quieres eliminar esta foto?")) {
+                          if (confirm(t("gallery.areYouSureDeleteOne"))) {
                             deletePhotoMutation.mutate({ photoId: photo.id });
                           }
                         }}

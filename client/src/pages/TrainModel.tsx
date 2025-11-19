@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useTranslation } from "@/hooks/useTranslation";
 import { trpc } from "@/lib/trpc";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ interface UploadedFile {
 }
 
 export default function TrainModel() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [modelName, setModelName] = useState("");
@@ -62,13 +64,13 @@ export default function TrainModel() {
       
       // Validate file type
       if (!file.type.match(/^image\/(jpeg|jpg|png)$/i)) {
-        alert("Solo se permiten archivos JPG o PNG");
+        alert(t("trainModel.onlyJpgPng"));
         return;
       }
 
       // Validate file size (3MB)
       if (file.size > 3 * 1024 * 1024) {
-        alert("El archivo es demasiado grande. Máximo 3MB por imagen.");
+        alert(t("trainModel.fileTooLarge"));
         return;
       }
 
@@ -110,22 +112,22 @@ export default function TrainModel() {
 
   const handleUpload = async () => {
     if (!modelName.trim()) {
-      alert("Por favor ingresa un nombre para el modelo");
+      alert(t("trainModel.pleaseEnterModelName"));
       return;
     }
 
     if (!gender) {
-      alert("Por favor selecciona el género");
+      alert(t("trainModel.pleaseSelectGender"));
       return;
     }
 
     if (uploadedFiles.length === 0) {
-      alert("Por favor sube al menos una imagen");
+      alert(t("trainModel.pleaseUploadAtLeastOne"));
       return;
     }
 
     if (uploadedFiles.length > 5) {
-      alert("Máximo 5 imágenes permitidas");
+      alert(t("trainModel.max5Images"));
       return;
     }
 
@@ -149,7 +151,7 @@ export default function TrainModel() {
 
         if (uploadError) {
           console.error("Error uploading image:", uploadError);
-          throw new Error(`Error al subir la imagen: ${uploadError.message}`);
+          throw new Error(`${t("trainModel.errorUploadingImage")}: ${uploadError.message}`);
         }
 
         // Get signed URL for private bucket (valid for 1 hour)
@@ -160,7 +162,7 @@ export default function TrainModel() {
 
         if (signedUrlError || !signedUrlData) {
           console.error("Error creating signed URL:", signedUrlError);
-          throw new Error(`Error al crear URL firmada: ${signedUrlError?.message || 'Unknown error'}`);
+          throw new Error(`${t("trainModel.errorCreatingSignedUrl")}: ${signedUrlError?.message || 'Unknown error'}`);
         }
 
         uploadedUrls.push(signedUrlData.signedUrl);
@@ -168,7 +170,7 @@ export default function TrainModel() {
 
       // Ensure we have at least one image
       if (uploadedUrls.length === 0) {
-        throw new Error("No se pudieron subir las imágenes");
+        throw new Error(t("trainModel.couldNotUploadImages"));
       }
 
       // Create model record in database
@@ -196,7 +198,7 @@ export default function TrainModel() {
       setUploadedFiles([]);
     } catch (error: any) {
       console.error("Error uploading model:", error);
-      alert(error?.message || "Error al subir el modelo. Por favor intenta de nuevo.");
+      alert(error?.message || t("trainModel.errorUploadingModel"));
     }
   };
 
@@ -225,7 +227,7 @@ export default function TrainModel() {
       <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Header */}
         <h1 className="text-3xl md:text-4xl font-bold mb-8 flex items-center gap-2">
-          Entrenar Nuevo Modelo
+          {t("trainModel.title")}
           <ArrowRight className="w-6 h-6" />
         </h1>
 
@@ -235,34 +237,33 @@ export default function TrainModel() {
             <div className="space-y-6">
               {/* Section Title */}
               <div>
-                <h2 className="text-xl font-bold mb-2">Sube tus imágenes</h2>
+                <h2 className="text-xl font-bold mb-2">{t("trainModel.uploadImages")}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Sube de 1 a 5 fotos de la persona que quieres generar. Estas
-                  imágenes se usarán para entrenar tu modelo.
+                  {t("trainModel.uploadImagesDesc")}
                 </p>
               </div>
 
               {/* Model Name and Gender */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="model-name">Nombre del Modelo</Label>
+                  <Label htmlFor="model-name">{t("trainModel.modelName")}</Label>
                   <Input
                     id="model-name"
                     type="text"
-                    placeholder="Ingresa el nombre del modelo"
+                    placeholder={t("trainModel.enterModelName")}
                     value={modelName}
                     onChange={(e) => setModelName(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="gender">Tipo</Label>
+                  <Label htmlFor="gender">{t("trainModel.type")}</Label>
                   <Select value={gender} onValueChange={(value: "hombre" | "mujer") => setGender(value)}>
                     <SelectTrigger id="gender">
-                      <SelectValue placeholder="Selecciona género" />
+                      <SelectValue placeholder={t("trainModel.selectGender")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="hombre">Hombre</SelectItem>
-                      <SelectItem value="mujer">Mujer</SelectItem>
+                      <SelectItem value="hombre">{t("trainModel.male")}</SelectItem>
+                      <SelectItem value="mujer">{t("trainModel.female")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -301,12 +302,12 @@ export default function TrainModel() {
                     </div>
                   </div>
                   <div>
-                    <p className="text-lg font-medium mb-2">Sube tus imágenes</p>
+                    <p className="text-lg font-medium mb-2">{t("trainModel.uploadYourImages")}</p>
                     <p className="text-sm text-muted-foreground">
-                      o arrastra y suelta. JPG o PNG hasta 3MB cada una
+                      {t("trainModel.orDragAndDrop")}
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Mínimo 1 imagen, máximo 5 imágenes
+                      {t("trainModel.minMaxImages")}
                     </p>
                   </div>
                 </div>
@@ -315,7 +316,7 @@ export default function TrainModel() {
               {/* Preview Images Section */}
               {uploadedFiles.length > 0 && (
                 <div className="space-y-3 relative">
-                  <h3 className="text-lg font-semibold">Preview Images</h3>
+                  <h3 className="text-lg font-semibold">{t("trainModel.previewImages")}</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {uploadedFiles.map((file) => (
                       <div
@@ -347,14 +348,14 @@ export default function TrainModel() {
                         <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
                         <div className="flex-1">
                           <p className="text-sm font-medium text-foreground mb-3">
-                            Necesitas créditos de entrenamiento para subir imágenes.
+                            {t("trainModel.needTrainingCredits")}
                           </p>
                           <Button
                             onClick={() => setLocation("/dashboard/credits/buy")}
                             className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full"
                             size="sm"
                           >
-                            Comprar Créditos
+                            {t("trainModel.buyCredits")}
                           </Button>
                         </div>
                         <button
@@ -376,13 +377,13 @@ export default function TrainModel() {
                 className="w-full bg-green-500 hover:bg-green-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                 size="lg"
               >
-                Subir Imágenes
+                {t("trainModel.uploadImagesButton")}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
 
               {/* Training Credits */}
               <p className="text-sm text-muted-foreground text-center">
-                Créditos de entrenamiento disponibles: {trainingCredits}
+                {t("trainModel.availableTrainingCredits")}: {trainingCredits}
               </p>
             </div>
           </CardContent>
@@ -392,23 +393,23 @@ export default function TrainModel() {
         <Card className="bg-card/50 border-border">
           <CardContent className="p-6 md:p-8">
             <h2 className="text-2xl font-bold mb-6">
-              Consejos para obtener los mejores resultados
+              {t("trainModel.tipsForBestResults")}
             </h2>
 
             <div className="space-y-8">
               {/* Good Photos */}
               <div className="space-y-4">
                 <div className="inline-block px-4 py-2 bg-green-500/20 border border-green-500/50 rounded-lg">
-                  <span className="text-green-400 font-semibold">Fotos Buenas</span>
+                  <span className="text-green-400 font-semibold">{t("trainModel.goodPhotos")}</span>
                 </div>
                 <ul className="space-y-2 text-sm list-disc list-inside text-muted-foreground">
-                  <li>Fotos recientes de los últimos 2 años</li>
-                  <li>Mezcla de primeros planos y fotos de cuerpo entero</li>
-                  <li>Preferiblemente fotos de alta calidad</li>
-                  <li>Variedad de ángulos, expresiones y outfits</li>
-                  <li>Solo una persona en la foto</li>
+                  <li>{t("trainModel.recentPhotos")}</li>
+                  <li>{t("trainModel.mixCloseupsFullBody")}</li>
+                  <li>{t("trainModel.preferablyHighQuality")}</li>
+                  <li>{t("trainModel.varietyAnglesExpressions")}</li>
+                  <li>{t("trainModel.onlyOnePerson")}</li>
                   <li className="font-semibold text-foreground mt-2">
-                    CONSEJO: Selecciona fotos donde te veas BIEN
+                    {t("trainModel.tipSelectGoodPhotos")}
                   </li>
                 </ul>
                 {/* Good Photos Examples */}
@@ -435,20 +436,20 @@ export default function TrainModel() {
               {/* Bad Photos */}
               <div className="space-y-4">
                 <div className="inline-block px-4 py-2 bg-red-500/20 border border-red-500/50 rounded-lg">
-                  <span className="text-red-400 font-semibold">Fotos Malas</span>
+                  <span className="text-red-400 font-semibold">{t("trainModel.badPhotos")}</span>
                 </div>
                 <ul className="space-y-2 text-sm list-disc list-inside text-muted-foreground">
-                  <li>Capturas de pantalla de Zoom, Instagram o Facebook</li>
-                  <li>Mala luz, borrosas, pixeladas, baja calidad, fuera de foco o con mucho maquillaje</li>
-                  <li>Fotos grupales, otras personas o mascotas</li>
-                  <li>Expresiones graciosas</li>
-                  <li>Fotos muy antiguas que ya no te representan</li>
-                  <li>Sujeto cortado o no completamente visible</li>
-                  <li>Usar accesorios como gafas, sombreros o máscaras</li>
-                  <li>Fondos ocupados o escenas con patrones</li>
-                  <li>Fotos tomadas desde muy lejos</li>
+                  <li>{t("trainModel.screenshotsZoomInstagram")}</li>
+                  <li>{t("trainModel.badLightBlurry")}</li>
+                  <li>{t("trainModel.groupPhotosOthers")}</li>
+                  <li>{t("trainModel.funnyExpressions")}</li>
+                  <li>{t("trainModel.veryOldPhotos")}</li>
+                  <li>{t("trainModel.subjectCutOff")}</li>
+                  <li>{t("trainModel.accessoriesGlasses")}</li>
+                  <li>{t("trainModel.busyBackgrounds")}</li>
+                  <li>{t("trainModel.photosFromFarAway")}</li>
                   <li className="font-semibold text-foreground mt-2">
-                    CONSEJO: NO selecciones fotos donde te veas MAL
+                    {t("trainModel.tipDontSelectBadPhotos")}
                   </li>
                 </ul>
                 {/* Bad Photos Examples with Red X */}
@@ -485,13 +486,12 @@ export default function TrainModel() {
         <DialogContent className="sm:max-w-md bg-white text-foreground">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-center">
-              ¡Subida Exitosa! 👏
+              {t("trainModel.uploadSuccess")}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-6 py-4">
             <p className="text-center text-sm text-muted-foreground">
-              Tus imágenes se han subido exitosamente y tu modelo está siendo
-              entrenado. ¡Puedes empezar a crear tus fotos ahora mismo!
+              {t("trainModel.imagesUploadedSuccessfully")}
             </p>
             <div className="flex gap-3">
               <Button
@@ -499,7 +499,7 @@ export default function TrainModel() {
                 onClick={() => setShowSuccessModal(false)}
                 className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900 rounded-lg"
               >
-                Close
+                {t("trainModel.close")}
               </Button>
               <Button
                 onClick={() => {
@@ -508,7 +508,7 @@ export default function TrainModel() {
                 }}
                 className="flex-1 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold"
               >
-                Crear Mis Fotos
+                {t("trainModel.createMyPhotos")}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>

@@ -1,3 +1,4 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,13 +8,14 @@ import { Sparkles, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Coupons() {
+  const { t } = useTranslation();
   const [couponCode, setCouponCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isRedeeming, setIsRedeeming] = useState(false);
 
   const handleRedeem = async () => {
     if (!couponCode.trim()) {
-      setError("Por favor ingresa un código de cupón");
+      setError(t("coupons.pleaseEnterCode"));
       return;
     }
 
@@ -23,7 +25,7 @@ export default function Coupons() {
     // Simulate API call
     setTimeout(() => {
       // For demo purposes, show error for any code
-      setError("Código de cupón inválido.");
+      setError(t("coupons.invalidCode"));
       setIsRedeeming(false);
     }, 1000);
   };
@@ -40,19 +42,19 @@ export default function Coupons() {
                   <Sparkles className="w-8 h-8 text-blue-400" />
                 </div>
               </div>
-              <h1 className="text-2xl font-bold">Canjear Cupón</h1>
+              <h1 className="text-2xl font-bold">{t("coupons.title")}</h1>
               <p className="text-sm text-muted-foreground">
-                Ingresa tu código de cupón a continuación para canjearlo.
+                {t("coupons.subtitle")}
               </p>
             </div>
 
             {/* Form */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="coupon-code">Código de Cupón</Label>
+                <Label htmlFor="coupon-code">{t("coupons.couponCode")}</Label>
                 <Input
                   id="coupon-code"
-                  placeholder="Ingresa el código"
+                  placeholder={t("coupons.enterCode")}
                   value={couponCode}
                   onChange={(e) => {
                     setCouponCode(e.target.value);
@@ -74,7 +76,7 @@ export default function Coupons() {
                 size="lg"
               >
                 <Sparkles className="w-5 h-5 mr-2" />
-                {isRedeeming ? "Canjeando..." : "Canjear Cupón"}
+                {isRedeeming ? t("coupons.redeeming") : t("coupons.redeemCoupon")}
               </Button>
 
               {error && (

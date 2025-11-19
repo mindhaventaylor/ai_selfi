@@ -1,9 +1,11 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FlaskConical } from "lucide-react";
 
 export default function Models() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   return (
     <div className="min-h-screen bg-background">
@@ -12,7 +14,7 @@ export default function Models() {
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
             <FlaskConical className="w-8 h-8 md:w-10 md:h-10 text-primary" />
-            <h1 className="text-4xl md:text-5xl font-bold">Modelos</h1>
+            <h1 className="text-4xl md:text-5xl font-bold">{t("models.title")}</h1>
           </div>
         </div>
 
@@ -30,11 +32,11 @@ export default function Models() {
                 </div>
 
                 {/* Title */}
-                <h2 className="text-2xl font-bold">Entrenar Nuevo Modelo</h2>
+                <h2 className="text-2xl font-bold">{t("models.trainNewModel")}</h2>
 
                 {/* Description */}
                 <p className="text-sm text-muted-foreground">
-                  Empieza entrenando tu primer modelo
+                  {t("models.trainNewModelDesc")}
                 </p>
 
                 {/* Button */}
@@ -43,7 +45,7 @@ export default function Models() {
                   size="lg"
                   onClick={() => setLocation("/dashboard/models/train")}
                 >
-                  Entrenar Modelo
+                  {t("models.trainModel")}
                 </Button>
               </div>
             </CardContent>
@@ -61,11 +63,11 @@ export default function Models() {
                 </div>
 
                 {/* Title */}
-                <h2 className="text-2xl font-bold">Ver Modelos Entrenados</h2>
+                <h2 className="text-2xl font-bold">{t("models.viewTrainedModels")}</h2>
 
                 {/* Description */}
                 <p className="text-sm text-muted-foreground">
-                  Consulta el estado de tus modelos entrenados o ajusta tus imágenes
+                  {t("models.viewTrainedModelsDesc")}
                 </p>
 
                 {/* Button */}
@@ -74,7 +76,7 @@ export default function Models() {
                   size="lg"
                   onClick={() => setLocation("/dashboard/models/view")}
                 >
-                  Ver Modelos
+                  {t("models.viewModels")}
                 </Button>
               </div>
             </CardContent>
