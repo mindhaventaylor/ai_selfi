@@ -1,5 +1,5 @@
-import { AXIOS_TIMEOUT_MS } from "@shared/const";
-import { ForbiddenError } from "@shared/_core/errors";
+import { AXIOS_TIMEOUT_MS } from "../../shared/const.js";
+import { ForbiddenError } from "../../shared/_core/errors.js";
 import type { Request } from "express";
 import type { User } from "../../drizzle/schema.js";
 import * as db from "../db.js";

@@ -1,4 +1,4 @@
-import { COOKIE_NAME } from "@shared/const";
+import { COOKIE_NAME } from "../shared/const.js";
 import { desc, eq, and, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { creditPacks, models, photos, transactions, users, modelTrainingImages, photoGenerationBatches } from "../drizzle/schema.js";
