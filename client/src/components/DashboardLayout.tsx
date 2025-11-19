@@ -53,9 +53,9 @@ import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: HelpCircle, label: "Start Here", path: "/dashboard" },
+  { icon: HelpCircle, label: "Start Here", path: "/dashboard/start" },
   { icon: FlaskConical, label: "Models", path: "/dashboard/models" },
-  { icon: PlusCircle, label: "Create", path: "/dashboard/generate" },
+  { icon: PlusCircle, label: "Create", path: "/dashboard" },
   { icon: ImageIcon, label: "Gallery", path: "/dashboard/gallery" },
   { icon: Sparkles, label: "Funciones PRO", path: "/dashboard/pro" },
 ];
@@ -151,9 +151,15 @@ function DashboardLayoutContent({
   const sidebarRef = useRef<HTMLDivElement>(null);
   const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
-  const [creditsOpen, setCreditsOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [supportOpen, setSupportOpen] = useState(false);
+  const [creditsOpen, setCreditsOpen] = useState(() => {
+    return location.startsWith("/dashboard/credits");
+  });
+  const [settingsOpen, setSettingsOpen] = useState(() => {
+    return location.startsWith("/dashboard/settings");
+  });
+  const [supportOpen, setSupportOpen] = useState(() => {
+    return location.startsWith("/dashboard/support");
+  });
   const [languageOpen, setLanguageOpen] = useState(false);
 
   useEffect(() => {
@@ -161,6 +167,21 @@ function DashboardLayoutContent({
       setIsResizing(false);
     }
   }, [isCollapsed]);
+
+  useEffect(() => {
+    // Auto-open credits dropdown when on credits pages
+    if (location.startsWith("/dashboard/credits")) {
+      setCreditsOpen(true);
+    }
+    // Auto-open settings dropdown when on settings pages
+    if (location.startsWith("/dashboard/settings")) {
+      setSettingsOpen(true);
+    }
+    // Auto-open support dropdown when on support pages
+    if (location.startsWith("/dashboard/support")) {
+      setSupportOpen(true);
+    }
+  }, [location]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -289,11 +310,45 @@ function DashboardLayoutContent({
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <div className="pl-6 py-1 space-y-1">
-                      <button className="text-sm text-muted-foreground hover:text-foreground w-full text-left px-2 py-1 rounded-md hover:bg-accent">
+                      <button 
+                        onClick={() => setLocation("/dashboard/credits/buy")}
+                        className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
+                          location === "/dashboard/credits/buy" 
+                            ? "text-foreground bg-accent font-medium" 
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
                         Buy Credits
                       </button>
-                      <button className="text-sm text-muted-foreground hover:text-foreground w-full text-left px-2 py-1 rounded-md hover:bg-accent">
-                        Credit History
+                      <button 
+                        onClick={() => setLocation("/dashboard/credits/gift-cards")}
+                        className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
+                          location === "/dashboard/credits/gift-cards" 
+                            ? "text-foreground bg-accent font-medium" 
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Gift Cards
+                      </button>
+                      <button 
+                        onClick={() => setLocation("/dashboard/credits/empresas")}
+                        className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
+                          location === "/dashboard/credits/empresas" 
+                            ? "text-foreground bg-accent font-medium" 
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Empresas
+                      </button>
+                      <button 
+                        onClick={() => setLocation("/dashboard/credits/coupons")}
+                        className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
+                          location === "/dashboard/credits/coupons" 
+                            ? "text-foreground bg-accent font-medium" 
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Coupons
                       </button>
                     </div>
                   </CollapsibleContent>
@@ -322,11 +377,15 @@ function DashboardLayoutContent({
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <div className="pl-6 py-1 space-y-1">
-                    <button className="text-sm text-muted-foreground hover:text-foreground w-full text-left px-2 py-1 rounded-md hover:bg-accent">
-                      Account
-                    </button>
-                    <button className="text-sm text-muted-foreground hover:text-foreground w-full text-left px-2 py-1 rounded-md hover:bg-accent">
-                      Preferences
+                    <button
+                      onClick={() => setLocation("/dashboard/settings/general")}
+                      className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
+                        location === "/dashboard/settings/general"
+                          ? "text-foreground bg-accent font-medium"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      General
                     </button>
                   </div>
                 </CollapsibleContent>
@@ -352,11 +411,55 @@ function DashboardLayoutContent({
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <div className="pl-6 py-1 space-y-1">
-                    <button className="text-sm text-muted-foreground hover:text-foreground w-full text-left px-2 py-1 rounded-md hover:bg-accent">
-                      Help Center
+                    <button
+                      onClick={() => setLocation("/dashboard/support/general")}
+                      className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
+                        location === "/dashboard/support/general"
+                          ? "text-foreground bg-accent font-medium"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      General
                     </button>
-                    <button className="text-sm text-muted-foreground hover:text-foreground w-full text-left px-2 py-1 rounded-md hover:bg-accent">
-                      Contact Us
+                    <button
+                      onClick={() => setLocation("/dashboard/support/report-bug")}
+                      className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
+                        location === "/dashboard/support/report-bug"
+                          ? "text-foreground bg-accent font-medium"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      Report a Bug
+                    </button>
+                    <button
+                      onClick={() => setLocation("/dashboard/support/suggest-feature")}
+                      className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
+                        location === "/dashboard/support/suggest-feature"
+                          ? "text-foreground bg-accent font-medium"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      Suggest a Feature
+                    </button>
+                    <button
+                      onClick={() => setLocation("/dashboard/support/whatsapp")}
+                      className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
+                        location === "/dashboard/support/whatsapp"
+                          ? "text-foreground bg-accent font-medium"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      WhatsApp
+                    </button>
+                    <button
+                      onClick={() => setLocation("/dashboard/support/reviews")}
+                      className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
+                        location === "/dashboard/support/reviews"
+                          ? "text-foreground bg-accent font-medium"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      Reviews
                     </button>
                   </div>
                 </CollapsibleContent>

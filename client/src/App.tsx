@@ -9,6 +9,20 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import GenerateImages from "./pages/GenerateImages";
+import Coupons from "./pages/Coupons";
+import Empresas from "./pages/Empresas";
+import GiftCards from "./pages/GiftCards";
+import BuyCredits from "./pages/BuyCredits";
+import Pro from "./pages/Pro";
+import Gallery from "./pages/Gallery";
+import Models from "./pages/Models";
+import StartHere from "./pages/StartHere";
+import SettingsGeneral from "./pages/SettingsGeneral";
+import SupportGeneral from "./pages/SupportGeneral";
+import SupportReportBug from "./pages/SupportReportBug";
+import SupportSuggestFeature from "./pages/SupportSuggestFeature";
+import SupportWhatsApp from "./pages/SupportWhatsApp";
+import SupportReviews from "./pages/SupportReviews";
 import Login from "./pages/Login";
 import OAuthCallback from "./pages/OAuthCallback";
 import Terms from "./pages/Terms";
@@ -45,6 +59,104 @@ function Router() {
             <ProtectedRoute>
               <DashboardLayout>
                 <GenerateImages />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/pro"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Pro />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/gallery"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Gallery />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/models"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Models />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/start"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <StartHere />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/settings/general"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <SettingsGeneral />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/support/general"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <SupportGeneral />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/support/report-bug"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <SupportReportBug />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/support/suggest-feature"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <SupportSuggestFeature />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/support/whatsapp"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <SupportWhatsApp />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/support/reviews"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <SupportReviews />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/credits/coupons"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Coupons />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/credits/buy"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <BuyCredits />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/credits/gift-cards"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <GiftCards />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/credits/empresas"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Empresas />
               </DashboardLayout>
             </ProtectedRoute>
           </Route>
