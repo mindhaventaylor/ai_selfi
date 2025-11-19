@@ -1,4 +1,4 @@
-import express, { type Express, type Request, type Response, type NextFunction } from "express";
+import express, { type Express } from "express";
 import fs from "fs";
 import { type Server } from "http";
 import { nanoid } from "nanoid";
@@ -7,6 +7,7 @@ import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config.js";
 
 export async function setupVite(app: Express, server: Server) {
+  const expressApp = app as any;
   const serverOptions = {
     middlewareMode: true,
     hmr: { server },
@@ -20,8 +21,8 @@ export async function setupVite(app: Express, server: Server) {
     appType: "custom",
   });
 
-  app.use(vite.middlewares);
-  app.use("*", async (req: Request, res: Response, next: NextFunction) => {
+  expressApp.use(vite.middlewares);
+  expressApp.use("*", async (req: any, res: any, next: any) => {
     const url = req.originalUrl;
 
     try {
@@ -48,11 +49,12 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
+  const expressApp = app as any;
   // On Vercel, static files are served by Vercel itself, not Express
   // We only need to handle the SPA fallback (serve index.html for non-API routes)
   if (process.env.VERCEL === "1") {
     // On Vercel, only handle SPA fallback for non-API routes
-    app.use("*", (req: Request, res: Response, next: NextFunction) => {
+    expressApp.use("*", (req: any, res: any, next: any) => {
       // Skip API routes - they're handled by Express
       if (req.path.startsWith("/api/")) {
         return next();
@@ -100,10 +102,10 @@ export function serveStatic(app: Express) {
     return;
   }
 
-  app.use(express.static(distPath));
+  expressApp.use(express.static(distPath));
 
   // fall through to index.html if the file doesn't exist
-  app.use("*", (_req: express.Request, res: express.Response) => {
+  expressApp.use("*", (_req: any, res: any) => {
     const indexPath = path.resolve(distPath!, "index.html");
     if (fs.existsSync(indexPath)) {
       res.sendFile(indexPath);

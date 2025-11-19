@@ -1,5 +1,5 @@
 import { COOKIE_NAME, ONE_YEAR_MS } from "../../shared/const.js";
-import type { Express, Request, Response } from "express";
+import type { Application } from "express";
 import * as db from "../db.js";
 import { getSessionCookieOptions } from "./cookies.js";
 import { supabaseServer } from "./lib/supabase.js";
@@ -7,13 +7,14 @@ import { supabaseServer } from "./lib/supabase.js";
 const PROJECT_REF = "gxwtcdplfkjfidwyrunk";
 const AUTH_COOKIE_NAME = `sb-${PROJECT_REF}-auth-token`;
 
-function getQueryParam(req: Request, key: string): string | undefined {
+function getQueryParam(req: any, key: string): string | undefined {
   const value = req.query[key];
   return typeof value === "string" ? value : undefined;
 }
 
-export function registerOAuthRoutes(app: Express) {
-  app.get("/api/oauth/callback", async (req: Request, res: Response) => {
+export function registerOAuthRoutes(app: Application | any) {
+  const expressApp = app as any;
+  expressApp.get("/api/oauth/callback", async (req: any, res: any) => {
     // Supabase OAuth can send code as query param or in the URL hash
     // Check both query params and hash fragment
     let code = getQueryParam(req, "code");
