@@ -5,7 +5,10 @@
 
 import { getServerString } from "./strings.js";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyDgr4bTtfgdr09sUXM9quvrCi0ov-XJYkc";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+if (!GEMINI_API_KEY) {
+  throw new Error("GEMINI_API_KEY environment variable is required");
+}
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
 // Try alternative model names if the primary doesn't work
 // Primary: gemini-2.5-flash-image
