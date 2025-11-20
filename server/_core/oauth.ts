@@ -98,7 +98,13 @@ export function registerOAuthRoutes(app: Application | any) {
         maxAge: expiresMs 
       });
 
-      res.redirect(302, "/");
+      // Use absolute URL for redirect to prevent localhost redirects
+      // Get the origin from the request headers (Vercel sets these)
+      const protocol = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+      const host = req.headers['x-forwarded-host'] || req.headers.host || 'www.aiselfie.org';
+      const origin = `${protocol}://${host}`;
+      
+      res.redirect(302, `${origin}/`);
     } catch (error) {
       console.error("[OAuth] Callback failed", error);
       res.status(500).json({ error: "OAuth callback failed" });
