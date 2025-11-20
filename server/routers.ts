@@ -60,14 +60,14 @@ export const appRouter = router({
           });
 
           // Set session cookie for future requests
-          const cookieOptions = getSessionCookieOptions(ctx.req);
+          const cookieOptions = getSessionCookieOptions(ctx.req as any);
           const sessionData = {
             access_token: input.accessToken,
           };
           const cookieValue = Buffer.from(JSON.stringify(sessionData)).toString("base64");
           const PROJECT_REF = "gxwtcdplfkjfidwyrunk";
           const AUTH_COOKIE_NAME = `sb-${PROJECT_REF}-auth-token`;
-          ctx.res.cookie(AUTH_COOKIE_NAME, cookieValue, { 
+          (ctx.res as any).cookie(AUTH_COOKIE_NAME, cookieValue, { 
             ...cookieOptions, 
             maxAge: 60 * 60 * 24 * 365 * 1000 // 1 year
           });
@@ -88,13 +88,13 @@ export const appRouter = router({
         }
       }),
     logout: publicProcedure.mutation(({ ctx }) => {
-      const cookieOptions = getSessionCookieOptions(ctx.req);
+      const cookieOptions = getSessionCookieOptions(ctx.req as any);
       const PROJECT_REF = "gxwtcdplfkjfidwyrunk";
       const AUTH_COOKIE_NAME = `sb-${PROJECT_REF}-auth-token`;
       
       // Clear both the old cookie name and the Supabase auth cookie
-      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      ctx.res.clearCookie(AUTH_COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      (ctx.res as any).clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      (ctx.res as any).clearCookie(AUTH_COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       
       return {
         success: true,

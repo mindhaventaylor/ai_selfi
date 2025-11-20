@@ -1,6 +1,5 @@
 import { AXIOS_TIMEOUT_MS } from "../../shared/const.js";
 import { ForbiddenError } from "../../shared/_core/errors.js";
-import type { Request } from "express";
 import type { User } from "../../drizzle/schema.js";
 import * as db from "../db.js";
 import { ENV } from "./env.js";
@@ -24,7 +23,7 @@ class SDKServer {
     return new Map(Object.entries(parsed));
   }
 
-  async authenticateRequest(req: Request): Promise<User> {
+  async authenticateRequest(req: any): Promise<User> {
     // Parse Supabase auth cookie
     const cookieHeader = (req as any).headers?.cookie || (req.headers as any)?.cookie;
     const cookies = this.parseCookies(cookieHeader);
