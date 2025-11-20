@@ -4,9 +4,18 @@ import { type Server } from "http";
 import { nanoid } from "nanoid";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import viteConfig from "../../vite.config.js";
+let cachedViteConfig: any = null;
+
+async function getViteConfig() {
+  if (!cachedViteConfig) {
+    const mod = await import("../../vite.config.js");
+    cachedViteConfig = mod.default ?? mod;
+  }
+  return cachedViteConfig;
+}
 
 export async function setupVite(app: Express, server: Server) {
+  const viteConfig = await getViteConfig();
   const expressApp = app as any;
   const serverOptions = {
     middlewareMode: true,

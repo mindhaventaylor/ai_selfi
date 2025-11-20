@@ -7,13 +7,7 @@ const appPromise = (async () => {
   try {
     console.log("[Vercel] Initializing Express app...");
 
-    let serverModule: any = null;
-    try {
-      serverModule = await import("../server/_core/index.js");
-    } catch (error) {
-      console.warn("[Vercel] Failed to import source server module, trying dist build...");
-      serverModule = await import("../dist/index.js");
-    }
+    const serverModule: any = await import("../dist/index.js");
 
     const createApp = serverModule.createApp || serverModule.default;
     if (typeof createApp !== "function") {
