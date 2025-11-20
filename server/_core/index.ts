@@ -1,12 +1,11 @@
 import "dotenv/config";
 import express from "express";
-import { createServer } from "http";
+import { createServer, type Server } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth.js";
 import { appRouter } from "../routers.js";
 import { createContext } from "./context.js";
-import { serveStatic, setupVite } from "./vite.js";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -28,7 +27,11 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 // Create the Express app (exported for Vercel serverless functions)
-export function createApp() {
+type CreateAppOptions = {
+  server?: Server;
+};
+
+export async function createApp(options?: CreateAppOptions) {
   const app = express();
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
@@ -44,11 +47,11 @@ export function createApp() {
     })
   );
   // development mode uses Vite, production mode uses static files
-  if (process.env.NODE_ENV === "development") {
-    // In development, we need the HTTP server for Vite HMR
-    const server = createServer(app);
-    setupVite(app, server).catch(console.error);
+  if (process.env.NODE_ENV === "development" && options?.server) {
+    const { setupVite } = await import("./vite.js");
+    await setupVite(app, options.server);
   } else {
+    const { serveStatic } = await import("./vite.js");
     serveStatic(app);
   }
 
@@ -56,8 +59,9 @@ export function createApp() {
 }
 
 async function startServer() {
-  const app = createApp();
-  const server = createServer(app);
+  const server = createServer();
+  const app = await createApp({ server });
+  server.on("request", app);
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
