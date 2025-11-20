@@ -6,7 +6,9 @@ import { ENV } from "./env.js";
 import { supabaseServer } from "./lib/supabase.js";
 import { parse as parseCookieHeader } from "cookie";
 
-const AUTH_COOKIE_NAME = `sb-${ENV.supabaseProjectRef}-auth-token`;
+function getAuthCookieName(): string {
+  return `sb-${ENV.supabaseProjectRef}-auth-token`;
+}
 
 // Utility function
 const isNonEmptyString = (value: unknown): value is string =>
@@ -25,8 +27,8 @@ class SDKServer {
   async authenticateRequest(req: any): Promise<User> {
     // Parse Supabase auth cookie
     const cookieHeader = (req as any).headers?.cookie || (req.headers as any)?.cookie;
-    const cookies = this.parseCookies(cookieHeader);
-    const authCookie = cookies.get(AUTH_COOKIE_NAME);
+      const cookies = this.parseCookies(cookieHeader);
+      const authCookie = cookies.get(getAuthCookieName());
 
     if (!authCookie) {
       throw ForbiddenError("Missing auth cookie");

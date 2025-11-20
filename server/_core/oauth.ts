@@ -5,7 +5,9 @@ import { getSessionCookieOptions } from "./cookies.js";
 import { supabaseServer } from "./lib/supabase.js";
 import { ENV } from "./env.js";
 
-const AUTH_COOKIE_NAME = `sb-${ENV.supabaseProjectRef}-auth-token`;
+function getAuthCookieName(): string {
+  return `sb-${ENV.supabaseProjectRef}-auth-token`;
+}
 
 function getQueryParam(req: any, key: string): string | undefined {
   const value = req.query[key];
@@ -91,7 +93,7 @@ export function registerOAuthRoutes(app: Application | any) {
       };
       const cookieValue = Buffer.from(JSON.stringify(sessionData)).toString("base64");
       const expiresMs = data.session.expires_in * 1000;
-      res.cookie(AUTH_COOKIE_NAME, cookieValue, { 
+      res.cookie(getAuthCookieName(), cookieValue, { 
         ...cookieOptions, 
         maxAge: expiresMs 
       });

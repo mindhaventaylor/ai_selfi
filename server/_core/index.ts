@@ -149,7 +149,7 @@ async function startServer() {
 
 // Only start the server if not in Vercel environment
 if (process.env.VERCEL !== "1") {
-  startServer().catch(console.error);
+startServer().catch(console.error);
 }
 
 // Export the function for Vercel serverless functions
