@@ -1,11 +1,23 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { useEffect, useState } from "react";
+import type React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Check, X, Sparkles } from "lucide-react";
+import { Star, Check, X, Sparkles, ChevronLeft, ChevronRight, ArrowRight, Quote } from "lucide-react";
 import { FAQ } from "@/components/FAQ";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { useLocation } from "wouter";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Linkedin } from "lucide-react";
 
 function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const { ref, isVisible } = useScrollAnimation();
@@ -27,7 +39,17 @@ function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; d
 
 export default function Home() {
   const { t } = useTranslation();
+  const { user, loading } = useAuth();
+  const [, setLocation] = useLocation();
   const [scrollY, setScrollY] = useState(0);
+  const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!loading && user) {
+      setLocation("/dashboard");
+    }
+  }, [user, loading, setLocation]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -215,33 +237,216 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Examples Section */}
+      {/* Examples Section - Reviews Carousel */}
       <AnimatedSection>
         <section id="examples" className="py-20 bg-card">
           <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-4xl md:text-5xl font-bold mb-4">{t("examples.title")}</h2>
-              <p className="text-xl text-muted-foreground">{t("examples.subtitle")}</p>
+              <p className="text-xl text-muted-foreground flex items-center justify-center gap-2">
+                <Check className="w-5 h-5 text-green-500" />
+                {t("examples.subtitle")}
+              </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {(t("home.examples", { returnObjects: true }) as Array<{ name: string; title: string; img: string }>).map((person, idx) => (
-                <AnimatedSection key={idx} delay={idx * 100}>
-                  <Card className="overflow-hidden hover:shadow-xl transition-shadow">
-                    <div className="aspect-square overflow-hidden">
-                      <img
-                        src={person.img}
-                        alt={person.name}
-                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+            <div className="max-w-6xl mx-auto relative px-12 md:px-16">
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                  slidesToScroll: 1,
+                }}
+                className="w-full"
+              >
+                <CarouselContent className="-ml-2 md:-ml-4">
+                  {(
+                    t("supportReviews.reviews", {
+                      returnObjects: true,
+                    }) as Array<{
+                      name: string;
+                      title: string;
+                      review: string;
+                      date: string;
+                    }>
+                  ).map((review, idx) => {
+                    const isExpanded = expandedReviews.has(idx);
+                    const reviewText = review.review;
+                    const shouldTruncate = reviewText.length > 150;
+                    const displayText = shouldTruncate && !isExpanded
+                      ? reviewText.substring(0, 150) + "..."
+                      : reviewText;
+
+                    // Map reviews to images - using available images from public folder
+                    const reviewImages = [
+                      "/image.webp",
+                      "/image_1.webp",
+                      "/image_10.webp",
+                      "/image_100.jpg",
+                      "/image_101.jpg",
+                      "/image_102.jpg",
+                      "/image_103.jpg",
+                      "/image_104.jpg",
+                    ];
+                    const profileImage = reviewImages[idx % reviewImages.length];
+                    const mainImage = reviewImages[(idx + 1) % reviewImages.length];
+
+                    // For Jorge Bosch Alés, show multiple images
+                    const isJorge = review.name.includes("Jorge");
+
+                    return (
+                      <CarouselItem
+                        key={idx}
+                        className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3"
+                      >
+                        <Card className="bg-white border border-purple-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+                          {/* Profile Section */}
+                          <CardContent className="p-6 pb-4">
+                            <div className="flex items-center gap-3 mb-4">
+                              <Avatar className="w-12 h-12 border-2 border-purple-200">
+                                <AvatarImage src={profileImage} alt={review.name} />
+                                <AvatarFallback className="bg-purple-100 text-purple-700">
+                                  {review.name
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")
+                                    .toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-bold text-base leading-tight truncate text-black">
+                                  {review.name}
+                                </h3>
+                                <p className="text-sm text-gray-600 truncate">
+                                  {review.title}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Review Text */}
+                            <div className="mb-4">
+                              <p className="text-sm text-black leading-relaxed">
+                                {(() => {
+                                  let text = displayText;
+                                  const parts: (string | React.ReactElement)[] = [];
+                                  
+                                  // Key phrases to highlight (shorter, more distinctive)
+                                  const highlightPhrases = [
+                                    "¡Es una pasada!",
+                                    "Ideal para quien empieza con su marca",
+                                    "He renovado todas mis fotos en 15 minutos",
+                                    "están padrísimas",
+                                  ];
+                                  
+                                  // Find and highlight phrases (avoid overlaps)
+                                  let lastIndex = 0;
+                                  const matches: Array<{ start: number; end: number; text: string }> = [];
+                                  
+                                  highlightPhrases.forEach((phrase) => {
+                                    const index = text.indexOf(phrase, lastIndex);
+                                    if (index !== -1) {
+                                      // Check if this match overlaps with existing matches
+                                      const overlaps = matches.some(
+                                        (m) => !(index >= m.end || index + phrase.length <= m.start)
+                                      );
+                                      if (!overlaps) {
+                                        matches.push({ start: index, end: index + phrase.length, text: phrase });
+                                      }
+                                    }
+                                  });
+                                  
+                                  // Sort matches by start position
+                                  matches.sort((a, b) => a.start - b.start);
+                                  
+                                  if (matches.length > 0) {
+                                    matches.forEach((match, i) => {
+                                      // Add text before match
+                                      if (match.start > lastIndex) {
+                                        parts.push(text.substring(lastIndex, match.start));
+                                      }
+                                      // Add highlighted match
+                                      parts.push(
+                                        <span key={`highlight-${idx}-${i}`} className="bg-yellow-200 px-1 rounded font-semibold">
+                                          {match.text}
+                                        </span>
+                                      );
+                                      lastIndex = match.end;
+                                    });
+                                    // Add remaining text
+                                    if (lastIndex < text.length) {
+                                      parts.push(text.substring(lastIndex));
+                                    }
+                                    return parts.length > 0 ? parts : text;
+                                  }
+                                  
+                                  return text;
+                                })()}
+                              </p>
+                              {shouldTruncate && (
+                                <button
+                                  onClick={() => {
+                                    const newExpanded = new Set(expandedReviews);
+                                    if (isExpanded) {
+                                      newExpanded.delete(idx);
+                                    } else {
+                                      newExpanded.add(idx);
+                                    }
+                                    setExpandedReviews(newExpanded);
+                                  }}
+                                  className="text-sm text-primary hover:underline mt-2 font-medium"
+                                >
+                                  {isExpanded ? t("supportReviews.seeMore") : t("supportReviews.readMore")}
+                                </button>
+                              )}
+                            </div>
+                          </CardContent>
+
+                          {/* Professional Photo(s) */}
+                          <div className="w-full px-4">
+                            {isJorge ? (
+                              // Multiple images grid for Jorge
+                              <div className="grid grid-cols-3 gap-1">
+                                {[0, 1, 2, 3, 4, 5].map((imgIdx) => (
+                                  <div
+                                    key={imgIdx}
+                                    className="aspect-square overflow-hidden bg-gray-100 rounded-[24px]"
+                                  >
+                                    <img
+                                      src={reviewImages[(idx + imgIdx) % reviewImages.length]}
+                                      alt={`${review.name} - Photo ${imgIdx + 1}`}
+                                      className="w-full h-full object-cover rounded-[24px]"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              // Single image for others
+                              <div className="aspect-[4/5] overflow-hidden bg-gray-100 rounded-[24px]">
+                                <img
+                                  src={mainImage}
+                                  alt={`${review.name} - Professional Photo`}
+                                  className="w-full h-full object-cover rounded-[24px]"
                       />
                     </div>
-                    <CardContent className="p-6">
-                      <h3 className="font-bold text-lg mb-1">{person.name}</h3>
-                      <p className="text-sm text-muted-foreground">{person.title}</p>
-                    </CardContent>
+                            )}
+                          </div>
                   </Card>
-                </AnimatedSection>
-              ))}
+                      </CarouselItem>
+                    );
+                  })}
+                </CarouselContent>
+                <CarouselPrevious 
+                  variant="ghost"
+                  className="!-left-4 md:!-left-8 top-1/2 -translate-y-1/2 !bg-white hover:!bg-white !border-0 !shadow-none z-10 !text-gray-700 !rounded-full !size-12"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </CarouselPrevious>
+                <CarouselNext 
+                  variant="ghost"
+                  className="!-right-4 md:!-right-8 top-1/2 -translate-y-1/2 !bg-white hover:!bg-white !border-0 !shadow-none z-10 !text-gray-700 !rounded-full !size-12"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </CarouselNext>
+              </Carousel>
             </div>
           </div>
         </section>
@@ -264,13 +469,12 @@ export default function Home() {
 
             {/* Title */}
             <div className="text-center mb-16 max-w-5xl mx-auto">
-              <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold leading-tight">
                 {t("comparison.mainTitle.part1")}{" "}
                 <span className="italic text-primary">{t("comparison.mainTitle.models")}</span>
                 {t("comparison.mainTitle.part2")}
               </h2>
             </div>
-
             {/* Comparison Cards */}
             <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
               {/* Traditional - Red/Pink Border */}
@@ -319,44 +523,345 @@ export default function Home() {
         </section>
       </AnimatedSection>
 
-      {/* Styles Section */}
-      <AnimatedSection>
-        <section className="py-20 bg-card">
-          <div className="container">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">{t("styles.title")}</h2>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                {t("styles.subtitle")}
-              </p>
+            {/* Reviews Section */}
+            <div className="mb-16 max-w-7xl mx-auto">
+              {/* Section Title */}
+              <div className="text-center mb-8">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
+                  ¿Vale la pena una foto{" "}
+                  <span className="text-blue-400">profesional con IA?</span> Mira lo que dicen.
+                </h2>
+                <p className="text-lg text-muted-foreground">
+                  Más de 75.523 fotos profesionales con inteligencia artificial creadas... y contando.
+                </p>
+              </div>
+
+              {/* Reviews Grid - Varied Layout */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {(
+                  t("supportReviews.reviews", {
+                    returnObjects: true,
+                  }) as Array<{
+                    name: string;
+                    title: string;
+                    review: string;
+                    date: string;
+                  }>
+                )
+                  .slice(0, 6)
+                  .map((review, idx) => {
+                    const reviewImages = [
+                      "/image.webp",
+                      "/image_1.webp",
+                      "/image_10.webp",
+                      "/image_100.jpg",
+                      "/image_101.jpg",
+                      "/image_102.jpg",
+                      "/image_103.jpg",
+                      "/image_104.jpg",
+                    ];
+                    
+                    // Define card configurations for different layouts
+                    const cardConfigs = [
+                      { hasImage: true, imageType: "large", span: "md:col-span-1" }, // Marta - large image with carousel
+                      { hasImage: false, span: "md:col-span-1" }, // Alba - no image
+                      { hasImage: false, span: "md:col-span-1" }, // Jorge - no image
+                      { hasImage: false, span: "md:col-span-1" }, // Andrea - no image
+                      { hasImage: true, imageType: "portrait", span: "md:col-span-1" }, // Faby - portrait image
+                      { hasImage: false, span: "md:col-span-1" }, // Andres - no image
+                    ];
+                    
+                    const config = cardConfigs[idx] || { hasImage: false, span: "md:col-span-1" };
+                    const reviewImage = reviewImages[idx % reviewImages.length];
+                    const isMarta = review.name.includes("Marta");
+                    const isFaby = review.name.includes("Faby");
+                    
+                    // Highlight key phrases
+                    const highlightPhrases = [
+                      "¡Es una pasada!",
+                      "Ideal para quien empieza con su marca",
+                      "He renovado todas mis fotos en 15 minutos",
+                      "galería de fotos que parecían hechas en estudio",
+                    ];
+                    
+                    let reviewText = review.review;
+                    const parts: (string | React.ReactElement)[] = [];
+                    let lastIndex = 0;
+                    const matches: Array<{ start: number; end: number; text: string }> = [];
+                    
+                    highlightPhrases.forEach((phrase) => {
+                      const index = reviewText.indexOf(phrase, lastIndex);
+                      if (index !== -1) {
+                        const overlaps = matches.some(
+                          (m) => !(index >= m.end || index + phrase.length <= m.start)
+                        );
+                        if (!overlaps) {
+                          matches.push({ start: index, end: index + phrase.length, text: phrase });
+                        }
+                      }
+                    });
+                    
+                    matches.sort((a, b) => a.start - b.start);
+                    
+                    if (matches.length > 0) {
+                      matches.forEach((match, i) => {
+                        if (match.start > lastIndex) {
+                          parts.push(reviewText.substring(lastIndex, match.start));
+                        }
+                        parts.push(
+                          <span key={`highlight-${idx}-${i}`} className="bg-yellow-200 px-1 rounded font-semibold">
+                            {match.text}
+                          </span>
+                        );
+                        lastIndex = match.end;
+                      });
+                      if (lastIndex < reviewText.length) {
+                        parts.push(reviewText.substring(lastIndex));
+                      }
+                    } else {
+                      parts.push(reviewText);
+                    }
+
+                    return (
+                      <Card 
+                        key={idx} 
+                        className={`bg-white border border-gray-200 shadow-sm ${config.span}`}
+                      >
+                        <CardContent className="p-3">
+                          <div className="space-y-2">
+                            {/* User Info */}
+                            <div className="flex items-start gap-3">
+                              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+                                <span className="text-sm font-medium text-black">
+                                  {review.name.charAt(0)}
+                                </span>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <h3 className="font-semibold text-sm truncate text-black">
+                                    {review.name}
+                                  </h3>
+                                  <Linkedin className="w-4 h-4 text-blue-400 shrink-0" />
+                                </div>
+                                {review.title && (
+                                  <p className="text-xs text-gray-700 truncate">
+                                    {review.title}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Review Text */}
+                            <div>
+                              <p className="text-sm text-black leading-tight line-clamp-3">
+                                {parts.length > 0 ? parts : reviewText}
+                              </p>
+                              <button className="text-xs text-primary hover:underline mt-0.5">
+                                {t("supportReviews.readMore")}
+                              </button>
+                              
+                              {/* Image with carousel (Marta) or portrait (Faby) */}
+                              {config.hasImage && reviewImage && (
+                                <div className="mt-2">
+                                  {isMarta ? (
+                                    // Large image with carousel navigation
+                                    <div className="relative aspect-[4/3] bg-gray-100 rounded-[24px] overflow-hidden px-4">
+                                      <img
+                                        src={reviewImage}
+                                        alt={review.name}
+                                        className="w-full h-full object-cover rounded-[24px]"
+                                      />
+                                      <button className="absolute left-0 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 border-0 shadow-none z-10 text-gray-700 rounded-full size-12 flex items-center justify-center">
+                                        <ChevronLeft className="w-6 h-6" />
+                                      </button>
+                                      <button className="absolute right-0 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 border-0 shadow-none z-10 text-gray-700 rounded-full size-12 flex items-center justify-center">
+                                        <ChevronRight className="w-6 h-6" />
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    // Portrait image (Faby)
+                                    <div className="aspect-[3/4] bg-gray-100 rounded-[24px] overflow-hidden px-4">
+                                      <img
+                                        src={reviewImage}
+                                        alt={review.name}
+                                        className="w-full h-full object-cover rounded-[24px]"
+                                      />
+                                    </div>
+                                  )}
+                                  {/* Date */}
+                                  <p className="text-xs text-black mt-2">{review.date}</p>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Date - only show if no image */}
+                            {!config.hasImage && (
+                              <p className="text-xs text-black">{review.date}</p>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-6xl mx-auto mb-8">
-              {[
-                "/outfits.webp",
-                "/image_102.jpg",
-                "/image_103.jpg",
-                "/image_104.jpg",
-                "/image_105.jpg",
-                "/image_106.jpg",
-                "/image_107.jpg",
-                "/image_108.jpg",
-              ].map((img, idx) => (
-                <AnimatedSection key={idx} delay={idx * 50}>
-                  <div className="aspect-[3/4] rounded-xl overflow-hidden shadow-lg">
-                    <img
-                      src={img}
-                      alt={`${t("home.altText.style")} ${idx + 1}`}
-                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+      {/* Testimonial Card Section */}
+      <AnimatedSection>
+        <section className="py-20 bg-gray-900">
+          <div className="container max-w-4xl mx-auto px-4">
+            <div className="relative flex items-start">
+              {/* Profile Picture - overlapping the card */}
+              <div className="relative z-20 flex-shrink-0 -mr-6 md:-mr-8">
+                <div className="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-gray-900">
+                  <img
+                    src="/image_101.jpg"
+                    alt="Daniela Mora Solís"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+
+              {/* Speech Bubble Card */}
+              <div className="flex-1 relative ml-2">
+                {/* Speech bubble tail - pointing left to profile */}
+                <div className="absolute -left-5 top-8 md:top-10 z-10">
+                  <div className="relative">
+                    {/* Outer purple border */}
+                    <div
+                      className="w-0 h-0"
+                      style={{
+                        borderTop: "14px solid transparent",
+                        borderRight: "22px solid #9333ea",
+                        borderBottom: "14px solid transparent",
+                      }}
+                    />
+                    {/* Inner white fill */}
+                    <div
+                      className="absolute left-[2px] top-0 w-0 h-0"
+                      style={{
+                        borderTop: "12px solid transparent",
+                        borderRight: "20px solid white",
+                        borderBottom: "12px solid transparent",
+                      }}
                     />
                   </div>
-                </AnimatedSection>
-              ))}
-            </div>
+                </div>
 
-            <div className="text-center">
-              <Button asChild size="lg" className="text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">
-                <a href="/login">{t("styles.cta")} →</a>
-              </Button>
+                {/* Card */}
+                <div className="bg-white border-2 border-purple-600 rounded-2xl p-6 md:p-8 shadow-xl relative z-10">
+                  {/* Main Text */}
+                  <p className="text-black text-base md:text-lg leading-relaxed mb-4 text-left">
+                    He trabajado con 450 profesionales que quieren potenciar su marca personal, y uno de sus mayores miedos es tomarse fotos.
+                    Con{" "}
+                    <span className="text-purple-600 font-semibold">aiselfi.es</span>{" "}
+                    pueden obtener imágenes profesionales sin la incomodidad de una sesión tradicional, sintiéndose seguros y profesionales en cada foto.
+                  </p>
+
+                  {/* Attribution */}
+                  <div className="text-sm md:text-base text-gray-600 leading-relaxed text-left">
+                    <p>
+                      - Daniela Mora Solís • Consultora de marca personal +400 clientes exitosos | Top 200 creadores hispanohablantes de Linkedin 2024 (Favikon) #64 en español | #1 en Costa Rica | TEDx speaker
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </AnimatedSection>
+
+      {/* Styles Section */}
+      <AnimatedSection>
+        <section className="py-20 bg-gray-900">
+          <div className="container max-w-7xl mx-auto px-4">
+            <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
+              {/* Left Side - Image Grid with Video Player */}
+              <div className="space-y-4">
+                {/* Image Grid */}
+                <div className="grid grid-cols-3 gap-2 rounded-2xl overflow-hidden bg-gray-800 p-4">
+                  {[
+                    { img: "/image_102.jpg", label: null },
+                    { img: "/image_103.jpg", label: "Popular" },
+                    { img: "/image_104.jpg", label: null },
+                    { img: "/image_105.jpg", label: "New" },
+                    { img: "/image_106.jpg", label: null },
+                    { img: "/image_107.jpg", label: null },
+                    { img: "/image_108.jpg", label: "Popular" },
+                    { img: "/outfits.webp", label: null },
+                    { img: "/image_102.jpg", label: "New" },
+                  ].map((item, idx) => (
+                    <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-gray-700">
+                      <img
+                        src={item.img}
+                        alt={`Style ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      {item.label && (
+                        <div className="absolute top-2 left-2">
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                            item.label === "Popular" 
+                              ? "bg-purple-500 text-white" 
+                              : "bg-green-500 text-white"
+                          }`}>
+                            {item.label}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Side - Text, CTA, and Testimonial */}
+              <div className="space-y-8 text-white">
+                {/* Headline */}
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold">
+                  {t("styles.title")}
+                </h2>
+
+                {/* Body Text */}
+                <p className="text-lg md:text-xl text-gray-200 leading-relaxed">
+                  Tu marca personal, tu estilo. Elige entre más de 100 atuendos seleccionados y crea el look profesional perfecto para cualquier ocasión—rápido, fácil y adaptado a ti. Sin probadores, sin estrés con{" "}
+                  <span className="text-purple-400 font-semibold">aiselfi.es</span>
+                </p>
+
+                {/* CTA Button */}
+                <div>
+                  <Button
+                    asChild
+                    size="lg"
+                    className="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  >
+                    <a href="/login">
+                      {t("styles.cta")} <ArrowRight className="ml-2 w-5 h-5 inline" />
+                    </a>
+                  </Button>
+                </div>
+
+                {/* Testimonial */}
+                <div className="flex items-start gap-4 pt-4">
+                  <Quote className="w-12 h-12 text-purple-400 flex-shrink-0 mt-1" />
+                  <div className="flex-1">
+                    <p className="text-lg md:text-xl text-white mb-3 italic">
+                      "{t("styles.testimonial")}"
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
+                        <span className="text-sm font-medium text-gray-300">A</span>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-white">Aldo M.</span>
+                          <span className="bg-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded">
+                            Comprador Verificado
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -480,9 +985,175 @@ export default function Home() {
         </section>
       </AnimatedSection>
 
+      {/* Upload Selfies Section */}
+      <AnimatedSection>
+        <section className="py-20 bg-gray-900">
+          <div className="container max-w-7xl mx-auto px-4">
+            <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
+              {/* Left Side - Upload Selfies */}
+              <div className="space-y-6">
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-6">
+                  sube tus selfies
+                </h3>
+                <div className="grid grid-cols-2 gap-4 max-w-xs">
+                  {[
+                    "/image.webp",
+                    "/image_1.webp",
+                    "/image_10.webp",
+                    "/image_100.jpg",
+                  ].map((img, idx) => (
+                    <div
+                      key={idx}
+                      className="aspect-square rounded-lg overflow-hidden bg-gray-800"
+                    >
+                      <img
+                        src={img}
+                        alt={`Selfie ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Side - Generated Image */}
+              <div className="relative">
+                {/* Arrow Icon */}
+                <div className="absolute -left-12 md:-left-16 top-1/2 -translate-y-1/2 z-10 hidden md:block">
+                  <ArrowRight className="w-12 h-12 text-pink-500" strokeWidth={3} />
+                </div>
+
+                {/* Large Generated Image */}
+                <div className="relative rounded-2xl overflow-hidden bg-gray-800">
+                  <img
+                    src="/image.webp"
+                    alt="AI Generated Professional Photo"
+                    className="w-full h-full object-cover aspect-[3/4]"
+                  />
+                  {/* Badge - Bottom Right */}
+                  <div className="absolute bottom-4 right-4">
+                    <div className="bg-pink-100 border-2 border-pink-400 text-gray-900 text-[10px] font-bold px-2 py-1 rounded-md shadow-lg">
+                      GENERADO CON IA
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </AnimatedSection>
+
       {/* FAQ Section */}
       <AnimatedSection>
         <FAQ />
+      </AnimatedSection>
+
+      {/* CTA Section - Boost Personal Brand */}
+      <AnimatedSection>
+        <section className="py-14 bg-gray-900">
+          <div className="container max-w-7xl mx-auto px-4">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              {/* Left Side - Text and CTA */}
+              <div className="space-y-6 text-white">
+                <div>
+                  <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+                    Potencia tu marca personal
+                  </h2>
+                  <p className="text-xl md:text-2xl text-gray-200">
+                    Consigue tus fotos profesionales en minutos.
+                  </p>
+                </div>
+
+                {/* CTA Button */}
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                >
+                  <a href="/login">
+                    Crear mis fotos profesionales
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </a>
+                </Button>
+
+                {/* Social Proof */}
+                <div className="flex items-center gap-4">
+                  <div className="flex -space-x-2">
+                    {[
+                      "/image.webp",
+                      "/image_1.webp",
+                      "/image_10.webp",
+                      "/image_100.jpg",
+                      "/image_101.jpg",
+                    ].map((img, idx) => (
+                      <div
+                        key={idx}
+                        className="w-10 h-10 rounded-full border-2 border-purple-800 overflow-hidden bg-gray-700"
+                      >
+                        <img
+                          src={img}
+                          alt={`User ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-sm md:text-base text-gray-200">
+                    Más de 75,523 fotos profesionales creadas
+                  </p>
+                </div>
+              </div>
+
+              {/* Right Side - Overlapping Photos */}
+              <div className="relative h-[420px] md:h-[490px]">
+                {/* Bottom Photo - Tilted Right */}
+                <div
+                  className="absolute bottom-0 left-0 w-48 md:w-56 h-56 md:h-72 rounded-2xl overflow-hidden shadow-2xl"
+                  style={{
+                    transform: "rotate(5deg)",
+                    zIndex: 1,
+                  }}
+                >
+                  <img
+                    src="/image.webp"
+                    alt="Professional Photo 1"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                {/* Middle Photo - Tilted Left */}
+                <div
+                  className="absolute top-14 right-6 md:right-12 w-48 md:w-56 h-56 md:h-72 rounded-2xl overflow-hidden shadow-2xl"
+                  style={{
+                    transform: "rotate(-8deg)",
+                    zIndex: 2,
+                  }}
+                >
+                  <img
+                    src="/image_1.webp"
+                    alt="Professional Photo 2"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                {/* Top Photo - Tilted Left */}
+                <div
+                  className="absolute top-0 right-0 md:right-6 w-48 md:w-56 h-56 md:h-72 rounded-2xl overflow-hidden shadow-2xl"
+                  style={{
+                    transform: "rotate(-12deg)",
+                    zIndex: 3,
+                  }}
+                >
+                  <img
+                    src="/image_10.webp"
+                    alt="Professional Photo 3"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </AnimatedSection>
     </div>
   );
