@@ -9,6 +9,7 @@ import { systemRouter } from "./_core/systemRouter.js";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc.js";
 import { generateImagesWithGemini } from "./_core/gemini.js";
 import { getServerString } from "./_core/strings.js";
+import { ENV } from "./_core/env.js";
 
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -65,8 +66,7 @@ export const appRouter = router({
             access_token: input.accessToken,
           };
           const cookieValue = Buffer.from(JSON.stringify(sessionData)).toString("base64");
-          const PROJECT_REF = "gxwtcdplfkjfidwyrunk";
-          const AUTH_COOKIE_NAME = `sb-${PROJECT_REF}-auth-token`;
+          const AUTH_COOKIE_NAME = `sb-${ENV.supabaseProjectRef}-auth-token`;
           (ctx.res as any).cookie(AUTH_COOKIE_NAME, cookieValue, { 
             ...cookieOptions, 
             maxAge: 60 * 60 * 24 * 365 * 1000 // 1 year
@@ -89,8 +89,7 @@ export const appRouter = router({
       }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req as any);
-      const PROJECT_REF = "gxwtcdplfkjfidwyrunk";
-      const AUTH_COOKIE_NAME = `sb-${PROJECT_REF}-auth-token`;
+      const AUTH_COOKIE_NAME = `sb-${ENV.supabaseProjectRef}-auth-token`;
       
       // Clear both the old cookie name and the Supabase auth cookie
       (ctx.res as any).clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });

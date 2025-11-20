@@ -6,8 +6,7 @@ import { ENV } from "./env.js";
 import { supabaseServer } from "./lib/supabase.js";
 import { parse as parseCookieHeader } from "cookie";
 
-const PROJECT_REF = "gxwtcdplfkjfidwyrunk";
-const AUTH_COOKIE_NAME = `sb-${PROJECT_REF}-auth-token`;
+const AUTH_COOKIE_NAME = `sb-${ENV.supabaseProjectRef}-auth-token`;
 
 // Utility function
 const isNonEmptyString = (value: unknown): value is string =>

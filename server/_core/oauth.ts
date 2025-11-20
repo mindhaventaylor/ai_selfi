@@ -3,9 +3,9 @@ import type { Application } from "express";
 import * as db from "../db.js";
 import { getSessionCookieOptions } from "./cookies.js";
 import { supabaseServer } from "./lib/supabase.js";
+import { ENV } from "./env.js";
 
-const PROJECT_REF = "gxwtcdplfkjfidwyrunk";
-const AUTH_COOKIE_NAME = `sb-${PROJECT_REF}-auth-token`;
+const AUTH_COOKIE_NAME = `sb-${ENV.supabaseProjectRef}-auth-token`;
 
 function getQueryParam(req: any, key: string): string | undefined {
   const value = req.query[key];
