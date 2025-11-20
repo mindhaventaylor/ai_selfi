@@ -4,20 +4,38 @@ import { type Server } from "http";
 import { nanoid } from "nanoid";
 import path from "path";
 
-let cachedViteConfig: any = null;
-
-async function getViteConfig() {
-  if (!cachedViteConfig) {
-    const mod = await import("../../vite.config.js");
-    cachedViteConfig = mod.default ?? mod;
-  }
-  return cachedViteConfig;
-}
-
 export async function setupVite(app: Express, server: Server) {
+  // Only run in development - this should never be called in production
+  // This check prevents any code below from executing in production builds
+  if (process.env.NODE_ENV !== "development" || process.env.VERCEL === "1") {
+    throw new Error("setupVite should only be called in development mode");
+  }
+  
   // Dynamically import vite only when needed (development mode)
   const { createServer: createViteServer } = await import("vite");
-  const viteConfig = await getViteConfig();
+  
+  // Use eval to prevent esbuild from analyzing this import at bundle time
+  // This ensures vite.config.js and its dependencies are never bundled
+  let viteConfig: any;
+  try {
+    // Use Function constructor to create a dynamic import that esbuild can't analyze
+    const importConfig = new Function('return import("../../vite.config.js")');
+    const mod = await importConfig();
+    viteConfig = mod.default ?? mod;
+  } catch (error) {
+    // Fallback: create minimal config inline if vite.config.js is not available
+    console.warn("[Vite] Could not load vite.config.js, using minimal config");
+    viteConfig = {
+      plugins: [],
+      root: path.resolve(import.meta.dirname, "../..", "client"),
+      resolve: {
+        alias: {
+          "@": path.resolve(import.meta.dirname, "../..", "client", "src"),
+          "@shared": path.resolve(import.meta.dirname, "../..", "shared"),
+        },
+      },
+    };
+  }
   const expressApp = app as any;
   const serverOptions = {
     middlewareMode: true,

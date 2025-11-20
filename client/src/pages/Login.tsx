@@ -24,6 +24,9 @@ export default function Login() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
 
+  // Get testimonials early so they're available for useEffect
+  const testimonials = t("login.testimonials", { returnObjects: true }) as Array<{ text: string; author: string; stars: number }>;
+
   // Se já estiver autenticado, redirecionar para dashboard
   useEffect(() => {
     // Only check auth after initial render to avoid blocking
@@ -47,12 +50,14 @@ export default function Login() {
 
   // Rotate testimonials every 6 seconds
   useEffect(() => {
+    if (!testimonials || testimonials.length === 0) return;
+    
     const testimonialInterval = setInterval(() => {
       setCurrentTestimonialIndex((prev) => (prev + 1) % testimonials.length);
     }, 6000);
 
     return () => clearInterval(testimonialInterval);
-  }, []);
+  }, [testimonials]);
 
   const handleSignIn = async () => {
     try {
@@ -76,8 +81,7 @@ export default function Login() {
     );
   }
 
-  const testimonials = t("login.testimonials", { returnObjects: true }) as Array<{ text: string; author: string; stars: number }>;
-  const currentTestimonial = testimonials[currentTestimonialIndex];
+  const currentTestimonial = testimonials && testimonials.length > 0 ? testimonials[currentTestimonialIndex] : null;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -100,31 +104,35 @@ export default function Login() {
             </div>
 
             {/* Testimonial Card Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 bg-foreground text-background rounded-b-lg p-6 shadow-xl">
-              <div className="flex gap-1 mb-3">
-                {Array.from({ length: currentTestimonial.stars }).map((_, i) => (
-                  <span key={i} className="text-yellow-400 text-lg">★</span>
-                ))}
+            {currentTestimonial && (
+              <div className="absolute bottom-0 left-0 right-0 bg-foreground text-background rounded-b-lg p-6 shadow-xl">
+                <div className="flex gap-1 mb-3">
+                  {Array.from({ length: currentTestimonial.stars }).map((_, i) => (
+                    <span key={i} className="text-yellow-400 text-lg">★</span>
+                  ))}
+                </div>
+                <p className="text-sm mb-4 italic">"{currentTestimonial.text}"</p>
+                <p className="text-xs font-semibold">- {currentTestimonial.author}</p>
+                
+                {/* Testimonial Indicators */}
+                {testimonials && testimonials.length > 0 && (
+                  <div className="flex gap-2 justify-center mt-4">
+                    {testimonials.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentTestimonialIndex(idx)}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          idx === currentTestimonialIndex
+                            ? "bg-background w-6"
+                            : "bg-background/50"
+                        }`}
+                        aria-label={`Go to testimonial ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-              <p className="text-sm mb-4 italic">"{currentTestimonial.text}"</p>
-              <p className="text-xs font-semibold">- {currentTestimonial.author}</p>
-              
-              {/* Testimonial Indicators */}
-              <div className="flex gap-2 justify-center mt-4">
-                {testimonials.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentTestimonialIndex(idx)}
-                    className={`w-2 h-2 rounded-full transition-all ${
-                      idx === currentTestimonialIndex
-                        ? "bg-background w-6"
-                        : "bg-background/50"
-                    }`}
-                    aria-label={`Go to testimonial ${idx + 1}`}
-                  />
-                ))}
-              </div>
-            </div>
+            )}
           </div>
         </div>
 

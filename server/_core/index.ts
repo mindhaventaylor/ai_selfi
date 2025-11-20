@@ -117,9 +117,11 @@ export async function createApp(options?: CreateAppOptions) {
     })
   );
   // development mode uses Vite, production mode uses static files
-  if (process.env.NODE_ENV === "development" && options?.server) {
-    const { setupVite } = await import("./vite.js");
-    await setupVite(app, options.server);
+  // Use a string-based dynamic import to prevent esbuild from analyzing vite.js in production
+  if (process.env.NODE_ENV === "development" && options?.server && process.env.VERCEL !== "1") {
+    // Only import vite in local development - use Function constructor to hide from esbuild
+    const viteModule = await new Function('return import("./vite.js")')();
+    await viteModule.setupVite(app, options.server);
   } else {
     // In production, use a simple static file server that doesn't import vite
     serveStaticProduction(app);
