@@ -155,6 +155,35 @@ export const photoGenerationBatches = pgTable("photo_generation_batches", {
   completedAt: timestamp("completedAt"),
 });
 
+export const photoGenerationQueue = pgTable("photo_generation_queue", {
+  id: serial("id").primaryKey(),
+  batchId: integer("batchId").references(() => photoGenerationBatches.id, { onDelete: "cascade" }).notNull(),
+  userId: integer("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  modelId: integer("modelId").references(() => models.id, { onDelete: "set null" }).notNull(),
+  exampleImageId: integer("exampleImageId").notNull(),
+  exampleImageUrl: text("exampleImageUrl").notNull(),
+  exampleImagePrompt: text("exampleImagePrompt").notNull(),
+  trainingImageUrls: jsonb("trainingImageUrls").default([]).notNull(),
+  basePrompt: text("basePrompt").notNull(),
+  aspectRatio: text("aspectRatio").notNull(), // "1:1" | "9:16" | "16:9"
+  numImagesPerExample: integer("numImagesPerExample").default(4).notNull(),
+  glasses: text("glasses").notNull(),
+  hairColor: text("hairColor"),
+  hairStyle: text("hairStyle"),
+  backgrounds: jsonb("backgrounds").default([]),
+  styles: jsonb("styles").default([]),
+  status: text("status").default("pending").notNull(), // "pending" | "processing" | "completed" | "failed" | "rate_limited"
+  attempts: integer("attempts").default(0).notNull(),
+  maxAttempts: integer("maxAttempts").default(5).notNull(),
+  retryAt: timestamp("retryAt"),
+  lockedBy: text("lockedBy"),
+  lockedAt: timestamp("lockedAt"),
+  errorMessage: text("errorMessage"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  processedAt: timestamp("processedAt"),
+  completedAt: timestamp("completedAt"),
+});
+
 export const couponRedemptions = pgTable("coupon_redemptions", {
   id: serial("id").primaryKey(),
   userId: integer("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),

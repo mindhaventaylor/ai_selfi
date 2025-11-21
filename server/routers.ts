@@ -11,6 +11,54 @@ import { generateImagesWithGemini } from "./_core/gemini.js";
 import { getServerString } from "./_core/strings.js";
 import { ENV } from "./_core/env.js";
 
+// Helper function to get Supabase Edge Function URL
+function getSupabaseFunctionUrl(functionName: string): string {
+  const supabaseUrl = process.env.SUPABASE_URL || "";
+  if (!supabaseUrl) {
+    throw new Error("SUPABASE_URL environment variable is required");
+  }
+  
+  // Remove trailing slash if present
+  const baseUrl = supabaseUrl.endsWith("/") 
+    ? supabaseUrl.slice(0, -1) 
+    : supabaseUrl;
+  
+  // Edge Functions are at /functions/v1/<function-name>
+  return `${baseUrl}/functions/v1/${functionName}`;
+}
+
+// Helper function to call Supabase Edge Function
+async function callSupabaseFunction(
+  functionName: string,
+  body: any
+): Promise<any> {
+  const functionUrl = getSupabaseFunctionUrl(functionName);
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+  
+  if (!supabaseServiceKey) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY environment variable is required");
+  }
+  
+  const response = await fetch(functionUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${supabaseServiceKey}`,
+      "apikey": supabaseServiceKey,
+    },
+    body: JSON.stringify(body),
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `Edge Function ${functionName} failed: ${response.status} ${errorText}`
+    );
+  }
+  
+  return await response.json();
+}
+
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
@@ -135,6 +183,49 @@ export const appRouter = router({
       }),
   }),
   model: router({
+    uploadTrainingImages: protectedProcedure
+      .input(z.object({
+        images: z.array(z.object({
+          data: z.string(), // base64 encoded image
+          fileName: z.string(),
+          contentType: z.string(),
+        })),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const uploadedUrls: string[] = [];
+        const baseTimestamp = Date.now();
+        
+        for (let i = 0; i < input.images.length; i++) {
+          const image = input.images[i];
+          const imageBuffer = Buffer.from(image.data, "base64");
+          const fileName = `training/${ctx.user.id}/${baseTimestamp}-${i}-${image.fileName}`;
+          
+          // Upload using service role (bypasses RLS)
+          const { data: uploadData, error: uploadError } = await supabaseServer.storage
+            .from("model-training-images")
+            .upload(fileName, imageBuffer, {
+              contentType: image.contentType,
+              upsert: false,
+            });
+
+          if (uploadError) {
+            throw new Error(`Erro ao fazer upload da imagem ${i + 1}: ${uploadError.message}`);
+          }
+
+          // Get signed URL for private bucket
+          const { data: signedUrlData, error: signedUrlError } = await supabaseServer.storage
+            .from("model-training-images")
+            .createSignedUrl(fileName, 3600 * 24 * 365); // 1 year expiry
+
+          if (signedUrlError || !signedUrlData) {
+            throw new Error(`Erro ao criar URL assinada para imagem ${i + 1}: ${signedUrlError?.message || 'Unknown error'}`);
+          }
+
+          uploadedUrls.push(signedUrlData.signedUrl);
+        }
+
+        return { urls: uploadedUrls };
+      }),
     list: protectedProcedure.query(async ({ ctx }) => {
       const db = await getDb();
       
@@ -272,30 +363,38 @@ export const appRouter = router({
             if (imagesError) throw new Error(`${getServerString("failedToInsertTrainingImages")}: ${imagesError.message}`);
           }
 
-          // Simulate training: Update status to "ready" after random delay (20-40 seconds)
+          // Call Edge Function for async training (runs even if site is down)
           if (modelData) {
-            const trainingDelay = Math.floor(Math.random() * 20000) + 20000; // 20-40 seconds in milliseconds
-            
-            setTimeout(async () => {
+            try {
+              console.log(`[Model Training] Calling Edge Function for model ${modelData.id}`);
+              
+              // Call Edge Function asynchronously (don't await - let it run in background)
+              callSupabaseFunction("train-model", {
+                modelId: modelData.id,
+                userId: ctx.user.id,
+                trainingImageUrls: input.trainingImageUrls,
+            }).catch(async (error) => {
+              console.error(`[Model Training] Edge Function error for model ${modelData.id}:`, error);
+              // Try to set status to "failed" if Edge Function fails
               try {
                 await supabaseServer
                   .from('models')
-                  .update({ status: "ready" })
+                  .update({ status: "failed" })
                   .eq('id', modelData.id);
-                console.log(`[Model Training] Model ${modelData.id} training completed`);
+              } catch (failError: any) {
+                console.error(`[Model Training] Error setting model ${modelData.id} to failed:`, failError);
+              }
+            });
+              
+              console.log(`[Model Training] Edge Function called for model ${modelData.id} (processing asynchronously)`);
               } catch (error) {
-                console.error(`[Model Training] Error updating model ${modelData.id} status:`, error);
-                // Try to set status to "failed" if update fails
-                try {
+              console.error(`[Model Training] Error calling Edge Function for model ${modelData.id}:`, error);
+              // Set status to "failed" if we can't even call the Edge Function
                   await supabaseServer
                     .from('models')
                     .update({ status: "failed" })
                     .eq('id', modelData.id);
-                } catch (failError) {
-                  console.error(`[Model Training] Error setting model ${modelData.id} to failed:`, failError);
                 }
-              }
-            }, trainingDelay);
           }
 
           return { success: true, modelId: modelData?.id };
@@ -335,30 +434,42 @@ export const appRouter = router({
           );
         }
 
-        // Simulate training: Update status to "ready" after random delay (20-40 seconds)
+        // Call Edge Function for async training (runs even if site is down)
         if (model) {
-          const trainingDelay = Math.floor(Math.random() * 20000) + 20000; // 20-40 seconds in milliseconds
-          
-          setTimeout(async () => {
+          try {
+            console.log(`[Model Training] Calling Edge Function for model ${model.id}`);
+            
+            // Call Edge Function asynchronously (don't await - let it run in background)
+            callSupabaseFunction("train-model", {
+              modelId: model.id,
+              userId: ctx.user.id,
+              trainingImageUrls: input.trainingImageUrls,
+            }).catch(async (error) => {
+              console.error(`[Model Training] Edge Function error for model ${model.id}:`, error);
+              // Try to set status to "failed" if Edge Function fails
             try {
               const updateDb = await getDb();
               if (updateDb) {
                 await updateDb
                   .update(models)
-                  .set({ status: "ready" })
+                    .set({ status: "failed" })
                   .where(eq(models.id, model.id));
               } else {
-                // Fallback to REST API
-                await supabaseServer
+                  const { error: updateError } = await supabaseServer
                   .from('models')
-                  .update({ status: "ready" })
+                    .update({ status: "failed" })
                   .eq('id', model.id);
+                  if (updateError) throw updateError;
+                }
+              } catch (failError: any) {
+                console.error(`[Model Training] Error setting model ${model.id} to failed:`, failError);
               }
-              console.log(`[Model Training] Model ${model.id} training completed`);
+            });
+            
+            console.log(`[Model Training] Edge Function called for model ${model.id} (processing asynchronously)`);
             } catch (error) {
-              console.error(`[Model Training] Error updating model ${model.id} status:`, error);
-              // Try to set status to "failed" if update fails
-              try {
+            console.error(`[Model Training] Error calling Edge Function for model ${model.id}:`, error);
+            // Set status to "failed" if we can't even call the Edge Function
                 const updateDb = await getDb();
                 if (updateDb) {
                   await updateDb
@@ -371,11 +482,7 @@ export const appRouter = router({
                     .update({ status: "failed" })
                     .eq('id', model.id);
                 }
-              } catch (failError) {
-                console.error(`[Model Training] Error setting model ${model.id} to failed:`, failError);
               }
-            }
-          }, trainingDelay);
         }
 
         return { success: true, modelId: model?.id };
@@ -443,6 +550,90 @@ export const appRouter = router({
       }),
   }),
   photo: router({
+    getBatchStatus: protectedProcedure
+      .input(z.object({ batchId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const db = await getDb();
+        
+        if (!db) {
+          // Use REST API
+          const { data: batch, error } = await supabaseServer
+            .from('photo_generation_batches')
+            .select('id, status, totalImagesGenerated, createdAt, completedAt')
+            .eq('id', input.batchId)
+            .eq('userId', ctx.user.id)
+            .single();
+          
+          if (error || !batch) {
+            throw new Error("Batch not found");
+          }
+          
+          // Get generated photos for this batch
+          const { data: photos, error: photosError } = await supabaseServer
+            .from('photos')
+            .select('id, url, status')
+            .eq('generationBatchId', input.batchId)
+            .eq('userId', ctx.user.id)
+            .order('id', { ascending: true });
+          
+          return {
+            batch: {
+              id: batch.id,
+              status: batch.status,
+              totalImagesGenerated: batch.totalImagesGenerated,
+              createdAt: batch.createdAt,
+              completedAt: batch.completedAt,
+            },
+            photos: (photos || []).map((p: any) => ({
+              id: p.id,
+              url: p.url,
+              status: p.status,
+            })),
+          };
+        }
+        
+        // Use direct database connection
+        const [batch] = await db
+          .select()
+          .from(photoGenerationBatches)
+          .where(
+            and(
+              eq(photoGenerationBatches.id, input.batchId),
+              eq(photoGenerationBatches.userId, ctx.user.id)
+            )
+          )
+          .limit(1);
+        
+        if (!batch) {
+          throw new Error("Batch not found");
+        }
+        
+        const batchPhotos = await db
+          .select({
+            id: photos.id,
+            url: photos.url,
+            status: photos.status,
+          })
+          .from(photos)
+          .where(
+            and(
+              eq(photos.generationBatchId, input.batchId),
+              eq(photos.userId, ctx.user.id)
+            )
+          )
+          .orderBy(photos.id);
+        
+        return {
+          batch: {
+            id: batch.id,
+            status: batch.status,
+            totalImagesGenerated: batch.totalImagesGenerated,
+            createdAt: batch.createdAt,
+            completedAt: batch.completedAt,
+          },
+          photos: batchPhotos,
+        };
+      }),
     list: protectedProcedure
       .input(z.object({ 
         sortBy: z.enum(["newest", "favourites"]).default("newest"),
@@ -480,25 +671,29 @@ export const appRouter = router({
     generate: protectedProcedure
       .input(z.object({ 
         modelId: z.number(),
-        referenceImageUrls: z.array(z.string()).min(1),
+        trainingImageUrls: z.array(z.string()).min(1), // Model's training images
+        exampleImages: z.array(z.object({
+          id: z.number(),
+          url: z.string(),
+          prompt: z.string(),
+        })).min(1), // Selected example images with prompts
+        basePrompt: z.string(), // Base prompt with user options
         aspectRatio: z.enum(["1:1", "9:16", "16:9"]),
+        numImagesPerExample: z.number().default(4), // Usually 4
         glasses: z.enum(["yes", "no"]),
         hairColor: z.string().optional(),
         hairStyle: z.string().optional(),
         backgrounds: z.array(z.string()).default([]),
         styles: z.array(z.string()).default([]),
-        numImagesPerReference: z.number().default(4),
-        totalImagesToGenerate: z.number().optional(), // Frontend-calculated total (based on selected example images only)
       }))
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
         
-        // Use frontend-calculated total if provided, otherwise fall back to old calculation
-        // The frontend calculates this based on selected example images only (not training images)
-        const totalImages = input.totalImagesToGenerate ?? (input.referenceImageUrls.length * input.numImagesPerReference);
+        // Calculate total images: numImagesPerExample * number of example images
+        const totalImages = input.exampleImages.length * input.numImagesPerExample;
         const creditsNeeded = totalImages;
         
-        console.log(`[Photo Generate] Total images to generate: ${totalImages}, Credits needed: ${creditsNeeded}, Reference images: ${input.referenceImageUrls.length}`);
+        console.log(`[Photo Generate] Total images to generate: ${totalImages}, Credits needed: ${creditsNeeded}, Example images: ${input.exampleImages.length}`);
 
         // Check credits
         if ((ctx.user.credits || 0) < creditsNeeded) {
@@ -539,319 +734,13 @@ export const appRouter = router({
           }
         }
 
-        // Fetch reference images and convert to base64
-        // For private buckets, we need to download directly from Supabase Storage using service role
+        // No need to fetch images here - Edge Function will handle it
         console.log(`\n${'='.repeat(80)}`);
-        console.log(`[Photo Generate] 📥 Fetching ${input.referenceImageUrls.length} reference image(s)`);
+        console.log(`[Photo Generate] 📥 Preparing batch with ${input.trainingImageUrls.length} training image(s) and ${input.exampleImages.length} example image(s)`);
         console.log(`${'='.repeat(80)}\n`);
         
-        const referenceImages = await Promise.all(
-          input.referenceImageUrls.map(async (url, index) => {
-            try {
-              console.log(`[Image Fetch] 🔍 [${index + 1}/${input.referenceImageUrls.length}] Processing: ${url.substring(0, 80)}...`);
-              
-              // Check if this is a Supabase Storage URL
-              // Pattern: https://[project].supabase.co/storage/v1/object/public/[bucket]/[path]
-              // Or: https://[project].supabase.co/storage/v1/object/sign/[bucket]/[path]?[params]
-              // Split the URL to extract bucket and path more reliably
-              const storageIndex = url.indexOf('/storage/v1/object/');
-              if (storageIndex !== -1) {
-                const afterStorage = url.substring(storageIndex + '/storage/v1/object/'.length);
-                // After '/storage/v1/object/' we have either 'public/[bucket]/[path]' or 'sign/[bucket]/[path]'
-                const parts = afterStorage.split('/');
-                if (parts.length >= 3 && (parts[0] === 'public' || parts[0] === 'sign')) {
-                  const bucketName = parts[1];
-                  const filePath = parts.slice(2).join('/'); // Rejoin the rest as the file path
-              
-                  // Remove query parameters if present
-                  let cleanPath = filePath;
-                  const queryIndex = cleanPath.indexOf('?');
-                  if (queryIndex !== -1) {
-                    cleanPath = cleanPath.substring(0, queryIndex);
-                  }
-                  const decodedPath = decodeURIComponent(cleanPath);
-                
-                  console.log(`[Image Fetch] ✅ [${index + 1}] Detected Supabase Storage - Bucket: ${bucketName}, Path: ${decodedPath}`);
-                  
-                  // Download directly from Supabase Storage using service role (bypasses RLS)
-                  const { data, error } = await supabaseServer.storage
-                    .from(bucketName)
-                    .download(decodedPath);
-                
-                  if (error) {
-                    console.error(`[Image Fetch] ❌ [${index + 1}] Supabase download error:`, error);
-                    throw new Error(`${getServerString("failedToDownloadImage")}: ${error.message}`);
-                  }
-                  
-                  if (!data) {
-                    console.error(`[Image Fetch] ❌ [${index + 1}] No data returned from Supabase`);
-                    throw new Error(getServerString("noDataReturned"));
-                  }
-                  
-                  // Convert blob to buffer
-                  const arrayBuffer = await data.arrayBuffer();
-                  const buffer = Buffer.from(arrayBuffer);
-                  const base64 = buffer.toString("base64");
-                  
-                  // Determine mime type from file extension or default
-                  let contentType = "image/jpeg";
-                  const lowerPath = decodedPath.toLowerCase();
-                  if (lowerPath.endsWith('.png')) contentType = "image/png";
-                  else if (lowerPath.endsWith('.webp')) contentType = "image/webp";
-                  else if (lowerPath.endsWith('.jpg') || lowerPath.endsWith('.jpeg')) contentType = "image/jpeg";
-                  
-                  const imageSizeKB = Math.round(buffer.length / 1024);
-                  const base64SizeKB = Math.round(base64.length * 0.75 / 1024);
-                  console.log(`[Image Fetch] ✅ [${index + 1}] Successfully downloaded: ${imageSizeKB}KB (base64: ~${base64SizeKB}KB), type: ${contentType}`);
-                  
-                  return {
-                    data: base64,
-                    mimeType: contentType,
-                  };
-                }
-              }
-              
-              // Not a Supabase Storage URL, try regular HTTP fetch
-              console.log(`[Image Fetch] 🌐 [${index + 1}] Not a Supabase URL, trying HTTP fetch: ${url}`);
-              const response = await fetch(url);
-              
-              if (!response.ok) {
-                console.error(`[Image Fetch] ❌ [${index + 1}] HTTP fetch failed: ${response.status} ${response.statusText}`);
-                throw new Error(`${getServerString("failedToFetchImage")}: ${url} (${response.status} ${response.statusText})`);
-              }
-              
-              const arrayBuffer = await response.arrayBuffer();
-              const buffer = Buffer.from(arrayBuffer);
-              const base64 = buffer.toString("base64");
-              
-              const contentType = response.headers.get("content-type") || "image/jpeg";
-              const imageSizeKB = Math.round(buffer.length / 1024);
-              const base64SizeKB = Math.round(base64.length * 0.75 / 1024);
-              
-              console.log(`[Image Fetch] ✅ [${index + 1}] Successfully fetched via HTTP: ${imageSizeKB}KB (base64: ~${base64SizeKB}KB), type: ${contentType}`);
-              
-              return {
-                data: base64,
-                mimeType: contentType,
-              };
-            } catch (error) {
-              console.error(`[Image Fetch] ❌ [${index + 1}] Error fetching reference image:`, error);
-              throw new Error(`${getServerString("failedToFetchReferenceImage")}: ${url}. ${error instanceof Error ? error.message : 'Unknown error'}`);
-            }
-          })
-        );
-        
-        console.log(`\n[Photo Generate] ✅ Successfully fetched ${referenceImages.length} reference image(s)\n`);
-
-        // Build prompt from selected options
-        let prompt = `Create a photorealistic professional portrait image of the person in the reference photos.`;
-        
-        if (input.backgrounds.length > 0) {
-          prompt += ` Use a ${input.backgrounds.join(", ")} background.`;
-        }
-        
-        if (input.styles.length > 0) {
-          prompt += ` Style: ${input.styles.join(", ")}.`;
-        }
-        
-        if (input.glasses === "yes") {
-          prompt += ` Include glasses.`;
-        }
-        
-        if (input.hairColor && input.hairColor !== "default") {
-          prompt += ` Hair color: ${input.hairColor}.`;
-        }
-        
-        if (input.hairStyle && input.hairStyle !== "no-preference") {
-          prompt += ` Hair style: ${input.hairStyle}.`;
-        }
-        
-        prompt += ` High quality, professional photography, natural lighting, sharp focus.`;
-
-        // Generate images using Gemini API
-        // Note: Rate limiting may occur - the API will retry automatically
-        let generatedImages;
-        try {
-          console.log(`\n${'='.repeat(80)}`);
-          console.log(`[Photo Generate] 🚀 Starting image generation process`);
-          console.log(`[Photo Generate]    - User ID: ${ctx.user.id}`);
-          console.log(`[Photo Generate]    - Model ID: ${input.modelId}`);
-          console.log(`[Photo Generate]    - Reference images: ${referenceImages.length}`);
-          console.log(`[Photo Generate]    - Target images: ${totalImages}`);
-          console.log(`[Photo Generate]    - Aspect ratio: ${input.aspectRatio}`);
-          console.log(`[Photo Generate]    - Prompt: ${prompt.substring(0, 100)}...`);
-          console.log(`${'='.repeat(80)}\n`);
-          
-          generatedImages = await generateImagesWithGemini({
-            referenceImages,
-            prompt,
-            aspectRatio: input.aspectRatio,
-            numImages: totalImages,
-          });
-          
-          console.log(`\n${'='.repeat(80)}`);
-          console.log(`[Photo Generate] ✅ Gemini API returned ${generatedImages.length} image(s)`);
-          console.log(`${'='.repeat(80)}\n`);
-          
-          if (generatedImages.length === 0) {
-            throw new Error(getServerString("noImagesGenerated"));
-          }
-          
-          if (generatedImages.length < totalImages) {
-            console.warn(`[Photo Generate] Warning: Requested ${totalImages} images but only received ${generatedImages.length}`);
-          }
-        } catch (error) {
-          console.error(`[Photo Generate] Error generating images:`, error);
-          // Provide user-friendly error message for rate limits
-          if (error instanceof Error && (error.message.includes('rate limit') || error.message.includes('429'))) {
-            throw new Error(getServerString("highDemandRetry"));
-          }
-          // Provide more specific error messages
-          if (error instanceof Error) {
-            throw new Error(`${getServerString("failedToGenerateImages")}: ${error.message}`);
-          }
-          throw error;
-        }
-
-        // Upload generated images to Supabase Storage
-        console.log(`\n${'='.repeat(80)}`);
-        console.log(`[Photo Generate] 📤 Starting upload to Supabase Storage`);
-        console.log(`[Photo Generate]    - Images to upload: ${generatedImages.length}`);
-        console.log(`${'='.repeat(80)}\n`);
-        
-        const uploadedUrls: string[] = [];
-        const baseTimestamp = Date.now();
-        
-        for (let i = 0; i < generatedImages.length; i++) {
-          const image = generatedImages[i];
-          
-          // Validate image data
-          if (!image.data || image.data.length === 0) {
-            console.error(`[Photo Generate] ❌ Invalid image data at index ${i} - skipping`);
-            continue; // Skip invalid images
-          }
-          
-          try {
-            const imageBuffer = Buffer.from(image.data, "base64");
-            
-            // Validate buffer
-            if (imageBuffer.length === 0) {
-              console.error(`[Photo Generate] ❌ Empty buffer at index ${i} - skipping`);
-              continue;
-            }
-            
-            const fileName = `generated/${ctx.user.id}/${baseTimestamp}-${i}.png`;
-            const imageSizeKB = Math.round(imageBuffer.length / 1024);
-            
-            console.log(`[Photo Generate] 📤 Uploading image ${i + 1}/${generatedImages.length}: ${fileName} (${imageSizeKB}KB, ${image.mimeType})`);
-            
-            const { data: uploadData, error: uploadError } = await supabaseServer.storage
-              .from("generated-photos")
-              .upload(fileName, imageBuffer, {
-                contentType: image.mimeType || "image/png",
-                upsert: false,
-              });
-
-            if (uploadError) {
-              console.error(`[Photo Generate] ❌ Upload failed for image ${i + 1}:`, uploadError);
-              throw new Error(`${getServerString("failedToUploadGeneratedImage")} ${i + 1}: ${uploadError.message}`);
-            }
-
-            // Get public URL
-            const { data: urlData } = supabaseServer.storage
-              .from("generated-photos")
-              .getPublicUrl(fileName);
-
-            uploadedUrls.push(urlData.publicUrl);
-            console.log(`[Photo Generate] ✅ Successfully uploaded image ${i + 1}: ${urlData.publicUrl}`);
-          } catch (error) {
-            console.error(`[Photo Generate] ❌ Error processing image ${i + 1}:`, error);
-            // Continue with other images instead of failing completely
-            if (uploadedUrls.length === 0) {
-              throw error; // Only throw if no images were uploaded at all
-            }
-          }
-        }
-        
-        if (uploadedUrls.length === 0) {
-          console.error(`[Photo Generate] ❌ Failed to upload any images`);
-          throw new Error(getServerString("failedToUploadAnyImages"));
-        }
-        
-        console.log(`\n${'='.repeat(80)}`);
-        console.log(`[Photo Generate] ✅ Upload complete: ${uploadedUrls.length}/${generatedImages.length} images uploaded`);
-        console.log(`${'='.repeat(80)}\n`);
-
-        // Create generation batch and photo records
-        let batchId: number | undefined;
-        
+        // Deduct credits immediately (before async processing)
         if (!db) {
-          // Use REST API
-          // Create generation batch
-          const { data: batchData, error: batchError } = await supabaseServer
-            .from('photo_generation_batches')
-            .insert({
-              userId: ctx.user.id,
-              modelId: input.modelId,
-              totalImagesGenerated: uploadedUrls.length,
-              creditsUsed: creditsNeeded,
-              aspectRatio: input.aspectRatio,
-              glasses: input.glasses,
-              hairColor: input.hairColor || null,
-              hairStyle: input.hairStyle || null,
-              backgrounds: input.backgrounds,
-              styles: input.styles,
-              status: "completed",
-              completedAt: new Date().toISOString(),
-            })
-            .select()
-            .single();
-
-          if (batchError) {
-            throw new Error(`${getServerString("failedToCreateGenerationBatch")}: ${batchError.message}`);
-          }
-
-          batchId = batchData?.id;
-
-          // Create photo records for gallery
-          const photoRecords = uploadedUrls.map((url, index) => ({
-            userId: ctx.user.id,
-            modelId: input.modelId,
-            generationBatchId: batchId,
-            url: url,
-            status: "completed",
-            creditsUsed: 1,
-            aspectRatio: input.aspectRatio,
-            glasses: input.glasses,
-            hairColor: input.hairColor || null,
-            hairStyle: input.hairStyle || null,
-            backgrounds: input.backgrounds,
-            styles: input.styles,
-            prompt: prompt, // Save the prompt used for generation
-          }));
-
-          console.log(`\n${'='.repeat(80)}`);
-          console.log(`[Photo Generate] 📸 Adding ${photoRecords.length} photo(s) to gallery`);
-          console.log(`${'='.repeat(80)}\n`);
-
-          const { data: insertedPhotos, error: photosError } = await supabaseServer
-            .from('photos')
-            .insert(photoRecords)
-            .select();
-
-          if (photosError) {
-            console.error(`[Photo Generate] ❌ Failed to add photos to gallery:`, photosError);
-            throw new Error(`${getServerString("failedToCreatePhotoRecords")}: ${photosError.message}`);
-          }
-
-          console.log(`[Photo Generate] ✅ Successfully added ${insertedPhotos?.length || photoRecords.length} photo(s) to gallery`);
-          if (insertedPhotos && insertedPhotos.length > 0) {
-            insertedPhotos.forEach((photo: any, index: number) => {
-              console.log(`[Photo Generate]    Photo ${index + 1}: ID=${photo.id}, URL=${photo.url}`);
-            });
-          }
-
-          // Deduct credits
           const { error: creditsError } = await supabaseServer
             .from('users')
             .update({ credits: (ctx.user.credits || 0) - creditsNeeded })
@@ -861,12 +750,46 @@ export const appRouter = router({
             throw new Error(`${getServerString("failedToDeductCredits")}: ${creditsError.message}`);
           }
         } else {
+          await db
+            .update(users)
+            .set({ credits: (ctx.user.credits || 0) - creditsNeeded })
+            .where(eq(users.id, ctx.user.id));
+        }
+
+        // Create generation batch with "generating" status
+        let batchId: number | undefined;
+        
+        if (!db) {
+          // Use REST API
+          const { data: batchData, error: batchError } = await supabaseServer
+            .from('photo_generation_batches')
+            .insert({
+              userId: ctx.user.id,
+              modelId: input.modelId,
+              totalImagesGenerated: 0, // Will be updated by Edge Function
+              creditsUsed: creditsNeeded,
+              aspectRatio: input.aspectRatio,
+              glasses: input.glasses,
+              hairColor: input.hairColor || null,
+              hairStyle: input.hairStyle || null,
+              backgrounds: input.backgrounds,
+              styles: input.styles,
+              status: "generating", // Edge Function will update to "completed"
+            })
+            .select()
+            .single();
+
+          if (batchError) {
+            throw new Error(`${getServerString("failedToCreateGenerationBatch")}: ${batchError.message}`);
+          }
+
+          batchId = batchData?.id;
+        } else {
           // Use direct database connection
-          // Create generation batch
           const [batch] = await db.insert(photoGenerationBatches).values({
             userId: ctx.user.id,
             modelId: input.modelId,
-            totalImagesGenerated: uploadedUrls.length,
+            totalImagesGenerated: 0, // Will be updated by Edge Function
             creditsUsed: creditsNeeded,
             aspectRatio: input.aspectRatio,
             glasses: input.glasses,
@@ -874,51 +797,79 @@ export const appRouter = router({
             hairStyle: input.hairStyle || null,
             backgrounds: input.backgrounds,
             styles: input.styles,
-            status: "completed",
-            completedAt: new Date(),
+            status: "generating", // Edge Function will update to "completed"
           }).returning();
 
           batchId = batch?.id;
-
-          // Create photo records for gallery
-          const photoRecords = uploadedUrls.map((url) => ({
-            userId: ctx.user.id,
-            modelId: input.modelId,
-            generationBatchId: batch?.id,
-            url: url,
-            status: "completed" as const,
-            creditsUsed: 1,
-            aspectRatio: input.aspectRatio,
-            glasses: input.glasses,
-            hairColor: input.hairColor || null,
-            hairStyle: input.hairStyle || null,
-            backgrounds: input.backgrounds,
-            styles: input.styles,
-            prompt: prompt, // Save the prompt used for generation
-          }));
-
-          console.log(`\n${'='.repeat(80)}`);
-          console.log(`[Photo Generate] 📸 Adding ${photoRecords.length} photo(s) to gallery`);
-          console.log(`${'='.repeat(80)}\n`);
-
-          const insertedPhotos = await db.insert(photos).values(photoRecords).returning();
-
-          console.log(`[Photo Generate] ✅ Successfully added ${insertedPhotos.length} photo(s) to gallery`);
-          insertedPhotos.forEach((photo, index) => {
-            console.log(`[Photo Generate]    Photo ${index + 1}: ID=${photo.id}, URL=${photo.url}`);
-          });
-
-          // Deduct credits
-          await db
-            .update(users)
-            .set({ credits: (ctx.user.credits || 0) - creditsNeeded })
-            .where(eq(users.id, ctx.user.id));
         }
 
+        if (!batchId) {
+          throw new Error("Failed to create generation batch");
+        }
+
+        if (!batchId) {
+          throw new Error("Failed to create generation batch");
+        }
+
+        console.log(`\n${'='.repeat(80)}`);
+        console.log(`[Photo Generate] 🚀 Calling Edge Function for async image generation`);
+        console.log(`[Photo Generate]    - Batch ID: ${batchId}`);
+        console.log(`[Photo Generate]    - User ID: ${ctx.user.id}`);
+        console.log(`[Photo Generate]    - Model ID: ${input.modelId}`);
+        console.log(`[Photo Generate]    - Training images: ${input.trainingImageUrls.length}`);
+        console.log(`[Photo Generate]    - Example images: ${input.exampleImages.length}`);
+        console.log(`[Photo Generate]    - Images per example: ${input.numImagesPerExample}`);
+        console.log(`[Photo Generate]    - Target images: ${totalImages}`);
+        console.log(`[Photo Generate]    - Aspect ratio: ${input.aspectRatio}`);
+        console.log(`${'='.repeat(80)}\n`);
+
+        // Call Edge Function asynchronously (don't await - let it run in background)
+        callSupabaseFunction("generate-images", {
+          batchId,
+            userId: ctx.user.id,
+            modelId: input.modelId,
+          trainingImageUrls: input.trainingImageUrls,
+          exampleImages: input.exampleImages,
+          basePrompt: input.basePrompt,
+            aspectRatio: input.aspectRatio,
+          numImagesPerExample: input.numImagesPerExample,
+            glasses: input.glasses,
+          hairColor: input.hairColor,
+          hairStyle: input.hairStyle,
+            backgrounds: input.backgrounds,
+            styles: input.styles,
+        }).catch(async (error) => {
+          console.error(`[Photo Generate] Edge Function error for batch ${batchId}:`, error);
+          // Try to update batch status to "failed"
+          try {
+            if (!db) {
+              const { error: updateError } = await supabaseServer
+                .from('photo_generation_batches')
+                .update({ status: "failed" })
+                .eq('id', batchId);
+              if (updateError) throw updateError;
+            } else {
+              const updateDb = await getDb();
+              if (updateDb) {
+                await updateDb
+                  .update(photoGenerationBatches)
+                  .set({ status: "failed" })
+                  .where(eq(photoGenerationBatches.id, batchId));
+              }
+            }
+          } catch (failError: any) {
+            console.error(`[Photo Generate] Error setting batch ${batchId} to failed:`, failError);
+          }
+        });
+
+        console.log(`[Photo Generate] ✅ Edge Function called for batch ${batchId} (processing asynchronously)`);
+
+        // Return immediately - images will be generated by Edge Function
         return { 
           success: true, 
           batchId: batchId,
-          imageUrls: uploadedUrls,
+          message: "Image generation started. Images will be available shortly.",
+          imageUrls: [], // Will be populated by Edge Function
         };
       }),
     createBatch: protectedProcedure

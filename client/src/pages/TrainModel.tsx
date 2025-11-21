@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Upload, X, ArrowRight, XCircle, AlertCircle } from "lucide-react";
 import { useLocation } from "wouter";
+import { toast } from "sonner";
 
 interface UploadedFile {
   id: string;
@@ -32,7 +33,7 @@ interface UploadedFile {
 
 export default function TrainModel() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [modelName, setModelName] = useState("");
   const [gender, setGender] = useState<"hombre" | "mujer" | "">("");
@@ -40,6 +41,7 @@ export default function TrainModel() {
   const [isDragging, setIsDragging] = useState(false);
   const [showCreditsAlert, setShowCreditsAlert] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // For now, use regular credits as training credits (can be separated later)
@@ -47,30 +49,36 @@ export default function TrainModel() {
   const hasTrainingCredits = trainingCredits > 0;
 
   const handleFileSelect = (files: FileList | null) => {
-    if (!files) return;
-
-    // Check if user has training credits
-    if (!hasTrainingCredits) {
-      setShowCreditsAlert(true);
+    if (!files || files.length === 0) {
       return;
     }
 
+    // Allow file selection even without credits - validation will happen on upload
     const newFiles: UploadedFile[] = [];
     const maxFiles = 5;
     const currentCount = uploadedFiles.length;
 
     Array.from(files).forEach((file) => {
-      if (currentCount + newFiles.length >= maxFiles) return;
+      if (currentCount + newFiles.length >= maxFiles) {
+        toast.error(t("trainModel.max5Images"), {
+          description: "Você pode selecionar no máximo 5 imagens",
+        });
+        return;
+      }
       
       // Validate file type
       if (!file.type.match(/^image\/(jpeg|jpg|png)$/i)) {
-        alert(t("trainModel.onlyJpgPng"));
+        toast.error(t("trainModel.onlyJpgPng"), {
+          description: `O arquivo "${file.name}" não é um formato válido`,
+        });
         return;
       }
 
       // Validate file size (3MB)
       if (file.size > 3 * 1024 * 1024) {
-        alert(t("trainModel.fileTooLarge"));
+        toast.error(t("trainModel.fileTooLarge"), {
+          description: `O arquivo "${file.name}" é muito grande (máximo 3MB)`,
+        });
         return;
       }
 
@@ -79,7 +87,12 @@ export default function TrainModel() {
       newFiles.push({ id, file, preview });
     });
 
-    setUploadedFiles((prev) => [...prev, ...newFiles]);
+    if (newFiles.length > 0) {
+      setUploadedFiles((prev) => [...prev, ...newFiles]);
+      toast.success(`${newFiles.length} ${newFiles.length === 1 ? "imagem selecionada" : "imagens selecionadas"}`, {
+        description: "As imagens estão prontas para envio",
+      });
+    }
     setShowCreditsAlert(false);
   };
 
@@ -109,64 +122,86 @@ export default function TrainModel() {
   };
 
   const createModelMutation = trpc.model.create.useMutation();
+  const uploadImagesMutation = trpc.model.uploadTrainingImages.useMutation();
 
   const handleUpload = async () => {
+    if (isUploading) {
+      return;
+    }
+
     if (!modelName.trim()) {
-      alert(t("trainModel.pleaseEnterModelName"));
+      toast.error(t("trainModel.pleaseEnterModelName"), {
+        description: "Por favor, digite um nome para o modelo",
+      });
       return;
     }
 
     if (!gender) {
-      alert(t("trainModel.pleaseSelectGender"));
+      toast.error(t("trainModel.pleaseSelectGender"), {
+        description: "Por favor, selecione o gênero do modelo",
+      });
       return;
     }
 
     if (uploadedFiles.length === 0) {
-      alert(t("trainModel.pleaseUploadAtLeastOne"));
+      toast.error(t("trainModel.pleaseUploadAtLeastOne"), {
+        description: "Você precisa selecionar pelo menos uma imagem",
+      });
       return;
     }
 
     if (uploadedFiles.length > 5) {
-      alert(t("trainModel.max5Images"));
+      toast.error(t("trainModel.max5Images"), {
+        description: "Você pode selecionar no máximo 5 imagens",
+      });
       return;
     }
 
+    if (!user?.id) {
+      toast.error("Usuário não autenticado", {
+        description: "Por favor, faça login novamente",
+      });
+      return;
+    }
+
+    // Check credits only when actually uploading (not when selecting files)
+    if (!hasTrainingCredits) {
+      toast.warning(t("trainModel.needTrainingCredits"), {
+        description: "Você precisa de créditos para treinar modelos",
+        action: {
+          label: t("trainModel.buyCredits") || "Comprar Créditos",
+          onClick: () => setLocation("/dashboard/credits/buy"),
+        },
+      });
+      return;
+    }
+
+    setIsUploading(true);
     try {
-      // Upload images to Supabase Storage
-      // IMPORTANT: Upload in order to preserve the sequence - first uploaded = first in array
-      const uploadedUrls: string[] = [];
-      const baseTimestamp = Date.now();
-      
-      for (let i = 0; i < uploadedFiles.length; i++) {
-        const file = uploadedFiles[i].file;
-        // Use baseTimestamp + index to ensure order is preserved
-        const fileName = `training/${user?.id}/${baseTimestamp}-${i}-${file.name}`;
-        
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("model-training-images")
-          .upload(fileName, file, {
-            contentType: file.type,
-            upsert: false,
+      // Upload images via backend (bypasses RLS by using service role)
+      // Convert files to base64 and send to backend
+      const imagesToUpload = await Promise.all(
+        uploadedFiles.map(async (file) => {
+          return new Promise<{ data: string; fileName: string; contentType: string }>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const base64 = (reader.result as string).split(',')[1]; // Remove data:image/jpeg;base64, prefix
+              resolve({
+                data: base64,
+                fileName: file.file.name,
+                contentType: file.file.type,
+              });
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file.file);
           });
+        })
+      );
 
-        if (uploadError) {
-          console.error("Error uploading image:", uploadError);
-          throw new Error(`${t("trainModel.errorUploadingImage")}: ${uploadError.message}`);
-        }
-
-        // Get signed URL for private bucket (valid for 1 hour)
-        // For private buckets, we need signed URLs instead of public URLs
-        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-          .from("model-training-images")
-          .createSignedUrl(fileName, 3600); // 1 hour expiry
-
-        if (signedUrlError || !signedUrlData) {
-          console.error("Error creating signed URL:", signedUrlError);
-          throw new Error(`${t("trainModel.errorCreatingSignedUrl")}: ${signedUrlError?.message || 'Unknown error'}`);
-        }
-
-        uploadedUrls.push(signedUrlData.signedUrl);
-      }
+      // Upload via backend (uses service role, bypasses RLS)
+      const { urls: uploadedUrls } = await uploadImagesMutation.mutateAsync({
+        images: imagesToUpload,
+      });
 
       // Ensure we have at least one image
       if (uploadedUrls.length === 0) {
@@ -176,12 +211,6 @@ export default function TrainModel() {
       // Create model record in database
       // IMPORTANT: The first image uploaded (uploadedFiles[0]) becomes uploadedUrls[0]
       // This first image will be used as previewImageUrl in the model
-      console.log("Uploading model with images:", {
-        firstImage: uploadedUrls[0],
-        totalImages: uploadedUrls.length,
-        firstFile: uploadedFiles[0]?.file?.name
-      });
-      
       await createModelMutation.mutateAsync({
         name: modelName,
         gender: gender as "hombre" | "mujer",
@@ -196,9 +225,32 @@ export default function TrainModel() {
       setModelName("");
       setGender("");
       setUploadedFiles([]);
+      
+      toast.success(t("trainModel.uploadSuccess") || "Modelo criado com sucesso!", {
+        description: "Suas imagens foram enviadas e o modelo está sendo treinado",
+      });
     } catch (error: any) {
-      console.error("Error uploading model:", error);
-      alert(error?.message || t("trainModel.errorUploadingModel"));
+      const errorMessage = error?.message || t("trainModel.errorUploadingModel") || "Erro ao fazer upload do modelo";
+      
+      // Check if it's a session/auth error
+      if (errorMessage.includes("sessão") || errorMessage.includes("session") || errorMessage.includes("expired") || errorMessage.includes("autenticação") || errorMessage.includes("authentication")) {
+        toast.error("Sessão expirada", {
+          description: "Sua sessão expirou. Por favor, faça login novamente.",
+          action: {
+            label: "Fazer Login",
+            onClick: async () => {
+              await logout();
+            },
+          },
+          duration: 10000,
+        });
+      } else {
+        toast.error("Erro ao criar modelo", {
+          description: errorMessage,
+        });
+      }
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -271,31 +323,45 @@ export default function TrainModel() {
 
               {/* Upload Area */}
               <div
-                className={`border-2 border-dashed rounded-lg p-8 md:p-12 transition-colors ${
+                className={`border-2 border-dashed rounded-lg p-8 md:p-12 transition-colors cursor-pointer relative ${
                   isDragging
                     ? "border-primary bg-primary/10"
                     : "border-border hover:border-primary/50"
                 }`}
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onClick={() => {
-                  if (!hasTrainingCredits) {
-                    setShowCreditsAlert(true);
-                  } else {
-                    fileInputRef.current?.click();
-                  }
+                style={{ minHeight: '200px' }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDrop(e);
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDragOver(e);
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDragLeave();
                 }}
               >
                 <input
+                  id="file-upload-input"
                   ref={fileInputRef}
                   type="file"
                   accept="image/jpeg,image/jpg,image/png"
                   multiple
-                  className="hidden"
-                  onChange={(e) => handleFileSelect(e.target.files)}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  style={{ fontSize: 0 }}
+                  onChange={(e) => {
+                    handleFileSelect(e.target.files);
+                    // Reset input to allow selecting same file again
+                    e.target.value = '';
+                  }}
                 />
-                <div className="text-center space-y-4">
+                <div 
+                  className="text-center space-y-4 w-full h-full select-none pointer-events-none"
+                >
                   <div className="flex justify-center">
                     <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
                       <Upload className="w-8 h-8 text-muted-foreground" />
@@ -309,6 +375,16 @@ export default function TrainModel() {
                     <p className="text-sm text-muted-foreground mt-1">
                       {t("trainModel.minMaxImages")}
                     </p>
+                    {uploadedFiles.length > 0 && (
+                      <p className="text-sm text-green-500 font-medium mt-2">
+                        {uploadedFiles.length} {uploadedFiles.length === 1 ? "imagem selecionada" : "imagens selecionadas"}
+                      </p>
+                    )}
+                    {!hasTrainingCredits && uploadedFiles.length === 0 && (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        {t("trainModel.needTrainingCredits")} {t("trainModel.buyCredits")} para fazer upload
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -316,9 +392,17 @@ export default function TrainModel() {
               {/* Preview Images Section */}
               {uploadedFiles.length > 0 && (
                 <div className="space-y-3 relative">
-                  <h3 className="text-lg font-semibold">{t("trainModel.previewImages")}</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">{t("trainModel.previewImages")}</h3>
+                    <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                      {uploadedFiles.length} {uploadedFiles.length === 1 ? "imagem pronta para enviar" : "imagens prontas para enviar"}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    As imagens estão apenas no seu navegador. Clique em "Enviar Imagens" para fazer upload.
+                  </p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {uploadedFiles.map((file) => (
+                    {uploadedFiles.map((file, index) => (
                       <div
                         key={file.id}
                         className="relative aspect-square rounded-lg overflow-hidden border-2 border-border group"
@@ -328,58 +412,79 @@ export default function TrainModel() {
                           alt={file.file.name}
                           className="w-full h-full object-cover"
                         />
+                        <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                          {index + 1}
+                        </div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             removeFile(file.id);
                           }}
                           className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Remover imagem"
                         >
                           <X className="w-4 h-4" />
                         </button>
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate">
+                          {file.file.name}
+                        </div>
                       </div>
                     ))}
                   </div>
-                  
-                  {/* Credits Alert Popup */}
-                  {showCreditsAlert && (
-                    <div className="absolute top-0 right-0 bg-[#F5F5DC] border border-border rounded-lg p-4 shadow-lg z-10 max-w-xs">
-                      <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-foreground mb-3">
-                            {t("trainModel.needTrainingCredits")}
-                          </p>
-                          <Button
-                            onClick={() => setLocation("/dashboard/credits/buy")}
-                            className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full"
-                            size="sm"
-                          >
-                            {t("trainModel.buyCredits")}
-                          </Button>
-                        </div>
-                        <button
-                          onClick={() => setShowCreditsAlert(false)}
-                          className="text-muted-foreground hover:text-foreground"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                </div>
+              )}
+
+              {/* Upload Summary */}
+              {uploadedFiles.length > 0 && modelName && gender && !isUploading && (
+                <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-2">
+                  <p className="text-sm font-medium">Resumo do que será enviado:</p>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p>• Modelo: <span className="font-medium text-foreground">{modelName}</span></p>
+                    <p>• Tipo: <span className="font-medium text-foreground">{gender === "hombre" ? t("trainModel.male") : t("trainModel.female")}</span></p>
+                    <p>• Imagens: <span className="font-medium text-foreground">{uploadedFiles.length} {uploadedFiles.length === 1 ? "imagem" : "imagens"}</span></p>
+                    <p className="text-xs mt-2 text-muted-foreground">
+                      As imagens serão enviadas para o servidor e o modelo será criado no banco de dados.
+                    </p>
+                  </div>
                 </div>
               )}
 
               {/* Upload Button */}
-              <Button
-                onClick={handleUpload}
-                disabled={uploadedFiles.length === 0 || !modelName || !gender}
-                className="w-full bg-green-500 hover:bg-green-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
-                size="lg"
-              >
-                {t("trainModel.uploadImagesButton")}
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
+              <div className="space-y-2">
+                <Button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!isUploading) {
+                      handleUpload();
+                    }
+                  }}
+                  disabled={uploadedFiles.length === 0 || !modelName || !gender || isUploading}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  size="lg"
+                >
+                  {isUploading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      {t("trainModel.uploading") || "Enviando..."}
+                    </>
+                  ) : (
+                    <>
+                      {t("trainModel.uploadImagesButton")}
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </>
+                  )}
+                </Button>
+                {/* Help text when button is disabled */}
+                {(uploadedFiles.length === 0 || !modelName || !gender) && !isUploading && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    {uploadedFiles.length === 0 && t("trainModel.pleaseUploadAtLeastOne")}
+                    {uploadedFiles.length > 0 && !modelName && t("trainModel.pleaseEnterModelName")}
+                    {uploadedFiles.length > 0 && modelName && !gender && t("trainModel.pleaseSelectGender")}
+                  </p>
+                )}
+              </div>
 
               {/* Training Credits */}
               <p className="text-sm text-muted-foreground text-center">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -38,6 +38,7 @@ import {
   Download,
   AlertCircle
 } from "lucide-react";
+import { exampleImages, filterExampleImages, type ExampleImage } from "@/data/exampleImages";
 
 export default function GenerateImages() {
   const { user } = useAuth();
@@ -56,13 +57,22 @@ export default function GenerateImages() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [completedImages, setCompletedImages] = useState(0);
-  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [generatedImages, setGeneratedImages] = useState<Array<{ id: number; url: string; status: string }>>([]);
   const [showModal, setShowModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [currentBatchId, setCurrentBatchId] = useState<number | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch user's models
   const { data: modelsData, isLoading: isLoadingModels } = trpc.model.list.useQuery();
   const generateMutation = trpc.photo.generate.useMutation();
+  const getBatchStatusQuery = trpc.photo.getBatchStatus.useQuery(
+    { batchId: currentBatchId! },
+    { 
+      enabled: !!currentBatchId && isGenerating,
+      refetchInterval: isGenerating ? 2000 : false, // Poll every 2 seconds while generating
+    }
+  );
   
   // Fetch training images for selected model
   const { data: trainingImages } = trpc.model.getTrainingImages.useQuery(
@@ -74,14 +84,14 @@ export default function GenerateImages() {
   const styles = ["formal", "casual", "elegant", "professional"];
 
   const badges = t("generateImages.badges", { returnObjects: true }) as { premium: string; new: string; popular: string };
-  const exampleImages = [
-    { id: 1, url: "/image.webp", badge: badges.premium },
-    { id: 2, url: "/image_1.webp", badge: badges.new },
-    { id: 3, url: "/image_10.webp", badge: null },
-    { id: 4, url: "/image_100.jpg", badge: badges.popular },
-    { id: 5, url: "/image_101.jpg", badge: null },
-    { id: 6, url: "/image_102.jpg", badge: badges.premium },
-  ];
+  
+  // Filter example images based on gender and selected styles/backgrounds
+  const filteredExampleImages = filterExampleImages(
+    exampleImages,
+    gender,
+    selectedStyles,
+    selectedBackgrounds
+  );
 
   const toggleImage = (id: number) => {
     setSelectedImages((prev) =>
@@ -101,10 +111,39 @@ export default function GenerateImages() {
     );
   };
 
-
   // Calculate credits needed based on selected example images (4 variations per selected image)
   const imageCount = selectedImages.length;
   const totalImagesToGenerate = imageCount * 4; // 4 images per selected image
+
+  // Update progress from polling
+  useEffect(() => {
+    if (getBatchStatusQuery.data && currentBatchId) {
+      const { batch, photos } = getBatchStatusQuery.data;
+      
+      // Update progress
+      if (batch.status === "completed") {
+        setIsGenerating(false);
+        setGenerationProgress(100);
+        setCompletedImages(batch.totalImagesGenerated);
+        setGeneratedImages(photos.map(p => ({ id: p.id, url: p.url, status: p.status })));
+      } else if (batch.status === "failed") {
+        setIsGenerating(false);
+        setErrorMessage("Image generation failed. Please try again.");
+      } else if (batch.status === "generating") {
+        // Update progress based on generated images
+        setCompletedImages(batch.totalImagesGenerated);
+        // Use batch.totalImagesGenerated or fallback to calculated total
+        const expectedTotal = batch.totalImagesGenerated > 0 
+          ? Math.max(batch.totalImagesGenerated, totalImagesToGenerate)
+          : totalImagesToGenerate;
+        setGenerationProgress(Math.min(95, (batch.totalImagesGenerated / expectedTotal) * 100));
+        
+        // Update generated images list
+        const newImages = photos.map(p => ({ id: p.id, url: p.url, status: p.status }));
+        setGeneratedImages(newImages);
+      }
+    }
+  }, [getBatchStatusQuery.data, currentBatchId, totalImagesToGenerate]);
   const creditsNeeded = totalImagesToGenerate; // 1 credit per generated image
   const userCredits = user?.credits ?? 0;
   const hasEnoughCredits = creditsNeeded <= userCredits;
@@ -141,21 +180,34 @@ export default function GenerateImages() {
       return;
     }
     
-    // Add selected example images for style reference
-    const selectedExampleImages = exampleImages.filter((img) => selectedImages.includes(img.id));
-    const exampleImageUrls = selectedExampleImages.map((img) => {
-      // Convert relative URLs to absolute URLs
-      if (img.url.startsWith('http://') || img.url.startsWith('https://')) {
-        return img.url;
-      }
-      if (img.url.startsWith('/')) {
-        return `${window.location.origin}${img.url}`;
-      }
-      return img.url;
-    });
+    // Get selected example images with their prompts
+    const selectedExampleImages = filteredExampleImages.filter((img) => 
+      selectedImages.includes(img.id)
+    );
     
-    // Combine: training images first (for the person), then example images (for style)
-    const absoluteUrls = [...referenceImageUrls, ...exampleImageUrls];
+    if (selectedExampleImages.length === 0) {
+      alert(t("generateImages.noImagesSelected"));
+      return;
+    }
+    
+    // Build base prompt from user options
+    let basePrompt = `Create a photorealistic professional portrait image of the person in the reference photos.`;
+    if (selectedBackgrounds.length > 0) {
+      basePrompt += ` Use a ${selectedBackgrounds.join(", ")} background.`;
+    }
+    if (selectedStyles.length > 0) {
+      basePrompt += ` Style: ${selectedStyles.join(", ")}.`;
+    }
+    if (glasses === "yes") {
+      basePrompt += ` Include glasses.`;
+    }
+    if (hairColor && hairColor !== "default") {
+      basePrompt += ` Hair color: ${hairColor}.`;
+    }
+    if (hairStyle && hairStyle !== "no-preference") {
+      basePrompt += ` Hair style: ${hairStyle}.`;
+    }
+    basePrompt += ` High quality, professional photography, natural lighting, sharp focus.`;
     
     // Reset state
     setIsGenerating(true);
@@ -163,52 +215,68 @@ export default function GenerateImages() {
     setCompletedImages(0);
     setGeneratedImages([]);
     setErrorMessage(null);
+    setCurrentBatchId(null);
     setShowModal(true);
     
     try {
-      // Simulate progress updates while generating
-      const progressInterval = setInterval(() => {
-        setGenerationProgress((prev) => {
-          if (prev >= 90) return prev; // Don't go to 100% until done
-          return prev + 2;
-        });
-      }, 200);
-
-      // Call the API
-      // Pass totalImagesToGenerate based on selected example images only (not training images)
+      // Call the API with new structure
       const result = await generateMutation.mutateAsync({
         modelId: parseInt(modelId),
-        referenceImageUrls: absoluteUrls,
+        trainingImageUrls: referenceImageUrls,
+        exampleImages: selectedExampleImages.map(img => {
+          // Convert relative URLs to absolute URLs
+          let absoluteUrl = img.url;
+          
+          if (!img.url.startsWith('http')) {
+            // If it's a relative URL, convert to absolute
+            if (img.url.startsWith('/')) {
+              // Use production domain if available, otherwise use current origin
+              // In production, this should be your actual domain
+              const publicDomain = import.meta.env.VITE_PUBLIC_DOMAIN || window.location.origin;
+              absoluteUrl = `${publicDomain}${img.url}`;
+            } else {
+              // If it doesn't start with /, assume it's relative to root
+              const publicDomain = import.meta.env.VITE_PUBLIC_DOMAIN || window.location.origin;
+              absoluteUrl = `${publicDomain}/${img.url}`;
+            }
+          }
+          
+          return {
+            id: img.id,
+            url: absoluteUrl,
+            prompt: img.prompt,
+          };
+        }),
+        basePrompt,
         aspectRatio,
+        numImagesPerExample: 4,
         glasses: glasses as "yes" | "no",
         hairColor: hairColor !== "default" ? hairColor : undefined,
         hairStyle: hairStyle !== "no-preference" ? hairStyle : undefined,
         backgrounds: selectedBackgrounds,
         styles: selectedStyles,
-        numImagesPerReference: 4,
-        totalImagesToGenerate: totalImagesToGenerate, // Pass the calculated total based on selected example images
       });
 
-      clearInterval(progressInterval);
-      setGenerationProgress(100);
-      setGeneratedImages(result.imageUrls);
-      setCompletedImages(result.imageUrls.length);
-      setIsGenerating(false);
+      // Set batch ID for polling
+      if (result.batchId) {
+        setCurrentBatchId(result.batchId);
+      } else {
+        // Fallback if no batch ID (shouldn't happen)
+        setIsGenerating(false);
+        setErrorMessage("Failed to start generation. Please try again.");
+      }
     } catch (error: any) {
       console.error("Error generating images:", error);
-      clearInterval(progressInterval);
       setIsGenerating(false);
       
       // Show error in modal instead of alert
       const errorMsg = error?.message || t("generateImages.errorGenerating");
       setErrorMessage(errorMsg);
-      
-      // Don't close modal on error - let user see the error and retry
-      // setShowModal(false);
     }
   };
 
-  const handleDownloadImage = (imageUrl: string, index: number) => {
+  const handleDownloadImage = (image: { id: number; url: string; status: string } | string, index: number) => {
+    const imageUrl = typeof image === 'string' ? image : image.url;
     // Create a temporary anchor element to trigger download
     const link = document.createElement('a');
     link.href = imageUrl;
@@ -313,7 +381,12 @@ export default function GenerateImages() {
                 {t("generateImages.selectReferenceImages")}
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {exampleImages.map((image) => (
+                {filteredExampleImages.length === 0 ? (
+                  <div className="col-span-full text-center py-8 text-muted-foreground">
+                    {t("generateImages.noImagesMatchFilters")}
+                  </div>
+                ) : (
+                  filteredExampleImages.map((image) => (
                   <div
                     key={image.id}
                     className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
@@ -349,7 +422,8 @@ export default function GenerateImages() {
                       </div>
                     )}
                   </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -633,14 +707,14 @@ export default function GenerateImages() {
           <div className="px-6 pb-6 flex-1 overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
               {/* Show generated images */}
-              {generatedImages.map((imageUrl, index) => (
+              {generatedImages.map((image, index) => (
                 <div
-                  key={`generated-${index}`}
+                  key={`generated-${image.id || index}`}
                   className="relative group aspect-square rounded-lg overflow-hidden border-2 border-border hover:border-primary transition-all cursor-pointer"
-                  onClick={() => handleDownloadImage(imageUrl, index)}
+                  onClick={() => handleDownloadImage(image, index)}
                 >
                   <img
-                    src={imageUrl}
+                    src={image.url}
                     alt={`Generated image ${index + 1}`}
                     className="w-full h-full object-cover"
                     onError={(e) => {
