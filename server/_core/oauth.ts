@@ -101,10 +101,24 @@ export function registerOAuthRoutes(app: Application | any) {
       // Use absolute URL for redirect to prevent localhost redirects
       // Get the origin from the request headers (Vercel sets these)
       const protocol = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
-      const host = req.headers['x-forwarded-host'] || req.headers.host || 'www.aiselfie.org';
+      
+      // Determine host - prioritize forwarded host, then request host, then environment-based fallback
+      let host = req.headers['x-forwarded-host'] || req.headers.host;
+      
+      // If no host header (shouldn't happen, but fallback for safety)
+      if (!host) {
+        // In development, use localhost; in production, use production domain
+        if (process.env.NODE_ENV === 'development') {
+          host = `localhost:${process.env.PORT || '3000'}`;
+        } else {
+          host = 'www.aiselfie.org';
+        }
+      }
+      
       const origin = `${protocol}://${host}`;
       
-      res.redirect(302, `${origin}/`);
+      // Redirect to dashboard for authenticated users (Home page will redirect if needed)
+      res.redirect(302, `${origin}/dashboard`);
     } catch (error) {
       console.error("[OAuth] Callback failed", error);
       res.status(500).json({ error: "OAuth callback failed" });

@@ -53,13 +53,35 @@ export function useAuth(options?: UseAuthOptions) {
   }, [logoutMutation, utils]);
 
   const signIn = useCallback(async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/oauth/callback`,
-      },
-    });
-    if (error) throw error;
+    // Use the current origin to ensure we redirect back to localhost in development
+    const redirectUrl = `${window.location.origin}/oauth/callback`;
+    console.log("[Auth] Signing in with redirect URL:", redirectUrl);
+    console.log("[Auth] Current origin:", window.location.origin);
+    console.log("[Auth] Current href:", window.location.href);
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+          // Skip browser redirect and handle it manually if needed
+          skipBrowserRedirect: false,
+        },
+      });
+      
+      if (error) {
+        console.error("[Auth] Sign in error:", error);
+        throw error;
+      }
+      
+      // Log the OAuth URL for debugging
+      if (data?.url) {
+        console.log("[Auth] OAuth URL:", data.url);
+      }
+    } catch (err) {
+      console.error("[Auth] Sign in failed:", err);
+      throw err;
+    }
   }, []);
 
   const state = useMemo(() => {

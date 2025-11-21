@@ -7,4 +7,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Configure auth options to use current origin in development
+const authOptions = typeof window !== 'undefined' ? {
+  redirectTo: window.location.origin,
+  autoRefreshToken: true,
+  persistSession: true,
+  detectSessionInUrl: true,
+} : {};
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: authOptions,
+});

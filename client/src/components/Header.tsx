@@ -9,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Globe } from "lucide-react";
 
 export function Header() {
   const { t, changeLanguage, currentLanguage } = useTranslation();
@@ -21,11 +20,15 @@ export function Header() {
   const getNavLink = (anchor: string) => isOnDashboard ? `/${anchor}` : anchor;
 
   const languages = [
-    { code: "pt-BR", label: "🇧🇷 Português" },
-    { code: "es", label: "🇪🇸 Español" },
-    { code: "en", label: "🇬🇧 English" },
-    { code: "it", label: "🇮🇹 Italiano" },
+    { code: "pt-BR", label: "🇧🇷 Português", flag: "🇧🇷" },
+    { code: "es", label: "🇪🇸 Español", flag: "🇪🇸" },
+    { code: "en", label: "🇬🇧 English", flag: "🇬🇧" },
+    { code: "it", label: "🇮🇹 Italiano", flag: "🇮🇹" },
   ];
+
+  // Get current language flag
+  const currentLang = languages.find((l) => l.code === currentLanguage);
+  const currentFlag = currentLang?.flag || "🌐";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -66,12 +69,9 @@ export function Header() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="gap-2">
-                <Globe className="h-4 w-4" />
+                <span className="text-lg">{currentFlag}</span>
                 <span className="hidden sm:inline">
-                  {(() => {
-                    const currentLang = languages.find((l) => l.code === currentLanguage);
-                    return currentLang ? currentLang.label.split(" ")[1] : t("header.language");
-                  })()}
+                  {currentLang ? currentLang.label.split(" ")[1] : t("header.language")}
                 </span>
               </Button>
             </DropdownMenuTrigger>
