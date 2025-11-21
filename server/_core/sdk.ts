@@ -80,7 +80,12 @@ class SDKServer {
 
       return dbUser;
     } catch (error) {
-      console.warn("[Auth] Authentication failed", String(error));
+      // Only log warnings for actual authentication errors (when cookie exists but is invalid)
+      // Don't log for missing cookies as that's expected for unauthenticated requests
+      const errorMessage = String(error);
+      if (!errorMessage.includes("Missing auth cookie")) {
+        console.warn("[Auth] Authentication failed", errorMessage);
+      }
       throw ForbiddenError("Authentication failed");
     }
   }

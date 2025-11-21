@@ -232,8 +232,9 @@ function DashboardLayoutContent({
                 <div className="relative h-8 w-8 shrink-0 group">
                   <img
                     src={APP_LOGO}
-                    className="h-8 w-8 rounded-lg object-cover"
+                    className="h-8 w-8 rounded-lg object-cover cursor-pointer"
                     alt="Logo"
+                    onClick={() => setLocation("/dashboard/generate")}
                   />
                   <button
                     onClick={toggleSidebar}
@@ -243,7 +244,10 @@ function DashboardLayoutContent({
                   </button>
                 </div>
               ) : (
-                <>
+                <div 
+                  className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => setLocation("/dashboard/generate")}
+                >
                     <img
                       src={APP_LOGO}
                     className="h-10 w-10 rounded-lg object-cover shrink-0"
@@ -252,14 +256,17 @@ function DashboardLayoutContent({
                   <span className="font-bold text-lg bg-gradient-to-r from-pink-400 to-orange-500 bg-clip-text text-transparent">
                     Alselfi.es
                     </span>
-                </>
+                </div>
               )}
             </div>
             
             {/* User Profile Section */}
             {!isCollapsed && (
               <div className="mt-6 space-y-3">
-                <div className="flex items-center gap-3">
+                <div 
+                  className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => setLocation("/dashboard/settings/general")}
+                >
                   <Avatar className="h-12 w-12 border-2 border-border">
                     <AvatarImage src={user?.avatarUrl || undefined} alt={user?.name || "User"} />
                     <AvatarFallback className="text-sm font-medium">
@@ -593,7 +600,10 @@ function DashboardLayoutContent({
             </DropdownMenu>
 
             {/* Help/Book Icon */}
-            <button className="h-9 w-9 rounded-full border border-border hover:bg-accent transition-colors flex items-center justify-center">
+            <button 
+              className="h-9 w-9 rounded-full border border-border hover:bg-accent transition-colors flex items-center justify-center"
+              onClick={() => setLocation("/dashboard/start")}
+            >
               <BookOpen className="h-4 w-4" />
             </button>
 
@@ -607,7 +617,10 @@ function DashboardLayoutContent({
             </Button>
 
             {/* User Avatar */}
-            <Avatar className="h-9 w-9 border-2 border-border cursor-pointer hover:ring-2 hover:ring-primary transition-all">
+            <Avatar 
+              className="h-9 w-9 border-2 border-border cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+              onClick={() => setLocation("/dashboard/settings/general")}
+            >
               <AvatarImage src={user?.avatarUrl || undefined} alt={user?.name || "User"} />
               <AvatarFallback className="text-xs font-medium">
                 {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
