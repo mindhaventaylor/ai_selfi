@@ -1,7 +1,7 @@
 import { COOKIE_NAME } from "../shared/const.js";
 import { desc, eq, and, inArray } from "drizzle-orm";
 import { z } from "zod";
-import { creditPacks, models, photos, transactions, users, modelTrainingImages, photoGenerationBatches } from "../drizzle/schema.js";
+import { creditPacks, models, photos, transactions, users, modelTrainingImages, photoGenerationBatches, photoGenerationQueue } from "../drizzle/schema.js";
 import { getDb, upsertUser } from "./db.js";
 import { getSessionCookieOptions } from "./_core/cookies.js";
 import { supabaseServer } from "./_core/lib/supabase.js";
@@ -568,6 +568,38 @@ export const appRouter = router({
             throw new Error("Batch not found");
           }
           
+          // Check queue jobs status to detect failures early
+          const { data: queueJobs } = await supabaseServer
+            .from('photo_generation_queue')
+            .select('id, status, errorMessage, numImagesPerExample')
+            .eq('batchId', input.batchId);
+          
+          // If all jobs failed, update batch status
+          if (queueJobs && queueJobs.length > 0) {
+            const allFailed = queueJobs.every(j => j.status === "failed");
+            const allCompleted = queueJobs.every(j => j.status === "completed" || j.status === "failed");
+            
+            if (allFailed && batch.status !== "failed") {
+              await supabaseServer
+                .from('photo_generation_batches')
+                .update({ status: "failed" })
+                .eq('id', input.batchId);
+              batch.status = "failed";
+            } else if (allCompleted && batch.status === "generating") {
+              const successfulJobs = queueJobs.filter(j => j.status === "completed").length;
+              const numImagesPerJob = (queueJobs[0] as any)?.numImagesPerExample || 4;
+              await supabaseServer
+                .from('photo_generation_batches')
+                .update({
+                  status: successfulJobs > 0 ? "completed" : "failed",
+                  completedAt: new Date().toISOString(),
+                  totalImagesGenerated: successfulJobs * numImagesPerJob,
+                })
+                .eq('id', input.batchId);
+              batch.status = successfulJobs > 0 ? "completed" : "failed";
+            }
+          }
+          
           // Get generated photos for this batch
           const { data: photos, error: photosError } = await supabaseServer
             .from('photos')
@@ -606,6 +638,38 @@ export const appRouter = router({
         
         if (!batch) {
           throw new Error("Batch not found");
+        }
+        
+        // Check queue jobs status to detect failures early
+        const queueJobs = await db
+          .select({ id: photoGenerationQueue.id, status: photoGenerationQueue.status, errorMessage: photoGenerationQueue.errorMessage, numImagesPerExample: photoGenerationQueue.numImagesPerExample })
+          .from(photoGenerationQueue)
+          .where(eq(photoGenerationQueue.batchId, input.batchId));
+        
+        // If all jobs failed, update batch status
+        if (queueJobs && queueJobs.length > 0) {
+          const allFailed = queueJobs.every(j => j.status === "failed");
+          const allCompleted = queueJobs.every(j => j.status === "completed" || j.status === "failed");
+          
+          if (allFailed && batch.status !== "failed") {
+            await db
+              .update(photoGenerationBatches)
+              .set({ status: "failed" })
+              .where(eq(photoGenerationBatches.id, input.batchId));
+            batch.status = "failed";
+          } else if (allCompleted && batch.status === "generating") {
+            const successfulJobs = queueJobs.filter(j => j.status === "completed").length;
+            const numImagesPerJob = (queueJobs[0] as any)?.numImagesPerExample || 4;
+            await db
+              .update(photoGenerationBatches)
+              .set({
+                status: successfulJobs > 0 ? "completed" : "failed",
+                completedAt: new Date(),
+                totalImagesGenerated: successfulJobs * numImagesPerJob,
+              })
+              .where(eq(photoGenerationBatches.id, input.batchId));
+            batch.status = successfulJobs > 0 ? "completed" : "failed";
+          }
         }
         
         const batchPhotos = await db
@@ -812,64 +876,90 @@ export const appRouter = router({
         }
 
         console.log(`\n${'='.repeat(80)}`);
-        console.log(`[Photo Generate] 🚀 Calling Edge Function for async image generation`);
-        console.log(`[Photo Generate]    - Batch ID: ${batchId}`);
-        console.log(`[Photo Generate]    - User ID: ${ctx.user.id}`);
-        console.log(`[Photo Generate]    - Model ID: ${input.modelId}`);
-        console.log(`[Photo Generate]    - Training images: ${input.trainingImageUrls.length}`);
-        console.log(`[Photo Generate]    - Example images: ${input.exampleImages.length}`);
-        console.log(`[Photo Generate]    - Images per example: ${input.numImagesPerExample}`);
-        console.log(`[Photo Generate]    - Target images: ${totalImages}`);
-        console.log(`[Photo Generate]    - Aspect ratio: ${input.aspectRatio}`);
-        console.log(`${'='.repeat(80)}\n`);
+        console.log(`[Photo Generate] Preparing queue jobs for batch ${batchId}`);
 
-        // Call Edge Function asynchronously (don't await - let it run in background)
-        callSupabaseFunction("generate-images", {
+        const jobs = input.exampleImages.map(example => ({
           batchId,
-            userId: ctx.user.id,
-            modelId: input.modelId,
+          userId: ctx.user.id,
+          modelId: input.modelId,
+          exampleImageId: example.id,
+          exampleImageUrl: example.url,
+          exampleImagePrompt: example.prompt,
           trainingImageUrls: input.trainingImageUrls,
-          exampleImages: input.exampleImages,
           basePrompt: input.basePrompt,
-            aspectRatio: input.aspectRatio,
+          aspectRatio: input.aspectRatio,
           numImagesPerExample: input.numImagesPerExample,
-            glasses: input.glasses,
-          hairColor: input.hairColor,
-          hairStyle: input.hairStyle,
-            backgrounds: input.backgrounds,
-            styles: input.styles,
-        }).catch(async (error) => {
-          console.error(`[Photo Generate] Edge Function error for batch ${batchId}:`, error);
-          // Try to update batch status to "failed"
-          try {
-            if (!db) {
-              const { error: updateError } = await supabaseServer
-                .from('photo_generation_batches')
-                .update({ status: "failed" })
-                .eq('id', batchId);
-              if (updateError) throw updateError;
-            } else {
-              const updateDb = await getDb();
-              if (updateDb) {
-                await updateDb
-                  .update(photoGenerationBatches)
-                  .set({ status: "failed" })
-                  .where(eq(photoGenerationBatches.id, batchId));
-              }
-            }
-          } catch (failError: any) {
-            console.error(`[Photo Generate] Error setting batch ${batchId} to failed:`, failError);
+          glasses: input.glasses,
+          hairColor: input.hairColor ?? null,
+          hairStyle: input.hairStyle ?? null,
+          backgrounds: input.backgrounds,
+          styles: input.styles,
+        }));
+
+        let insertedJobs: any[] = [];
+
+        if (!db) {
+          const { data: insertedData, error: queueError } = await supabaseServer
+            .from("photo_generation_queue")
+            .insert(jobs)
+            .select();
+
+          if (queueError) {
+            console.error("[Photo Generate] Failed to insert queue jobs (REST):", queueError);
+            await supabaseServer
+              .from("photo_generation_batches")
+              .update({ status: "failed" })
+              .eq("id", batchId);
+            throw new Error("Failed to enqueue generation jobs");
           }
-        });
+          insertedJobs = insertedData || [];
+        } else {
+          const inserted = await db.insert(photoGenerationQueue).values(jobs).returning();
+          insertedJobs = inserted;
+        }
 
-        console.log(`[Photo Generate] ✅ Edge Function called for batch ${batchId} (processing asynchronously)`);
+        console.log(`[Photo Generate] ✅ Enqueued ${jobs.length} job(s) for batch ${batchId}`);
 
-        // Return immediately - images will be generated by Edge Function
-        return { 
-          success: true, 
-          batchId: batchId,
-          message: "Image generation started. Images will be available shortly.",
-          imageUrls: [], // Will be populated by Edge Function
+        // Call API directly for each job (don't await - process in background)
+        // Determine API URL: use env var, or construct from current request, or default to localhost
+        let apiUrl = process.env.PHOTO_API_URL;
+        if (!apiUrl) {
+          if (process.env.VERCEL_URL) {
+            // Production: use Vercel URL
+            apiUrl = `https://${process.env.VERCEL_URL}/api/photo-generation`;
+          } else {
+            // Development: use localhost
+            apiUrl = `http://localhost:${process.env.PORT || 3000}/api/photo-generation`;
+          }
+        }
+        
+        console.log(`[Photo Generate] 🚀 Triggering API processing at ${apiUrl}...`);
+        
+        for (const job of insertedJobs) {
+          // Call API asynchronously (don't block the response)
+          fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(job),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                console.error(`[Photo Generate] API error for job ${job.id}: ${response.status}`);
+              } else {
+                console.log(`[Photo Generate] ✅ API processing started for job ${job.id}`);
+              }
+            })
+            .catch((error) => {
+              console.error(`[Photo Generate] Failed to trigger API for job ${job.id}:`, error);
+            });
+        }
+        
+        console.log(`[Photo Generate] 🚀 Triggered API processing for ${insertedJobs.length} job(s)`);
+
+        return {
+          success: true,
+          batchId,
+          message: "Image generation jobs queued. Processing will happen shortly.",
         };
       }),
     createBatch: protectedProcedure

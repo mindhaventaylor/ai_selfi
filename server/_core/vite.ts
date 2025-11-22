@@ -68,6 +68,37 @@ export async function setupVite(app: Express, server: Server) {
         `src="/src/main.tsx"`,
         `src="/src/main.tsx?v=${nanoid()}"`
       );
+      
+      // Replace environment variable placeholders
+      const envReplacements: Record<string, string> = {
+        "%VITE_APP_LOGO%": process.env.VITE_APP_LOGO || "/favicon.png",
+        "%VITE_APP_TITLE%": process.env.VITE_APP_TITLE || "AISelfi",
+      };
+      
+      for (const [placeholder, value] of Object.entries(envReplacements)) {
+        template = template.replace(new RegExp(placeholder.replace(/%/g, "\\%"), "g"), value);
+      }
+      
+      // Conditionally inject analytics script if env vars are set
+      const analyticsEndpoint = process.env.VITE_ANALYTICS_ENDPOINT;
+      const analyticsWebsiteId = process.env.VITE_ANALYTICS_WEBSITE_ID;
+      if (analyticsEndpoint && analyticsWebsiteId) {
+        const analyticsScript = `\n    <script
+      defer
+      src="${analyticsEndpoint}/umami"
+      data-website-id="${analyticsWebsiteId}"></script>`;
+        template = template.replace(
+          "<!-- Analytics script will be conditionally injected if env vars are set -->",
+          analyticsScript
+        );
+      } else {
+        // Remove the comment if analytics is not configured
+        template = template.replace(
+          /<!-- Analytics script will be conditionally injected if env vars are set -->\s*/g,
+          ""
+        );
+      }
+      
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {

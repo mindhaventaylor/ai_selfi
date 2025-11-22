@@ -39,7 +39,7 @@ async function testGeneration() {
   const { data: users, error: usersError } = await supabase
     .from('users')
     .select('id')
-    .limit(1);
+    .eq('id', 1);
 
   if (usersError || !users || users.length === 0) {
     console.error('❌ No users found. Please create a user first.');
@@ -51,20 +51,7 @@ async function testGeneration() {
 
   // Step 2: Get or create a test model
   console.log('\n📋 Step 2: Getting test model...');
-  const { data: models, error: modelsError } = await supabase
-    .from('models')
-    .select('id, status')
-    .eq('userId', userId)
-    .eq('status', 'ready')
-    .limit(1);
-
-  if (modelsError || !models || models.length === 0) {
-    console.error('❌ No ready models found for this user.');
-    console.error('   Please create and train a model first.');
-    process.exit(1);
-  }
-
-  const modelId = models[0].id;
+  const modelId = 8;
   console.log(`✅ Using model ID: ${modelId}`);
 
   // Step 3: Get training images for the model

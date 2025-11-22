@@ -188,7 +188,8 @@ async function generateSingleImage(
   }
 
   if (!response.ok) {
-    const errorText = await response.text();
+    const errorText = await response.text().catch(() => "");
+    console.error(`[Worker ${WORKER_ID}] Gemini API error ${response.status}: ${errorText}`);
     throw new Error(`Gemini API error: ${response.status} ${errorText}`);
   }
 
@@ -222,6 +223,12 @@ async function processJob(
   geminiApiKey: string
 ): Promise<void> {
   console.log(`[Worker ${WORKER_ID}] Processing job ${job.id} (batch ${job.batchId}, example ${job.exampleImageId}, attempt ${job.attempts + 1}/${job.maxAttempts})`);
+
+  // Increment attempts before processing so we track retries immediately
+  await supabase
+    .from("photo_generation_queue")
+    .update({ attempts: job.attempts + 1, status: "processing", lockedBy: WORKER_ID, lockedAt: new Date().toISOString() })
+    .eq("id", job.id);
 
   try {
     // Download training images

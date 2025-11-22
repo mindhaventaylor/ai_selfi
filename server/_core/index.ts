@@ -8,6 +8,8 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth.js";
 import { appRouter } from "../routers.js";
 import { createContext } from "./context.js";
+import photoGenerationRouter from "../api/photo-generation/route.js";
+import { createClient } from "@supabase/supabase-js";
 
 // Simple static file server for production (no Vite dependencies)
 function serveStaticProduction(app: express.Express) {
@@ -116,6 +118,7 @@ export async function createApp(options?: CreateAppOptions) {
       createContext,
     })
   );
+  app.use("/api/photo-generation", photoGenerationRouter);
   // development mode uses Vite, production mode uses static files
   // Use a string-based dynamic import to prevent esbuild from analyzing vite.js in production
   if (process.env.NODE_ENV === "development" && options?.server && process.env.VERCEL !== "1") {
@@ -130,6 +133,85 @@ export async function createApp(options?: CreateAppOptions) {
   return app;
 }
 
+async function startQueueListener() {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.warn("[Queue Listener] SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set, skipping queue listener");
+    return null;
+  }
+
+  try {
+    const apiUrl = process.env.PHOTO_API_URL || `http://localhost:${process.env.PORT || 3000}/api/photo-generation`;
+    console.log(`[Queue Listener] Connecting to Supabase Realtime...`);
+    console.log(`[Queue Listener] API endpoint: ${apiUrl}`);
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    async function forwardJobToApi(jobData: any) {
+      try {
+        console.log(`[Queue Listener] Forwarding job ${jobData.id} to API...`);
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(jobData),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(
+            `[Queue Listener] API error for job ${jobData.id}: ${response.status} ${errorText}`
+          );
+          return;
+        }
+
+        const result = await response.json();
+        console.log(`[Queue Listener] ✅ Job ${jobData.id} processed successfully`);
+      } catch (error) {
+        console.error(`[Queue Listener] Error forwarding job ${jobData.id}:`, error);
+      }
+    }
+
+    console.log(`[Queue Listener] Listening for INSERTs on 'photo_generation_queue' table...`);
+
+    // Subscribe to INSERT events on photo_generation_queue table
+    const channel = supabase
+      .channel("photo_generation_queue_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "photo_generation_queue",
+        },
+        (payload) => {
+          try {
+            console.log(`[Queue Listener] 📨 New job inserted:`, payload.new);
+            const jobData = payload.new as any;
+            console.log(`[Queue Listener] 📋 Job ID: ${jobData.id}, Batch ID: ${jobData.batchId}`);
+            forwardJobToApi(jobData);
+          } catch (error) {
+            console.error("[Queue Listener] Error processing notification:", error);
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          console.log(`[Queue Listener] ✅ Ready! Waiting for queue notifications...`);
+        } else if (status === "CHANNEL_ERROR") {
+          console.error("[Queue Listener] Channel error - check if Realtime is enabled in Supabase");
+        }
+      });
+
+    return channel;
+  } catch (error: any) {
+    console.warn("[Queue Listener] Failed to start (server will continue without queue listener):", error.message);
+    console.warn("[Queue Listener] Make sure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set");
+    return null;
+  }
+}
+
 async function startServer() {
   const server = createServer();
   const app = await createApp({ server });
@@ -142,8 +224,16 @@ async function startServer() {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
-  server.listen(port, () => {
+  server.listen(port, async () => {
     console.log(`Server running on http://localhost:${port}/`);
+    
+    // Start queue listener in development and production (but not on Vercel)
+    // Don't await - let it start in background, server continues even if listener fails
+    if (process.env.VERCEL !== "1") {
+      startQueueListener().catch((error) => {
+        console.warn("[Queue Listener] Background start failed (non-fatal):", error.message);
+      });
+    }
   });
 }
 

@@ -19,6 +19,16 @@ export default function OAuthCallback() {
 
     const handleCallback = async () => {
       try {
+        // Check if we're on the wrong domain (production when we should be on localhost)
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const isProduction = window.location.hostname.includes('aiselfie.org');
+        
+        if (!isLocalhost && process.env.NODE_ENV === 'development') {
+          console.warn("[OAuth] Warning: OAuth callback received on non-localhost domain:", window.location.hostname);
+          console.warn("[OAuth] This usually means Supabase redirect URL is not configured for localhost");
+          console.warn("[OAuth] Please add http://localhost:3000/oauth/callback to Supabase allowed redirect URLs");
+        }
+
         // Supabase handles the OAuth callback automatically
         // Extract the session from the URL hash if present
         const hashParams = new URLSearchParams(window.location.hash.substring(1));

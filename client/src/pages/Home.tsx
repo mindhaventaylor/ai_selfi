@@ -65,174 +65,191 @@ export default function Home() {
   const heroImageScale = Math.max(0.8, 1 + scrollY / 500); // Aumenta ao invés de diminuir
   const heroImageRotation = scrollY / 20; // Rotação para efeito splash
   
-  // Imagens da esquerda saem para esquerda
-  const leftImageTransform = `translateX(-${scrollY * 0.8}px) scale(${heroImageScale}) rotate(-${heroImageRotation}deg)`;
-  
-  // Imagens da direita saem para direita
-  const rightImageTransform = `translateX(${scrollY * 0.8}px) scale(${heroImageScale}) rotate(${heroImageRotation}deg)`;
+  // Scroll transforms for floating effect
+  const scrollTransformLeft = `translateX(-${scrollY * 0.8}px) translateY(-${scrollY * 0.1}px) scale(${heroImageScale})`;
+  const scrollTransformRight = `translateX(${scrollY * 0.8}px) translateY(-${scrollY * 0.1}px) scale(${heroImageScale})`;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Hero Section */}
-      <section className="relative py-12 md:py-20 overflow-hidden">
-        <div className="container">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
-            {/* Left Side - Photo Cards Stack */}
-            <div 
-              className="relative w-full lg:w-1/3 h-[500px] md:h-[600px] hidden lg:block transition-all duration-500 ease-out"
-              style={{
-                opacity: heroImageOpacity,
-                transform: leftImageTransform,
-              }}
-            >
-              {/* Card 1 - Top */}
-              <div
-                className="absolute top-0 left-0 w-64 h-80 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50"
-                style={{
-                  transform: "rotate(-12deg) translateY(0px)",
-                  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-                }}
-              >
-                <img
-                  src="/image.webp"
-                  alt={t("home.altText.professionalPhoto")}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+      <section className="relative min-h-screen overflow-hidden py-20">
+        {/* Floating Images Container - Desktop */}
+        <div className="absolute inset-0 w-full h-full hidden lg:block pointer-events-none">
+          {/* Left Side Images */}
+          {/* Top Left */}
+          <div
+            className="absolute w-60 h-80 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50 pointer-events-auto"
+            style={{
+              top: "10%",
+              left: "9%",
+              transform: `rotate(-15deg) ${scrollTransformLeft}`,
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+              opacity: heroImageOpacity,
+            }}
+          >
+            <img
+              src="/image.webp"
+              alt={t("home.altText.professionalPhoto")}
+              className="w-full h-full object-cover"
+            />
+          </div>
 
-              {/* Card 2 - Middle */}
-              <div
-                className="absolute top-32 left-8 w-56 h-72 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50"
-                style={{
-                  transform: "rotate(-6deg) translateY(0px)",
-                  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-                  backgroundColor: "#E9D5FF",
-                }}
-              >
-                <img
-                  src="/image_1.webp"
-                  alt={t("home.altText.professionalPhoto")}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+          {/* Middle Left */}
+          <div
+            className="absolute w-60 h-80 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50 pointer-events-auto"
+            style={{
+              top: "50%",
+              left: "6%",
+              transform: `translateY(-50%) rotate(5deg) ${scrollTransformLeft}`,
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+              backgroundColor: "#E9D5FF",
+              opacity: heroImageOpacity,
+            }}
+          >
+            <img
+              src="/image_1.webp"
+              alt={t("home.altText.professionalPhoto")}
+              className="w-full h-full object-cover"
+            />
+          </div>
 
-              {/* Card 3 - Bottom */}
-              <div
-                className="absolute top-64 left-4 w-60 h-80 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50"
-                style={{
-                  transform: "rotate(-3deg) translateY(0px)",
-                  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-                }}
-              >
-                <img
-                  src="/image_100.jpg"
-                  alt={t("home.altText.professionalPhoto")}
-                  className="w-full h-full object-cover"
-                />
+          {/* Bottom Left */}
+          <div
+            className="absolute w-60 h-80 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50 pointer-events-auto"
+            style={{
+              bottom: "5%",
+              left: "14%",
+              transform: `rotate(-10deg) ${scrollTransformLeft}`,
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+              opacity: heroImageOpacity,
+            }}
+          >
+            <img
+              src="/image_100.jpg"
+              alt={t("home.altText.professionalPhoto")}
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          {/* Right Side Images */}
+          {/* Top Right */}
+          <div
+            className="absolute w-60 h-80 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50 pointer-events-auto"
+            style={{
+              top: "10%",
+              right: "9%",
+              transform: `rotate(15deg) ${scrollTransformRight}`,
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+              opacity: heroImageOpacity,
+            }}
+          >
+            <img
+              src="/image_10.webp"
+              alt={t("home.altText.professionalPhoto")}
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          {/* Middle Right */}
+          <div
+            className="absolute w-60 h-80 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50 pointer-events-auto"
+            style={{
+              top: "50%",
+              right: "6%",
+              transform: `translateY(-50%) rotate(-5deg) ${scrollTransformRight}`,
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+              backgroundColor: "#E9D5FF",
+              opacity: heroImageOpacity,
+            }}
+          >
+            <img
+              src="/image_101_last.jpg"
+              alt={t("home.altText.professionalPhoto")}
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          {/* Bottom Right */}
+          <div
+            className="absolute w-60 h-80 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50 pointer-events-auto"
+            style={{
+              bottom: "5%",
+              right: "14%",
+              transform: `rotate(5deg) ${scrollTransformRight}`,
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+              backgroundColor: "#BFDBFE",
+              opacity: heroImageOpacity,
+            }}
+          >
+            <img
+              src="/image_101.jpg"
+              alt={t("home.altText.professionalPhoto")}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+
+        {/* Center Content */}
+        <div className="container relative z-10 pt-6">
+          <div className="flex flex-col items-center text-center space-y-6 max-w-3xl mx-auto">
+            {/* Badge with avatars */}
+            <div className="flex items-center gap-3 bg-secondary/50 backdrop-blur-sm px-6 py-3 rounded-full">
+              <div className="flex -space-x-2">
+                {["/image.webp", "/image_1.webp", "/image_10.webp", "/image_100.jpg", "/image_101.jpg"].map(
+                  (img, idx) => (
+                    <div
+                      key={idx}
+                      className="w-8 h-8 rounded-full border-2 border-background overflow-hidden"
+                    >
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  )
+                )}
               </div>
+              <div className="flex items-center gap-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+              <span className="text-sm font-medium">{t("hero.badge")}</span>
             </div>
 
-            {/* Center - Main Content */}
-            <div className="flex flex-col items-center text-center space-y-6 lg:w-1/3 z-10">
-              {/* Badge with avatars */}
-              <div className="flex items-center gap-3 bg-secondary/50 backdrop-blur-sm px-6 py-3 rounded-full">
-                <div className="flex -space-x-2">
-                  {["/image.webp", "/image_1.webp", "/image_10.webp", "/image_100.jpg", "/image_101.jpg"].map(
-                    (img, idx) => (
-                      <div
-                        key={idx}
-                        className="w-8 h-8 rounded-full border-2 border-background overflow-hidden"
-                      >
-                        <img src={img} alt="" className="w-full h-full object-cover" />
-                      </div>
-                    )
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <span className="text-sm font-medium">{t("hero.badge")}</span>
-              </div>
+            {/* Main Title */}
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
+              {t("hero.title")}
+            </h1>
 
-              {/* Main Title */}
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight max-w-3xl">
-                {t("hero.title")}
-              </h1>
+            {/* Subtitle */}
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
+              {t("hero.subtitle")}
+            </p>
 
-              {/* Subtitle */}
-              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
-                {t("hero.subtitle")}
-              </p>
-
-              {/* CTA Button */}
-              <div className="flex flex-col items-center gap-3">
-                <Button
-                  asChild
-                  size="lg"
-                  className="text-lg px-10 py-7 bg-primary hover:bg-primary/90 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow"
-                >
-                  <a href="/login">{t("hero.cta")} ✨</a>
-                </Button>
-                <p className="text-sm text-muted-foreground">{t("hero.guarantee")}</p>
-              </div>
+            {/* CTA Button */}
+            <div className="flex flex-col items-center gap-3">
+              <Button
+                asChild
+                size="lg"
+                className="text-lg px-10 py-7 bg-primary hover:bg-primary/90 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow"
+              >
+                <a href="/login">{t("hero.cta")} ✨</a>
+              </Button>
+              <p className="text-sm text-muted-foreground">{t("hero.guarantee")}</p>
             </div>
+          </div>
 
-            {/* Right Side - Photo Cards Stack */}
-            <div 
-              className="relative w-full lg:w-1/3 h-[500px] md:h-[600px] hidden lg:block transition-all duration-500 ease-out"
-              style={{
-                opacity: heroImageOpacity,
-                transform: rightImageTransform,
-              }}
-            >
-              {/* Card 4 - Top Right */}
+          {/* Mobile - Simple Grid */}
+          <div className="grid grid-cols-2 gap-4 lg:hidden max-w-md mx-auto mt-12">
+            {["/image.webp", "/image_1.webp", "/image_10.webp", "/image_100.jpg"].map((img, idx) => (
               <div
-                className="absolute top-8 right-0 w-64 h-80 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50"
+                key={idx}
+                className="aspect-[3/4] rounded-2xl overflow-hidden shadow-xl"
                 style={{
-                  transform: "rotate(8deg) translateY(0px)",
-                  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+                  transform: `rotate(${idx % 2 === 0 ? "-3deg" : "3deg"})`,
                 }}
               >
-                <img
-                  src="/image_10.webp"
-                  alt={t("home.altText.professionalPhoto")}
-                  className="w-full h-full object-cover"
-                />
+                <img src={img} alt="AI Professional Photo" className="w-full h-full object-cover" />
               </div>
-
-              {/* Card 5 - Bottom Right */}
-              <div
-                className="absolute top-56 right-8 w-60 h-80 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50"
-                style={{
-                  transform: "rotate(12deg) translateY(0px)",
-                  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-                  backgroundColor: "#BFDBFE",
-                }}
-              >
-                <img
-                  src="/image_101.jpg"
-                  alt={t("home.altText.professionalPhoto")}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Mobile - Simple Grid */}
-            <div className="grid grid-cols-2 gap-4 lg:hidden max-w-md">
-              {["/image.webp", "/image_1.webp", "/image_10.webp", "/image_100.jpg"].map((img, idx) => (
-                <div
-                  key={idx}
-                  className="aspect-[3/4] rounded-2xl overflow-hidden shadow-xl"
-                  style={{
-                    transform: `rotate(${idx % 2 === 0 ? "-3deg" : "3deg"})`,
-                  }}
-                >
-                  <img src={img} alt="AI Professional Photo" className="w-full h-full object-cover" />
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -300,7 +317,7 @@ export default function Home() {
                       >
                         <Card className="bg-white border border-purple-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
                           {/* Profile Section */}
-                          <CardContent className="p-6 pb-4">
+                          <CardContent className="px-6 pt-0 pb-0">
                             <div className="flex items-center gap-3 mb-4">
                               <Avatar className="w-12 h-12 border-2 border-purple-200">
                                 <AvatarImage src={profileImage} alt={review.name} />
@@ -323,7 +340,7 @@ export default function Home() {
                             </div>
 
                             {/* Review Text */}
-                            <div className="mb-4">
+                            <div className="mb-1">
                               <p className="text-sm text-black leading-relaxed">
                                 {(() => {
                                   let text = displayText;
@@ -401,7 +418,7 @@ export default function Home() {
                           </CardContent>
 
                           {/* Professional Photo(s) */}
-                          <div className="w-full px-4">
+                          <div className="w-full px-4 -mt-4">
                             {isJorge ? (
                               // Multiple images grid for Jorge
                               <div className="grid grid-cols-3 gap-1">
@@ -436,13 +453,13 @@ export default function Home() {
                 </CarouselContent>
                 <CarouselPrevious 
                   variant="ghost"
-                  className="!-left-4 md:!-left-8 top-1/2 -translate-y-1/2 !bg-white hover:!bg-white !border-0 !shadow-none z-10 !text-gray-700 !rounded-full !size-12"
+                  className="!left-[calc(-3rem)] md:!left-[calc(-4rem)] top-1/2 -translate-y-1/2 !bg-white hover:!bg-white !border-0 !shadow-none z-10 !text-gray-700 !rounded-full !size-12"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </CarouselPrevious>
                 <CarouselNext 
                   variant="ghost"
-                  className="!-right-4 md:!-right-8 top-1/2 -translate-y-1/2 !bg-white hover:!bg-white !border-0 !shadow-none z-10 !text-gray-700 !rounded-full !size-12"
+                  className="!right-[calc(-3rem)] md:!right-[calc(-4rem)] top-1/2 -translate-y-1/2 !bg-white hover:!bg-white !border-0 !shadow-none z-10 !text-gray-700 !rounded-full !size-12"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </CarouselNext>
@@ -781,15 +798,15 @@ export default function Home() {
                 {/* Image Grid */}
                 <div className="grid grid-cols-3 gap-2 rounded-2xl overflow-hidden bg-gray-800 p-4">
                   {[
-                    { img: "/image_102.jpg", label: null },
-                    { img: "/image_103.jpg", label: "Popular" },
-                    { img: "/image_104.jpg", label: null },
-                    { img: "/image_105.jpg", label: "New" },
-                    { img: "/image_106.jpg", label: null },
-                    { img: "/image_107.jpg", label: null },
-                    { img: "/image_108.jpg", label: "Popular" },
-                    { img: "/outfits.webp", label: null },
-                    { img: "/image_102.jpg", label: "New" },
+                    { img: "/over100_1.jpg", label: null },
+                    { img: "/over100_2.jpg", label: "Popular" },
+                    { img: "/over100_3.jpg", label: null },
+                    { img: "/over100_4.jpg", label: "New" },
+                    { img: "/over100_5.jpg", label: null },
+                    { img: "/over100_6.jpg", label: null },
+                    { img: "/over100_7.jpg", label: "Popular" },
+                    { img: "/over100_8.jpg", label: null },
+                    { img: "/over100_9.jpg", label: null },
                   ].map((item, idx) => (
                     <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-gray-700">
                       <img
@@ -997,10 +1014,10 @@ export default function Home() {
                 </h3>
                 <div className="grid grid-cols-2 gap-4 max-w-xs">
                   {[
-                    "/image.webp",
-                    "/image_1.webp",
-                    "/image_10.webp",
-                    "/image_100.jpg",
+                    "/girl_image_sample.png",
+                    "/girl_image_sample2.png",
+                    "/girl_image_sample3.png",
+                    "/girl_image_sample4.png",
                   ].map((img, idx) => (
                     <div
                       key={idx}
@@ -1026,7 +1043,7 @@ export default function Home() {
                 {/* Large Generated Image */}
                 <div className="relative rounded-2xl overflow-hidden bg-gray-800">
                   <img
-                    src="/image.webp"
+                    src="/girl_%20image_%20result.png"
                     alt="AI Generated Professional Photo"
                     className="w-full h-full object-cover aspect-[3/4]"
                   />
@@ -1115,7 +1132,7 @@ export default function Home() {
                   }}
                 >
                   <img
-                    src="/image.webp"
+                    src="/similar_human2.jpeg"
                     alt="Professional Photo 1"
                     className="w-full h-full object-cover"
                   />

@@ -32,7 +32,7 @@ export function FAQ() {
           <div className="relative">
             <div className="relative rounded-2xl overflow-hidden bg-gray-800">
               <img
-                src="/image.webp"
+                src="/similar_human1.jpg"
                 alt="AI Generated Professional Photo"
                 className="w-full h-full object-cover aspect-[3/4]"
               />

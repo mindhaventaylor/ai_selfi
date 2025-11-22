@@ -132,6 +132,21 @@ serve(async (req) => {
 
     console.log(`[Generate Images] ✅ Successfully enqueued ${jobs?.length || 0} jobs for batch ${batchId}`);
 
+    // Trigger the processing function immediately so worker doesn't rely on manual start
+    console.log("[Generate Images] Invoking process-generation-queue to start worker");
+    try {
+      await supabase.functions.invoke("process-generation-queue", {
+        body: JSON.stringify({
+          batchId,
+          trigger: "enqueue",
+        }),
+        method: "POST",
+      });
+      console.log("[Generate Images] process-generation-queue invoked");
+    } catch (invokeError) {
+      console.warn("[Generate Images] Warning: failed to invoke process-generation-queue", invokeError);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
