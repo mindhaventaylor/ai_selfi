@@ -293,22 +293,34 @@ export default function Home() {
                       ? reviewText.substring(0, 150) + "..."
                       : reviewText;
 
-                    // Map reviews to images - using available images from public folder
-                    const reviewImages = [
-                      "/image.webp",
-                      "/image_1.webp",
-                      "/image_10.webp",
-                      "/image_100.jpg",
-                      "/image_101.jpg",
-                      "/image_102.jpg",
-                      "/image_103.jpg",
-                      "/image_104.jpg",
-                    ];
-                    const profileImage = reviewImages[idx % reviewImages.length];
-                    const mainImage = reviewImages[(idx + 1) % reviewImages.length];
-
-                    // For Jorge Bosch Alés, show multiple images
-                    const isJorge = review.name.includes("Jorge");
+                    // Map reviews to images - using new numbered images
+                    // Mapping review index to example number: [1, 2, 9, 3, 4, 5, 6, 7, 8, ...]
+                    // Example 9 (Jorge) has 1 profile + 6 results, others have 1 profile + 1 result
+                    const exampleMapping = [1, 2, 9, 3, 4, 5, 6, 7, 8];
+                    const exampleNumber = exampleMapping[idx] || (idx + 1);
+                    const isJorge = review.name.includes("Jorge") || exampleNumber === 9;
+                    
+                    let profileImage: string;
+                    let resultImages: string[];
+                    
+                    if (isJorge) {
+                      // Jorge is example 9 - 1 profile + 6 results
+                      profileImage = "/9_profile.jpg";
+                      resultImages = [
+                        "/9_result1.png",
+                        "/9_result2.png",
+                        "/9_result3.png",
+                        "/9_result4.png",
+                        "/9_result5.png",
+                        "/9_result6.png",
+                      ];
+                    } else {
+                      // Other examples: 1 profile + 1 result
+                      // Example 3 uses .png, others use .jpg
+                      const resultExtension = exampleNumber === 3 ? "png" : "jpg";
+                      profileImage = `/${exampleNumber}_profile.jpg`;
+                      resultImages = [`/${exampleNumber}_result.${resultExtension}`];
+                    }
 
                     return (
                       <CarouselItem
@@ -420,15 +432,15 @@ export default function Home() {
                           {/* Professional Photo(s) */}
                           <div className="w-full px-4 -mt-4">
                             {isJorge ? (
-                              // Multiple images grid for Jorge
+                              // Multiple images grid for Jorge (6 results)
                               <div className="grid grid-cols-3 gap-1">
-                                {[0, 1, 2, 3, 4, 5].map((imgIdx) => (
+                                {resultImages.map((imgSrc, imgIdx) => (
                                   <div
                                     key={imgIdx}
                                     className="aspect-square overflow-hidden bg-gray-100 rounded-[24px]"
                                   >
                                     <img
-                                      src={reviewImages[(idx + imgIdx) % reviewImages.length]}
+                                      src={imgSrc}
                                       alt={`${review.name} - Photo ${imgIdx + 1}`}
                                       className="w-full h-full object-cover rounded-[24px]"
                                     />
@@ -439,11 +451,11 @@ export default function Home() {
                               // Single image for others
                               <div className="aspect-[4/5] overflow-hidden bg-gray-100 rounded-[24px]">
                                 <img
-                                  src={mainImage}
+                                  src={resultImages[0]}
                                   alt={`${review.name} - Professional Photo`}
                                   className="w-full h-full object-cover rounded-[24px]"
-                      />
-                    </div>
+                                />
+                              </div>
                             )}
                           </div>
                   </Card>
@@ -567,16 +579,9 @@ export default function Home() {
                 )
                   .slice(0, 6)
                   .map((review, idx) => {
-                    const reviewImages = [
-                      "/image.webp",
-                      "/image_1.webp",
-                      "/image_10.webp",
-                      "/image_100.jpg",
-                      "/image_101.jpg",
-                      "/image_102.jpg",
-                      "/image_103.jpg",
-                      "/image_104.jpg",
-                    ];
+                    // Map reviews to example numbers: [1, 2, 9, 3, 4, 5]
+                    const exampleMapping = [1, 2, 9, 3, 4, 5];
+                    const exampleNumber = exampleMapping[idx] || (idx + 1);
                     
                     // Define card configurations for different layouts
                     const cardConfigs = [
@@ -589,7 +594,9 @@ export default function Home() {
                     ];
                     
                     const config = cardConfigs[idx] || { hasImage: false, span: "md:col-span-1" };
-                    const reviewImage = reviewImages[idx % reviewImages.length];
+                    // Use the result image for the corresponding example number
+                    const resultExtension = exampleNumber === 3 ? "png" : "jpg";
+                    const reviewImage = `/${exampleNumber}_result.${resultExtension}`;
                     const isMarta = review.name.includes("Marta");
                     const isFaby = review.name.includes("Faby");
                     
@@ -1043,7 +1050,7 @@ export default function Home() {
                 {/* Large Generated Image */}
                 <div className="relative rounded-2xl overflow-hidden bg-gray-800">
                   <img
-                    src="/girl_%20image_%20result.png"
+                    src="/girl_image_result.jpg"
                     alt="AI Generated Professional Photo"
                     className="w-full h-full object-cover aspect-[3/4]"
                   />
