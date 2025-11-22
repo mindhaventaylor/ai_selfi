@@ -3,6 +3,10 @@ import fs from "fs";
 import { type Server } from "http";
 import { nanoid } from "nanoid";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function setupVite(app: Express, server: Server) {
   // Only run in development - this should never be called in production
@@ -27,11 +31,11 @@ export async function setupVite(app: Express, server: Server) {
     console.warn("[Vite] Could not load vite.config.js, using minimal config");
     viteConfig = {
       plugins: [],
-      root: path.resolve(import.meta.dirname, "../..", "client"),
+      root: path.resolve(__dirname, "../..", "client"),
       resolve: {
         alias: {
-          "@": path.resolve(import.meta.dirname, "../..", "client", "src"),
-          "@shared": path.resolve(import.meta.dirname, "../..", "shared"),
+          "@": path.resolve(__dirname, "../..", "client", "src"),
+          "@shared": path.resolve(__dirname, "../..", "shared"),
         },
       },
     };
@@ -56,7 +60,7 @@ export async function setupVite(app: Express, server: Server) {
 
     try {
       const clientTemplate = path.resolve(
-        import.meta.dirname,
+        __dirname,
         "../..",
         "client",
         "index.html"
@@ -140,8 +144,8 @@ export function serveStatic(app: Express) {
 
   // In production (non-Vercel), serve static files normally
   const possiblePaths = [
-    path.resolve(import.meta.dirname, "../..", "dist", "public"), // Local build
-    path.resolve(import.meta.dirname, "public"), // Alternative path
+    path.resolve(__dirname, "../..", "dist", "public"), // Local build
+    path.resolve(__dirname, "public"), // Alternative path
     path.resolve(process.cwd(), "dist", "public"), // Absolute path
     path.resolve(process.cwd(), "public"), // Fallback
   ];
