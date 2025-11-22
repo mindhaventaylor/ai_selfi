@@ -1,6 +1,7 @@
 import express from "express";
 import { stripe } from "../../_core/stripe.js";
 import { getDb } from "../../db.js";
+import { supabaseServer } from "../../_core/lib/supabase.js";
 import { eq } from "drizzle-orm";
 import { transactions, users, creditPacks } from "../../../drizzle/schema.js";
 
@@ -57,38 +58,88 @@ router.post("/", async (req, res) => {
     }
 
     const db = await getDb();
-    if (!db) {
-      console.error("[Stripe Webhook] Database not available");
-      return res.status(500).json({ error: "Database not available" });
-    }
 
     try {
-      // Update transaction status
-      await db
-        .update(transactions)
-        .set({ 
-          status: "completed",
-          stripePaymentId: session.id,
-          creditsAwarded: credits,
-        })
-        .where(eq(transactions.stripePaymentId, session.id));
-
-      // Add credits to user
-      const [user] = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, userId))
-        .limit(1);
-
-      if (user) {
-        await db
-          .update(users)
-          .set({ credits: (user.credits || 0) + credits })
-          .where(eq(users.id, userId));
+      // Use REST API fallback if direct connection failed
+      if (!db) {
+        console.log("[Stripe Webhook] Using REST API fallback for database operations");
         
-        console.log(`[Stripe Webhook] Added ${credits} credits to user ${userId}`);
+        // Update transaction status via REST API
+        const { data: updatedTransaction, error: transactionError } = await supabaseServer
+          .from('transactions')
+          .update({ 
+            status: "completed",
+            creditsAwarded: credits,
+          })
+          .eq('stripePaymentId', session.id)
+          .select();
+
+        if (transactionError) {
+          console.error("[Stripe Webhook] Error updating transaction via REST API:", transactionError);
+          // Continue anyway - transaction might not exist yet or might have been updated already
+        } else if (!updatedTransaction || updatedTransaction.length === 0) {
+          console.warn(`[Stripe Webhook] Transaction with stripePaymentId ${session.id} not found. It may have been created after checkout.`);
+          // Continue to update user credits anyway
+        } else {
+          console.log(`[Stripe Webhook] Updated transaction ${updatedTransaction[0].id} to completed status`);
+        }
+
+        // Get user and update credits via REST API
+        const { data: user, error: userError } = await supabaseServer
+          .from('users')
+          .select('id, credits')
+          .eq('id', userId)
+          .single();
+
+        if (userError) {
+          console.error(`[Stripe Webhook] User ${userId} not found via REST API:`, userError);
+          return res.status(404).json({ error: `User ${userId} not found` });
+        }
+
+        if (user) {
+          const newCredits = (user.credits || 0) + credits;
+          const { error: updateError } = await supabaseServer
+            .from('users')
+            .update({ credits: newCredits })
+            .eq('id', userId);
+
+          if (updateError) {
+            console.error("[Stripe Webhook] Error updating user credits via REST API:", updateError);
+            return res.status(500).json({ error: updateError.message });
+          }
+          
+          console.log(`[Stripe Webhook] Added ${credits} credits to user ${userId} via REST API`);
+        }
       } else {
-        console.error(`[Stripe Webhook] User ${userId} not found`);
+        // Use direct database connection
+        // Update transaction status
+        await db
+          .update(transactions)
+          .set({ 
+            status: "completed",
+            stripePaymentId: session.id,
+            creditsAwarded: credits,
+          })
+          .where(eq(transactions.stripePaymentId, session.id));
+
+        // Add credits to user
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+
+        if (user) {
+          await db
+            .update(users)
+            .set({ credits: (user.credits || 0) + credits })
+            .where(eq(users.id, userId));
+          
+          console.log(`[Stripe Webhook] Added ${credits} credits to user ${userId}`);
+        } else {
+          console.error(`[Stripe Webhook] User ${userId} not found`);
+          return res.status(404).json({ error: `User ${userId} not found` });
+        }
       }
     } catch (error: any) {
       console.error("[Stripe Webhook] Error processing payment:", error);
