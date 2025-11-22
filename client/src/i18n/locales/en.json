@@ -494,7 +494,23 @@
         "q": "Where can I use these photos?",
         "a": "The photos are versatile and can be used anywhere you need a professional image of yourself. They're perfect for professional profile photos (LinkedIn, company websites), social media (Instagram, Facebook, Twitter) or personal branding. You can choose different dimensions like square format for profile photos or portrait mode for Instagram stories and other vertical designs."
       }
-    ]
+    ],
+    "checkoutError": "Failed to create checkout session. Please try again.",
+    "noFaq": "No frequently asked questions available."
+  },
+  "payment": {
+    "success": {
+      "title": "Payment Successful!",
+      "message": "Your payment has been processed successfully. Credits have been added to your account.",
+      "goToDashboard": "Go to Dashboard",
+      "buyMore": "Buy More Credits"
+    },
+    "cancel": {
+      "title": "Payment Cancelled",
+      "message": "You cancelled the payment process. No charges were made.",
+      "tryAgain": "Try Again",
+      "goToDashboard": "Go to Dashboard"
+    }
   },
   "models": {
     "title": "Models",

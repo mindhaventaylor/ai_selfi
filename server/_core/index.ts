@@ -9,6 +9,7 @@ import { registerOAuthRoutes } from "./oauth.js";
 import { appRouter } from "../routers.js";
 import { createContext } from "./context.js";
 import photoGenerationRouter from "../api/photo-generation/route.js";
+import stripeWebhookRouter from "../api/stripe-webhook/route.js";
 import { createClient } from "@supabase/supabase-js";
 
 // Simple static file server for production (no Vite dependencies)
@@ -105,6 +106,10 @@ type CreateAppOptions = {
 
 export async function createApp(options?: CreateAppOptions) {
   const app = express();
+  
+  // Stripe webhook MUST be registered BEFORE express.json() to receive raw body
+  app.use("/api/stripe-webhook", express.raw({ type: "application/json" }), stripeWebhookRouter);
+  
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));

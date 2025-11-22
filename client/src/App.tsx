@@ -30,6 +30,8 @@ import Login from "./pages/Login";
 import OAuthCallback from "./pages/OAuthCallback";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentCancel from "./pages/PaymentCancel";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { WhatsAppButton } from "./components/WhatsAppButton";
@@ -179,6 +181,8 @@ function Router() {
               </DashboardLayout>
             </ProtectedRoute>
           </Route>
+          <Route path={"/payment/success"} component={PaymentSuccess} />
+          <Route path={"/payment/cancel"} component={PaymentCancel} />
           <Route path={"/404"} component={NotFound} />
           <Route component={NotFound} />
         </Switch>

@@ -527,7 +527,23 @@
         "q": "Dove posso usare queste foto?",
         "a": "Le foto sono versatili e possono essere usate ovunque tu abbia bisogno di un'immagine professionale di te stesso. Sono perfette per foto profilo professionali (LinkedIn, siti web aziendali), social media (Instagram, Facebook, Twitter) o branding personale. Puoi scegliere diverse dimensioni come formato quadrato per foto profilo o modalità verticale per storie Instagram e altri design verticali."
       }
-    ]
+    ],
+    "checkoutError": "Errore nella creazione della sessione di checkout. Riprova.",
+    "noFaq": "Nessuna domanda frequente disponibile."
+  },
+  "payment": {
+    "success": {
+      "title": "Pagamento Riuscito!",
+      "message": "Il tuo pagamento è stato elaborato con successo. I crediti sono stati aggiunti al tuo account.",
+      "goToDashboard": "Vai alla Dashboard",
+      "buyMore": "Acquista Altri Crediti"
+    },
+    "cancel": {
+      "title": "Pagamento Annullato",
+      "message": "Hai annullato il processo di pagamento. Nessun addebito è stato effettuato.",
+      "tryAgain": "Riprova",
+      "goToDashboard": "Vai alla Dashboard"
+    }
   },
   "models": {
     "title": "Modelli",

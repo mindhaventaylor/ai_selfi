@@ -10,10 +10,17 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Check, Box, Star, Zap, Gift, Building2 } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function BuyCredits() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
+  const [loadingPackId, setLoadingPackId] = useState<number | null>(null);
+
+  const createCheckoutMutation = trpc.payment.createCheckoutSession.useMutation();
+  const { data: packs } = trpc.payment.listPacks.useQuery();
 
   const starterFeatures = t("buyCredits.starterFeatures", { returnObjects: true }) as string[];
   const proFeatures = t("buyCredits.proFeatures", { returnObjects: true }) as string[];
@@ -21,6 +28,55 @@ export default function BuyCredits() {
   const premiumFeatures = t("buyCredits.premiumFeatures", { returnObjects: true }) as string[];
   const premiumCreditsFeatures = t("buyCredits.premiumCreditsFeatures", { returnObjects: true }) as string[];
   const faqItems = t("buyCredits.faq", { returnObjects: true }) as Array<{ q: string; a: string }>;
+
+  const handleBuyClick = async (packId: number | null) => {
+    if (!packId) {
+      toast.error("Pacote não encontrado. Por favor, tente novamente.");
+      return;
+    }
+
+    try {
+      setLoadingPackId(packId);
+      console.log("[BuyCredits] Creating checkout session for pack:", packId);
+      
+      const result = await createCheckoutMutation.mutateAsync({ packId });
+      console.log("[BuyCredits] Checkout session created:", result);
+      
+      if (result?.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = result.url;
+      } else {
+        console.error("[BuyCredits] No URL in result:", result);
+        toast.error("Falha ao criar sessão de checkout. Tente novamente.");
+        setLoadingPackId(null);
+      }
+    } catch (error: any) {
+      console.error("[BuyCredits] Checkout error:", error);
+      toast.error(error?.message || "Falha ao iniciar o checkout. Tente novamente.");
+      setLoadingPackId(null);
+    }
+  };
+
+  // Map hardcoded packs to database packs by price
+  // Starter = $29, Pro = $39, Premium = $49
+  const getPackIdByPrice = (price: number): number | null => {
+    if (!packs || packs.length === 0) return null;
+    // Find pack with matching price (convert to cents for comparison)
+    const pack = packs.find(p => Math.round(parseFloat(p.price.toString()) * 100) === price * 100);
+    return pack?.id || null;
+  };
+
+  const starterPackId = getPackIdByPrice(29);
+  const proPackId = getPackIdByPrice(39);
+  const premiumPackId = getPackIdByPrice(49);
+
+  // Debug: log packs
+  if (packs && packs.length > 0) {
+    console.log("[BuyCredits] Available packs:", packs);
+    console.log("[BuyCredits] Pack IDs - Starter:", starterPackId, "Pro:", proPackId, "Premium:", premiumPackId);
+  } else {
+    console.warn("[BuyCredits] No packs found in database");
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -118,8 +174,10 @@ export default function BuyCredits() {
                 <Button
                   className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
+                  onClick={() => handleBuyClick(starterPackId)}
+                  disabled={!starterPackId || loadingPackId === starterPackId}
                 >
-                  {t("buyCredits.buy")}
+                  {loadingPackId === starterPackId ? "Carregando..." : t("buyCredits.buy")}
                 </Button>
 
                 {/* Payment Terms */}
@@ -189,8 +247,10 @@ export default function BuyCredits() {
                 <Button
                   className="w-full bg-yellow-500 hover:bg-yellow-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
+                  onClick={() => handleBuyClick(proPackId)}
+                  disabled={!proPackId || loadingPackId === proPackId}
                 >
-                  {t("buyCredits.buy")}
+                  {loadingPackId === proPackId ? "Carregando..." : t("buyCredits.buy")}
                 </Button>
 
                 {/* Payment Terms */}
@@ -254,8 +314,10 @@ export default function BuyCredits() {
                 <Button
                   className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
+                  onClick={() => handleBuyClick(premiumPackId)}
+                  disabled={!premiumPackId || loadingPackId === premiumPackId}
                 >
-                  {t("buyCredits.buy")}
+                  {loadingPackId === premiumPackId ? "Carregando..." : t("buyCredits.buy")}
                 </Button>
 
                 {/* Payment Terms */}
@@ -278,20 +340,26 @@ export default function BuyCredits() {
             {t("buyCredits.faqTitle")}
           </h2>
           <Accordion type="single" collapsible className="w-full space-y-2">
-            {faqItems.map((item, idx) => (
-              <AccordionItem
-                key={idx}
-                value={`item-${idx}`}
-                className="border-border bg-card/50 rounded-lg px-4"
-              >
-                <AccordionTrigger className="text-left hover:no-underline py-4">
-                  {item.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-4">
-                  {item.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
+            {faqItems && faqItems.length > 0 ? (
+              faqItems.map((item, idx) => (
+                <AccordionItem
+                  key={idx}
+                  value={`item-${idx}`}
+                  className="border-border bg-card/50 rounded-lg px-4"
+                >
+                  <AccordionTrigger className="text-left hover:no-underline py-4">
+                    {item.q || item.question || ""}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pb-4">
+                    {item.a || item.answer || ""}
+                  </AccordionContent>
+                </AccordionItem>
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground py-8">
+                {t("buyCredits.noFaq") || "No frequently asked questions available."}
+              </div>
+            )}
           </Accordion>
         </div>
       </div>

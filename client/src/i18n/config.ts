@@ -5,6 +5,7 @@ import ptBR from './locales/pt-BR.json';
 import es from './locales/es.json';
 import en from './locales/en.json';
 import it from './locales/it.json';
+import { getCookie, setCookie } from '../utils/cookies';
 
 // Função para detectar idioma por IP
 const detectLanguageFromIP = async (): Promise<string> => {
@@ -67,11 +68,21 @@ i18n
       'en': { translation: en },
       'it': { translation: it },
     },
-    lng: 'it', // Set Italian as default language
+    lng: (() => {
+      // Try to get language from cookie first, then localStorage, then default
+      if (typeof window !== 'undefined') {
+        const cookieLang = getCookie('i18nextLng');
+        if (cookieLang) return cookieLang;
+        const storageLang = localStorage.getItem('i18nextLng');
+        if (storageLang) return storageLang;
+      }
+      return 'it';
+    })(),
     fallbackLng: ['it', 'en', 'es', 'pt-BR'],
     detection: {
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage'],
+      order: ['cookie', 'localStorage', 'navigator'],
+      caches: ['cookie', 'localStorage'],
+      lookupCookie: 'i18nextLng',
       lookupLocalStorage: 'i18nextLng',
     },
     interpolation: {
@@ -81,20 +92,43 @@ i18n
 
 // Detectar idioma por IP após inicialização (apenas se não houver preferência salva)
 if (typeof window !== 'undefined') {
-  const currentLang = localStorage.getItem('i18nextLng');
+  const currentLang = getCookie('i18nextLng') || localStorage.getItem('i18nextLng');
+  
+  // Sync cookie with localStorage if cookie exists but localStorage doesn't
+  if (getCookie('i18nextLng') && !localStorage.getItem('i18nextLng')) {
+    localStorage.setItem('i18nextLng', getCookie('i18nextLng')!);
+  }
+  
+  // Sync localStorage to cookie if localStorage exists but cookie doesn't
+  if (localStorage.getItem('i18nextLng') && !getCookie('i18nextLng')) {
+    setCookie('i18nextLng', localStorage.getItem('i18nextLng')!, 365);
+  }
+  
   if (!currentLang) {
     detectLanguageFromIP().then(detectedLang => {
       i18n.changeLanguage(detectedLang);
+      // Save to cookie when auto-detected
+      setCookie('i18nextLng', detectedLang, 365);
     }).catch(() => {
       // Se falhar, usar idioma do navegador
       const browserLang = navigator.language || 'it';
-      if (browserLang.startsWith('it')) i18n.changeLanguage('it');
-      else if (browserLang.startsWith('en')) i18n.changeLanguage('en');
-      else if (browserLang.startsWith('es')) i18n.changeLanguage('es');
-      else if (browserLang.startsWith('pt')) i18n.changeLanguage('pt-BR');
-      else i18n.changeLanguage('it');
+      let detectedLang = 'it';
+      if (browserLang.startsWith('it')) detectedLang = 'it';
+      else if (browserLang.startsWith('en')) detectedLang = 'en';
+      else if (browserLang.startsWith('es')) detectedLang = 'es';
+      else if (browserLang.startsWith('pt')) detectedLang = 'pt-BR';
+      
+      i18n.changeLanguage(detectedLang);
+      // Save to cookie when auto-detected
+      setCookie('i18nextLng', detectedLang, 365);
     });
   }
+  
+  // Listen for language changes and sync to cookie
+  i18n.on('languageChanged', (lng) => {
+    setCookie('i18nextLng', lng, 365);
+    localStorage.setItem('i18nextLng', lng);
+  });
 }
 
 export default i18n;

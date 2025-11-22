@@ -10,6 +10,7 @@ import { protectedProcedure, publicProcedure, router } from "./_core/trpc.js";
 import { generateImagesWithGemini } from "./_core/gemini.js";
 import { getServerString } from "./_core/strings.js";
 import { ENV } from "./_core/env.js";
+import { stripe, CREDIT_PACKS } from "./_core/stripe.js";
 
 // Helper function to get Supabase Edge Function URL
 function getSupabaseFunctionUrl(functionName: string): string {
@@ -154,6 +155,63 @@ export const appRouter = router({
       if (!db) return [];
       return db.select().from(creditPacks).orderBy(creditPacks.price);
     }),
+    createCheckoutSession: protectedProcedure
+      .input(z.object({ packId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+        if (!db) throw new Error(getServerString("databaseNotAvailable"));
+        
+        const packResult = await db.select().from(creditPacks).where(eq(creditPacks.id, input.packId)).limit(1);
+        const pack = packResult[0];
+
+        if (!pack) throw new Error(getServerString("packNotFound"));
+
+        // Get the base URL for success/cancel URLs
+        const baseUrl = process.env.VERCEL_URL 
+          ? `https://${process.env.VERCEL_URL}`
+          : process.env.PHOTO_API_URL?.replace("/api/photo-generation", "") || "http://localhost:3000";
+
+        // Create Stripe Checkout Session
+        const session = await stripe.checkout.sessions.create({
+          payment_method_types: ["card"],
+          line_items: [
+            {
+              price_data: {
+                currency: "usd",
+                product_data: {
+                  name: `${pack.credits} Credits`,
+                  description: `Purchase ${pack.credits} credits for AI image generation`,
+                },
+                unit_amount: Math.round(parseFloat(pack.price.toString()) * 100), // Convert to cents
+              },
+              quantity: 1,
+            },
+          ],
+          mode: "payment",
+          success_url: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${baseUrl}/payment/cancel`,
+          client_reference_id: ctx.user.id.toString(),
+          metadata: {
+            userId: ctx.user.id.toString(),
+            packId: pack.id.toString(),
+            credits: pack.credits.toString(),
+          },
+        });
+
+        // Create pending transaction
+        await db.insert(transactions).values({
+          userId: ctx.user.id,
+          packId: pack.id,
+          amount: pack.price.toString(),
+          status: "pending",
+          stripePaymentId: session.id,
+        });
+
+        return { 
+          sessionId: session.id,
+          url: session.url,
+        };
+      }),
     createTransaction: protectedProcedure
       .input(z.object({ packId: z.number() }))
       .mutation(async ({ ctx, input }) => {
