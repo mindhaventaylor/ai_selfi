@@ -67,6 +67,7 @@ i18n
       'en': { translation: en },
       'it': { translation: it },
     },
+    lng: 'it', // Set Italian as default language
     fallbackLng: ['it', 'en', 'es', 'pt-BR'],
     detection: {
       order: ['localStorage', 'navigator'],
