@@ -11,8 +11,15 @@ const router = express.Router();
 // Stripe webhook requires raw body for signature verification
 // Note: express.raw() is applied in server/_core/index.ts before express.json()
 router.post("/", async (req, res) => {
+  console.log("[Stripe Webhook] Received request at /api/stripe-webhook");
+  console.log("[Stripe Webhook] Method:", req.method);
+  console.log("[Stripe Webhook] Headers:", JSON.stringify(req.headers, null, 2));
+  
   const body = req.body as Buffer;
   const signature = req.headers["stripe-signature"] as string;
+  
+  console.log("[Stripe Webhook] Body type:", typeof body);
+  console.log("[Stripe Webhook] Body is Buffer:", Buffer.isBuffer(body));
 
   if (!signature) {
     console.error("[Stripe Webhook] Missing stripe-signature header");

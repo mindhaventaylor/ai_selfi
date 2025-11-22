@@ -107,8 +107,21 @@ type CreateAppOptions = {
 export async function createApp(options?: CreateAppOptions) {
   const app = express();
   
+  // Debug middleware to log all requests (only in development)
+  if (process.env.NODE_ENV === "development") {
+    app.use((req, res, next) => {
+      if (req.path.startsWith("/api/stripe-webhook")) {
+        console.log(`[Debug] Stripe webhook request: ${req.method} ${req.path}`);
+        console.log(`[Debug] Headers:`, JSON.stringify(req.headers, null, 2));
+      }
+      next();
+    });
+  }
+  
   // Stripe webhook MUST be registered BEFORE express.json() to receive raw body
-  app.use("/api/stripe-webhook", express.raw({ type: "application/json" }), stripeWebhookRouter);
+  // Apply raw body middleware only to the webhook route
+  app.use("/api/stripe-webhook", express.raw({ type: "application/json" }));
+  app.use("/api/stripe-webhook", stripeWebhookRouter);
   
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
@@ -154,7 +167,7 @@ async function startQueueListener() {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    async function forwardJobToApi(jobData: any) {
+    const forwardJobToApi = async (jobData: any) => {
       try {
         console.log(`[Queue Listener] Forwarding job ${jobData.id} to API...`);
         const response = await fetch(apiUrl, {
@@ -176,7 +189,7 @@ async function startQueueListener() {
       } catch (error) {
         console.error(`[Queue Listener] Error forwarding job ${jobData.id}:`, error);
       }
-    }
+    };
 
     console.log(`[Queue Listener] Listening for INSERTs on 'photo_generation_queue' table...`);
 
