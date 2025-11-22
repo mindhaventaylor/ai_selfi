@@ -580,32 +580,54 @@ export default function Home() {
                   // Cycle through reviews, reusing them if needed
                   const review = reviews[idx % reviews.length];
                   
-                  // Map to example numbers: [1, 2, 9, 3, 4, 5, 6, 7, 8, 1, 2, 9, 3, 4, 5]
-                  const exampleMapping = [1, 2, 9, 3, 4, 5, 6, 7, 8, 1, 2, 9, 3, 4, 5];
-                  const exampleNumber = exampleMapping[idx] || (idx % 9) + 1;
+                  // Direct mapping: map each review index to an example number with complete files
+                  // Review order: 0=Marta, 1=Alba, 2=Jorge, 3=Faby, 4=Andres, 5=Andrea, 6=Pamela, 7=Ingrid, 8=Samuel
+                  // Complete examples: 1, 2, 3, 4, 7, 9, 10, 11 (have both profile and result)
+                  // Multiple image examples: 14, 15
+                  const reviewToExampleMapping = [
+                    1,  // Marta → example 1
+                    2,  // Alba → example 2
+                    3,  // Jorge → example 3
+                    4,  // Faby → example 4
+                    7,  // Andres → example 7 (5 missing result)
+                    9,  // Andrea → example 9 (6 missing both)
+                    10, // Pamela → example 10
+                    11, // Ingrid → example 11
+                    14, // Samuel → example 14 (multiple images)
+                    // For remaining slots (9-14), cycle through available examples
+                    1, 2, 3, 4, 7, 15, // examples 15 has multiple images
+                  ];
                   
-                  // 2 components with 6 images (indices 2 and 11, which map to example 9 - Jorge)
-                  const isJorge = exampleNumber === 9;
+                  const exampleNumber = reviewToExampleMapping[idx] || reviewToExampleMapping[idx % reviewToExampleMapping.length];
+                  const hasMultipleResults = exampleNumber === 14 || exampleNumber === 15;
                   
                   let profileImage: string;
                   let resultImages: string[];
                   
-                  if (isJorge) {
-                    // Jorge is example 9 - 1 profile + 6 results
-                    profileImage = "/9_profile.jpg";
-                    resultImages = [
-                      "/9_result1.png",
-                      "/9_result2.png",
-                      "/9_result3.png",
-                      "/9_result4.png",
-                      "/9_result5.png",
-                      "/9_result6.png",
-                    ];
+                  if (hasMultipleResults) {
+                    // Example 14: 1 profile + 5 results (14_result_1.jpg through 14_result_5.jpg)
+                    // Example 15: 1 profile + 3 results (15_result.jpg, 15_result_4.jpg, 15_result_5.jpg)
+                    profileImage = `/reviews/${exampleNumber}_profile.jpg`;
+                    if (exampleNumber === 14) {
+                      resultImages = [
+                        `/reviews/14_result_1.jpg`,
+                        `/reviews/14_result_2.jpg`,
+                        `/reviews/14_result_3.jpg`,
+                        `/reviews/14_result_4.jpg`,
+                        `/reviews/14_result_5.jpg`,
+                      ];
+                    } else {
+                      // Example 15 - only has 3 result images available
+                      resultImages = [
+                        `/reviews/15_result.jpg`,
+                        `/reviews/15_result_4.jpg`,
+                        `/reviews/15_result_5.jpg`,
+                      ];
+                    }
                   } else {
-                    // Other examples: 1 profile + 1 result
-                    const resultExtension = exampleNumber === 3 ? "png" : "jpg";
-                    profileImage = `/${exampleNumber}_profile.jpg`;
-                    resultImages = [`/${exampleNumber}_result.${resultExtension}`];
+                    // Complete examples: 1 profile + 1 result
+                    profileImage = `/reviews/${exampleNumber}_profile.jpg`;
+                    resultImages = [`/reviews/${exampleNumber}_result.jpg`];
                   }
                   
                   // Highlight key phrases
@@ -693,8 +715,8 @@ export default function Home() {
 
                       {/* Professional Photo(s) */}
                       <div className="w-full px-3 -mt-3">
-                        {isJorge ? (
-                          // Multiple images grid for Jorge (6 results)
+                        {hasMultipleResults ? (
+                          // Multiple images grid for examples 14 and 15
                           <div className="grid grid-cols-3 gap-1">
                             {resultImages.map((imgSrc, imgIdx) => (
                               <div
@@ -708,18 +730,18 @@ export default function Home() {
                                 />
                               </div>
                             ))}
-                            </div>
+                          </div>
                         ) : (
                           // Single image for others
-                              <div className="aspect-[3/4] overflow-hidden bg-gray-100 rounded-[20px]">
-                                <img
+                          <div className="aspect-[3/4] overflow-hidden bg-gray-100 rounded-[20px]">
+                            <img
                               src={resultImages[0]}
                               alt={`${review.name} - Professional Photo`}
-                                  className="w-full h-full object-cover rounded-[20px]"
-                                />
-                              </div>
+                              className="w-full h-full object-cover rounded-[20px]"
+                            />
+                          </div>
                         )}
-                            </div>
+                      </div>
                     </Card>
                   );
                 })}
