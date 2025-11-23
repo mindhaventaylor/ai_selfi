@@ -1,5 +1,12 @@
 import express from "express";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// ES module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const supabaseUrl = process.env.SUPABASE_URL ?? "";
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
@@ -236,14 +243,53 @@ async function downloadImage(url: string, supabase: SupabaseClient) {
     };
   }
 
+  // Handle localhost URLs in development by reading from filesystem
   if (url.includes("localhost") || url.includes("127.0.0.1")) {
-    console.error("[photo-generation] skipping localhost URL", url);
-    return null;
+    try {
+      // Extract the path from the URL (e.g., /image_selection/Man/5_man_studio_casual.jpeg)
+      const urlObj = new URL(url);
+      const filePath = urlObj.pathname;
+      
+      // Try multiple possible locations for the public directory
+      const possiblePaths = [
+        path.resolve(process.cwd(), "client", "public", filePath.substring(1)), // Remove leading /
+        path.resolve(process.cwd(), "dist", "public", filePath.substring(1)),
+        path.resolve(process.cwd(), "public", filePath.substring(1)),
+        path.resolve(__dirname, "../..", "client", "public", filePath.substring(1)),
+      ];
+      
+      for (const fullPath of possiblePaths) {
+        if (fs.existsSync(fullPath)) {
+          const fileBuffer = fs.readFileSync(fullPath);
+          const ext = path.extname(fullPath).toLowerCase();
+          const mimeTypes: Record<string, string> = {
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".png": "image/png",
+            ".webp": "image/webp",
+          };
+          const mimeType = mimeTypes[ext] || "image/jpeg";
+          
+          console.log(`[photo-generation] Successfully read localhost file from ${fullPath}`);
+          return {
+            data: fileBuffer.toString("base64"),
+            mimeType,
+          };
+        }
+      }
+      
+      console.error(`[photo-generation] Localhost file not found: ${filePath}. Tried paths:`, possiblePaths);
+      return null;
+    } catch (error) {
+      console.error("[photo-generation] Error reading localhost file:", error);
+      return null;
+    }
   }
 
+  // For production URLs, fetch via HTTP
   const response = await fetch(url);
   if (!response.ok) {
-    console.error("[photo-generation] fetch failed", response.status);
+    console.error(`[photo-generation] fetch failed for ${url}: ${response.status} ${response.statusText}`);
     return null;
   }
   const arrayBuffer = await response.arrayBuffer();

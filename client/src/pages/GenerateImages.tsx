@@ -44,7 +44,7 @@ export default function GenerateImages() {
   const { user } = useAuth();
   const { t } = useTranslation();
   const [gender, setGender] = useState<"man" | "woman">("man");
-  const [selectedImages, setSelectedImages] = useState<number[]>([]);
+  const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [selectedBackgrounds, setSelectedBackgrounds] = useState<string[]>([]);
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [aspectRatio, setAspectRatio] = useState<"1:1" | "9:16" | "16:9">("9:16");
@@ -67,10 +67,14 @@ export default function GenerateImages() {
   const { data: modelsData, isLoading: isLoadingModels } = trpc.model.list.useQuery();
   const generateMutation = trpc.photo.generate.useMutation();
   const getBatchStatusQuery = trpc.photo.getBatchStatus.useQuery(
-    { batchId: currentBatchId! },
+    currentBatchId ? { batchId: currentBatchId } : { batchId: 0 },
     { 
       enabled: !!currentBatchId && isGenerating,
       refetchInterval: isGenerating ? 2000 : false, // Poll every 2 seconds while generating
+      retry: 3, // Retry up to 3 times on error
+      retryDelay: 1000, // Wait 1 second between retries
+      refetchOnMount: true, // Always refetch when component mounts
+      refetchOnWindowFocus: false, // Don't refetch on window focus
     }
   );
   
@@ -94,9 +98,7 @@ export default function GenerateImages() {
   );
 
   const toggleImage = (id: number) => {
-    setSelectedImages((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
+    setSelectedImage((prev) => (prev === id ? null : id));
   };
 
   const toggleBackground = (bg: string) => {
@@ -111,9 +113,31 @@ export default function GenerateImages() {
     );
   };
 
-  // Calculate credits needed based on selected example images (4 variations per selected image)
-  const imageCount = selectedImages.length;
+  // Calculate credits needed based on selected example image (4 variations per selected image)
+  const imageCount = selectedImage !== null ? 1 : 0;
   const totalImagesToGenerate = imageCount * 4; // 4 images per selected image
+
+  // Handle batch status query errors
+  useEffect(() => {
+    if (getBatchStatusQuery.error && currentBatchId && isGenerating) {
+      console.error(`[GenerateImages] Batch status query error for batch ${currentBatchId}:`, getBatchStatusQuery.error);
+      // Don't show error immediately - might be a temporary issue
+      // Only show error if it persists
+      if (getBatchStatusQuery.error.message?.includes("not found") || 
+          getBatchStatusQuery.error.message?.includes("Batch not found")) {
+        console.error(`[GenerateImages] Batch ${currentBatchId} not found - this might be a stale batch ID`);
+        setIsGenerating(false);
+        setErrorMessage("Batch not found. The generation may have failed to start. Please try again.");
+      }
+    }
+  }, [getBatchStatusQuery.error, currentBatchId, isGenerating]);
+
+  // Debug: Log when batch ID changes
+  useEffect(() => {
+    if (currentBatchId) {
+      console.log(`[GenerateImages] Current batch ID changed to: ${currentBatchId}`);
+    }
+  }, [currentBatchId]);
 
   // Update progress from polling
   useEffect(() => {
@@ -130,13 +154,29 @@ export default function GenerateImages() {
         setIsGenerating(false);
         setErrorMessage("Image generation failed. Please try again.");
       } else if (batch.status === "generating") {
-        // Update progress based on generated images
-        setCompletedImages(batch.totalImagesGenerated);
-        // Use batch.totalImagesGenerated or fallback to calculated total
-        const expectedTotal = batch.totalImagesGenerated > 0 
-          ? Math.max(batch.totalImagesGenerated, totalImagesToGenerate)
-          : totalImagesToGenerate;
-        setGenerationProgress(Math.min(95, (batch.totalImagesGenerated / expectedTotal) * 100));
+        // Use actual photos count for more accurate progress
+        const actualPhotosCount = photos.length;
+        const expectedTotal = totalImagesToGenerate;
+        
+        // Update completed images count
+        setCompletedImages(actualPhotosCount);
+        
+        // Calculate progress: start at 5% when generation begins, go up to 95% as images are generated
+        // This gives a smoother progress experience
+        let progress = 0;
+        if (actualPhotosCount === 0) {
+          // Just started - show 5% to indicate processing has begun
+          progress = 5;
+        } else if (actualPhotosCount >= expectedTotal) {
+          // All images generated, but batch not yet marked as completed
+          progress = 95;
+        } else {
+          // Calculate progress: 5% + (actualPhotosCount / expectedTotal) * 90%
+          // This gives us 5% to 95% range
+          progress = 5 + (actualPhotosCount / expectedTotal) * 90;
+        }
+        
+        setGenerationProgress(Math.min(95, Math.max(5, progress)));
         
         // Update generated images list
         const newImages = photos.map(p => ({ id: p.id, url: p.url, status: p.status }));
@@ -180,12 +220,12 @@ export default function GenerateImages() {
       return;
     }
     
-    // Get selected example images with their prompts
-    const selectedExampleImages = filteredExampleImages.filter((img) => 
-      selectedImages.includes(img.id)
+    // Get selected example image with its prompt
+    const selectedExampleImage = filteredExampleImages.find((img) => 
+      img.id === selectedImage
     );
     
-    if (selectedExampleImages.length === 0) {
+    if (!selectedExampleImage) {
       alert(t("generateImages.noImagesSelected"));
       return;
     }
@@ -211,7 +251,7 @@ export default function GenerateImages() {
     
     // Reset state
     setIsGenerating(true);
-    setGenerationProgress(0);
+    setGenerationProgress(0); // Will be updated to 5% when batch status is first received
     setCompletedImages(0);
     setGeneratedImages([]);
     setErrorMessage(null);
@@ -219,34 +259,32 @@ export default function GenerateImages() {
     setShowModal(true);
     
     try {
+      // Convert relative URL to absolute URL
+      let absoluteUrl = selectedExampleImage.url;
+      
+      if (!selectedExampleImage.url.startsWith('http')) {
+        // If it's a relative URL, convert to absolute
+        if (selectedExampleImage.url.startsWith('/')) {
+          // Use production domain if available, otherwise use current origin
+          // In production, this should be your actual domain
+          const publicDomain = import.meta.env.VITE_PUBLIC_DOMAIN || window.location.origin;
+          absoluteUrl = `${publicDomain}${selectedExampleImage.url}`;
+        } else {
+          // If it doesn't start with /, assume it's relative to root
+          const publicDomain = import.meta.env.VITE_PUBLIC_DOMAIN || window.location.origin;
+          absoluteUrl = `${publicDomain}/${selectedExampleImage.url}`;
+        }
+      }
+
       // Call the API with new structure
       const result = await generateMutation.mutateAsync({
         modelId: parseInt(modelId),
         trainingImageUrls: referenceImageUrls,
-        exampleImages: selectedExampleImages.map(img => {
-          // Convert relative URLs to absolute URLs
-          let absoluteUrl = img.url;
-          
-          if (!img.url.startsWith('http')) {
-            // If it's a relative URL, convert to absolute
-            if (img.url.startsWith('/')) {
-              // Use production domain if available, otherwise use current origin
-              // In production, this should be your actual domain
-              const publicDomain = import.meta.env.VITE_PUBLIC_DOMAIN || window.location.origin;
-              absoluteUrl = `${publicDomain}${img.url}`;
-            } else {
-              // If it doesn't start with /, assume it's relative to root
-              const publicDomain = import.meta.env.VITE_PUBLIC_DOMAIN || window.location.origin;
-              absoluteUrl = `${publicDomain}/${img.url}`;
-            }
-          }
-          
-          return {
-            id: img.id,
-            url: absoluteUrl,
-            prompt: img.prompt,
-          };
-        }),
+        exampleImages: [{
+          id: selectedExampleImage.id,
+          url: absoluteUrl,
+          prompt: selectedExampleImage.prompt,
+        }],
         basePrompt,
         aspectRatio,
         numImagesPerExample: 4,
@@ -259,7 +297,10 @@ export default function GenerateImages() {
 
       // Set batch ID for polling
       if (result.batchId) {
+        console.log(`[GenerateImages] Setting batch ID to ${result.batchId}`);
         setCurrentBatchId(result.batchId);
+        // Force a small delay to ensure state is updated before query starts
+        await new Promise(resolve => setTimeout(resolve, 100));
       } else {
         // Fallback if no batch ID (shouldn't happen)
         setIsGenerating(false);
@@ -390,7 +431,7 @@ export default function GenerateImages() {
                   <div
                     key={image.id}
                     className={`relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
-                      selectedImages.includes(image.id)
+                      selectedImage === image.id
                         ? "border-primary ring-2 ring-primary/50"
                         : "border-border hover:border-primary/50"
                     }`}
@@ -414,7 +455,7 @@ export default function GenerateImages() {
                         {image.badge}
                       </Badge>
                     )}
-                    {selectedImages.includes(image.id) && (
+                    {selectedImage === image.id && (
                       <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
                         <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                           <span className="text-white font-bold">✓</span>
