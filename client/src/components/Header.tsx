@@ -31,36 +31,63 @@ export function Header() {
   const currentFlag = currentLang?.flag || "🌐";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 shadow-sm">
+      <div className="container flex h-20 items-center justify-between px-6">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <img src={APP_LOGO} alt="AISelfi" className="h-8 w-auto" />
-          <span className="font-bold text-xl">AIselfi</span>
+        <a href="/" className="flex items-center gap-3 group">
+          <div className="relative">
+            <img src={APP_LOGO} alt="AISelfi" className="h-9 w-auto transition-transform duration-300 group-hover:scale-105" />
+            <div className="absolute inset-0 bg-primary/10 rounded-lg blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          </div>
+          <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/80 transition-all duration-300">
+            AIselfi
+          </span>
         </a>
 
         {/* Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
-          <a href={getNavLink("#examples")} className="text-sm font-medium hover:text-primary transition-colors">
+        <nav className="hidden md:flex items-center gap-8">
+          <a 
+            href={getNavLink("#examples")} 
+            className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-300 relative group py-2"
+          >
             {t("nav.examples")}
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
           </a>
-          <a href={getNavLink("#how-it-works")} className="text-sm font-medium hover:text-primary transition-colors">
+          <a 
+            href={getNavLink("#how-it-works")} 
+            className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-300 relative group py-2"
+          >
             {t("nav.howItWorks")}
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
           </a>
-          <a href={getNavLink("#pricing")} className="text-sm font-medium hover:text-primary transition-colors">
+          <a 
+            href={getNavLink("#pricing")} 
+            className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-300 relative group py-2"
+          >
             {t("nav.pricing")}
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
           </a>
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {/* Auth Button */}
           {!isAuthenticated ? (
-            <Button asChild variant="default" size="sm" className="rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">
+            <Button 
+              asChild 
+              variant="default" 
+              size="sm" 
+              className="rounded-full shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 bg-gradient-to-r from-primary to-primary/90 hover:from-primary hover:to-primary border-0 px-6 font-semibold"
+            >
               <a href="/login">{t("header.signIn")}</a>
             </Button>
           ) : (
-            <Button asChild variant="outline" size="sm">
+            <Button 
+              asChild 
+              variant="outline" 
+              size="sm"
+              className="rounded-full border-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 px-6 font-semibold"
+            >
               <a href="/dashboard">{t("header.dashboard")}</a>
             </Button>
           )}
@@ -68,32 +95,33 @@ export function Header() {
           {/* Language Selector */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-2">
-                <span className="text-lg">{currentFlag}</span>
-                <span className="hidden sm:inline">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="gap-2 rounded-full hover:bg-accent/50 transition-all duration-300 px-3 border border-transparent hover:border-border/50"
+              >
+                <span className="text-xl">{currentFlag}</span>
+                <span className="hidden sm:inline text-sm font-medium">
                   {currentLang ? currentLang.label.split(" ")[1] : t("header.language")}
                 </span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="rounded-xl border-border/50 shadow-lg backdrop-blur-xl bg-background/95">
               {languages.map((lang) => (
                 <DropdownMenuItem
                   key={lang.code}
                   onClick={() => changeLanguage(lang.code)}
-                  className={currentLanguage === lang.code ? "bg-accent" : ""}
+                  className={`rounded-lg transition-all duration-200 ${
+                    currentLanguage === lang.code 
+                      ? "bg-primary/10 text-primary font-semibold" 
+                      : "hover:bg-accent/50"
+                  }`}
                 >
                   {lang.label}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Login Button */}
-          {!isAuthenticated && (
-            <Button asChild variant="outline" size="sm">
-              <a href="/login">{t("nav.login")}</a>
-          </Button>
-          )}
         </div>
       </div>
     </header>

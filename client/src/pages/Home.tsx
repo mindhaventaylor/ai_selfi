@@ -109,7 +109,7 @@ export default function Home() {
             }}
           >
             <img
-              src="/image_1.webp"
+              src="/image_1.jpg"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
             />
@@ -146,7 +146,7 @@ export default function Home() {
             }}
           >
             <img
-              src="/image_10.webp"
+              src="/image_10.jpg"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
             />
@@ -197,7 +197,7 @@ export default function Home() {
             {/* Badge with avatars */}
             <div className="flex items-center gap-3 bg-secondary/50 backdrop-blur-sm px-6 py-3 rounded-full">
               <div className="flex -space-x-2">
-                {["/image.webp", "/image_1.webp", "/image_10.webp", "/image_100.jpg", "/image_101.jpg"].map(
+                {["/image.webp", "/image_1.jpg", "/image_10.jpg", "/image_100.jpg", "/image_101.jpg"].map(
                   (img, idx) => (
                     <div
                       key={idx}
@@ -241,7 +241,7 @@ export default function Home() {
 
           {/* Mobile - Simple Grid */}
           <div className="grid grid-cols-2 gap-4 lg:hidden max-w-md mx-auto mt-12">
-            {["/image.webp", "/image_1.webp", "/image_10.webp", "/image_100.jpg"].map((img, idx) => (
+            {["/image.webp", "/image_1.jpg", "/image_10.jpg", "/image_100.jpg"].map((img, idx) => (
               <div
                 key={idx}
                 className="aspect-[3/4] rounded-2xl overflow-hidden shadow-xl"
@@ -309,12 +309,12 @@ export default function Home() {
                       // Jorge is example 9 - 1 profile + 6 results
                       profileImage = "/9_profile.jpg";
                       resultImages = [
-                        "/9_result1.png",
-                        "/9_result2.png",
-                        "/9_result3.png",
-                        "/9_result4.png",
-                        "/9_result5.png",
-                        "/9_result6.png",
+                        "/9_result1.jpg",
+                        "/9_result2.jpg",
+                        "/9_result3.jpg",
+                        "/9_result4.jpg",
+                        "/9_result5.jpg",
+                        "/9_result6.jpg",
                       ];
                     } else {
                       // Other examples: 1 profile + 1 result
@@ -1073,10 +1073,10 @@ export default function Home() {
                 </h3>
                 <div className="grid grid-cols-2 gap-4 max-w-xs">
                   {[
-                    "/girl_image_sample.png",
-                    "/girl_image_sample2.png",
-                    "/girl_image_sample3.png",
-                    "/girl_image_sample4.png",
+                    "/girl_image_sample.jpg",
+                    "/girl_image_sample2.jpg",
+                    "/girl_image_sample3.jpg",
+                    "/girl_image_sample4.jpg",
                   ].map((img, idx) => (
                     <div
                       key={idx}
@@ -1157,8 +1157,8 @@ export default function Home() {
                   <div className="flex -space-x-2">
                     {[
                       "/image.webp",
-                      "/image_1.webp",
-                      "/image_10.webp",
+                      "/image_1.jpg",
+                      "/image_10.jpg",
                       "/image_100.jpg",
                       "/image_101.jpg",
                     ].map((img, idx) => (
@@ -1206,7 +1206,7 @@ export default function Home() {
                   }}
                 >
                   <img
-                    src="/image_1.webp"
+                    src="/image_1.jpg"
                     alt="Professional Photo 2"
                     className="w-full h-full object-cover"
                   />
@@ -1221,7 +1221,7 @@ export default function Home() {
                   }}
                 >
                   <img
-                    src="/image_10.webp"
+                    src="/image_10.jpg"
                     alt="Professional Photo 3"
                     className="w-full h-full object-cover"
                   />
