@@ -80,7 +80,7 @@ export default function GenerateImages() {
     { enabled: !!modelId && modelId !== "" }
   );
 
-  const backgrounds = ["office", "neutral", "studio"];
+  const backgrounds = ["office", "studio", "city", "nature", "interior"];
   const styles = ["formal", "casual", "elegant", "professional"];
 
   const badges = t("generateImages.badges", { returnObjects: true }) as { premium: string; new: string; popular: string };
@@ -298,7 +298,7 @@ export default function GenerateImages() {
             {/* Gender Selection */}
             <div className="space-y-2">
               <label className="text-sm font-medium">{t("generateImages.selectGender")}</label>
-              <div className="flex gap-3">
+              <div className="flex gap-3 mt-1.5">
                 <Button
                   variant={gender === "man" ? "default" : "outline"}
                   onClick={() => setGender("man")}
@@ -320,7 +320,7 @@ export default function GenerateImages() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">{t("generateImages.background")}</label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mt-1.5">
                   {backgrounds.map((bg) => (
                     <Button
                       key={bg}
@@ -339,7 +339,7 @@ export default function GenerateImages() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">{t("generateImages.style")}</label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mt-1.5">
                   {styles.map((style) => (
                     <Button
                       key={style}
@@ -380,7 +380,7 @@ export default function GenerateImages() {
               <p className="text-sm text-muted-foreground">
                 {t("generateImages.selectReferenceImages")}
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {filteredExampleImages.length === 0 ? (
                   <div className="col-span-full text-center py-8 text-muted-foreground">
                     {t("generateImages.noImagesMatchFilters")}
@@ -389,7 +389,7 @@ export default function GenerateImages() {
                   filteredExampleImages.map((image) => (
                   <div
                     key={image.id}
-                    className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
+                    className={`relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
                       selectedImages.includes(image.id)
                         ? "border-primary ring-2 ring-primary/50"
                         : "border-border hover:border-primary/50"
