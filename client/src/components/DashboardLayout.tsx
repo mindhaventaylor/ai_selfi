@@ -154,11 +154,9 @@ function DashboardLayoutContent({
     { icon: ImageIcon, label: t("dashboardLayout.gallery"), path: "/dashboard/gallery" },
     { icon: Sparkles, label: t("dashboardLayout.proFeatures"), path: "/dashboard/pro" },
     { icon: CreditCard, label: t("dashboardLayout.buyCredits"), path: "/dashboard/credits/buy" },
+    { icon: Settings, label: t("dashboardLayout.settings"), path: "/dashboard/settings/general" },
   ];
   const activeMenuItem = menuItems.find(item => item.path === location);
-  const [settingsOpen, setSettingsOpen] = useState(() => {
-    return location.startsWith("/dashboard/settings");
-  });
   const [supportOpen, setSupportOpen] = useState(() => {
     return location.startsWith("/dashboard/support");
   });
@@ -171,10 +169,6 @@ function DashboardLayoutContent({
   }, [isCollapsed]);
 
   useEffect(() => {
-    // Auto-open settings dropdown when on settings pages
-    if (location.startsWith("/dashboard/settings")) {
-      setSettingsOpen(true);
-    }
     // Auto-open support dropdown when on support pages
     if (location.startsWith("/dashboard/support")) {
       setSupportOpen(true);
@@ -300,40 +294,6 @@ function DashboardLayoutContent({
           </SidebarContent>
 
           <SidebarFooter className="p-3 space-y-2 border-t border-border">
-            {/* Settings with Dropdown */}
-            <SidebarMenuItem>
-              <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton
-                    tooltip={t("dashboardLayout.settings")}
-                    className="h-10 transition-all font-normal w-full"
-                  >
-                    <Settings className="h-4 w-4" />
-                    <span>{t("dashboardLayout.settings")}</span>
-                    {settingsOpen ? (
-                      <ChevronDown className="ml-auto h-4 w-4" />
-                    ) : (
-                      <ChevronRight className="ml-auto h-4 w-4" />
-                    )}
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="pl-6 py-1 space-y-1">
-                    <button
-                      onClick={() => setLocation("/dashboard/settings/general")}
-                      className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
-                        location === "/dashboard/settings/general"
-                          ? "text-foreground bg-accent font-medium"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {t("dashboardLayout.general")}
-                    </button>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            </SidebarMenuItem>
-
             {/* Support with Dropdown */}
             <SidebarMenuItem>
               <Collapsible open={supportOpen} onOpenChange={setSupportOpen}>
@@ -354,16 +314,6 @@ function DashboardLayoutContent({
                 <CollapsibleContent>
                   <div className="pl-6 py-1 space-y-1">
                     <button
-                      onClick={() => setLocation("/dashboard/support/general")}
-                      className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
-                        location === "/dashboard/support/general"
-                          ? "text-foreground bg-accent font-medium"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {t("dashboardLayout.general")}
-                    </button>
-                    <button
                       onClick={() => setLocation("/dashboard/support/report-bug")}
                       className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
                         location === "/dashboard/support/report-bug"
@@ -383,26 +333,6 @@ function DashboardLayoutContent({
                     >
                       {t("dashboardLayout.suggestFeature")}
                     </button>
-                    <button
-                      onClick={() => setLocation("/dashboard/support/whatsapp")}
-                      className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
-                        location === "/dashboard/support/whatsapp"
-                          ? "text-foreground bg-accent font-medium"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {t("dashboardLayout.whatsapp")}
-                    </button>
-                    <button
-                      onClick={() => setLocation("/dashboard/support/reviews")}
-                      className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
-                        location === "/dashboard/support/reviews"
-                          ? "text-foreground bg-accent font-medium"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {t("dashboardLayout.reviews")}
-                </button>
                   </div>
                 </CollapsibleContent>
               </Collapsible>

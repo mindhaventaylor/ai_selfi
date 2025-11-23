@@ -1,7 +1,7 @@
 import { COOKIE_NAME } from "../shared/const.js";
 import { desc, eq, and, inArray } from "drizzle-orm";
 import { z } from "zod";
-import { creditPacks, models, photos, transactions, users, modelTrainingImages, photoGenerationBatches, photoGenerationQueue } from "../drizzle/schema.js";
+import { creditPacks, models, photos, transactions, users, modelTrainingImages, photoGenerationBatches, photoGenerationQueue, bugReports, featureSuggestions } from "../drizzle/schema.js";
 import { getDb, upsertUser } from "./db.js";
 import { getSessionCookieOptions } from "./_core/cookies.js";
 import { supabaseServer } from "./_core/lib/supabase.js";
@@ -1308,6 +1308,126 @@ export const appRouter = router({
           .where(eq(photos.id, input.photoId));
 
         return { success: true };
+      }),
+  }),
+  support: router({
+    reportBug: protectedProcedure
+      .input(z.object({
+        title: z.string().min(1).max(200),
+        description: z.string().min(1).max(5000),
+        stepsToReproduce: z.string().max(2000).optional(),
+        expectedBehavior: z.string().max(1000).optional(),
+        actualBehavior: z.string().max(1000).optional(),
+        browserInfo: z.string().max(500).optional(),
+        deviceInfo: z.string().max(500).optional(),
+        screenshotUrl: z.string().url().optional().or(z.literal("")),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+
+        // Get browser and device info if not provided
+        const browserInfo = input.browserInfo || "Unknown";
+        const deviceInfo = input.deviceInfo || "Unknown";
+
+        try {
+          if (db) {
+            // Use direct DB connection
+            const [bugReport] = await db
+              .insert(bugReports)
+              .values({
+                userId: ctx.user.id,
+                title: input.title,
+                description: input.description,
+                stepsToReproduce: input.stepsToReproduce || null,
+                expectedBehavior: input.expectedBehavior || null,
+                actualBehavior: input.actualBehavior || null,
+                browserInfo: browserInfo,
+                deviceInfo: deviceInfo,
+                screenshotUrl: input.screenshotUrl || null,
+                status: "open",
+                priority: "medium",
+              })
+              .returning();
+
+            return { success: true, id: bugReport.id };
+          } else {
+            // Fallback to Supabase REST API
+            const { data, error } = await supabaseServer
+              .from("bug_reports")
+              .insert({
+                userId: ctx.user.id,
+                title: input.title,
+                description: input.description,
+                steps_to_reproduce: input.stepsToReproduce || null,
+                expected_behavior: input.expectedBehavior || null,
+                actual_behavior: input.actualBehavior || null,
+                browser_info: browserInfo,
+                device_info: deviceInfo,
+                screenshot_url: input.screenshotUrl || null,
+                status: "open",
+                priority: "medium",
+              })
+              .select()
+              .single();
+
+            if (error) throw error;
+            return { success: true, id: data.id };
+          }
+        } catch (error: any) {
+          console.error("[Support] Error creating bug report:", error);
+          throw new Error(error?.message || "Failed to create bug report");
+        }
+      }),
+
+    suggestFeature: protectedProcedure
+      .input(z.object({
+        title: z.string().min(1).max(200),
+        description: z.string().min(1).max(5000),
+        useCase: z.string().max(2000).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await getDb();
+
+        try {
+          if (db) {
+            // Use direct DB connection
+            const [featureSuggestion] = await db
+              .insert(featureSuggestions)
+              .values({
+                userId: ctx.user.id,
+                title: input.title,
+                description: input.description,
+                useCase: input.useCase || null,
+                priority: "medium",
+                status: "open",
+                upvotes: 0,
+              })
+              .returning();
+
+            return { success: true, id: featureSuggestion.id };
+          } else {
+            // Fallback to Supabase REST API
+            const { data, error } = await supabaseServer
+              .from("feature_suggestions")
+              .insert({
+                userId: ctx.user.id,
+                title: input.title,
+                description: input.description,
+                use_case: input.useCase || null,
+                priority: "medium",
+                status: "open",
+                upvotes: 0,
+              })
+              .select()
+              .single();
+
+            if (error) throw error;
+            return { success: true, id: data.id };
+          }
+        } catch (error: any) {
+          console.error("[Support] Error creating feature suggestion:", error);
+          throw new Error(error?.message || "Failed to create feature suggestion");
+        }
       }),
   }),
 });

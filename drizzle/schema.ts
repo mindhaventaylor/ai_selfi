@@ -208,6 +208,36 @@ export const creditHistory = pgTable("credit_history", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
+export const bugReports = pgTable("bug_reports", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  stepsToReproduce: text("steps_to_reproduce"),
+  expectedBehavior: text("expected_behavior"),
+  actualBehavior: text("actual_behavior"),
+  browserInfo: text("browser_info"),
+  deviceInfo: text("device_info"),
+  screenshotUrl: text("screenshot_url"),
+  status: text("status").default("open").notNull(),
+  priority: text("priority").default("medium"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export const featureSuggestions = pgTable("feature_suggestions", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  useCase: text("use_case"),
+  priority: text("priority").default("medium"),
+  status: text("status").default("open").notNull(),
+  upvotes: integer("upvotes").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
 // Type exports
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -231,3 +261,7 @@ export type GiftCard = typeof giftCards.$inferSelect;
 export type InsertGiftCard = typeof giftCards.$inferInsert;
 export type CreditHistory = typeof creditHistory.$inferSelect;
 export type InsertCreditHistory = typeof creditHistory.$inferInsert;
+export type BugReport = typeof bugReports.$inferSelect;
+export type InsertBugReport = typeof bugReports.$inferInsert;
+export type FeatureSuggestion = typeof featureSuggestions.$inferSelect;
+export type InsertFeatureSuggestion = typeof featureSuggestions.$inferInsert;

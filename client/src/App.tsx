@@ -18,11 +18,8 @@ import TrainModel from "./pages/TrainModel";
 import ViewModels from "./pages/ViewModels";
 import StartHere from "./pages/StartHere";
 import SettingsGeneral from "./pages/SettingsGeneral";
-import SupportGeneral from "./pages/SupportGeneral";
 import SupportReportBug from "./pages/SupportReportBug";
 import SupportSuggestFeature from "./pages/SupportSuggestFeature";
-import SupportWhatsApp from "./pages/SupportWhatsApp";
-import SupportReviews from "./pages/SupportReviews";
 import Login from "./pages/Login";
 import OAuthCallback from "./pages/OAuthCallback";
 import Terms from "./pages/Terms";
@@ -120,13 +117,6 @@ function Router() {
               </DashboardLayout>
             </ProtectedRoute>
           </Route>
-          <Route path={"/dashboard/support/general"}>
-            <ProtectedRoute>
-              <DashboardLayout>
-                <SupportGeneral />
-              </DashboardLayout>
-            </ProtectedRoute>
-          </Route>
           <Route path={"/dashboard/support/report-bug"}>
             <ProtectedRoute>
               <DashboardLayout>
@@ -138,20 +128,6 @@ function Router() {
             <ProtectedRoute>
               <DashboardLayout>
                 <SupportSuggestFeature />
-              </DashboardLayout>
-            </ProtectedRoute>
-          </Route>
-          <Route path={"/dashboard/support/whatsapp"}>
-            <ProtectedRoute>
-              <DashboardLayout>
-                <SupportWhatsApp />
-              </DashboardLayout>
-            </ProtectedRoute>
-          </Route>
-          <Route path={"/dashboard/support/reviews"}>
-            <ProtectedRoute>
-              <DashboardLayout>
-                <SupportReviews />
               </DashboardLayout>
             </ProtectedRoute>
           </Route>
