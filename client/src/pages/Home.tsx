@@ -318,10 +318,8 @@ export default function Home() {
                       ];
                     } else {
                       // Other examples: 1 profile + 1 result
-                      // Example 3 uses .png, others use .jpg
-                      const resultExtension = exampleNumber === 3 ? "png" : "jpg";
                       profileImage = `/${exampleNumber}_profile.jpg`;
-                      resultImages = [`/${exampleNumber}_result.${resultExtension}`];
+                      resultImages = [`/${exampleNumber}_result.jpg`];
                     }
 
                     return (
