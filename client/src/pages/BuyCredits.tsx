@@ -9,18 +9,25 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Check, Box, Star, Zap, Gift, Building2 } from "lucide-react";
+import { Check, Box, Star, Zap } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { toast } from "sonner";
+import { detectCurrency, getLocalizedPrice } from "@/utils/currency";
 
 export default function BuyCredits() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [loadingPackId, setLoadingPackId] = useState<number | null>(null);
+  const currency = detectCurrency();
 
   const createCheckoutMutation = trpc.payment.createCheckoutSession.useMutation();
   const { data: packs } = trpc.payment.listPacks.useQuery();
+
+  // Get localized prices
+  const starterPrice = getLocalizedPrice("starter", currency);
+  const proPrice = getLocalizedPrice("pro", currency);
+  const premiumPrice = getLocalizedPrice("premium", currency);
 
   const starterFeatures = t("buyCredits.starterFeatures", { returnObjects: true }) as string[];
   const proFeatures = t("buyCredits.proFeatures", { returnObjects: true }) as string[];
@@ -37,9 +44,12 @@ export default function BuyCredits() {
 
     try {
       setLoadingPackId(packId);
-      console.log("[BuyCredits] Creating checkout session for pack:", packId);
+      console.log("[BuyCredits] Creating checkout session for pack:", packId, "currency:", currency);
       
-      const result = await createCheckoutMutation.mutateAsync({ packId });
+      const result = await createCheckoutMutation.mutateAsync({ 
+        packId,
+        currency: currency,
+      });
       console.log("[BuyCredits] Checkout session created:", result);
       
       if (result?.url) {
@@ -58,17 +68,19 @@ export default function BuyCredits() {
   };
 
   // Map hardcoded packs to database packs by price
-  // Starter = $29, Pro = $39, Premium = $49
-  const getPackIdByPrice = (price: number): number | null => {
+  // Base prices in USD: Starter = $29, Pro = $39, Premium = $49
+  // We need to find packs by their base USD price, regardless of currency
+  const getPackIdByBasePrice = (basePriceUSD: number): number | null => {
     if (!packs || packs.length === 0) return null;
-    // Find pack with matching price (convert to cents for comparison)
-    const pack = packs.find(p => Math.round(parseFloat(p.price.toString()) * 100) === price * 100);
+    // Find pack with matching base USD price (convert to cents for comparison)
+    // Packs in database should have base USD prices
+    const pack = packs.find(p => Math.round(parseFloat(p.price.toString()) * 100) === basePriceUSD * 100);
     return pack?.id || null;
   };
 
-  const starterPackId = getPackIdByPrice(29);
-  const proPackId = getPackIdByPrice(39);
-  const premiumPackId = getPackIdByPrice(49);
+  const starterPackId = getPackIdByBasePrice(29);
+  const proPackId = getPackIdByBasePrice(39);
+  const premiumPackId = getPackIdByBasePrice(49);
 
   // Debug: log packs
   if (packs && packs.length > 0) {
@@ -89,54 +101,6 @@ export default function BuyCredits() {
           </p>
         </div>
 
-        {/* Alternative Options Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 max-w-3xl mx-auto">
-          <Card className="bg-card/50 border-border cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setLocation("/dashboard/credits/gift-cards")}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-yellow-500/20 flex items-center justify-center shrink-0">
-                  <Gift className="w-6 h-6 text-yellow-400" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">{t("buyCredits.giftCards")}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t("buyCredits.giftCardsDesc")}
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-purple-500 hover:bg-purple-600 text-white border-purple-500"
-                >
-                  {t("buyCredits.buyGiftCards")}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card/50 border-border cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setLocation("/dashboard/credits/empresas")}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center shrink-0">
-                  <Building2 className="w-6 h-6 text-blue-400" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">{t("buyCredits.forBusinesses")}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t("buyCredits.forBusinessesDesc")}
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-blue-500 hover:bg-blue-600 text-white border-blue-500"
-                >
-                  {t("buyCredits.buy")}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
@@ -156,7 +120,7 @@ export default function BuyCredits() {
                   <h2 className="text-2xl font-bold">{t("buyCredits.starterPack")}</h2>
                   <p className="text-sm text-muted-foreground">{t("buyCredits.starterCredits")}</p>
                   <div className="text-4xl font-bold text-primary mt-4">
-                    $29
+                    {starterPrice.formatted}
                   </div>
                 </div>
 
@@ -212,9 +176,9 @@ export default function BuyCredits() {
                   <h2 className="text-2xl font-bold">{t("buyCredits.proPack")}</h2>
                   <p className="text-sm text-muted-foreground">{t("buyCredits.proCredits")}</p>
                   <div className="text-4xl font-bold text-primary mt-4 flex items-center justify-center gap-2">
-                    <span>$39</span>
+                    <span>{proPrice.formatted}</span>
                     <span className="text-xl text-muted-foreground line-through font-normal">
-                      $49
+                      {premiumPrice.formatted}
                     </span>
                   </div>
                 </div>
@@ -282,7 +246,7 @@ export default function BuyCredits() {
                   <h2 className="text-2xl font-bold">{t("buyCredits.premiumPack")}</h2>
                   <p className="text-sm text-muted-foreground">{t("buyCredits.premiumCredits")}</p>
                   <div className="text-4xl font-bold text-primary mt-4">
-                    $49
+                    {premiumPrice.formatted}
                   </div>
                 </div>
 

@@ -34,12 +34,26 @@ function serveStaticProduction(app: express.Express) {
       
       for (const indexPath of possiblePaths) {
         if (fs.existsSync(indexPath)) {
-          return res.sendFile(indexPath);
+          try {
+            return res.sendFile(indexPath, (err: any) => {
+              if (err) {
+                console.error(`[Static] Error sending index.html from ${indexPath}:`, err);
+                // Fall through to next handler
+                next();
+              }
+            });
+          } catch (err: any) {
+            console.error(`[Static] Error reading index.html from ${indexPath}:`, err);
+            // Continue to next path
+          }
         }
       }
       
-      // If index.html not found, let Vercel handle it (it will serve static files)
-      next();
+      // If index.html not found, log and let next handler deal with it
+      console.warn(`[Static] index.html not found in any of: ${possiblePaths.join(", ")}`);
+      console.warn(`[Static] Request path: ${req.path}, cwd: ${process.cwd()}`);
+      // Don't call next() here - let the final catch-all handler serve a fallback
+      // This prevents white pages
     });
     return;
   }
@@ -149,6 +163,101 @@ export async function createApp(options?: CreateAppOptions) {
     // In production, use a simple static file server that doesn't import vite
     serveStaticProduction(app);
   }
+
+  // Global error handler - must be last
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error("[Express] Unhandled error:", {
+      error: err?.message,
+      stack: err?.stack,
+      path: req.path,
+      method: req.method,
+    });
+
+    // If it's an API route, return JSON error
+    if (req.path.startsWith("/api/")) {
+      return res.status(err?.status || 500).json({
+        error: err?.message || "Internal server error",
+        ...(process.env.NODE_ENV === "development" && { stack: err?.stack }),
+      });
+    }
+
+    // For non-API routes, try to serve index.html as fallback
+    // This prevents white pages on frontend errors
+    if (process.env.VERCEL === "1") {
+      const possiblePaths = [
+        path.resolve(process.cwd(), "dist", "public", "index.html"),
+        path.resolve(process.cwd(), "public", "index.html"),
+      ];
+      
+      for (const indexPath of possiblePaths) {
+        if (fs.existsSync(indexPath)) {
+          return res.sendFile(indexPath);
+        }
+      }
+    }
+
+    // Final fallback - return error page
+    res.status(err?.status || 500).send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Error</title>
+          <meta charset="UTF-8">
+        </head>
+        <body>
+          <h1>Server Error</h1>
+          <p>${err?.message || "An error occurred"}</p>
+          ${process.env.NODE_ENV === "development" ? `<pre>${err?.stack || ""}</pre>` : ""}
+        </body>
+      </html>
+    `);
+  });
+
+  // 404 handler for API routes
+  app.use("/api/*", (req: express.Request, res: express.Response) => {
+    res.status(404).json({ error: "API route not found", path: req.path });
+  });
+
+  // Final catch-all for non-API routes - serve index.html
+  app.use("*", (req: express.Request, res: express.Response) => {
+    // Skip if already handled
+    if (res.headersSent) {
+      return;
+    }
+
+    // Only handle non-API routes
+    if (req.path.startsWith("/api/")) {
+      return res.status(404).json({ error: "Not found" });
+    }
+
+    // Try to serve index.html
+    const possiblePaths = [
+      path.resolve(process.cwd(), "dist", "public", "index.html"),
+      path.resolve(process.cwd(), "public", "index.html"),
+    ];
+    
+    for (const indexPath of possiblePaths) {
+      if (fs.existsSync(indexPath)) {
+        return res.sendFile(indexPath);
+      }
+    }
+
+    // Final fallback - return basic HTML
+    res.status(200).send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Loading...</title>
+          <meta charset="UTF-8">
+          <meta http-equiv="refresh" content="1">
+        </head>
+        <body>
+          <h1>Loading...</h1>
+          <p>If this page doesn't load, please check the build output.</p>
+        </body>
+      </html>
+    `);
+  });
 
   return app;
 }

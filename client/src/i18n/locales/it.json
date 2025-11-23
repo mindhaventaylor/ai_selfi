@@ -737,7 +737,15 @@
     "proSubscriptionRequired": "Abbonamento Pro richiesto",
     "imageUpscaling": "Aumento Risoluzione Immagine",
     "imageUpscalingDesc": "Migliora la risoluzione dell'immagine fino a 4x con l'IA",
-    "comingSoon": "Prossimamente"
+    "comingSoon": "Prossimamente",
+    "underConstruction": "In Costruzione",
+    "underConstructionDesc": "Stiamo lavorando sodo per portarti funzionalità incredibili!",
+    "comingSoonFeatures": "Funzionalità in arrivo:",
+    "stayTuned": "Resta sintonizzato! Presto avrai accesso a tutte queste incredibili funzionalità.",
+    "backToGenerate": "Torna alla Generazione",
+    "backToPro": "Torna a Pro",
+    "buyCredits": "Acquista Crediti",
+    "thisFeature": "Questa funzionalità"
   },
   "afiliados": {
     "title": "Guadagna il 30% di Commissione per ogni vendita che generi",

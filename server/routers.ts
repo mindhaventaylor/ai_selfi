@@ -251,7 +251,10 @@ export const appRouter = router({
       return db.select().from(creditPacks).orderBy(creditPacks.price);
     }),
     createCheckoutSession: protectedProcedure
-      .input(z.object({ packId: z.number() }))
+      .input(z.object({ 
+        packId: z.number(),
+        currency: z.enum(["USD", "EUR"]).optional().default("USD"),
+      }))
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
         if (!db) throw new Error(getServerString("databaseNotAvailable"));
@@ -266,18 +269,29 @@ export const appRouter = router({
           ? `https://${process.env.VERCEL_URL}`
           : process.env.PHOTO_API_URL?.replace("/api/photo-generation", "") || "http://localhost:3000";
 
+        // Convert price based on currency
+        // Base price is in USD, convert to EUR if needed
+        const basePriceUSD = parseFloat(pack.price.toString());
+        let finalPrice = basePriceUSD;
+        const currency = input.currency.toLowerCase() as "usd" | "eur";
+        
+        if (currency === "eur") {
+          // Convert USD to EUR (approximate rate: 1 USD = 0.92 EUR)
+          finalPrice = basePriceUSD * 0.92;
+        }
+
         // Create Stripe Checkout Session
         const session = await stripe.checkout.sessions.create({
           payment_method_types: ["card"],
           line_items: [
             {
               price_data: {
-                currency: "usd",
+                currency: currency,
                 product_data: {
                   name: `${pack.credits} Credits`,
                   description: `Purchase ${pack.credits} credits for AI image generation`,
                 },
-                unit_amount: Math.round(parseFloat(pack.price.toString()) * 100), // Convert to cents
+                unit_amount: Math.round(finalPrice * 100), // Convert to cents
               },
               quantity: 1,
             },
@@ -290,6 +304,7 @@ export const appRouter = router({
             userId: ctx.user.id.toString(),
             packId: pack.id.toString(),
             credits: pack.credits.toString(),
+            currency: currency,
           },
         });
 

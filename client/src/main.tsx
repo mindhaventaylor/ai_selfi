@@ -66,10 +66,37 @@ const trpcClient = trpc.createClient({
   ],
 });
 
-createRoot(document.getElementById("root")!).render(
-  <trpc.Provider client={trpcClient} queryClient={queryClient}>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </trpc.Provider>
-);
+// Error boundary for React rendering errors
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+  console.error("[Main] Root element not found!");
+  document.body.innerHTML = `
+    <div style="padding: 20px; font-family: sans-serif;">
+      <h1>Error: Root element not found</h1>
+      <p>The application could not start because the root element is missing.</p>
+      <p>Please check the HTML structure and ensure there is a &lt;div id="root"&gt;&lt;/div&gt; element.</p>
+    </div>
+  `;
+} else {
+  try {
+    createRoot(rootElement).render(
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
+      </trpc.Provider>
+    );
+  } catch (error: any) {
+    console.error("[Main] Failed to render React app:", error);
+    rootElement.innerHTML = `
+      <div style="padding: 20px; font-family: sans-serif;">
+        <h1>Application Error</h1>
+        <p>The application failed to start.</p>
+        <p>Error: ${error?.message || "Unknown error"}</p>
+        <button onclick="window.location.reload()" style="padding: 10px 20px; margin-top: 10px; cursor: pointer;">
+          Reload Page
+        </button>
+      </div>
+    `;
+  }
+}

@@ -2,10 +2,13 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, Mail, Box } from "lucide-react";
+import { detectCurrency, getLocalizedPrice } from "@/utils/currency";
 
 export default function Empresas() {
   const { t } = useTranslation();
   const features = t("empresas.features", { returnObjects: true }) as string[];
+  const currency = detectCurrency();
+  const businessPrice = getLocalizedPrice("business", currency);
 
   return (
     <div className="min-h-screen bg-background">
@@ -39,7 +42,7 @@ export default function Empresas() {
                     {t("empresas.creditsPerPerson")}
                   </p>
                   <div className="text-4xl font-bold text-primary mt-4">
-                    $15
+                    {businessPrice.formatted}
                     <span className="text-lg text-muted-foreground font-normal">
                       {" "}{t("empresas.perPerson")}
                     </span>

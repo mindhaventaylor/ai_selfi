@@ -9,11 +9,9 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import GenerateImages from "./pages/GenerateImages";
-import Coupons from "./pages/Coupons";
-import Empresas from "./pages/Empresas";
-import GiftCards from "./pages/GiftCards";
 import BuyCredits from "./pages/BuyCredits";
 import Pro from "./pages/Pro";
+import UnderConstruction from "./pages/UnderConstruction";
 import Gallery from "./pages/Gallery";
 import Models from "./pages/Models";
 import TrainModel from "./pages/TrainModel";
@@ -25,7 +23,6 @@ import SupportReportBug from "./pages/SupportReportBug";
 import SupportSuggestFeature from "./pages/SupportSuggestFeature";
 import SupportWhatsApp from "./pages/SupportWhatsApp";
 import SupportReviews from "./pages/SupportReviews";
-import Afiliados from "./pages/Afiliados";
 import Login from "./pages/Login";
 import OAuthCallback from "./pages/OAuthCallback";
 import Terms from "./pages/Terms";
@@ -45,7 +42,7 @@ function Router() {
 
   return (
     <>
-      {!isDashboard && location !== "/afiliados" && <Header />}
+      {!isDashboard && <Header />}
       <main>
         <Switch>
           <Route path={"/"} component={Home} />
@@ -53,8 +50,6 @@ function Router() {
           <Route path={"/oauth/callback"} component={OAuthCallback} />
           <Route path={"/terms"} component={Terms} />
           <Route path={"/privacy"} component={Privacy} />
-          <Route path={"/afiliados"} component={Afiliados} />
-          <Route path={"/dashboard/afiliados"} component={Afiliados} />
           <Route path={"/dashboard"}>
             <ProtectedRoute>
               <DashboardLayout>
@@ -73,6 +68,13 @@ function Router() {
             <ProtectedRoute>
               <DashboardLayout>
                 <Pro />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/pro/under-construction"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <UnderConstruction />
               </DashboardLayout>
             </ProtectedRoute>
           </Route>
@@ -153,31 +155,10 @@ function Router() {
               </DashboardLayout>
             </ProtectedRoute>
           </Route>
-          <Route path={"/dashboard/credits/coupons"}>
-            <ProtectedRoute>
-              <DashboardLayout>
-                <Coupons />
-              </DashboardLayout>
-            </ProtectedRoute>
-          </Route>
           <Route path={"/dashboard/credits/buy"}>
             <ProtectedRoute>
               <DashboardLayout>
                 <BuyCredits />
-              </DashboardLayout>
-            </ProtectedRoute>
-          </Route>
-          <Route path={"/dashboard/credits/gift-cards"}>
-            <ProtectedRoute>
-              <DashboardLayout>
-                <GiftCards />
-              </DashboardLayout>
-            </ProtectedRoute>
-          </Route>
-          <Route path={"/dashboard/credits/empresas"}>
-            <ProtectedRoute>
-              <DashboardLayout>
-                <Empresas />
               </DashboardLayout>
             </ProtectedRoute>
           </Route>
@@ -187,8 +168,8 @@ function Router() {
           <Route component={NotFound} />
         </Switch>
       </main>
-      {!isDashboard && location !== "/afiliados" && <Footer />}
-      {!isDashboard && location !== "/afiliados" && <WhatsAppButton />}
+      {!isDashboard && <Footer />}
+      {!isDashboard && <WhatsAppButton />}
     </>
   );
 }

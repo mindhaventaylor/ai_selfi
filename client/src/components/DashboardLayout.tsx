@@ -37,7 +37,6 @@ import {
   Settings,
   ChevronRight,
   ChevronDown,
-  DollarSign,
   LogOut,
   PanelLeft,
   Clock,
@@ -154,11 +153,9 @@ function DashboardLayoutContent({
     { icon: PlusCircle, label: t("dashboardLayout.create"), path: "/dashboard/generate" },
     { icon: ImageIcon, label: t("dashboardLayout.gallery"), path: "/dashboard/gallery" },
     { icon: Sparkles, label: t("dashboardLayout.proFeatures"), path: "/dashboard/pro" },
+    { icon: CreditCard, label: t("dashboardLayout.buyCredits"), path: "/dashboard/credits/buy" },
   ];
   const activeMenuItem = menuItems.find(item => item.path === location);
-  const [creditsOpen, setCreditsOpen] = useState(() => {
-    return location.startsWith("/dashboard/credits");
-  });
   const [settingsOpen, setSettingsOpen] = useState(() => {
     return location.startsWith("/dashboard/settings");
   });
@@ -174,10 +171,6 @@ function DashboardLayoutContent({
   }, [isCollapsed]);
 
   useEffect(() => {
-    // Auto-open credits dropdown when on credits pages
-    if (location.startsWith("/dashboard/credits")) {
-      setCreditsOpen(true);
-    }
     // Auto-open settings dropdown when on settings pages
     if (location.startsWith("/dashboard/settings")) {
       setSettingsOpen(true);
@@ -303,69 +296,6 @@ function DashboardLayoutContent({
                 );
               })}
               
-              {/* Credits with Dropdown */}
-              <SidebarMenuItem>
-                <Collapsible open={creditsOpen} onOpenChange={setCreditsOpen}>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton
-                      tooltip={t("dashboardLayout.credits")}
-                      className="h-10 transition-all font-normal w-full"
-                    >
-                      <CreditCard className="h-4 w-4" />
-                      <span>{t("dashboardLayout.credits")}</span>
-                      {creditsOpen ? (
-                        <ChevronDown className="ml-auto h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="ml-auto h-4 w-4" />
-                      )}
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <div className="pl-6 py-1 space-y-1">
-                      <button 
-                        onClick={() => setLocation("/dashboard/credits/buy")}
-                        className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
-                          location === "/dashboard/credits/buy" 
-                            ? "text-foreground bg-accent font-medium" 
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {t("dashboardLayout.buyCredits")}
-                      </button>
-                      <button 
-                        onClick={() => setLocation("/dashboard/credits/gift-cards")}
-                        className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
-                          location === "/dashboard/credits/gift-cards" 
-                            ? "text-foreground bg-accent font-medium" 
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {t("dashboardLayout.giftCards")}
-                      </button>
-                      <button 
-                        onClick={() => setLocation("/dashboard/credits/empresas")}
-                        className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
-                          location === "/dashboard/credits/empresas" 
-                            ? "text-foreground bg-accent font-medium" 
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {t("dashboardLayout.businesses")}
-                      </button>
-                      <button 
-                        onClick={() => setLocation("/dashboard/credits/coupons")}
-                        className={`text-sm w-full text-left px-2 py-1 rounded-md hover:bg-accent transition-colors ${
-                          location === "/dashboard/credits/coupons" 
-                            ? "text-foreground bg-accent font-medium" 
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {t("dashboardLayout.coupons")}
-                      </button>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
 
@@ -476,19 +406,6 @@ function DashboardLayoutContent({
                   </div>
                 </CollapsibleContent>
               </Collapsible>
-            </SidebarMenuItem>
-
-            {/* Afiliados */}
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                tooltip={t("dashboardLayout.affiliates")}
-                className="h-10 transition-all font-normal"
-                onClick={() => setLocation("/afiliados")}
-              >
-                <DollarSign className="h-4 w-4" />
-                <span>{t("dashboardLayout.affiliates")}</span>
-                <span className="ml-auto">💰</span>
-              </SidebarMenuButton>
             </SidebarMenuItem>
 
             {/* Social Media Links */}

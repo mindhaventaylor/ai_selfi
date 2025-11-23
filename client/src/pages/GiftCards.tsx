@@ -9,9 +9,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Check, Gift, Star, Zap } from "lucide-react";
+import { detectCurrency, getLocalizedPrice } from "@/utils/currency";
 
 export default function GiftCards() {
   const { t } = useTranslation();
+  const currency = detectCurrency();
+  const starterPrice = getLocalizedPrice("starter", currency);
+  const proPrice = getLocalizedPrice("pro", currency);
+  const premiumPrice = getLocalizedPrice("premium", currency);
   const starterFeatures = t("buyCredits.starterFeatures", { returnObjects: true }) as string[];
   const proFeatures = t("buyCredits.proFeatures", { returnObjects: true }) as string[];
   const proCreditsFeatures = t("buyCredits.proCreditsFeatures", { returnObjects: true }) as string[];
@@ -48,7 +53,7 @@ export default function GiftCards() {
                   <h2 className="text-2xl font-bold">{t("buyCredits.starterPack")}</h2>
                   <p className="text-sm text-muted-foreground">{t("buyCredits.starterCredits")}</p>
                   <div className="text-4xl font-bold text-primary mt-4">
-                    $29
+                    {starterPrice.formatted}
                   </div>
                 </div>
 
@@ -102,9 +107,9 @@ export default function GiftCards() {
                   <h2 className="text-2xl font-bold">{t("buyCredits.proPack")}</h2>
                   <p className="text-sm text-muted-foreground">{t("buyCredits.proCredits")}</p>
                   <div className="text-4xl font-bold text-primary mt-4 flex items-center justify-center gap-2">
-                    <span>$39</span>
+                    <span>{proPrice.formatted}</span>
                     <span className="text-xl text-muted-foreground line-through font-normal">
-                      $49
+                      {premiumPrice.formatted}
                     </span>
                   </div>
                 </div>
@@ -170,7 +175,7 @@ export default function GiftCards() {
                   <h2 className="text-2xl font-bold">{t("buyCredits.premiumPack")}</h2>
                   <p className="text-sm text-muted-foreground">{t("buyCredits.premiumCredits")}</p>
                   <div className="text-4xl font-bold text-primary mt-4">
-                    $49
+                    {premiumPrice.formatted}
                   </div>
                 </div>
 

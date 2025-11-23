@@ -703,7 +703,15 @@
     "proSubscriptionRequired": "Pro subscription required",
     "imageUpscaling": "Image Upscaling",
     "imageUpscalingDesc": "Enhance image resolution up to 4x with AI",
-    "comingSoon": "Coming Soon"
+    "comingSoon": "Coming Soon",
+    "underConstruction": "Under Construction",
+    "underConstructionDesc": "We're working hard to bring amazing features to you!",
+    "comingSoonFeatures": "Coming soon features:",
+    "stayTuned": "Stay tuned! Soon you'll have access to all these amazing features.",
+    "backToGenerate": "Back to Generation",
+    "backToPro": "Back to Pro",
+    "buyCredits": "Buy Credits",
+    "thisFeature": "This feature"
   },
   "afiliados": {
     "title": "Earn 30% Commission for every sale you generate",

@@ -703,7 +703,15 @@
     "proSubscriptionRequired": "Suscripción Pro requerida",
     "imageUpscaling": "Escalado de Imagen",
     "imageUpscalingDesc": "Mejora la resolución de imágenes hasta 4x con IA",
-    "comingSoon": "Próximamente"
+    "comingSoon": "Próximamente",
+    "underConstruction": "En Construcción",
+    "underConstructionDesc": "¡Estamos trabajando duro para traerte funciones increíbles!",
+    "comingSoonFeatures": "Funciones próximamente:",
+    "stayTuned": "¡Mantente atento! Pronto tendrás acceso a todas estas increíbles funciones.",
+    "backToGenerate": "Volver a Generación",
+    "backToPro": "Volver a Pro",
+    "buyCredits": "Comprar Créditos",
+    "thisFeature": "Esta función"
   },
   "afiliados": {
     "title": "Gana el 30% de Comisión por cada venta que generes",

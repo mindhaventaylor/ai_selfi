@@ -11,9 +11,12 @@ import {
   Zap,
   Sparkles,
 } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function Pro() {
   const { t } = useTranslation();
+  const [, setLocation] = useLocation();
+  
   const features = [
     {
       id: 1,
@@ -81,6 +84,11 @@ export default function Pro() {
     "linear-gradient(135deg, #30cfd0 0%, #330867 100%)",
   ];
 
+  const handleFeatureClick = (feature: typeof features[0]) => {
+    // Redirect to under construction page with feature name
+    setLocation(`/dashboard/pro/under-construction?feature=${encodeURIComponent(feature.title)}`);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -101,7 +109,8 @@ export default function Pro() {
             return (
               <Card
                 key={feature.id}
-                className="bg-card/50 border-border overflow-hidden relative group"
+                className="bg-card/50 border-border overflow-hidden relative group cursor-pointer hover:border-primary/50 transition-all"
+                onClick={() => handleFeatureClick(feature)}
               >
                 {/* Blurred Background Image */}
                 <div
@@ -142,11 +151,8 @@ export default function Pro() {
 
                     {/* Button */}
                     <Button
-                      className={`w-full ${feature.buttonColor} text-white rounded-full h-11 text-sm font-semibold shadow-lg hover:shadow-xl transition-all ${
-                        feature.comingSoon ? "cursor-not-allowed" : ""
-                      }`}
+                      className={`w-full ${feature.buttonColor} text-white rounded-full h-11 text-sm font-semibold shadow-lg hover:shadow-xl transition-all`}
                       size="lg"
-                      disabled={feature.comingSoon}
                     >
                       {!feature.comingSoon && (
                         <Sparkles className="w-4 h-4 mr-2" />
@@ -166,4 +172,3 @@ export default function Pro() {
     </div>
   );
 }
-

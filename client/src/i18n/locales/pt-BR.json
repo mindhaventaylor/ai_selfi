@@ -703,7 +703,15 @@
     "proSubscriptionRequired": "Assinatura Pro necessária",
     "imageUpscaling": "Ampliação de Imagem",
     "imageUpscalingDesc": "Melhore a resolução da imagem até 4x com IA",
-    "comingSoon": "Em Breve"
+    "comingSoon": "Em Breve",
+    "underConstruction": "Em Construção",
+    "underConstructionDesc": "Estamos trabalhando duro para trazer funcionalidades incríveis para você!",
+    "comingSoonFeatures": "Funcionalidades em breve:",
+    "stayTuned": "Fique ligado! Em breve você terá acesso a todas essas funcionalidades incríveis.",
+    "backToGenerate": "Voltar para Geração",
+    "backToPro": "Voltar para Pro",
+    "buyCredits": "Comprar Créditos",
+    "thisFeature": "Esta funcionalidade"
   },
   "afiliados": {
     "title": "Ganhe 30% de Comissão por cada venda que você gerar",
