@@ -293,22 +293,34 @@ export default function Home() {
                       ? reviewText.substring(0, 150) + "..."
                       : reviewText;
 
-                    // Map reviews to images - using available images from public folder
-                    const reviewImages = [
-                      "/image.webp",
-                      "/image_1.webp",
-                      "/image_10.webp",
-                      "/image_100.jpg",
-                      "/image_101.jpg",
-                      "/image_102.jpg",
-                      "/image_103.jpg",
-                      "/image_104.jpg",
-                    ];
-                    const profileImage = reviewImages[idx % reviewImages.length];
-                    const mainImage = reviewImages[(idx + 1) % reviewImages.length];
-
-                    // For Jorge Bosch Alés, show multiple images
-                    const isJorge = review.name.includes("Jorge");
+                    // Map reviews to images - using new numbered images
+                    // Mapping review index to example number: [1, 2, 9, 3, 4, 5, 6, 7, 8, ...]
+                    // Example 9 (Jorge) has 1 profile + 6 results, others have 1 profile + 1 result
+                    const exampleMapping = [1, 2, 9, 3, 4, 5, 6, 7, 8];
+                    const exampleNumber = exampleMapping[idx] || (idx + 1);
+                    const isJorge = review.name.includes("Jorge") || exampleNumber === 9;
+                    
+                    let profileImage: string;
+                    let resultImages: string[];
+                    
+                    if (isJorge) {
+                      // Jorge is example 9 - 1 profile + 6 results
+                      profileImage = "/9_profile.jpg";
+                      resultImages = [
+                        "/9_result1.png",
+                        "/9_result2.png",
+                        "/9_result3.png",
+                        "/9_result4.png",
+                        "/9_result5.png",
+                        "/9_result6.png",
+                      ];
+                    } else {
+                      // Other examples: 1 profile + 1 result
+                      // Example 3 uses .png, others use .jpg
+                      const resultExtension = exampleNumber === 3 ? "png" : "jpg";
+                      profileImage = `/${exampleNumber}_profile.jpg`;
+                      resultImages = [`/${exampleNumber}_result.${resultExtension}`];
+                    }
 
                     return (
                       <CarouselItem
@@ -420,15 +432,15 @@ export default function Home() {
                           {/* Professional Photo(s) */}
                           <div className="w-full px-4 -mt-4">
                             {isJorge ? (
-                              // Multiple images grid for Jorge
+                              // Multiple images grid for Jorge (6 results)
                               <div className="grid grid-cols-3 gap-1">
-                                {[0, 1, 2, 3, 4, 5].map((imgIdx) => (
+                                {resultImages.map((imgSrc, imgIdx) => (
                                   <div
                                     key={imgIdx}
                                     className="aspect-square overflow-hidden bg-gray-100 rounded-[24px]"
                                   >
                                     <img
-                                      src={reviewImages[(idx + imgIdx) % reviewImages.length]}
+                                      src={imgSrc}
                                       alt={`${review.name} - Photo ${imgIdx + 1}`}
                                       className="w-full h-full object-cover rounded-[24px]"
                                     />
@@ -439,11 +451,11 @@ export default function Home() {
                               // Single image for others
                               <div className="aspect-[4/5] overflow-hidden bg-gray-100 rounded-[24px]">
                                 <img
-                                  src={mainImage}
+                                  src={resultImages[0]}
                                   alt={`${review.name} - Professional Photo`}
                                   className="w-full h-full object-cover rounded-[24px]"
-                      />
-                    </div>
+                                />
+                              </div>
                             )}
                           </div>
                   </Card>
@@ -542,186 +554,199 @@ export default function Home() {
 
             {/* Reviews Section */}
             <div className="mb-16 max-w-7xl mx-auto">
-              {/* Section Title */}
+                  {/* Section Title */}
               <div className="text-center mb-8">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
-                  ¿Vale la pena una foto{" "}
-                  <span className="text-blue-400">profesional con IA?</span> Mira lo que dicen.
-                </h2>
-                <p className="text-lg text-muted-foreground">
-                  Más de 75.523 fotos profesionales con inteligencia artificial creadas... y contando.
-                </p>
-              </div>
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
+                      ¿Vale la pena una foto{" "}
+                      <span className="text-blue-400">profesional con IA?</span> Mira lo que dicen.
+                    </h2>
+                    <p className="text-lg text-muted-foreground">
+                      Más de 75.523 fotos profesionales con inteligencia artificial creadas... y contando.
+                    </p>
+                  </div>
 
-              {/* Reviews Grid - Varied Layout */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {(
-                  t("supportReviews.reviews", {
+              {/* Reviews - 3x5 Grid Layout (15 components, same as carousel card layout) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-7xl mx-auto">
+                {Array.from({ length: 15 }).map((_, idx) => {
+                  const reviews = t("supportReviews.reviews", {
                     returnObjects: true,
                   }) as Array<{
                     name: string;
                     title: string;
                     review: string;
                     date: string;
-                  }>
-                )
-                  .slice(0, 6)
-                  .map((review, idx) => {
-                    const reviewImages = [
-                      "/image.webp",
-                      "/image_1.webp",
-                      "/image_10.webp",
-                      "/image_100.jpg",
-                      "/image_101.jpg",
-                      "/image_102.jpg",
-                      "/image_103.jpg",
-                      "/image_104.jpg",
-                    ];
-                    
-                    // Define card configurations for different layouts
-                    const cardConfigs = [
-                      { hasImage: true, imageType: "large", span: "md:col-span-1" }, // Marta - large image with carousel
-                      { hasImage: false, span: "md:col-span-1" }, // Alba - no image
-                      { hasImage: false, span: "md:col-span-1" }, // Jorge - no image
-                      { hasImage: false, span: "md:col-span-1" }, // Andrea - no image
-                      { hasImage: true, imageType: "portrait", span: "md:col-span-1" }, // Faby - portrait image
-                      { hasImage: false, span: "md:col-span-1" }, // Andres - no image
-                    ];
-                    
-                    const config = cardConfigs[idx] || { hasImage: false, span: "md:col-span-1" };
-                    const reviewImage = reviewImages[idx % reviewImages.length];
-                    const isMarta = review.name.includes("Marta");
-                    const isFaby = review.name.includes("Faby");
-                    
-                    // Highlight key phrases
-                    const highlightPhrases = [
-                      "¡Es una pasada!",
-                      "Ideal para quien empieza con su marca",
-                      "He renovado todas mis fotos en 15 minutos",
-                      "galería de fotos que parecían hechas en estudio",
-                    ];
-                    
-                    let reviewText = review.review;
-                    const parts: (string | React.ReactElement)[] = [];
-                    let lastIndex = 0;
-                    const matches: Array<{ start: number; end: number; text: string }> = [];
-                    
-                    highlightPhrases.forEach((phrase) => {
-                      const index = reviewText.indexOf(phrase, lastIndex);
-                      if (index !== -1) {
-                        const overlaps = matches.some(
-                          (m) => !(index >= m.end || index + phrase.length <= m.start)
-                        );
-                        if (!overlaps) {
-                          matches.push({ start: index, end: index + phrase.length, text: phrase });
-                        }
-                      }
-                    });
-                    
-                    matches.sort((a, b) => a.start - b.start);
-                    
-                    if (matches.length > 0) {
-                      matches.forEach((match, i) => {
-                        if (match.start > lastIndex) {
-                          parts.push(reviewText.substring(lastIndex, match.start));
-                        }
-                        parts.push(
-                          <span key={`highlight-${idx}-${i}`} className="bg-yellow-200 px-1 rounded font-semibold">
-                            {match.text}
-                          </span>
-                        );
-                        lastIndex = match.end;
-                      });
-                      if (lastIndex < reviewText.length) {
-                        parts.push(reviewText.substring(lastIndex));
-                      }
+                  }>;
+                  
+                  // Cycle through reviews, reusing them if needed
+                  const review = reviews[idx % reviews.length];
+                  
+                  // Direct mapping: map each review index to an example number with complete files
+                  // Review order: 0=Marta, 1=Alba, 2=Jorge, 3=Faby, 4=Andres, 5=Andrea, 6=Pamela, 7=Ingrid, 8=Samuel
+                  // Complete examples: 1, 2, 3, 4, 7, 9, 10, 11 (have both profile and result)
+                  // Multiple image examples: 14, 15
+                  const reviewToExampleMapping = [
+                    1,  // Marta → example 1
+                    2,  // Alba → example 2
+                    3,  // Jorge → example 3
+                    4,  // Faby → example 4
+                    7,  // Andres → example 7 (5 missing result)
+                    9,  // Andrea → example 9 (6 missing both)
+                    10, // Pamela → example 10
+                    11, // Ingrid → example 11
+                    14, // Samuel → example 14 (multiple images)
+                    // For remaining slots (9-14), cycle through available examples
+                    1, 2, 3, 4, 7, 15, // examples 15 has multiple images
+                  ];
+                  
+                  const exampleNumber = reviewToExampleMapping[idx] || reviewToExampleMapping[idx % reviewToExampleMapping.length];
+                  const hasMultipleResults = exampleNumber === 14 || exampleNumber === 15;
+                  
+                  let profileImage: string;
+                  let resultImages: string[];
+                  
+                  if (hasMultipleResults) {
+                    // Example 14: 1 profile + 5 results (14_result_1.jpg through 14_result_5.jpg)
+                    // Example 15: 1 profile + 3 results (15_result.jpg, 15_result_4.jpg, 15_result_5.jpg)
+                    profileImage = `/reviews/${exampleNumber}_profile.jpg`;
+                    if (exampleNumber === 14) {
+                      resultImages = [
+                        `/reviews/14_result_1.jpg`,
+                        `/reviews/14_result_2.jpg`,
+                        `/reviews/14_result_3.jpg`,
+                        `/reviews/14_result_4.jpg`,
+                        `/reviews/14_result_5.jpg`,
+                      ];
                     } else {
-                      parts.push(reviewText);
+                      // Example 15 - only has 3 result images available
+                      resultImages = [
+                        `/reviews/15_result.jpg`,
+                        `/reviews/15_result_4.jpg`,
+                        `/reviews/15_result_5.jpg`,
+                      ];
                     }
+                  } else {
+                    // Complete examples: 1 profile + 1 result
+                    profileImage = `/reviews/${exampleNumber}_profile.jpg`;
+                    resultImages = [`/reviews/${exampleNumber}_result.jpg`];
+                  }
+                  
+                  // Highlight key phrases
+                  const highlightPhrases = [
+                    "¡Es una pasada!",
+                    "Ideal para quien empieza con su marca",
+                    "He renovado todas mis fotos en 15 minutos",
+                    "galería de fotos que parecían hechas en estudio",
+                    "están padrísimas",
+                  ];
+                  
+                  let reviewText = review.review;
+                  const parts: (string | React.ReactElement)[] = [];
+                  let lastIndex = 0;
+                  const matches: Array<{ start: number; end: number; text: string }> = [];
+                  
+                  highlightPhrases.forEach((phrase) => {
+                    const index = reviewText.indexOf(phrase, lastIndex);
+                    if (index !== -1) {
+                      const overlaps = matches.some(
+                        (m) => !(index >= m.end || index + phrase.length <= m.start)
+                      );
+                      if (!overlaps) {
+                        matches.push({ start: index, end: index + phrase.length, text: phrase });
+                      }
+                    }
+                  });
+                  
+                  matches.sort((a, b) => a.start - b.start);
+                  
+                  if (matches.length > 0) {
+                    matches.forEach((match, i) => {
+                      if (match.start > lastIndex) {
+                        parts.push(reviewText.substring(lastIndex, match.start));
+                      }
+                      parts.push(
+                        <span key={`highlight-${idx}-${i}`} className="bg-yellow-200 px-1 rounded font-semibold">
+                          {match.text}
+                        </span>
+                      );
+                      lastIndex = match.end;
+                    });
+                    if (lastIndex < reviewText.length) {
+                      parts.push(reviewText.substring(lastIndex));
+                    }
+                  } else {
+                    parts.push(reviewText);
+                  }
 
-                    return (
-                      <Card 
-                        key={idx} 
-                        className={`bg-white border border-gray-200 shadow-sm ${config.span}`}
-                      >
-                        <CardContent className="p-3">
-                          <div className="space-y-2">
-                            {/* User Info */}
-                            <div className="flex items-start gap-3">
-                              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                                <span className="text-sm font-medium text-black">
-                                  {review.name.charAt(0)}
-                                </span>
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <h3 className="font-semibold text-sm truncate text-black">
-                                    {review.name}
-                                  </h3>
-                                  <Linkedin className="w-4 h-4 text-blue-400 shrink-0" />
-                                </div>
-                                {review.title && (
-                                  <p className="text-xs text-gray-700 truncate">
-                                    {review.title}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Review Text */}
-                            <div>
-                              <p className="text-sm text-black leading-tight line-clamp-3">
-                                {parts.length > 0 ? parts : reviewText}
-                              </p>
-                              <button className="text-xs text-primary hover:underline mt-0.5">
-                                {t("supportReviews.readMore")}
-                              </button>
-                              
-                              {/* Image with carousel (Marta) or portrait (Faby) */}
-                              {config.hasImage && reviewImage && (
-                                <div className="mt-2">
-                                  {isMarta ? (
-                                    // Large image with carousel navigation
-                                    <div className="relative aspect-[4/3] bg-gray-100 rounded-[24px] overflow-hidden px-4">
-                                      <img
-                                        src={reviewImage}
-                                        alt={review.name}
-                                        className="w-full h-full object-cover rounded-[24px]"
-                                      />
-                                      <button className="absolute left-0 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 border-0 shadow-none z-10 text-gray-700 rounded-full size-12 flex items-center justify-center">
-                                        <ChevronLeft className="w-6 h-6" />
-                                      </button>
-                                      <button className="absolute right-0 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 border-0 shadow-none z-10 text-gray-700 rounded-full size-12 flex items-center justify-center">
-                                        <ChevronRight className="w-6 h-6" />
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    // Portrait image (Faby)
-                                    <div className="aspect-[3/4] bg-gray-100 rounded-[24px] overflow-hidden px-4">
-                                      <img
-                                        src={reviewImage}
-                                        alt={review.name}
-                                        className="w-full h-full object-cover rounded-[24px]"
-                                      />
-                                    </div>
-                                  )}
-                                  {/* Date */}
-                                  <p className="text-xs text-black mt-2">{review.date}</p>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Date - only show if no image */}
-                            {!config.hasImage && (
-                              <p className="text-xs text-black">{review.date}</p>
-                            )}
+                  return (
+                    <Card 
+                      key={idx} 
+                      className="bg-white border border-purple-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+                    >
+                      {/* Profile Section */}
+                      <CardContent className="px-5 pt-0 pb-0">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Avatar className="w-10 h-10 border-2 border-purple-200">
+                            <AvatarImage src={profileImage} alt={review.name} />
+                            <AvatarFallback className="bg-purple-100 text-purple-700">
+                              {review.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-sm leading-tight truncate text-black">
+                              {review.name}
+                            </h3>
+                            <p className="text-xs text-gray-600 truncate">
+                              {review.title}
+                            </p>
                           </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                        </div>
+
+                        {/* Review Text */}
+                        <div className="mb-0.5">
+                          <p className="text-xs text-black leading-relaxed">
+                            {parts.length > 0 ? parts : reviewText}
+                          </p>
+                        </div>
+                      </CardContent>
+
+                      {/* Professional Photo(s) */}
+                      <div className="w-full px-3 -mt-3">
+                        {hasMultipleResults ? (
+                          // Multiple images grid for examples 14 and 15
+                          <div className="grid grid-cols-3 gap-1">
+                            {resultImages.map((imgSrc, imgIdx) => (
+                              <div
+                                key={imgIdx}
+                                className="aspect-square overflow-hidden bg-gray-100 rounded-[20px]"
+                              >
+                                <img
+                                  src={imgSrc}
+                                  alt={`${review.name} - Photo ${imgIdx + 1}`}
+                                  className="w-full h-full object-cover rounded-[20px]"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          // Single image for others
+                          <div className="aspect-[3/4] overflow-hidden bg-gray-100 rounded-[20px]">
+                            <img
+                              src={resultImages[0]}
+                              alt={`${review.name} - Professional Photo`}
+                              className="w-full h-full object-cover rounded-[20px]"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })}
               </div>
-            </div>
+                    </div>
 
       {/* Testimonial Card Section */}
       <AnimatedSection>
@@ -1043,7 +1068,7 @@ export default function Home() {
                 {/* Large Generated Image */}
                 <div className="relative rounded-2xl overflow-hidden bg-gray-800">
                   <img
-                    src="/girl_%20image_%20result.png"
+                    src="/girl_image_result.jpg"
                     alt="AI Generated Professional Photo"
                     className="w-full h-full object-cover aspect-[3/4]"
                   />
