@@ -12,6 +12,15 @@ import { getServerString } from "./_core/strings.js";
 import { ENV } from "./_core/env.js";
 import { stripe, CREDIT_PACKS } from "./_core/stripe.js";
 
+// Helper function to get API URL (local or production)
+function getApiUrl(): string {
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  const port = process.env.PORT || 3000;
+  return `http://localhost:${port}`;
+}
+
 // Helper function to get Supabase Edge Function URL
 function getSupabaseFunctionUrl(functionName: string): string {
   const supabaseUrl = process.env.SUPABASE_URL || "";
@@ -28,6 +37,39 @@ function getSupabaseFunctionUrl(functionName: string): string {
   return `${baseUrl}/functions/v1/${functionName}`;
 }
 
+// Helper function to call local train-model API
+async function callTrainModelApi(body: { modelId: number; userId: number; trainingImageUrls: string[] }): Promise<any> {
+  const apiUrl = getApiUrl();
+  const trainModelUrl = `${apiUrl}/api/train-model`;
+  
+  try {
+    const response = await fetch(trainModelUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = errorText;
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMessage = errorJson.error || errorJson.message || JSON.stringify(errorJson);
+      } catch {
+        // Keep original error text
+      }
+      throw new Error(`Train model API failed: ${response.status} ${errorMessage}`);
+    }
+    
+    return await response.json();
+  } catch (error: any) {
+    console.error(`[callTrainModelApi] Error calling train-model API:`, error);
+    throw error;
+  }
+}
+
 // Helper function to call Supabase Edge Function
 async function callSupabaseFunction(
   functionName: string,
@@ -40,24 +82,77 @@ async function callSupabaseFunction(
     throw new Error("SUPABASE_SERVICE_ROLE_KEY environment variable is required");
   }
   
-  const response = await fetch(functionUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${supabaseServiceKey}`,
-      "apikey": supabaseServiceKey,
-    },
-    body: JSON.stringify(body),
-  });
-  
-  if (!response.ok) {
-    const errorText = await response.text();
+  try {
+    const response = await fetch(functionUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${supabaseServiceKey}`,
+        "apikey": supabaseServiceKey,
+      },
+      body: JSON.stringify(body),
+    });
+    
+    const responseText = await response.text();
+    
+    if (!response.ok) {
+      // Try to parse as JSON first
+      let errorMessage = responseText;
+      try {
+        const errorJson = JSON.parse(responseText);
+        errorMessage = errorJson.error || errorJson.message || JSON.stringify(errorJson);
+      } catch {
+        // If not JSON, check if it's HTML or encoded
+        if (responseText.includes("<!doctype") || responseText.includes("<html")) {
+          errorMessage = `Edge Function returned HTML instead of JSON. This usually means the function is not deployed or the URL is incorrect.`;
+        } else if (responseText.length > 500) {
+          // Likely encoded data, try to decode
+          try {
+            // Try base64 decode
+            const decoded = Buffer.from(responseText, 'base64').toString('utf-8');
+            errorMessage = `Edge Function returned encoded data. Decoded: ${decoded.substring(0, 200)}...`;
+          } catch {
+            errorMessage = `Edge Function returned unexpected response (${responseText.length} chars). First 200 chars: ${responseText.substring(0, 200)}...`;
+          }
+        }
+      }
+      
+      console.error(`[callSupabaseFunction] ${functionName} failed:`, {
+        status: response.status,
+        statusText: response.statusText,
+        url: functionUrl,
+        error: errorMessage,
+      });
+      
+      throw new Error(
+        `Edge Function ${functionName} failed: ${response.status} ${errorMessage}`
+      );
+    }
+    
+    // Try to parse response as JSON
+    try {
+      return JSON.parse(responseText);
+    } catch (parseError) {
+      console.error(`[callSupabaseFunction] Failed to parse response from ${functionName}:`, {
+        responseText: responseText.substring(0, 500),
+        parseError,
+      });
+      throw new Error(
+        `Edge Function ${functionName} returned invalid JSON: ${responseText.substring(0, 200)}`
+      );
+    }
+  } catch (error: any) {
+    // Re-throw if it's already our formatted error
+    if (error.message?.includes("Edge Function")) {
+      throw error;
+    }
+    
+    // Otherwise, wrap the error
+    console.error(`[callSupabaseFunction] Network or other error calling ${functionName}:`, error);
     throw new Error(
-      `Edge Function ${functionName} failed: ${response.status} ${errorText}`
+      `Failed to call Edge Function ${functionName}: ${error.message || "Unknown error"}`
     );
   }
-  
-  return await response.json();
 }
 
 export const appRouter = router({
@@ -421,37 +516,50 @@ export const appRouter = router({
             if (imagesError) throw new Error(`${getServerString("failedToInsertTrainingImages")}: ${imagesError.message}`);
           }
 
-          // Call Edge Function for async training (runs even if site is down)
+          // Call train-model API for async training (runs even if site is down)
           if (modelData) {
             try {
-              console.log(`[Model Training] Calling Edge Function for model ${modelData.id}`);
+              console.log(`[Model Training] Calling train-model API for model ${modelData.id}`);
               
-              // Call Edge Function asynchronously (don't await - let it run in background)
-              callSupabaseFunction("train-model", {
+              // Call API asynchronously (don't await - let it run in background)
+              callTrainModelApi({
                 modelId: modelData.id,
                 userId: ctx.user.id,
                 trainingImageUrls: input.trainingImageUrls,
-            }).catch(async (error) => {
-              console.error(`[Model Training] Edge Function error for model ${modelData.id}:`, error);
-              // Try to set status to "failed" if Edge Function fails
+            }).catch(async (error: any) => {
+              const errorMessage = error?.message || String(error);
+              console.error(`[Model Training] Train model API error for model ${modelData.id}:`, {
+                error: errorMessage,
+                modelId: modelData.id,
+                userId: ctx.user.id,
+                stack: error?.stack,
+              });
+              
+              // Try to set status to "failed" if API fails
               try {
-                await supabaseServer
+                const { error: updateError } = await supabaseServer
                   .from('models')
                   .update({ status: "failed" })
                   .eq('id', modelData.id);
+                
+                if (updateError) {
+                  console.error(`[Model Training] Error setting model ${modelData.id} to failed:`, updateError);
+                } else {
+                  console.log(`[Model Training] Model ${modelData.id} status set to failed due to API error`);
+                }
               } catch (failError: any) {
                 console.error(`[Model Training] Error setting model ${modelData.id} to failed:`, failError);
               }
             });
               
-              console.log(`[Model Training] Edge Function called for model ${modelData.id} (processing asynchronously)`);
+              console.log(`[Model Training] Train model API called for model ${modelData.id} (processing asynchronously)`);
               } catch (error) {
-              console.error(`[Model Training] Error calling Edge Function for model ${modelData.id}:`, error);
-              // Set status to "failed" if we can't even call the Edge Function
+              console.error(`[Model Training] Error calling train-model API for model ${modelData.id}:`, error);
+              // Set status to "failed" if we can't even call the API
                   await supabaseServer
-                    .from('models')
-                    .update({ status: "failed" })
-                    .eq('id', modelData.id);
+                  .from('models')
+                  .update({ status: "failed" })
+                  .eq('id', modelData.id);
                 }
           }
 
@@ -492,41 +600,52 @@ export const appRouter = router({
           );
         }
 
-        // Call Edge Function for async training (runs even if site is down)
+        // Call train-model API for async training (runs even if site is down)
         if (model) {
           try {
-            console.log(`[Model Training] Calling Edge Function for model ${model.id}`);
+            console.log(`[Model Training] Calling train-model API for model ${model.id}`);
             
-            // Call Edge Function asynchronously (don't await - let it run in background)
-            callSupabaseFunction("train-model", {
+            // Call API asynchronously (don't await - let it run in background)
+            callTrainModelApi({
               modelId: model.id,
               userId: ctx.user.id,
               trainingImageUrls: input.trainingImageUrls,
-            }).catch(async (error) => {
-              console.error(`[Model Training] Edge Function error for model ${model.id}:`, error);
-              // Try to set status to "failed" if Edge Function fails
-            try {
-              const updateDb = await getDb();
-              if (updateDb) {
-                await updateDb
-                  .update(models)
+            }).catch(async (error: any) => {
+              const errorMessage = error?.message || String(error);
+              console.error(`[Model Training] Train model API error for model ${model.id}:`, {
+                error: errorMessage,
+                modelId: model.id,
+                userId: ctx.user.id,
+                stack: error?.stack,
+              });
+              
+              // Try to set status to "failed" if API fails
+              try {
+                const updateDb = await getDb();
+                if (updateDb) {
+                  await updateDb
+                    .update(models)
                     .set({ status: "failed" })
-                  .where(eq(models.id, model.id));
-              } else {
+                    .where(eq(models.id, model.id));
+                } else {
                   const { error: updateError } = await supabaseServer
-                  .from('models')
+                    .from('models')
                     .update({ status: "failed" })
-                  .eq('id', model.id);
-                  if (updateError) throw updateError;
+                    .eq('id', model.id);
+                  if (updateError) {
+                    console.error(`[Model Training] Error setting model ${model.id} to failed via REST API:`, updateError);
+                  } else {
+                    console.log(`[Model Training] Model ${model.id} status set to failed due to API error`);
+                  }
                 }
               } catch (failError: any) {
                 console.error(`[Model Training] Error setting model ${model.id} to failed:`, failError);
               }
             });
             
-            console.log(`[Model Training] Edge Function called for model ${model.id} (processing asynchronously)`);
+            console.log(`[Model Training] Train model API called for model ${model.id} (processing asynchronously)`);
             } catch (error) {
-            console.error(`[Model Training] Error calling Edge Function for model ${model.id}:`, error);
+            console.error(`[Model Training] Error calling train-model API for model ${model.id}:`, error);
             // Set status to "failed" if we can't even call the Edge Function
                 const updateDb = await getDb();
                 if (updateDb) {

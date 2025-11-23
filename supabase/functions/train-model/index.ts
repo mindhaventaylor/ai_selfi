@@ -44,6 +44,12 @@ serve(async (req) => {
       throw new Error("Missing required fields: modelId, userId, trainingImageUrls");
     }
 
+    // Validate maximum number of training images (5 max)
+    const MAX_TRAINING_IMAGES = 5;
+    if (trainingImageUrls.length > MAX_TRAINING_IMAGES) {
+      throw new Error(`Maximum ${MAX_TRAINING_IMAGES} training images allowed. Received ${trainingImageUrls.length} images.`);
+    }
+
     console.log(`[Train Model] Starting training for model ${modelId}, user ${userId}`);
 
     // Update model status to "training"

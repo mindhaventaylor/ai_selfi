@@ -57,13 +57,24 @@ export default function TrainModel() {
     const newFiles: UploadedFile[] = [];
     const maxFiles = 5;
     const currentCount = uploadedFiles.length;
+    const totalFiles = currentCount + files.length;
 
-    Array.from(files).forEach((file) => {
+    // Check total files limit first
+    if (totalFiles > maxFiles) {
+      toast.error(t("trainModel.max5Images"), {
+        description: `Você pode selecionar no máximo ${maxFiles} imagens. Você já tem ${currentCount} e está tentando adicionar ${files.length}.`,
+      });
+      return;
+    }
+
+    // Process each file
+    for (const file of Array.from(files)) {
+      // Check if we've reached the limit
       if (currentCount + newFiles.length >= maxFiles) {
         toast.error(t("trainModel.max5Images"), {
-          description: "Você pode selecionar no máximo 5 imagens",
+          description: `Você pode selecionar no máximo ${maxFiles} imagens`,
         });
-        return;
+        break;
       }
       
       // Validate file type
@@ -71,7 +82,7 @@ export default function TrainModel() {
         toast.error(t("trainModel.onlyJpgPng"), {
           description: `O arquivo "${file.name}" não é um formato válido`,
         });
-        return;
+        continue;
       }
 
       // Validate file size (3MB)
@@ -79,13 +90,13 @@ export default function TrainModel() {
         toast.error(t("trainModel.fileTooLarge"), {
           description: `O arquivo "${file.name}" é muito grande (máximo 3MB)`,
         });
-        return;
+        continue;
       }
 
       const id = `${Date.now()}-${Math.random()}`;
       const preview = URL.createObjectURL(file);
       newFiles.push({ id, file, preview });
-    });
+    }
 
     if (newFiles.length > 0) {
       setUploadedFiles((prev) => [...prev, ...newFiles]);

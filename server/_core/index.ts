@@ -10,6 +10,7 @@ import { appRouter } from "../routers.js";
 import { createContext } from "./context.js";
 import photoGenerationRouter from "../api/photo-generation/route.js";
 import stripeWebhookRouter from "../api/stripe-webhook/route.js";
+import trainModelRouter from "../api/train-model/route.js";
 import { createClient } from "@supabase/supabase-js";
 
 // Simple static file server for production (no Vite dependencies)
@@ -137,6 +138,7 @@ export async function createApp(options?: CreateAppOptions) {
     })
   );
   app.use("/api/photo-generation", photoGenerationRouter);
+  app.use("/api/train-model", trainModelRouter);
   // development mode uses Vite, production mode uses static files
   // Use a string-based dynamic import to prevent esbuild from analyzing vite.js in production
   if (process.env.NODE_ENV === "development" && options?.server && process.env.VERCEL !== "1") {
