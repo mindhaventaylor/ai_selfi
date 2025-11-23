@@ -16,7 +16,7 @@ export default function SupportReviews() {
     title: review.title,
     review: review.review,
     date: review.date,
-    image: idx === 0 ? "/image.webp" : idx === 3 ? "/image_1.jpg" : undefined,
+    image: idx === 0 ? "/image.jpg" : idx === 3 ? "/image_1.jpg" : undefined,
     hasImage: idx === 0 || idx === 3,
     rating: idx === 3 || idx === 8 ? 5 : undefined,
   }));

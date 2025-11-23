@@ -267,7 +267,7 @@ export default function TrainModel() {
 
   // Good photos examples
   const goodPhotos = [
-    "/image.webp",
+    "/image.jpg",
     "/image_1.jpg",
     "/image_10.jpg",
     "/image_100.jpg",
@@ -277,7 +277,7 @@ export default function TrainModel() {
 
   // Bad photos examples (with red X)
   const badPhotos = [
-    "/image.webp",
+    "/image.jpg",
     "/image_1.jpg",
     "/image_10.jpg",
     "/image_100.jpg",

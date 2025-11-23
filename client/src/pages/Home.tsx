@@ -90,7 +90,7 @@ export default function Home() {
             }}
           >
             <img
-              src="/image.webp"
+              src="/image.jpg"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
             />
@@ -197,7 +197,7 @@ export default function Home() {
             {/* Badge with avatars */}
             <div className="flex items-center gap-3 bg-secondary/50 backdrop-blur-sm px-6 py-3 rounded-full">
               <div className="flex -space-x-2">
-                {["/image.webp", "/image_1.jpg", "/image_10.jpg", "/image_100.jpg", "/image_101.jpg"].map(
+                {["/image.jpg", "/image_1.jpg", "/image_10.jpg", "/image_100.jpg", "/image_101.jpg"].map(
                   (img, idx) => (
                     <div
                       key={idx}
@@ -241,7 +241,7 @@ export default function Home() {
 
           {/* Mobile - Simple Grid */}
           <div className="grid grid-cols-2 gap-4 lg:hidden max-w-md mx-auto mt-12">
-            {["/image.webp", "/image_1.jpg", "/image_10.jpg", "/image_100.jpg"].map((img, idx) => (
+            {["/image.jpg", "/image_1.jpg", "/image_10.jpg", "/image_100.jpg"].map((img, idx) => (
               <div
                 key={idx}
                 className="aspect-[3/4] rounded-2xl overflow-hidden shadow-xl"
@@ -1156,7 +1156,7 @@ export default function Home() {
                 <div className="flex items-center gap-4">
                   <div className="flex -space-x-2">
                     {[
-                      "/image.webp",
+                      "/image.jpg",
                       "/image_1.jpg",
                       "/image_10.jpg",
                       "/image_100.jpg",
