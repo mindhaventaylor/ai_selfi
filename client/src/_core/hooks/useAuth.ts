@@ -25,7 +25,7 @@ export function useAuth(options?: UseAuthOptions) {
 
   const logout = useCallback(async () => {
     try {
-      // Sign out from Supabase first
+      // Sign out from Supabase first (this clears Supabase's localStorage items)
       await supabase.auth.signOut();
       
       // Then clear server-side session
@@ -44,6 +44,11 @@ export function useAuth(options?: UseAuthOptions) {
       // Clear client-side cache
       utils.auth.me.setData(undefined, null);
       await utils.auth.me.invalidate();
+      
+      // Clear custom localStorage items
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("manus-runtime-user-info");
+      }
       
       // Redirect to login page
       if (typeof window !== "undefined") {

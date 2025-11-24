@@ -9,32 +9,24 @@ const router = express.Router();
 interface TrainModelRequest {
   modelId: number;
   userId: number;
-  trainingImageUrls: string[];
+  prompt: string;
 }
 
 // Train model API endpoint
 router.post("/", async (req, res) => {
   try {
     const body = req.body as TrainModelRequest;
-    const { modelId, userId, trainingImageUrls } = body;
+    const { modelId, userId, prompt } = body;
 
-    if (!modelId || !userId || !trainingImageUrls || trainingImageUrls.length === 0) {
+    if (!modelId || !userId || !prompt) {
       return res.status(400).json({ 
         success: false,
-        error: "Missing required fields: modelId, userId, trainingImageUrls" 
-      });
-    }
-
-    // Validate maximum number of training images (5 max)
-    const MAX_TRAINING_IMAGES = 5;
-    if (trainingImageUrls.length > MAX_TRAINING_IMAGES) {
-      return res.status(400).json({ 
-        success: false,
-        error: `Maximum ${MAX_TRAINING_IMAGES} training images allowed. Received ${trainingImageUrls.length} images.` 
+        error: "Missing required fields: modelId, userId, prompt" 
       });
     }
 
     console.log(`[Train Model] Starting training for model ${modelId}, user ${userId}`);
+    console.log(`[Train Model] Training prompt: ${prompt}`);
 
     const db = await getDb();
 
@@ -57,55 +49,9 @@ router.post("/", async (req, res) => {
         });
       }
 
-      // Verify training images exist (download them to verify)
-      // This is just a verification step - images are already uploaded
-      let verifiedCount = 0;
-      for (let i = 0; i < trainingImageUrls.length; i++) {
-        const url = trainingImageUrls[i];
-        
-        // Extract bucket and path from URL
-        const storageIndex = url.indexOf("/storage/v1/object/");
-        if (storageIndex !== -1) {
-          const afterStorage = url.substring(storageIndex + "/storage/v1/object/".length);
-          const parts = afterStorage.split("/");
-          
-          if (parts.length >= 3 && (parts[0] === "public" || parts[0] === "sign")) {
-            const bucketName = parts[1];
-            let filePath = parts.slice(2).join("/");
-            
-            // Remove query parameters
-            const queryIndex = filePath.indexOf("?");
-            if (queryIndex !== -1) {
-              filePath = filePath.substring(0, queryIndex);
-            }
-            
-            const decodedPath = decodeURIComponent(filePath);
-            
-            // Try to download image to verify it exists
-            const { error } = await supabaseServer.storage
-              .from(bucketName)
-              .download(decodedPath);
-            
-            if (!error) {
-              verifiedCount++;
-              console.log(`[Train Model] Verified training image ${i + 1}/${trainingImageUrls.length}`);
-            } else {
-              console.warn(`[Train Model] Could not verify image ${i + 1}:`, error.message);
-            }
-          }
-        }
-      }
-
-      if (verifiedCount === 0) {
-        console.error(`[Train Model] Failed to verify any training images`);
-        // Still continue - images might be accessible even if download fails
-      }
-
-      console.log(`[Train Model] Verified ${verifiedCount}/${trainingImageUrls.length} training images`);
-
-      // Images are already uploaded and saved - model is ready immediately
-      // No actual ML training is performed, just storing the reference images
-      console.log(`[Train Model] Training images verified and saved - model ready`);
+      // Model training with prompt only (no image verification needed)
+      // The prompt contains the training instructions
+      console.log(`[Train Model] Processing training with prompt: ${prompt}`);
 
       // Update model status to "ready" immediately
       const { error: readyError } = await supabaseServer
@@ -137,55 +83,9 @@ router.post("/", async (req, res) => {
         .set({ status: "training" })
         .where(eq(models.id, modelId));
 
-      // Verify training images exist (download them to verify)
-      // This is just a verification step - images are already uploaded
-      let verifiedCount = 0;
-      for (let i = 0; i < trainingImageUrls.length; i++) {
-        const url = trainingImageUrls[i];
-        
-        // Extract bucket and path from URL
-        const storageIndex = url.indexOf("/storage/v1/object/");
-        if (storageIndex !== -1) {
-          const afterStorage = url.substring(storageIndex + "/storage/v1/object/".length);
-          const parts = afterStorage.split("/");
-          
-          if (parts.length >= 3 && (parts[0] === "public" || parts[0] === "sign")) {
-            const bucketName = parts[1];
-            let filePath = parts.slice(2).join("/");
-            
-            // Remove query parameters
-            const queryIndex = filePath.indexOf("?");
-            if (queryIndex !== -1) {
-              filePath = filePath.substring(0, queryIndex);
-            }
-            
-            const decodedPath = decodeURIComponent(filePath);
-            
-            // Try to download image to verify it exists
-            const { error } = await supabaseServer.storage
-              .from(bucketName)
-              .download(decodedPath);
-            
-            if (!error) {
-              verifiedCount++;
-              console.log(`[Train Model] Verified training image ${i + 1}/${trainingImageUrls.length}`);
-            } else {
-              console.warn(`[Train Model] Could not verify image ${i + 1}:`, error.message);
-            }
-          }
-        }
-      }
-
-      if (verifiedCount === 0) {
-        console.error(`[Train Model] Failed to verify any training images`);
-        // Still continue - images might be accessible even if download fails
-      }
-
-      console.log(`[Train Model] Verified ${verifiedCount}/${trainingImageUrls.length} training images`);
-
-      // Images are already uploaded and saved - model is ready immediately
-      // No actual ML training is performed, just storing the reference images
-      console.log(`[Train Model] Training images verified and saved - model ready`);
+      // Model training with prompt only (no image verification needed)
+      // The prompt contains the training instructions
+      console.log(`[Train Model] Processing training with prompt: ${prompt}`);
 
       // Update model status to "ready" immediately
       await db

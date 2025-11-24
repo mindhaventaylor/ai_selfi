@@ -38,7 +38,7 @@ function getSupabaseFunctionUrl(functionName: string): string {
 }
 
 // Helper function to call local train-model API
-async function callTrainModelApi(body: { modelId: number; userId: number; trainingImageUrls: string[] }): Promise<any> {
+async function callTrainModelApi(body: { modelId: number; userId: number; prompt: string }): Promise<any> {
   const apiUrl = getApiUrl();
   const trainModelUrl = `${apiUrl}/api/train-model`;
   
@@ -536,11 +536,14 @@ export const appRouter = router({
             try {
               console.log(`[Model Training] Calling train-model API for model ${modelData.id}`);
               
+              // Generate prompt from model information
+              const trainingPrompt = `Train a model for ${input.name}, ${input.gender === "hombre" ? "male" : "female"} gender, with ${input.trainingImageUrls.length} training images`;
+              
               // Call API asynchronously (don't await - let it run in background)
               callTrainModelApi({
                 modelId: modelData.id,
                 userId: ctx.user.id,
-                trainingImageUrls: input.trainingImageUrls,
+                prompt: trainingPrompt,
             }).catch(async (error: any) => {
               const errorMessage = error?.message || String(error);
               console.error(`[Model Training] Train model API error for model ${modelData.id}:`, {
@@ -620,11 +623,14 @@ export const appRouter = router({
           try {
             console.log(`[Model Training] Calling train-model API for model ${model.id}`);
             
+            // Generate prompt from model information
+            const trainingPrompt = `Train a model for ${input.name}, ${input.gender === "hombre" ? "male" : "female"} gender, with ${input.trainingImageUrls.length} training images`;
+            
             // Call API asynchronously (don't await - let it run in background)
             callTrainModelApi({
               modelId: model.id,
               userId: ctx.user.id,
-              trainingImageUrls: input.trainingImageUrls,
+              prompt: trainingPrompt,
             }).catch(async (error: any) => {
               const errorMessage = error?.message || String(error);
               console.error(`[Model Training] Train model API error for model ${model.id}:`, {

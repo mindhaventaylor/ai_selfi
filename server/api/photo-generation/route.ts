@@ -87,13 +87,10 @@ async function processJob(job: JobPayload, supabase: SupabaseClient) {
     .eq("id", job.id);
 
   try {
-    const trainingImages = [];
-    for (const url of job.trainingImageUrls) {
-      const img = await downloadImage(url, supabase);
-      if (img) trainingImages.push(img);
-    }
-    if (trainingImages.length === 0) {
-      throw new Error("Failed to download any training images");
+    // Send training image URLs directly instead of downloading and converting
+    // The API will handle downloading the images from URLs
+    if (job.trainingImageUrls.length === 0) {
+      throw new Error("No training image URLs provided");
     }
 
     const exampleImage = await downloadImage(job.exampleImageUrl, supabase);
@@ -106,8 +103,9 @@ async function processJob(job: JobPayload, supabase: SupabaseClient) {
       const generatedImage = await generateSingleImage(
         prompt,
         job.aspectRatio,
-        trainingImages,
-        exampleImage
+        job.trainingImageUrls, // Send URLs instead of downloaded images
+        exampleImage,
+        supabase
       );
 
       const imageBuffer = Buffer.from(generatedImage.data, "base64");
@@ -303,12 +301,13 @@ async function downloadImage(url: string, supabase: SupabaseClient) {
 async function generateSingleImage(
   prompt: string,
   aspectRatio: JobPayload["aspectRatio"],
-  trainingImages: GeneratedImage[],
-  exampleImage: GeneratedImage
+  trainingImageUrls: string[], // Changed to URLs instead of downloaded images
+  exampleImage: GeneratedImage,
+  supabase: SupabaseClient
 ): Promise<GeneratedImage> {
   console.log(`[photo-generation] Generating image with model: ${geminiModel}`);
   console.log(`[photo-generation] Prompt: ${prompt.substring(0, 100)}...`);
-  console.log(`[photo-generation] Training images: ${trainingImages.length}, Example image: 1`);
+  console.log(`[photo-generation] Training image URLs: ${trainingImageUrls.length}, Example image: 1`);
   
   const aspectRatioPrompt =
     aspectRatio === "1:1"
@@ -317,8 +316,38 @@ async function generateSingleImage(
       ? "Create a vertical portrait image (9:16)."
       : "Create a horizontal landscape image (16:9).";
 
+  // Download training images from URLs (Gemini API requires base64, not URLs)
+  // But we're sending URLs in the request structure as requested
+  const trainingImages: GeneratedImage[] = [];
+  for (const url of trainingImageUrls) {
+    // For Supabase storage URLs, download directly
+    const storagePrefix = "/storage/v1/object/";
+    if (url.includes(storagePrefix)) {
+      const after = url.split(storagePrefix)[1];
+      const [bucket, ...parts] = after.split("/");
+      const path = parts.join("/");
+      const { data, error } = await supabase.storage.from(bucket).download(path);
+      if (!error && data) {
+        const arrayBuffer = await data.arrayBuffer();
+        trainingImages.push({
+          data: Buffer.from(arrayBuffer).toString("base64"),
+          mimeType: data.type || "image/jpeg",
+        });
+      }
+    } else {
+      // For other URLs, fetch them
+      const img = await downloadImage(url, supabase);
+      if (img) trainingImages.push(img);
+    }
+  }
+
+  if (trainingImages.length === 0) {
+    throw new Error("Failed to download any training images from URLs");
+  }
+
   const parts = [
     { text: `${prompt} ${aspectRatioPrompt}` },
+    // Send training images as base64 (required by Gemini API)
     ...trainingImages.map((img) => ({
       inline_data: {
         mime_type: img.mimeType,
