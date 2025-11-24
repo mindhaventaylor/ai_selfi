@@ -46,6 +46,24 @@ export default function Home() {
   const [expandedReviewsGrid, setExpandedReviewsGrid] = useState<Set<number>>(new Set()); // For reviews grid section
   const [reviewsToShow, setReviewsToShow] = useState(6); // Start with 2 rows (6 items in 3-column grid)
 
+  // Check for variant parameter in URL and save it (even if home screen doesn't change)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
+    
+    if (urlVariant && (urlVariant === "page1" || urlVariant === "page2")) {
+      // Save variant to cache
+      localStorage.setItem("aiselfi_dashboard_variant", urlVariant);
+      
+      // Remove variant from URL to keep it clean
+      urlParams.delete("variant");
+      const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : "");
+      window.history.replaceState({}, "", newUrl);
+      
+      console.log(`[Home] Variant saved from URL: ${urlVariant}`);
+    }
+  }, []);
+
   // Redirect authenticated users to dashboard
   useEffect(() => {
     if (!loading && user) {

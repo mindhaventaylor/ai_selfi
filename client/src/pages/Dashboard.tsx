@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useTranslation } from "@/hooks/useTranslation";
+import { usePostHogVariant } from "@/hooks/usePostHogVariant";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,11 +17,73 @@ import {
   HelpCircle,
   ArrowRight
 } from "lucide-react";
+import DashboardV2 from "./DashboardV2";
 
 export default function Dashboard() {
+  // All hooks must be called at the top, before any conditional returns
+  const { user } = useAuth();
+  const { variant: posthogVariant, isLoading } = usePostHogVariant(user?.id);
   const { t } = useTranslation();
   const [showAlert, setShowAlert] = useState(true);
   const [, setLocation] = useLocation();
+
+  // Check for URL parameter to force variant (for testing)
+  // Use useMemo to avoid reading from localStorage on every render
+  const forcedVariant = useMemo(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("variant") as "page1" | "page2" | null;
+  }, [location]);
+  
+  // Also check localStorage directly - use state initialized once to avoid re-reading on every render
+  const [cachedVariant] = useState<"page1" | "page2" | null>(() => {
+    return typeof window !== "undefined"
+      ? localStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null
+      : null;
+  });
+  
+  // Use forced variant from URL if present, then cached, then PostHog variant
+  const variant = forcedVariant || cachedVariant || posthogVariant;
+
+  // Debug log
+  console.log(`[Dashboard] Variant detection:`, {
+    forcedVariant,
+    cachedVariant,
+    posthogVariant,
+    finalVariant: variant,
+  });
+  
+  // Save variant to cache if detected from URL
+  // Use useRef to track if we've already saved to avoid infinite loops
+  const savedVariantRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (forcedVariant && forcedVariant !== savedVariantRef.current) {
+      localStorage.setItem("aiselfi_dashboard_variant", forcedVariant);
+      savedVariantRef.current = forcedVariant;
+      console.log(`[Dashboard] Saved variant ${forcedVariant} to cache`);
+    }
+  }, [forcedVariant]);
+
+  // Show loading state while determining variant (only if not forcing via URL)
+  if (isLoading && !forcedVariant) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Sparkles className="h-8 w-8 mx-auto text-primary animate-pulse" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show DashboardV2 if variant is page2
+  if (variant === "page2") {
+    console.log("[Dashboard] Rendering DashboardV2 (page2 variant)");
+    return <DashboardV2 />;
+  }
+  
+  console.log("[Dashboard] Rendering Dashboard (page1 variant)");
+
+  // Default to page1 (original Dashboard)
 
   // Mock photos for the grid background
   const gridPhotos = [

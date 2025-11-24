@@ -1,5 +1,6 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { usePostHogVariant } from "@/hooks/usePostHogVariant";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -140,6 +141,7 @@ function DashboardLayoutContent({
 }: DashboardLayoutContentProps) {
   const { t, changeLanguage, currentLanguage } = useTranslation();
   const { user, logout } = useAuth();
+  const { variant } = usePostHogVariant(user?.id);
   const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -147,15 +149,34 @@ function DashboardLayoutContent({
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   
-  const menuItems = [
+  // Check for variant in URL and localStorage
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
+  const cachedVariant = typeof window !== "undefined"
+    ? localStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null
+    : null;
+  const firstVariant = typeof window !== "undefined"
+    ? localStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null
+    : null;
+  const isPage2Variant = variant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
+  
+  // Determine current variant to pass to generate page
+  const currentVariant = urlVariant || firstVariant || cachedVariant || variant;
+  
+  const allMenuItems = [
     { icon: HelpCircle, label: t("dashboardLayout.startHere"), path: "/dashboard/start" },
     { icon: FlaskConical, label: t("dashboardLayout.models"), path: "/dashboard/models" },
-    { icon: PlusCircle, label: t("dashboardLayout.create"), path: "/dashboard/generate" },
+    { icon: PlusCircle, label: t("dashboardLayout.create"), path: `/dashboard/generate${currentVariant ? `?variant=${currentVariant}` : ""}` },
     { icon: ImageIcon, label: t("dashboardLayout.gallery"), path: "/dashboard/gallery" },
     { icon: Sparkles, label: t("dashboardLayout.proFeatures"), path: "/dashboard/pro" },
     { icon: CreditCard, label: t("dashboardLayout.buyCredits"), path: "/dashboard/credits/buy" },
     { icon: Settings, label: t("dashboardLayout.settings"), path: "/dashboard/settings/general" },
   ];
+  
+  // Filter out models menu item for page2 variant
+  const menuItems = isPage2Variant
+    ? allMenuItems.filter(item => item.path !== "/dashboard/models")
+    : allMenuItems;
   const activeMenuItem = menuItems.find(item => item.path === location);
   const [supportOpen, setSupportOpen] = useState(() => {
     return location.startsWith("/dashboard/support");
@@ -221,7 +242,7 @@ function DashboardLayoutContent({
                     src={APP_LOGO}
                     className="h-8 w-8 rounded-lg object-cover cursor-pointer"
                     alt="Logo"
-                    onClick={() => setLocation("/dashboard/generate")}
+                    onClick={() => setLocation(`/dashboard/generate${currentVariant ? `?variant=${currentVariant}` : ""}`)}
                   />
                   <button
                     onClick={toggleSidebar}
@@ -233,7 +254,7 @@ function DashboardLayoutContent({
               ) : (
                 <div 
                   className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => setLocation("/dashboard/generate")}
+                  onClick={() => setLocation(`/dashboard/generate${currentVariant ? `?variant=${currentVariant}` : ""}`)}
                 >
                     <img
                       src={APP_LOGO}

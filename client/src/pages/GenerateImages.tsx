@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { useTranslation } from "@/hooks/useTranslation";
+import { usePostHogVariant } from "@/hooks/usePostHogVariant";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,13 +38,22 @@ import {
   Palette,
   Scissors,
   Download,
-  AlertCircle
+  AlertCircle,
+  X
 } from "lucide-react";
 import { exampleImages, filterExampleImages, type ExampleImage } from "@/data/exampleImages";
+import { toast } from "sonner";
+
+import DashboardV2 from "./DashboardV2";
 
 export default function GenerateImages() {
+  // ALL HOOKS MUST BE CALLED FIRST, before any conditional returns
   const { user } = useAuth();
   const { t } = useTranslation();
+  const { variant } = usePostHogVariant(user?.id);
+  const [location] = useLocation(); // Must be called before any useEffect
+  
+  // State hooks
   const [gender, setGender] = useState<"man" | "woman">("man");
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [selectedBackgrounds, setSelectedBackgrounds] = useState<string[]>([]);
@@ -54,14 +65,59 @@ export default function GenerateImages() {
   const [hairStyle, setHairStyle] = useState<string>("no-preference");
   
   // Generation modal state
-  const [isGenerating, setIsGenerating] = useState(false);
+  // Check for batchId in URL immediately (synchronously) to avoid rendering DashboardV2 when we have a batchId
+  const urlParamsSync = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const batchIdFromUrlSync = urlParamsSync.get("batchId");
+  const initialBatchId = batchIdFromUrlSync ? parseInt(batchIdFromUrlSync) : null;
+  const hasInitialBatchId = initialBatchId !== null && !isNaN(initialBatchId);
+  
+  // For page2 variant, if there's a batchId, we should show the modal immediately
+  const urlVariantSync = urlParamsSync.get("variant");
+  const firstVariantSync = typeof window !== "undefined" 
+    ? localStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null
+    : null;
+  const cachedVariantSync = typeof window !== "undefined" 
+    ? localStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null
+    : null;
+  const isPage2VariantSync = urlVariantSync === "page2" || firstVariantSync === "page2" || cachedVariantSync === "page2";
+  const shouldShowModalInitially = hasInitialBatchId || (hasInitialBatchId && isPage2VariantSync);
+  
+  const [currentBatchId, setCurrentBatchId] = useState<number | null>(hasInitialBatchId ? initialBatchId : null);
+  const [isGenerating, setIsGenerating] = useState(shouldShowModalInitially);
+  const [showModal, setShowModal] = useState(shouldShowModalInitially);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [completedImages, setCompletedImages] = useState(0);
   const [generatedImages, setGeneratedImages] = useState<Array<{ id: number; url: string; status: string }>>([]);
-  const [showModal, setShowModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [currentBatchId, setCurrentBatchId] = useState<number | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastBatchStatusRef = useRef<string | null>(null); // Track last batch status to avoid unnecessary updates
+
+  // Check for variant - prioritize URL param, then first variant (permanent), then cached, then PostHog
+  // This ensures we detect page2 even when navigating with batchId
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
+  
+  // Also check localStorage directly (in case URL param was already removed)
+  const cachedVariant = typeof window !== "undefined" 
+    ? localStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null
+    : null;
+  
+  // Also check first variant (permanent storage) - highest priority after URL
+  const firstVariant = typeof window !== "undefined"
+    ? localStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null
+    : null;
+  
+  // Determine if this is page2 variant - check all sources
+  // Priority: URL > first variant (permanent) > cached variant > PostHog variant
+  const isPage2Variant = urlVariant === "page2" || firstVariant === "page2" || cachedVariant === "page2" || variant === "page2";
+  
+  console.log("[GenerateImages] Variant detection:", {
+    urlVariant,
+    firstVariant,
+    cachedVariant,
+    posthogVariant: variant,
+    isPage2Variant,
+  });
 
   // Fetch user's models
   const { data: modelsData, isLoading: isLoadingModels } = trpc.model.list.useQuery();
@@ -69,24 +125,286 @@ export default function GenerateImages() {
   const getBatchStatusQuery = trpc.photo.getBatchStatus.useQuery(
     currentBatchId ? { batchId: currentBatchId } : { batchId: 0 },
     { 
-      enabled: !!currentBatchId && isGenerating,
-      refetchInterval: isGenerating ? 2000 : false, // Poll every 2 seconds while generating
-      retry: 3, // Retry up to 3 times on error
-      retryDelay: 1000, // Wait 1 second between retries
-      refetchOnMount: true, // Always refetch when component mounts
-      refetchOnWindowFocus: false, // Don't refetch on window focus
+      enabled: !!currentBatchId && !isPage2Variant && isGenerating,
+      refetchInterval: isGenerating && !isPage2Variant ? 2000 : false, // Poll every 2 seconds while generating
+    }
+  );
+  const getPage2BatchStatusQuery = trpc.photo.getPage2BatchStatus.useQuery(
+    { batchId: currentBatchId! },
+    { 
+      enabled: !!currentBatchId && isPage2Variant,
+      refetchInterval: (!!currentBatchId && isPage2Variant) ? 2000 : false, // Poll every 2 seconds while generating
     }
   );
   
-  // Fetch training images for selected model
+  // Fetch training images for selected model (only if model is selected and not page2 variant)
   const { data: trainingImages } = trpc.model.getTrainingImages.useQuery(
     { modelId: parseInt(modelId) },
-    { enabled: !!modelId && modelId !== "" }
+    { enabled: !!modelId && modelId !== "" && !isPage2Variant }
   );
+  
+  // State for page2 data from DashboardV2
+  const [page2Data, setPage2Data] = useState<any>(null);
+  const [page2DataProcessed, setPage2DataProcessed] = useState(false);
 
-  const backgrounds = ["office", "studio", "city", "nature", "interior"];
+  // Debug log and ensure variant is saved
+  useEffect(() => {
+    console.log("[GenerateImages] Variant detection:", {
+      hookVariant: variant,
+      urlVariant,
+      cachedVariant,
+      isPage2Variant,
+    });
+    
+    // If we detect page2 variant from URL, save it immediately
+    if (urlVariant === "page2" && cachedVariant !== "page2") {
+      localStorage.setItem("aiselfi_dashboard_variant", "page2");
+      console.log("[GenerateImages] Saved page2 variant to cache");
+    }
+
+    // Check for page2 data from DashboardV2
+    if (isPage2Variant && !page2Data) {
+      const savedData = localStorage.getItem('dashboardV2_data');
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          // Check if data is recent (within last hour)
+          if (parsed.timestamp && Date.now() - parsed.timestamp < 3600000) {
+            setPage2Data(parsed);
+            console.log("[GenerateImages] Found page2 data from DashboardV2:", parsed);
+          } else {
+            // Data is too old, remove it
+            localStorage.removeItem('dashboardV2_data');
+          }
+        } catch (e) {
+          console.error("[GenerateImages] Failed to parse page2 data:", e);
+          localStorage.removeItem('dashboardV2_data');
+        }
+      }
+    }
+  }, [variant, urlVariant, cachedVariant, isPage2Variant, page2Data]);
+
+  // Auto-start generation for page2 variant if data is available
+  // NOTE: This useEffect references handleGenerateWithPage2Data which is defined later
+  // We'll move this logic to after handleGenerateWithPage2Data is defined, or use a ref
+  // For now, we'll comment it out and handle it differently
+  // useEffect(() => {
+  //   if (isPage2Variant && page2Data && !page2DataProcessed && !isGenerating && user?.id) {
+  //     console.log("[GenerateImages] Auto-starting generation with page2 data");
+  //     setPage2DataProcessed(true);
+  //     
+  //     // Use first example image as default (or let user select)
+  //     const defaultExampleImage = exampleImages[0];
+  //     if (!defaultExampleImage) {
+  //       toast.error("No example images available");
+  //       return;
+  //     }
+
+  //     // Start generation automatically
+  //     handleGenerateWithPage2Data(page2Data, defaultExampleImage);
+  //   }
+  // }, [isPage2Variant, page2Data, page2DataProcessed, isGenerating, user?.id]);
+
+  // If we have a batchId, use it for polling - check immediately on mount and when location changes
+  useEffect(() => {
+    // Parse URL params from current location
+    const urlParamsForBatch = new URLSearchParams(window.location.search);
+    const batchIdFromUrl = urlParamsForBatch.get("batchId");
+    
+    console.log("[GenerateImages] Checking for batchId:", {
+      isPage2Variant,
+      batchIdFromUrl,
+      currentBatchId,
+      location,
+    });
+    
+    if (isPage2Variant && batchIdFromUrl) {
+      const batchIdNum = parseInt(batchIdFromUrl);
+      if (!isNaN(batchIdNum)) {
+        console.log("[GenerateImages] Page2: Found batchId in URL:", batchIdNum, "currentBatchId:", currentBatchId);
+        if (batchIdNum !== currentBatchId) {
+          console.log("[GenerateImages] Page2: Setting batch ID from URL:", batchIdNum);
+          setCurrentBatchId(batchIdNum);
+          setIsGenerating(true);
+          setShowModal(true); // Open modal immediately
+          setGenerationProgress(0);
+          setCompletedImages(0);
+          setGeneratedImages([]);
+          setErrorMessage(null);
+          console.log("[GenerateImages] Page2: Modal opened, showModal set to true, isGenerating set to true");
+        }
+        // Don't check showModal/isGenerating here to avoid loops - only set when batchId changes
+      } else {
+        console.warn("[GenerateImages] Page2: Invalid batchId in URL:", batchIdFromUrl);
+      }
+    }
+    // Removed the else if block that checked showModal/isGenerating to avoid infinite loops
+  }, [isPage2Variant, location, currentBatchId]);
+  
+  // Also check on initial mount for page2 with batchId
+  // This ensures the modal opens even if the variant detection hasn't completed yet
+  useEffect(() => {
+    const urlParamsForBatch = new URLSearchParams(window.location.search);
+    const batchIdFromUrl = urlParamsForBatch.get("batchId");
+    const urlVariantForBatch = urlParamsForBatch.get("variant");
+    
+    // Check all variant sources synchronously
+    const firstVariantForBatch = typeof window !== "undefined"
+      ? localStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null
+      : null;
+    const cachedVariantForBatch = typeof window !== "undefined" 
+      ? localStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null
+      : null;
+    const isPage2ForBatch = urlVariantForBatch === "page2" || firstVariantForBatch === "page2" || cachedVariantForBatch === "page2";
+    
+    console.log("[GenerateImages] Initial mount check:", {
+      isPage2Variant,
+      isPage2ForBatch,
+      batchIdFromUrl,
+      currentBatchId,
+      showModal,
+    });
+    
+    if ((isPage2Variant || isPage2ForBatch) && batchIdFromUrl) {
+      const batchIdNum = parseInt(batchIdFromUrl);
+      if (!isNaN(batchIdNum)) {
+        console.log("[GenerateImages] Page2: Initial mount with batchId:", batchIdNum, "currentBatchId:", currentBatchId);
+        if (!currentBatchId || currentBatchId !== batchIdNum) {
+          console.log("[GenerateImages] Page2: Setting up batch from URL on mount");
+          setCurrentBatchId(batchIdNum);
+          setIsGenerating(true);
+          setShowModal(true); // Open modal immediately
+          setGenerationProgress(0);
+          setCompletedImages(0);
+          setGeneratedImages([]);
+          setErrorMessage(null);
+          console.log("[GenerateImages] Page2: Modal opened on mount, showModal:", true, "isGenerating:", true);
+        } else if (!showModal) {
+          // If batchId is already set but modal is closed, open it
+          console.log("[GenerateImages] Page2: BatchId already set but modal closed, opening modal");
+          setShowModal(true);
+          setIsGenerating(true);
+        }
+      }
+    }
+  }, []); // Only run on mount
+
+  // Calculate credits needed based on selected example images (4 variations per selected image)
+  // For page2 variant, default to 4 images (1 example image * 4 variations)
+  const imageCount = isPage2Variant ? 1 : selectedImages.length;
+  const totalImagesToGenerate = isPage2Variant ? 4 : imageCount * 4; // 4 images per selected image
+
+  // Update progress from polling - use page2 query if page2 variant, otherwise use regular query
+  const batchStatusData = isPage2Variant 
+    ? getPage2BatchStatusQuery.data 
+    : getBatchStatusQuery.data;
+  
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
+  useEffect(() => {
+    if (batchStatusData && currentBatchId) {
+      const { batch, photos } = batchStatusData;
+      
+      // Create a unique key for this batch status to avoid unnecessary updates
+      const statusKey = `${batch.id}-${batch.status}-${batch.totalImagesGenerated}-${photos.length}`;
+      
+      // Skip if this is the same status we already processed
+      if (lastBatchStatusRef.current === statusKey) {
+        return;
+      }
+      
+      lastBatchStatusRef.current = statusKey;
+      
+      console.log("[GenerateImages] Batch status data received:", {
+        batchStatus: batch.status,
+        totalImages: batch.totalImagesGenerated,
+        photosCount: photos.length,
+      });
+      
+      // Update progress - don't force modal open if user closed it
+      // Only open modal automatically when generation completes or fails (so user sees results)
+      if (batch.status === "completed") {
+        setIsGenerating(false);
+        setGenerationProgress(100);
+        setCompletedImages(batch.totalImagesGenerated);
+        const completedImages = photos.map((p: { id: number; url: string; status: string }) => ({ id: p.id, url: p.url, status: p.status }));
+        setGeneratedImages(completedImages);
+        console.log("[GenerateImages] Generation completed:", batch.totalImagesGenerated, "images");
+        // Open modal when completed so user can see results
+        setShowModal((prev) => prev ? prev : true);
+      } else if (batch.status === "failed") {
+        setIsGenerating(false);
+        setErrorMessage("Image generation failed. Please try again.");
+        console.log("[GenerateImages] Generation failed");
+        // Open modal when failed so user can see error
+        setShowModal((prev) => prev ? prev : true);
+      } else if (batch.status === "generating") {
+        // Don't force modal open if user closed it - allow them to close it
+        // Only update progress (modal can be closed by user)
+        setIsGenerating(true);
+        // Update progress based on generated images (even if modal is closed)
+        setCompletedImages(batch.totalImagesGenerated);
+        // Use batch.totalImagesGenerated or fallback to calculated total
+        // For page2, we know it's 4 images, but use batch data if available
+        const expectedTotal = isPage2Variant 
+          ? 4 // Page2 always generates 4 images
+          : (batch.totalImagesGenerated > 0 
+            ? Math.max(batch.totalImagesGenerated, totalImagesToGenerate)
+            : totalImagesToGenerate);
+        const progress = Math.min(95, (batch.totalImagesGenerated / expectedTotal) * 100);
+        setGenerationProgress(progress);
+        
+        console.log("[GenerateImages] Generation in progress:", {
+          completed: batch.totalImagesGenerated,
+          expected: expectedTotal,
+          progress: `${progress}%`,
+        });
+        
+        // Update generated images list - only if changed to avoid unnecessary re-renders
+        const newImages = photos.map((p: { id: number; url: string; status: string }) => ({ id: p.id, url: p.url, status: p.status }));
+        setGeneratedImages((prev) => {
+          // Only update if the images actually changed
+          if (prev.length !== newImages.length || 
+              prev.some((img, idx) => img.id !== newImages[idx]?.id || img.url !== newImages[idx]?.url)) {
+            return newImages;
+          }
+          return prev;
+        });
+      }
+    } else if (currentBatchId && !batchStatusData) {
+      // We have a batchId but no data yet - only open modal initially (don't force if user closed it)
+      // This check only runs when batchId changes or data is first loading
+      lastBatchStatusRef.current = null; // Reset when batchId changes
+    }
+  }, [batchStatusData, currentBatchId, totalImagesToGenerate, isPage2Variant]);
+  
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
+  // Define handleDownloadImage using useCallback (must be before return)
+  const handleDownloadImage = useCallback((image: { id: number; url: string; status: string } | string, index: number) => {
+    const imageUrl = typeof image === 'string' ? image : image.url;
+    // Create a temporary anchor element to trigger download
+    const link = document.createElement('a');
+    link.href = imageUrl;
+    link.download = `generated-image-${index + 1}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, []);
+  
+  // Calculate derived values (not hooks, so safe to call after useEffect)
+  const creditsNeeded = totalImagesToGenerate; // 1 credit per generated image
+  const userCredits = user?.credits ?? 0;
+  const hasEnoughCredits = creditsNeeded <= userCredits;
+  const selectedModelStatus = modelsData?.find((m) => m.id.toString() === modelId)?.status;
+  const isModelReady = selectedModelStatus === "ready";
+  
+  // For page2 variant, model is optional; for page1, model is required
+  const canGenerate = isPage2Variant
+    ? imageCount > 0 && hasEnoughCredits
+    : imageCount > 0 && hasEnoughCredits && modelId !== "" && isModelReady;
+  
+  // Define helper functions and constants (not hooks, safe to call after hooks)
+  const backgrounds = ["office", "neutral", "studio"];
   const styles = ["formal", "casual", "elegant", "professional"];
-
   const badges = t("generateImages.badges", { returnObjects: true }) as { premium: string; new: string; popular: string };
   
   // Filter example images based on gender and selected styles/backgrounds
@@ -113,86 +431,143 @@ export default function GenerateImages() {
     );
   };
 
-  // Calculate credits needed based on selected example image (4 variations per selected image)
-  const imageCount = selectedImage !== null ? 1 : 0;
-  const totalImagesToGenerate = imageCount * 4; // 4 images per selected image
+  // Check if we should show DashboardV2 (no batchId and no page2Data)
+  // This check happens AFTER all hooks are called
+  const urlParamsForCheck = new URLSearchParams(window.location.search);
+  const batchIdFromUrlCheck = urlParamsForCheck.get("batchId");
+  const hasBatchId = batchIdFromUrlCheck || currentBatchId;
+  const shouldShowDashboardV2 = isPage2Variant && !hasBatchId && !page2Data && !showModal && !isGenerating;
+  const shouldShowPage1UI = !isPage2Variant || !hasBatchId;
+  
+  console.log("[GenerateImages] Render check:", {
+    isPage2Variant,
+    batchIdFromUrlCheck,
+    currentBatchId,
+    showModal,
+    isGenerating,
+    page2Data: !!page2Data,
+    shouldShowDashboardV2,
+  });
+  
+  // For page2 variant without batchId, show DashboardV2 flow
+  // IMPORTANT: This return happens AFTER all hooks are called
+  if (shouldShowDashboardV2) {
+    console.log("[GenerateImages] Rendering DashboardV2 flow (page2 variant, no batchId)");
+    return <DashboardV2 />;
+  }
+  
+  console.log("[GenerateImages] Rendering GenerateImages", isPage2Variant ? "(page2 variant with data)" : "(page1 variant)");
 
-  // Handle batch status query errors
-  useEffect(() => {
-    if (getBatchStatusQuery.error && currentBatchId && isGenerating) {
-      console.error(`[GenerateImages] Batch status query error for batch ${currentBatchId}:`, getBatchStatusQuery.error);
-      // Don't show error immediately - might be a temporary issue
-      // Only show error if it persists
-      if (getBatchStatusQuery.error.message?.includes("not found") || 
-          getBatchStatusQuery.error.message?.includes("Batch not found")) {
-        console.error(`[GenerateImages] Batch ${currentBatchId} not found - this might be a stale batch ID`);
-        setIsGenerating(false);
-        setErrorMessage("Batch not found. The generation may have failed to start. Please try again.");
+  // Handle generation with page2 data (auto-called)
+  const handleGenerateWithPage2Data = async (data: any, exampleImage: any) => {
+    if (!user?.id) {
+      toast.error("User not authenticated");
+      return;
+    }
+
+    // Build base prompt from form data
+    let basePrompt = `Create a photorealistic professional portrait image of the person in the reference photos.`;
+    
+    if (data.formData.gender) {
+      basePrompt += ` Gender: ${data.formData.gender}.`;
+    }
+    if (data.formData.age) {
+      basePrompt += ` Age: ${data.formData.age}.`;
+    }
+    if (data.formData.hairColor) {
+      basePrompt += ` Hair color: ${data.formData.hairColor}.`;
+    }
+    if (data.formData.hairLength) {
+      basePrompt += ` Hair length: ${data.formData.hairLength}.`;
+    }
+    if (data.formData.hairStyle) {
+      basePrompt += ` Hair style: ${data.formData.hairStyle}.`;
+    }
+    if (data.formData.ethnicity) {
+      basePrompt += ` Ethnicity: ${data.formData.ethnicity}.`;
+    }
+    if (data.formData.bodyType) {
+      basePrompt += ` Body type: ${data.formData.bodyType}.`;
+    }
+    if (data.formData.attire && data.formData.attire.length > 0) {
+      basePrompt += ` Attire: ${data.formData.attire.join(", ")}.`;
+    }
+    if (data.formData.backgrounds && data.formData.backgrounds.length > 0) {
+      basePrompt += ` Background: ${data.formData.backgrounds.join(", ")}.`;
+    }
+    
+    basePrompt += ` High quality, professional photography, natural lighting, sharp focus.`;
+
+    // Reset state
+    setIsGenerating(true);
+    setGenerationProgress(0);
+    setCompletedImages(0);
+    setGeneratedImages([]);
+    setErrorMessage(null);
+    setCurrentBatchId(null);
+    setShowModal(true);
+
+    try {
+      // Convert example image URL to absolute if needed
+      let absoluteUrl = exampleImage.url;
+      if (!exampleImage.url.startsWith('http')) {
+        const publicDomain = import.meta.env.VITE_PUBLIC_DOMAIN || window.location.origin;
+        absoluteUrl = exampleImage.url.startsWith('/') 
+          ? `${publicDomain}${exampleImage.url}`
+          : `${publicDomain}/${exampleImage.url}`;
       }
-    }
-  }, [getBatchStatusQuery.error, currentBatchId, isGenerating]);
 
-  // Debug: Log when batch ID changes
-  useEffect(() => {
-    if (currentBatchId) {
-      console.log(`[GenerateImages] Current batch ID changed to: ${currentBatchId}`);
-    }
-  }, [currentBatchId]);
+      const result = await generateMutation.mutateAsync({
+        modelId: undefined, // No model for page2
+        trainingImageUrls: data.trainingImageUrls, // User's uploaded images
+        exampleImages: [{
+          id: exampleImage.id,
+          url: absoluteUrl,
+          prompt: exampleImage.prompt || "professional portrait",
+        }],
+        basePrompt,
+        aspectRatio: "9:16", // Default for page2
+        numImagesPerExample: 4,
+        glasses: "no",
+        hairColor: data.formData.hairColor || undefined,
+        hairStyle: data.formData.hairStyle || undefined,
+        backgrounds: data.formData.backgrounds || [],
+        styles: data.formData.attire || [],
+      });
 
-  // Update progress from polling
-  useEffect(() => {
-    if (getBatchStatusQuery.data && currentBatchId) {
-      const { batch, photos } = getBatchStatusQuery.data;
-      
-      // Update progress
-      if (batch.status === "completed") {
-        setIsGenerating(false);
-        setGenerationProgress(100);
-        setCompletedImages(batch.totalImagesGenerated);
-        setGeneratedImages(photos.map(p => ({ id: p.id, url: p.url, status: p.status })));
-      } else if (batch.status === "failed") {
-        setIsGenerating(false);
-        setErrorMessage("Image generation failed. Please try again.");
-      } else if (batch.status === "generating") {
-        // Use actual photos count for more accurate progress
-        const actualPhotosCount = photos.length;
-        const expectedTotal = totalImagesToGenerate;
-        
-        // Update completed images count
-        setCompletedImages(actualPhotosCount);
-        
-        // Calculate progress: start at 5% when generation begins, go up to 95% as images are generated
-        // This gives a smoother progress experience
-        let progress = 0;
-        if (actualPhotosCount === 0) {
-          // Just started - show 5% to indicate processing has begun
-          progress = 5;
-        } else if (actualPhotosCount >= expectedTotal) {
-          // All images generated, but batch not yet marked as completed
-          progress = 95;
-        } else {
-          // Calculate progress: 5% + (actualPhotosCount / expectedTotal) * 90%
-          // This gives us 5% to 95% range
-          progress = 5 + (actualPhotosCount / expectedTotal) * 90;
-        }
-        
-        setGenerationProgress(Math.min(95, Math.max(5, progress)));
-        
-        // Update generated images list
-        const newImages = photos.map(p => ({ id: p.id, url: p.url, status: p.status }));
-        setGeneratedImages(newImages);
+      if (result.batchId) {
+        setCurrentBatchId(result.batchId);
+        console.log("[GenerateImages] Generation started, batch ID:", result.batchId);
+      } else {
+        throw new Error("No batch ID returned");
       }
+
+      // Clear page2 data after successful start
+      localStorage.removeItem('dashboardV2_data');
+    } catch (error: any) {
+      console.error("[GenerateImages] Generation error:", error);
+      setIsGenerating(false);
+      setErrorMessage(error?.message || "Failed to start generation");
+      toast.error("Failed to generate images", {
+        description: error?.message || "Please try again",
+      });
     }
-  }, [getBatchStatusQuery.data, currentBatchId, totalImagesToGenerate]);
-  const creditsNeeded = totalImagesToGenerate; // 1 credit per generated image
-  const userCredits = user?.credits ?? 0;
-  const hasEnoughCredits = creditsNeeded <= userCredits;
-  const selectedModelStatus = modelsData?.find((m) => m.id.toString() === modelId)?.status;
-  const isModelReady = selectedModelStatus === "ready";
-  const canGenerate = imageCount > 0 && hasEnoughCredits && modelId !== "" && isModelReady;
+  };
 
   const handleGenerate = async () => {
-    if (!canGenerate || !modelId) return;
+    if (!canGenerate) return;
+    
+    // Build reference image URLs:
+    // For page2 variant: Only use example images (no model required)
+    // For page1 variant: Use model's training images + example images
+    const referenceImageUrls: string[] = [];
+    
+    if (!isPage2Variant) {
+      // Page1 variant: require model
+      if (!modelId) {
+        alert(t("generateImages.pleaseSelectValidModel"));
+        return;
+      }
     
     // Get selected model
     const selectedModel = modelsData?.find((m) => m.id.toString() === modelId);
@@ -200,11 +575,6 @@ export default function GenerateImages() {
       alert(t("generateImages.pleaseSelectValidModel"));
       return;
     }
-
-    // Build reference image URLs:
-    // 1. First, add the model's training images (limited to 1 to minimize token usage and avoid rate limits)
-    // 2. Then, add the selected example images for style reference
-    const referenceImageUrls: string[] = [];
     
     // Add model's training images (max 1 to minimize payload size and token consumption)
     // Using only 1 training image significantly reduces the payload size and helps avoid rate limits
@@ -219,6 +589,8 @@ export default function GenerateImages() {
       alert(t("generateImages.noTrainingImagesFound"));
       return;
     }
+    }
+    // For page2 variant, we skip model images and use only example images
     
     // Get selected example image with its prompt
     const selectedExampleImage = filteredExampleImages.find((img) => 
@@ -278,13 +650,32 @@ export default function GenerateImages() {
 
       // Call the API with new structure
       const result = await generateMutation.mutateAsync({
-        modelId: parseInt(modelId),
-        trainingImageUrls: referenceImageUrls,
-        exampleImages: [{
-          id: selectedExampleImage.id,
-          url: absoluteUrl,
-          prompt: selectedExampleImage.prompt,
-        }],
+        modelId: isPage2Variant ? undefined : parseInt(modelId), // Optional for page2
+        trainingImageUrls: referenceImageUrls, // Empty for page2, contains model images for page1
+        exampleImages: selectedExampleImages.map(img => {
+          // Convert relative URLs to absolute URLs
+          let absoluteUrl = img.url;
+          
+          if (!img.url.startsWith('http')) {
+            // If it's a relative URL, convert to absolute
+            if (img.url.startsWith('/')) {
+              // Use production domain if available, otherwise use current origin
+              // In production, this should be your actual domain
+              const publicDomain = import.meta.env.VITE_PUBLIC_DOMAIN || window.location.origin;
+              absoluteUrl = `${publicDomain}${img.url}`;
+            } else {
+              // If it doesn't start with /, assume it's relative to root
+              const publicDomain = import.meta.env.VITE_PUBLIC_DOMAIN || window.location.origin;
+              absoluteUrl = `${publicDomain}/${img.url}`;
+            }
+          }
+          
+          return {
+            id: img.id,
+            url: absoluteUrl,
+            prompt: img.prompt,
+          };
+        }),
         basePrompt,
         aspectRatio,
         numImagesPerExample: 4,
@@ -316,19 +707,16 @@ export default function GenerateImages() {
     }
   };
 
-  const handleDownloadImage = (image: { id: number; url: string; status: string } | string, index: number) => {
-    const imageUrl = typeof image === 'string' ? image : image.url;
-    // Create a temporary anchor element to trigger download
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = `generated-image-${index + 1}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
     <div className="min-h-screen bg-background w-full">
+      {/* Debug indicator for page2 variant */}
+      {isPage2Variant && (
+        <div className="bg-primary/10 border-b border-primary/20 px-6 py-2 text-center text-sm text-primary font-semibold">
+          🎯 Page2 Variant Active - {hasBatchId ? "Generation in progress" : "Model selection hidden"}
+        </div>
+      )}
+      {/* Only show page1 UI if not page2 variant with batchId */}
+      {shouldShowPage1UI && (
       <div className="w-full max-w-[1400px] mx-auto px-6 py-6">
         <div className="flex flex-col lg:flex-row gap-6 w-full">
           {/* Main Content Area */}
@@ -484,7 +872,8 @@ export default function GenerateImages() {
                   
                   <CollapsibleContent>
                     <div className="p-6 space-y-6">
-                      {/* Model ID */}
+                      {/* Model ID - Hidden for page2 variant */}
+                      {!isPage2Variant && (
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 mb-2">
                           <User className="h-4 w-4 text-muted-foreground" />
@@ -525,6 +914,7 @@ export default function GenerateImages() {
                           {modelId && modelsData?.find((m) => m.id.toString() === modelId)?.status === "failed" && t("generateImages.modelFailed")}
                         </p>
                       </div>
+                      )}
 
                       {/* Image Dimensions */}
                       <div className="space-y-2">
@@ -644,7 +1034,7 @@ export default function GenerateImages() {
                               ? t("generateImages.selectImagesToGenerate")
                               : !hasEnoughCredits
                               ? `${t("generateImages.notEnoughCredits")} (${t("generateImages.needCredits")} ${creditsNeeded}, ${t("generateImages.haveCredits")} ${userCredits})`
-                              : modelId === ""
+                              : !isPage2Variant && modelId === ""
                               ? t("generateImages.selectModelFirst")
                               : `${t("generateImages.willUseCredits")} ${creditsNeeded} ${creditsNeeded === 1 ? t("generateImages.credit") : t("generateImages.credits")}`
                             }
@@ -659,16 +1049,26 @@ export default function GenerateImages() {
           </div>
         </div>
       </div>
+      )}
 
-      {/* Generation Progress Modal */}
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-hidden flex flex-col p-0">
+      {/* Generation Progress Modal - Always render, controlled by showModal */}
+      <Dialog 
+        open={showModal} 
+        onOpenChange={(open) => {
+          console.log("[GenerateImages] Modal onOpenChange:", open, "current showModal:", showModal, "isGenerating:", isGenerating);
+          // Allow closing the modal even if generating (user can still see progress in background)
+          if (!open) {
+            setShowModal(false);
+            // Don't stop generation, just close the modal
+            // User can reopen by checking the batch status later
+          }
+        }}
+      >
+        <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-hidden flex flex-col p-0" showCloseButton={true}>
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
-            <div className="flex items-center justify-between">
               <DialogTitle className="text-2xl font-bold">
                 {t("generateImages.professionalPhotosAlmostReady")}
               </DialogTitle>
-            </div>
           </DialogHeader>
           
           <div className="px-6 py-4 space-y-4 flex-shrink-0">
@@ -777,7 +1177,9 @@ export default function GenerateImages() {
               ))}
               
               {/* Show loading placeholders for remaining images */}
-              {Array.from({ length: totalImagesToGenerate - generatedImages.length }).map((_, index) => (
+              {(() => {
+                const remaining = Math.max(0, totalImagesToGenerate - generatedImages.length);
+                return Array.from({ length: remaining }).map((_, index) => (
                 <div
                   key={`loading-${index}`}
                   className="relative aspect-square rounded-lg overflow-hidden border-2 border-border"
@@ -790,7 +1192,8 @@ export default function GenerateImages() {
                     </div>
                   </div>
                 </div>
-              ))}
+                ));
+              })()}
             </div>
           </div>
         </DialogContent>

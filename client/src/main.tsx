@@ -80,12 +80,12 @@ if (!rootElement) {
 } else {
   try {
     createRoot(rootElement).render(
-      <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>
-          <App />
-        </QueryClientProvider>
-      </trpc.Provider>
-    );
+  <trpc.Provider client={trpcClient} queryClient={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
+  </trpc.Provider>
+);
   } catch (error: any) {
     console.error("[Main] Failed to render React app:", error);
     rootElement.innerHTML = `

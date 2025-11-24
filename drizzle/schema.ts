@@ -110,6 +110,7 @@ export const photos = pgTable("photos", {
   userId: integer("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
   modelId: integer("modelId").references(() => models.id, { onDelete: "set null" }),
   generationBatchId: integer("generationBatchId").references(() => photoGenerationBatches.id, { onDelete: "set null" }),
+  page2GenerationBatchId: integer("page2GenerationBatchId"), // References page2_generation_batches (defined later)
   url: text("url"),
   style: text("style"),
   prompt: text("prompt"),
@@ -141,7 +142,7 @@ export const modelTrainingImages = pgTable("model_training_images", {
 export const photoGenerationBatches = pgTable("photo_generation_batches", {
   id: serial("id").primaryKey(),
   userId: integer("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  modelId: integer("modelId").references(() => models.id, { onDelete: "set null" }).notNull(),
+  modelId: integer("modelId").references(() => models.id, { onDelete: "set null" }), // Optional for page2 variant
   totalImagesGenerated: integer("totalImagesGenerated").notNull(),
   creditsUsed: integer("creditsUsed").notNull(),
   aspectRatio: text("aspectRatio").notNull(), // "1:1" | "9:16" | "16:9"
@@ -159,7 +160,7 @@ export const photoGenerationQueue = pgTable("photo_generation_queue", {
   id: serial("id").primaryKey(),
   batchId: integer("batchId").references(() => photoGenerationBatches.id, { onDelete: "cascade" }).notNull(),
   userId: integer("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  modelId: integer("modelId").references(() => models.id, { onDelete: "set null" }).notNull(),
+  modelId: integer("modelId").references(() => models.id, { onDelete: "set null" }), // Optional for page2 variant
   exampleImageId: integer("exampleImageId").notNull(),
   exampleImageUrl: text("exampleImageUrl").notNull(),
   exampleImagePrompt: text("exampleImagePrompt").notNull(),
@@ -181,6 +182,46 @@ export const photoGenerationQueue = pgTable("photo_generation_queue", {
   errorMessage: text("errorMessage"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   processedAt: timestamp("processedAt"),
+  completedAt: timestamp("completedAt"),
+});
+
+// Page2 Generation Tables (no model required)
+export const page2GenerationBatches = pgTable("page2_generation_batches", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  totalImagesGenerated: integer("totalImagesGenerated").default(0).notNull(),
+  creditsUsed: integer("creditsUsed").notNull(),
+  aspectRatio: text("aspectRatio").notNull(), // "1:1" | "9:16" | "16:9"
+  glasses: text("glasses").default("no").notNull(), // "yes" | "no"
+  hairColor: text("hairColor"), // "default" | "black" | "brown" | "blonde" | "red"
+  hairStyle: text("hairStyle"), // "no-preference" | "short" | "medium" | "long" | "curly"
+  backgrounds: jsonb("backgrounds").default([]),
+  styles: jsonb("styles").default([]),
+  status: text("status").default("generating").notNull(), // "generating" | "completed" | "failed"
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  completedAt: timestamp("completedAt"),
+});
+
+export const page2GenerationQueue = pgTable("page2_generation_queue", {
+  id: serial("id").primaryKey(),
+  batchId: integer("batchId").references(() => page2GenerationBatches.id, { onDelete: "cascade" }).notNull(),
+  userId: integer("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  exampleImageId: integer("exampleImageId"),
+  exampleImageUrl: text("exampleImageUrl").notNull(),
+  exampleImagePrompt: text("exampleImagePrompt"),
+  trainingImageUrls: jsonb("trainingImageUrls").default([]).notNull(),
+  basePrompt: text("basePrompt").notNull(),
+  aspectRatio: text("aspectRatio").notNull(), // "1:1" | "9:16" | "16:9"
+  numImagesPerExample: integer("numImagesPerExample").default(4).notNull(),
+  glasses: text("glasses").default("no").notNull(),
+  hairColor: text("hairColor"),
+  hairStyle: text("hairStyle"),
+  backgrounds: jsonb("backgrounds").default([]),
+  styles: jsonb("styles").default([]),
+  status: text("status").default("pending").notNull(), // "pending" | "processing" | "completed" | "failed"
+  generatedImageUrl: text("generatedImageUrl"),
+  errorMessage: text("errorMessage"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
   completedAt: timestamp("completedAt"),
 });
 
@@ -253,6 +294,10 @@ export type ModelTrainingImage = typeof modelTrainingImages.$inferSelect;
 export type InsertModelTrainingImage = typeof modelTrainingImages.$inferInsert;
 export type PhotoGenerationBatch = typeof photoGenerationBatches.$inferSelect;
 export type InsertPhotoGenerationBatch = typeof photoGenerationBatches.$inferInsert;
+export type Page2GenerationBatch = typeof page2GenerationBatches.$inferSelect;
+export type InsertPage2GenerationBatch = typeof page2GenerationBatches.$inferInsert;
+export type Page2GenerationQueue = typeof page2GenerationQueue.$inferSelect;
+export type InsertPage2GenerationQueue = typeof page2GenerationQueue.$inferInsert;
 export type Coupon = typeof coupons.$inferSelect;
 export type InsertCoupon = typeof coupons.$inferInsert;
 export type CouponRedemption = typeof couponRedemptions.$inferSelect;

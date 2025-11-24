@@ -306,18 +306,18 @@ export default function BuyCredits() {
           <Accordion type="single" collapsible className="w-full space-y-2">
             {faqItems && faqItems.length > 0 ? (
               faqItems.map((item, idx) => (
-                <AccordionItem
-                  key={idx}
-                  value={`item-${idx}`}
-                  className="border-border bg-card/50 rounded-lg px-4"
-                >
-                  <AccordionTrigger className="text-left hover:no-underline py-4">
+              <AccordionItem
+                key={idx}
+                value={`item-${idx}`}
+                className="border-border bg-card/50 rounded-lg px-4"
+              >
+                <AccordionTrigger className="text-left hover:no-underline py-4">
                     {item.q || item.question || ""}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground pb-4">
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground pb-4">
                     {item.a || item.answer || ""}
-                  </AccordionContent>
-                </AccordionItem>
+                </AccordionContent>
+              </AccordionItem>
               ))
             ) : (
               <div className="text-center text-muted-foreground py-8">
