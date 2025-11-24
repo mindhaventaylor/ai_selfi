@@ -5,7 +5,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { exampleImages } from "@/data/exampleImages";
+import { exampleImages, filterExampleImages } from "@/data/exampleImages";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { 
@@ -189,6 +189,7 @@ export default function DashboardV2() {
                 value={formData.hairStyle}
                 onChange={(value) => updateFormData("hairStyle", value)}
                 onNext={handleNext}
+                formData={formData}
               />
             )}
 
@@ -197,6 +198,7 @@ export default function DashboardV2() {
                 value={formData.ethnicity}
                 onChange={(value) => updateFormData("ethnicity", value)}
                 onNext={handleNext}
+                formData={formData}
               />
             )}
 
@@ -213,6 +215,7 @@ export default function DashboardV2() {
                 value={formData.attire}
                 onChange={(value) => toggleArrayValue("attire", value)}
                 onNext={handleNext}
+                formData={formData}
               />
             )}
 
@@ -221,6 +224,7 @@ export default function DashboardV2() {
                 value={formData.backgrounds}
                 onChange={(value) => toggleArrayValue("backgrounds", value)}
                 onNext={handleNext}
+                formData={formData}
               />
             )}
 
@@ -482,18 +486,17 @@ function HairLengthStep({ value, onChange, onNext }: { value: string; onChange: 
           <button
             key={length.value}
             onClick={() => onChange(length.value)}
-            className={`p-6 rounded-lg border-2 transition-all aspect-square ${
+            className={`p-4 rounded-lg border-2 transition-all ${
               value === length.value
                 ? "border-primary bg-primary/10"
                 : "border-border hover:border-primary/50"
             }`}
           >
-            <div className="flex flex-col items-center justify-center h-full">
-              <div className="w-12 h-12 rounded-full bg-muted mb-2" />
+            <div className="flex flex-col items-center justify-center">
               {value === length.value && (
-                <Check className="h-5 w-5 text-primary mt-2" />
+                <Check className="h-5 w-5 text-primary mb-2" />
               )}
-              <p className="text-sm font-semibold mt-2 text-center">{length.label}</p>
+              <p className="text-sm font-semibold text-center">{length.label}</p>
             </div>
           </button>
         ))}
@@ -512,7 +515,7 @@ function HairLengthStep({ value, onChange, onNext }: { value: string; onChange: 
 }
 
 // Hair Style Step
-function HairStyleStep({ value, onChange, onNext }: { value: string; onChange: (value: string) => void; onNext: () => void }) {
+function HairStyleStep({ value, onChange, onNext, formData }: { value: string; onChange: (value: string) => void; onNext: () => void; formData: any }) {
   const { t } = useTranslation();
 
   const styles = [
@@ -521,6 +524,13 @@ function HairStyleStep({ value, onChange, onNext }: { value: string; onChange: (
     { value: "curly", label: t("dashboardV2.curly") || "Curly" },
     { value: "dreadlocks", label: t("dashboardV2.dreadlocks") || "Dreadlocks" },
   ];
+
+  // Filter example images based on selected gender, attire (styles), and backgrounds
+  const gender = formData.gender === "man" || formData.gender === "woman" ? formData.gender : "man";
+  const selectedStyles = formData.attire || [];
+  const selectedBackgrounds = formData.backgrounds || [];
+  const filteredImages = filterExampleImages(exampleImages, gender, selectedStyles, selectedBackgrounds);
+  const displayImages = filteredImages.length > 0 ? filteredImages.slice(0, 6) : exampleImages.slice(0, 6);
 
   return (
     <div className="space-y-6">
@@ -532,25 +542,41 @@ function HairStyleStep({ value, onChange, onNext }: { value: string; onChange: (
       </div>
 
       <div className="grid grid-cols-4 gap-4 mt-8">
-        {styles.map((style) => (
-          <button
-            key={style.value}
-            onClick={() => onChange(style.value)}
-            className={`p-6 rounded-lg border-2 transition-all ${
-              value === style.value
-                ? "border-primary bg-primary/10"
-                : "border-border hover:border-primary/50"
-            }`}
-          >
-            <div className="flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full bg-muted mb-3" />
-              {value === style.value && (
-                <Check className="h-5 w-5 text-primary mb-2" />
-              )}
-              <p className="text-sm font-semibold">{style.label}</p>
-            </div>
-          </button>
-        ))}
+        {styles.map((style, index) => {
+          // Get an example image for this button (cycle through available images)
+          const imageIndex = index % displayImages.length;
+          const exampleImage = displayImages[imageIndex];
+          
+          return (
+            <button
+              key={style.value}
+              onClick={() => onChange(style.value)}
+              className={`relative p-0 rounded-lg border-2 transition-all overflow-hidden ${
+                value === style.value
+                  ? "border-primary bg-primary/10"
+                  : "border-border hover:border-primary/50"
+              }`}
+            >
+              <div className="flex flex-col items-center">
+                {/* Example image inside button */}
+                <div className="w-full aspect-[3/4] relative">
+                  <img
+                    src={exampleImage.url}
+                    alt={`Example for ${style.label}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  {value === style.value && (
+                    <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                      <Check className="h-8 w-8 text-primary bg-background rounded-full p-1" />
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm font-semibold p-3">{style.label}</p>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       <Button
@@ -566,7 +592,7 @@ function HairStyleStep({ value, onChange, onNext }: { value: string; onChange: (
 }
 
 // Ethnicity Step
-function EthnicityStep({ value, onChange, onNext }: { value: string; onChange: (value: string) => void; onNext: () => void }) {
+function EthnicityStep({ value, onChange, onNext, formData }: { value: string; onChange: (value: string) => void; onNext: () => void; formData: any }) {
   const { t } = useTranslation();
 
   const ethnicities = [
@@ -581,6 +607,13 @@ function EthnicityStep({ value, onChange, onNext }: { value: string; onChange: (
     { value: "multiracial", label: t("dashboardV2.multiracial") || "Multiracial" },
     { value: "other", label: t("dashboardV2.other") || "Other" },
   ];
+
+  // Filter example images based on selected gender, attire (styles), and backgrounds
+  const gender = formData.gender === "man" || formData.gender === "woman" ? formData.gender : "man";
+  const selectedStyles = formData.attire || [];
+  const selectedBackgrounds = formData.backgrounds || [];
+  const filteredImages = filterExampleImages(exampleImages, gender, selectedStyles, selectedBackgrounds);
+  const displayImages = filteredImages.length > 0 ? filteredImages.slice(0, 6) : exampleImages.slice(0, 6);
 
   return (
     <div className="space-y-6">
@@ -659,12 +692,11 @@ function BodyTypeStep({ value, onChange, onNext }: { value: string; onChange: (v
                 : "border-border hover:border-primary/50"
             }`}
           >
-            <div className="flex flex-col items-center">
-              <div className="w-12 h-12 rounded-full bg-muted mb-2" />
+            <div className="flex flex-col items-center justify-center">
               {value === type.value && (
-                <Check className="h-5 w-5 text-primary mt-1" />
+                <Check className="h-5 w-5 text-primary mb-2" />
               )}
-              <p className="text-xs font-semibold mt-2 text-center">{type.label}</p>
+              <p className="text-xs font-semibold text-center">{type.label}</p>
             </div>
           </button>
         ))}
@@ -683,13 +715,24 @@ function BodyTypeStep({ value, onChange, onNext }: { value: string; onChange: (v
 }
 
 // Attire Step
-function AttireStep({ value, onChange, onNext }: { value: string[]; onChange: (value: string) => void; onNext: () => void }) {
+function AttireStep({ value, onChange, onNext, formData }: { value: string[]; onChange: (value: string) => void; onNext: () => void; formData: any }) {
   const { t } = useTranslation();
 
   const attires = [
     { value: "professional", label: t("dashboardV2.professionalBusiness") || "Professional Business", description: t("dashboardV2.professionalBusinessDesc") || "Formal shirts and suits with matching ties" },
     { value: "business-casual", label: t("dashboardV2.businessCasual") || "Business Casual", description: t("dashboardV2.businessCasualDesc") || "Blazers and jackets, long-sleeved shirts" },
   ];
+
+  // Filter example images based on selected gender and backgrounds only
+  // Don't filter by current attire selection to keep images stable
+  const gender = formData.gender === "man" || formData.gender === "woman" ? formData.gender : "man";
+  const selectedBackgrounds = formData.backgrounds || [];
+  // Filter by gender and backgrounds only, not by attire styles
+  const filteredImages = filterExampleImages(exampleImages, gender, [], selectedBackgrounds);
+  // Get first 2 images for the 2 attire options - these will be fixed
+  const displayImages = filteredImages.length >= 2 
+    ? filteredImages.slice(0, 2) 
+    : (filteredImages.length > 0 ? filteredImages : exampleImages.slice(0, 2));
 
   return (
     <div className="space-y-6">
@@ -701,26 +744,40 @@ function AttireStep({ value, onChange, onNext }: { value: string[]; onChange: (v
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-        {attires.map((attire) => {
+        {attires.map((attire, index) => {
           const isSelected = value.includes(attire.value);
+          // Assign fixed images: first attire gets first image, second attire gets second image
+          const exampleImage = displayImages[index] || displayImages[0];
+          
           return (
             <button
               key={attire.value}
               onClick={() => onChange(attire.value)}
-              className={`p-6 rounded-lg border-2 transition-all text-left ${
+              className={`relative rounded-lg border-2 transition-all overflow-hidden ${
                 isSelected
                   ? "border-primary bg-primary/10"
                   : "border-border hover:border-primary/50"
               }`}
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className="w-20 h-20 rounded-lg bg-muted" />
+              {/* Example image at the top */}
+              <div className="w-full aspect-[3/4] relative">
+                <img
+                  src={exampleImage.url}
+                  alt={`Example for ${attire.label}`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
                 {isSelected && (
-                  <Check className="h-6 w-6 text-primary" />
+                  <div className="absolute top-2 right-2">
+                    <Check className="h-6 w-6 text-primary bg-background rounded-full p-1" />
+                  </div>
                 )}
               </div>
-              <h3 className="font-semibold text-lg mb-1">{attire.label}</h3>
-              <p className="text-sm text-muted-foreground">{attire.description}</p>
+              {/* Label and description at the bottom */}
+              <div className="p-4">
+                <h3 className="font-semibold text-lg mb-1">{attire.label}</h3>
+                <p className="text-sm text-muted-foreground">{attire.description}</p>
+              </div>
             </button>
           );
         })}
@@ -745,7 +802,7 @@ function AttireStep({ value, onChange, onNext }: { value: string[]; onChange: (v
 }
 
 // Background Step
-function BackgroundStep({ value, onChange, onNext }: { value: string[]; onChange: (value: string) => void; onNext: () => void }) {
+function BackgroundStep({ value, onChange, onNext, formData }: { value: string[]; onChange: (value: string) => void; onNext: () => void; formData: any }) {
   const { t } = useTranslation();
 
   const backgrounds = [
@@ -754,6 +811,21 @@ function BackgroundStep({ value, onChange, onNext }: { value: string[]; onChange
     { value: "office", label: t("dashboardV2.office") || "Office", description: t("dashboardV2.officeDesc") || "Bright and minimalist corporate office" },
     { value: "studio", label: t("dashboardV2.studio") || "Studio", description: t("dashboardV2.studioDesc") || "Professional photography studio" },
   ];
+
+  // Filter example images based on selected gender and attire (styles)
+  // Filter by specific background to get images that match each background type
+  const gender = formData.gender === "man" || formData.gender === "woman" ? formData.gender : "man";
+  const attireToStyleMap: Record<string, string> = {
+    "professional": "professional",
+    "business-casual": "casual"
+  };
+  const selectedStyles = (formData.attire || []).map((attire: string) => attireToStyleMap[attire] || attire).filter(Boolean);
+  
+  // Get images for each background - filter by background value
+  const getImagesForBackground = (bgValue: string) => {
+    const filtered = filterExampleImages(exampleImages, gender, selectedStyles, [bgValue]);
+    return filtered.length > 0 ? filtered : exampleImages.filter(img => img.gender === gender || img.gender === "both");
+  };
 
   return (
     <div className="space-y-6">
@@ -765,23 +837,40 @@ function BackgroundStep({ value, onChange, onNext }: { value: string[]; onChange
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-        {backgrounds.map((bg) => {
+        {backgrounds.map((bg, index) => {
           const isSelected = value.includes(bg.value);
+          // Get images filtered by this specific background
+          const backgroundImages = getImagesForBackground(bg.value);
+          // Use different image for each background (index 0, 1, 2, 3) to ensure they're different
+          // If not enough images for this background, get from all filtered images
+          const exampleImage = backgroundImages[index] || backgroundImages[0] || exampleImages[index] || exampleImages[0];
+          
           return (
             <button
               key={bg.value}
               onClick={() => onChange(bg.value)}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              className={`relative rounded-lg border-2 transition-all overflow-hidden ${
                 isSelected
                   ? "border-primary bg-primary/10"
                   : "border-border hover:border-primary/50"
               }`}
             >
-              <div className="flex flex-col items-center">
-                <div className="w-full aspect-video rounded-lg bg-muted mb-3" />
+              {/* Example image */}
+              <div className="w-full aspect-video relative">
+                <img
+                  src={exampleImage.url}
+                  alt={`Example for ${bg.label}`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
                 {isSelected && (
-                  <Check className="h-5 w-5 text-primary mb-2" />
+                  <div className="absolute top-2 right-2">
+                    <Check className="h-5 w-5 text-primary bg-background rounded-full p-0.5" />
+                  </div>
                 )}
+              </div>
+              {/* Label and description */}
+              <div className="p-3">
                 <h3 className="font-semibold mb-1">{bg.label}</h3>
                 <p className="text-xs text-muted-foreground text-center">{bg.description}</p>
               </div>
@@ -819,7 +908,7 @@ function UploadStep({
   setUploadedFiles: (files: UploadedFile[] | ((prev: UploadedFile[]) => UploadedFile[])) => void;
   isDragging: boolean;
   setIsDragging: (dragging: boolean) => void;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   user: any;
   formData: any;
   generateFromPage2Mutation: ReturnType<typeof trpc.photo.generateFromPage2.useMutation>;
@@ -1008,6 +1097,13 @@ function UploadStep({
       });
     }
   };
+
+  // Filter example images based on selected gender, attire (styles), and backgrounds
+  const gender = formData.gender === "man" || formData.gender === "woman" ? formData.gender : "man";
+  const selectedStyles = formData.attire || [];
+  const selectedBackgrounds = formData.backgrounds || [];
+  const filteredImages = filterExampleImages(exampleImages, gender, selectedStyles, selectedBackgrounds);
+  const displayImages = filteredImages.length > 0 ? filteredImages.slice(0, 6) : exampleImages.slice(0, 6);
 
   return (
     <div className="space-y-6">

@@ -45,7 +45,7 @@ type JobPayload = {
   id: number;
   batchId: number;
   userId: number;
-  modelId: number;
+  modelId?: number; // Optional - present for page1 flow, absent for page2 flow
   exampleImageId: number;
   exampleImageUrl: string;
   exampleImagePrompt: string;
@@ -93,18 +93,15 @@ async function processJob(job: JobPayload, supabase: SupabaseClient) {
       throw new Error("No training image URLs provided");
     }
 
-    const exampleImage = await downloadImage(job.exampleImageUrl, supabase);
-    if (!exampleImage) {
-      throw new Error("Failed to download example image");
-    }
-
-    const prompt = `${job.basePrompt}. ${job.exampleImagePrompt}`;
+    // Never use exampleImageUrl - only use model's training images
+    // The example image selection is only for UI purposes, not sent to API
+    const prompt = job.basePrompt; // Don't include exampleImagePrompt
+    
     for (let imgIndex = 0; imgIndex < job.numImagesPerExample; imgIndex++) {
       const generatedImage = await generateSingleImage(
         prompt,
         job.aspectRatio,
         job.trainingImageUrls, // Send URLs instead of downloaded images
-        exampleImage,
         supabase
       );
 
@@ -302,12 +299,11 @@ async function generateSingleImage(
   prompt: string,
   aspectRatio: JobPayload["aspectRatio"],
   trainingImageUrls: string[], // Changed to URLs instead of downloaded images
-  exampleImage: GeneratedImage,
   supabase: SupabaseClient
 ): Promise<GeneratedImage> {
   console.log(`[photo-generation] Generating image with model: ${geminiModel}`);
   console.log(`[photo-generation] Prompt: ${prompt.substring(0, 100)}...`);
-  console.log(`[photo-generation] Training image URLs: ${trainingImageUrls.length}, Example image: 1`);
+  console.log(`[photo-generation] Training image URLs: ${trainingImageUrls.length} (example image not included in API request)`);
   
   const aspectRatioPrompt =
     aspectRatio === "1:1"
@@ -348,18 +344,13 @@ async function generateSingleImage(
   const parts = [
     { text: `${prompt} ${aspectRatioPrompt}` },
     // Send training images as base64 (required by Gemini API)
+    // Example image is never included in the API request
     ...trainingImages.map((img) => ({
       inline_data: {
         mime_type: img.mimeType,
         data: img.data,
       },
     })),
-    {
-      inline_data: {
-        mime_type: exampleImage.mimeType,
-        data: exampleImage.data,
-      },
-    },
   ];
 
   const requestBody = {

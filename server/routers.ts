@@ -83,19 +83,19 @@ async function callSupabaseFunction(
   }
   
   try {
-    const response = await fetch(functionUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${supabaseServiceKey}`,
-        "apikey": supabaseServiceKey,
-      },
-      body: JSON.stringify(body),
-    });
+  const response = await fetch(functionUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${supabaseServiceKey}`,
+      "apikey": supabaseServiceKey,
+    },
+    body: JSON.stringify(body),
+  });
     
     const responseText = await response.text();
-    
-    if (!response.ok) {
+  
+  if (!response.ok) {
       // Try to parse as JSON first
       let errorMessage = responseText;
       try {
@@ -124,7 +124,7 @@ async function callSupabaseFunction(
         error: errorMessage,
       });
       
-      throw new Error(
+    throw new Error(
         `Edge Function ${functionName} failed: ${response.status} ${errorMessage}`
       );
     }
@@ -321,7 +321,7 @@ export const appRouter = router({
           sessionId: session.id,
           url: session.url,
         };
-      }),
+    }),
     createTransaction: protectedProcedure
       .input(z.object({ packId: z.number() }))
       .mutation(async ({ ctx, input }) => {
@@ -575,9 +575,9 @@ export const appRouter = router({
               console.error(`[Model Training] Error calling train-model API for model ${modelData.id}:`, error);
               // Set status to "failed" if we can't even call the API
                   await supabaseServer
-                  .from('models')
-                  .update({ status: "failed" })
-                  .eq('id', modelData.id);
+                    .from('models')
+                    .update({ status: "failed" })
+                    .eq('id', modelData.id);
                 }
           }
 
@@ -641,18 +641,18 @@ export const appRouter = router({
               });
               
               // Try to set status to "failed" if API fails
-              try {
-                const updateDb = await getDb();
-                if (updateDb) {
-                  await updateDb
-                    .update(models)
+            try {
+              const updateDb = await getDb();
+              if (updateDb) {
+                await updateDb
+                  .update(models)
                     .set({ status: "failed" })
-                    .where(eq(models.id, model.id));
-                } else {
+                  .where(eq(models.id, model.id));
+              } else {
                   const { error: updateError } = await supabaseServer
-                    .from('models')
+                  .from('models')
                     .update({ status: "failed" })
-                    .eq('id', model.id);
+                  .eq('id', model.id);
                   if (updateError) {
                     console.error(`[Model Training] Error setting model ${model.id} to failed via REST API:`, updateError);
                   } else {
@@ -1114,38 +1114,38 @@ export const appRouter = router({
 
         // Verify model ownership only if modelId is provided (page1 variant)
         if (input.modelId) {
-          if (!db) {
-            // Verify model ownership via REST API
-            const { data: model, error: modelError } = await supabaseServer
-              .from('models')
-              .select('id, userId, status')
-              .eq('id', input.modelId)
-              .eq('userId', ctx.user.id)
-              .single();
+        if (!db) {
+          // Verify model ownership via REST API
+          const { data: model, error: modelError } = await supabaseServer
+            .from('models')
+            .select('id, userId, status')
+            .eq('id', input.modelId)
+            .eq('userId', ctx.user.id)
+            .single();
 
-            if (modelError || !model) {
-              throw new Error(getServerString("modelNotFound"));
-            }
-
-            if (model.status !== "ready") {
-              throw new Error(getServerString("modelNotReady"));
-            }
-          } else {
-            // Get model to verify ownership (direct DB connection)
-            const [model] = await db
-              .select()
-              .from(models)
-              .where(and(eq(models.id, input.modelId), eq(models.userId, ctx.user.id)))
-              .limit(1);
-
-            if (!model) {
-              throw new Error(getServerString("modelNotFound"));
-            }
-
-            if (model.status !== "ready") {
-              throw new Error(getServerString("modelNotReady"));
-            }
+          if (modelError || !model) {
+            throw new Error(getServerString("modelNotFound"));
           }
+
+          if (model.status !== "ready") {
+            throw new Error(getServerString("modelNotReady"));
+          }
+        } else {
+          // Get model to verify ownership (direct DB connection)
+          const [model] = await db
+            .select()
+            .from(models)
+            .where(and(eq(models.id, input.modelId), eq(models.userId, ctx.user.id)))
+            .limit(1);
+
+          if (!model) {
+            throw new Error(getServerString("modelNotFound"));
+          }
+
+          if (model.status !== "ready") {
+            throw new Error(getServerString("modelNotReady"));
+          }
+        }
         }
         // For page2 variant (no modelId), skip model verification
 
@@ -1235,25 +1235,25 @@ export const appRouter = router({
 
         const jobs = input.exampleImages.map(example => ({
           batchId,
-          userId: ctx.user.id,
+            userId: ctx.user.id,
           ...(input.modelId ? { modelId: input.modelId } : {}), // Only include if provided
           exampleImageId: example.id,
           exampleImageUrl: example.url,
           exampleImagePrompt: example.prompt,
           trainingImageUrls: input.trainingImageUrls || [], // Empty array for page2 variant
           basePrompt: input.basePrompt,
-          aspectRatio: input.aspectRatio,
+            aspectRatio: input.aspectRatio,
           numImagesPerExample: input.numImagesPerExample,
-          glasses: input.glasses,
+            glasses: input.glasses,
           hairColor: input.hairColor ?? null,
           hairStyle: input.hairStyle ?? null,
-          backgrounds: input.backgrounds,
-          styles: input.styles,
+            backgrounds: input.backgrounds,
+            styles: input.styles,
         }));
 
         let insertedJobs: any[] = [];
 
-        if (!db) {
+            if (!db) {
           const { data: insertedData, error: queueError } = await supabaseServer
             .from("photo_generation_queue")
             .insert(jobs)
@@ -1263,12 +1263,12 @@ export const appRouter = router({
             console.error("[Photo Generate] Failed to insert queue jobs (REST):", queueError);
             await supabaseServer
               .from("photo_generation_batches")
-              .update({ status: "failed" })
+                .update({ status: "failed" })
               .eq("id", batchId);
             throw new Error("Failed to enqueue generation jobs");
           }
           insertedJobs = insertedData || [];
-        } else {
+            } else {
           const inserted = await db.insert(photoGenerationQueue).values(jobs).returning();
           insertedJobs = inserted;
         }
@@ -1311,8 +1311,8 @@ export const appRouter = router({
         
         console.log(`[Photo Generate] 🚀 Triggered API processing for ${insertedJobs.length} job(s)`);
 
-        return {
-          success: true,
+        return { 
+          success: true, 
           batchId,
           message: "Image generation jobs queued. Processing will happen shortly.",
         };
@@ -1541,7 +1541,7 @@ export const appRouter = router({
         if (!db) {
           // For page2, don't include modelId in the insert (it's optional)
           const queueInsertData: any = {
-            batchId: batchId,
+          batchId: batchId,
             userId: ctx.user.id,
             exampleImageId: input.exampleImageId,
             exampleImageUrl: absoluteExampleUrl,
