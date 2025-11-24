@@ -38,7 +38,7 @@ const appPromise = (async () => {
 
 export default async function handler(req: any, res: any) {
   try {
-    const app = await appPromise;
+  const app = await appPromise;
     
     // Wrap the app handler to catch any errors
     return new Promise<void>((resolve) => {

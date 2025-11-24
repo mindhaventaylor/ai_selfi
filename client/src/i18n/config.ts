@@ -128,7 +128,7 @@ if (typeof window !== 'undefined') {
   i18n.on('languageChanged', (lng) => {
     setCookie('i18nextLng', lng, 365);
     localStorage.setItem('i18nextLng', lng);
-  });
+    });
 }
 
 export default i18n;

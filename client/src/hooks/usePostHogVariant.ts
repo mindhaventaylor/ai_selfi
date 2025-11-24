@@ -1,0 +1,230 @@
+import { useEffect, useState, useRef } from "react";
+
+declare global {
+  interface Window {
+    posthog?: {
+      init: (apiKey: string, config: any) => void;
+      getFeatureFlag: (flag: string) => string | boolean | undefined;
+      onFeatureFlags: (callback: () => void) => void;
+      isFeatureEnabled: (flag: string) => boolean;
+      identify: (userId: string, properties?: any) => void;
+      capture: (event: string, properties?: any) => void;
+      reset: () => void;
+      __loaded?: boolean;
+    };
+  }
+}
+
+const VARIANT_CACHE_KEY = "aiselfi_dashboard_variant";
+const FIRST_VARIANT_KEY = "aiselfi_first_variant_seen"; // Store the first variant the user ever sees
+const POSTHOG_API_KEY = "phc_67dWkHktFLDuxuUy7zOYyyRBwOj25sw3plZHtKjZzy0";
+const FEATURE_FLAG_KEY = "dashboard-variant";
+
+export type DashboardVariant = "page1" | "page2";
+
+export function usePostHogVariant(userId?: string | number): {
+  variant: DashboardVariant;
+  isLoading: boolean;
+} {
+  const [variant, setVariant] = useState<DashboardVariant>("page1");
+  const [isLoading, setIsLoading] = useState(true);
+  const listenerRegisteredRef = useRef(false); // Track if onFeatureFlags listener is registered
+
+  useEffect(() => {
+    // Check for URL parameter first (highest priority)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlVariant = urlParams.get("variant") as DashboardVariant | null;
+    
+    if (urlVariant && (urlVariant === "page1" || urlVariant === "page2")) {
+      // Save variant from URL to cache immediately
+      localStorage.setItem(VARIANT_CACHE_KEY, urlVariant);
+      setVariant(urlVariant);
+      setIsLoading(false);
+      
+      // Track variant assignment from URL
+      if (window.posthog?.capture) {
+        window.posthog.capture("dashboard_variant_set_via_url", {
+          variant: urlVariant,
+          userId: userId ? String(userId) : undefined,
+        });
+      }
+      
+      // Don't remove variant from URL immediately - let components read it first
+      // Only remove after a short delay to ensure all components have read it
+      setTimeout(() => {
+        const currentParams = new URLSearchParams(window.location.search);
+        if (currentParams.get("variant") === urlVariant) {
+          currentParams.delete("variant");
+          const newUrl = window.location.pathname + (currentParams.toString() ? `?${currentParams.toString()}` : "");
+          window.history.replaceState({}, "", newUrl);
+        }
+      }, 1000);
+      
+      return;
+    }
+    // Initialize PostHog if not already loaded
+    if (typeof window !== "undefined" && !window.posthog?.__loaded) {
+      const script = document.createElement("script");
+      script.innerHTML = `
+        !function(t,e){var o,n,p,r;e.__SV||(window.posthog && window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init Rr Mr fi Cr Ar ci Tr Fr capture Mi calculateEventProperties Lr register register_once register_for_session unregister unregister_for_session Hr getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey displaySurvey canRenderSurvey canRenderSurveyAsync identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty Ur jr createPersonProfile zr kr Br opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing get_explicit_consent_status is_capturing clear_opt_in_out_capturing Dr debug M Nr getPageViewId captureTraceFeedback captureTraceMetric $r".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+        posthog.init('${POSTHOG_API_KEY}', {
+          api_host: 'https://us.i.posthog.com',
+          defaults: '2025-05-24',
+          person_profiles: 'identified_only',
+        });
+      `;
+      document.head.appendChild(script);
+    }
+
+    // Declare checkPostHog in the outer scope so cleanup can access it
+    let checkPostHog: NodeJS.Timeout | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    // Wait for PostHog to load (it's already loaded in the HTML)
+    // Check if PostHog is already available
+    if (window.posthog?.__loaded) {
+      loadVariant();
+    } else {
+      // Wait for PostHog to load
+      checkPostHog = setInterval(() => {
+        if (window.posthog?.__loaded) {
+          if (checkPostHog) clearInterval(checkPostHog);
+          loadVariant();
+        }
+      }, 100);
+
+      // Timeout after 3 seconds
+      timeoutId = setTimeout(() => {
+        if (checkPostHog) clearInterval(checkPostHog);
+        if (!window.posthog?.__loaded) {
+          console.warn("[PostHog] Failed to load, using cached variant");
+          loadCachedVariant();
+        }
+      }, 3000);
+    }
+
+        function loadVariant() {
+          try {
+            // Check if user has a first variant stored (persistent, never changes)
+            const firstVariant = localStorage.getItem(FIRST_VARIANT_KEY) as DashboardVariant | null;
+            
+            if (firstVariant && (firstVariant === "page1" || firstVariant === "page2")) {
+              // User already has a first variant - always use it
+              setVariant(firstVariant);
+              localStorage.setItem(VARIANT_CACHE_KEY, firstVariant);
+              setIsLoading(false);
+              
+              // Track variant view
+              if (window.posthog?.capture) {
+                window.posthog.capture("dashboard_variant_viewed", {
+                  variant: firstVariant,
+                  isFirstVariant: true,
+                });
+              }
+              return;
+            }
+            
+            // No first variant stored - this is the first time user sees a variant
+            // Check cache first
+            const cachedVariant = localStorage.getItem(VARIANT_CACHE_KEY) as DashboardVariant | null;
+            
+            if (cachedVariant && (cachedVariant === "page1" || cachedVariant === "page2")) {
+              // Store as first variant and use it
+              localStorage.setItem(FIRST_VARIANT_KEY, cachedVariant);
+              setVariant(cachedVariant);
+              setIsLoading(false);
+              
+              // Track first variant assignment
+              if (window.posthog?.capture) {
+                window.posthog.capture("dashboard_first_variant_assigned", {
+                  variant: cachedVariant,
+                  userId: userId ? String(userId) : undefined,
+                });
+              }
+              return;
+            }
+
+            // No cache, get from PostHog (first time)
+            if (window.posthog) {
+              // Identify user if userId is provided
+              if (userId && window.posthog.identify) {
+                window.posthog.identify(String(userId));
+              }
+
+              // Get feature flag value
+              const flagValue = window.posthog.getFeatureFlag(FEATURE_FLAG_KEY);
+              const newVariant: DashboardVariant = flagValue === "page2" ? "page2" : "page1";
+              
+              // Store as first variant (persistent, never changes)
+              localStorage.setItem(FIRST_VARIANT_KEY, newVariant);
+              localStorage.setItem(VARIANT_CACHE_KEY, newVariant);
+              setVariant(newVariant);
+              
+              // Track first variant assignment
+              window.posthog.capture("dashboard_first_variant_assigned", {
+                variant: newVariant,
+                userId: userId ? String(userId) : undefined,
+              });
+            } else {
+              // Fallback to page1 if PostHog not available
+              const defaultVariant: DashboardVariant = "page1";
+              localStorage.setItem(FIRST_VARIANT_KEY, defaultVariant);
+              localStorage.setItem(VARIANT_CACHE_KEY, defaultVariant);
+              setVariant(defaultVariant);
+            }
+          } catch (error) {
+            console.error("[PostHog] Error loading variant:", error);
+            loadCachedVariant();
+          } finally {
+            setIsLoading(false);
+          }
+        }
+
+    function loadCachedVariant() {
+      const cached = localStorage.getItem(VARIANT_CACHE_KEY) as DashboardVariant | null;
+      if (cached && (cached === "page1" || cached === "page2")) {
+        setVariant(cached);
+      } else {
+        setVariant("page1");
+        localStorage.setItem(VARIANT_CACHE_KEY, "page1");
+      }
+      setIsLoading(false);
+    }
+
+    // Listen for feature flag updates - only if first variant is not set and listener not registered
+    // Once first variant is set, ignore PostHog updates to maintain consistency
+    const firstVariant = localStorage.getItem(FIRST_VARIANT_KEY);
+    if (!firstVariant && window.posthog?.onFeatureFlags && !listenerRegisteredRef.current) {
+      const handleFeatureFlags = () => {
+        // Check again if first variant was set (might have been set by another component)
+        const currentFirstVariant = localStorage.getItem(FIRST_VARIANT_KEY);
+        if (currentFirstVariant) {
+          // First variant already set, ignore this update
+          return;
+        }
+        
+        const flagValue = window.posthog?.getFeatureFlag(FEATURE_FLAG_KEY);
+        const newVariant: DashboardVariant = flagValue === "page2" ? "page2" : "page1";
+        
+        // Only update if first variant is not set
+        if (!localStorage.getItem(FIRST_VARIANT_KEY)) {
+          localStorage.setItem(FIRST_VARIANT_KEY, newVariant);
+          localStorage.setItem(VARIANT_CACHE_KEY, newVariant);
+          setVariant(newVariant);
+        }
+      };
+      
+      window.posthog.onFeatureFlags(handleFeatureFlags);
+      listenerRegisteredRef.current = true;
+    }
+
+    return () => {
+      if (checkPostHog) clearInterval(checkPostHog);
+      if (timeoutId) clearTimeout(timeoutId);
+      // Note: PostHog doesn't provide a way to remove listeners, but we track registration with ref
+    };
+  }, [userId]); // Removed variant from dependencies to avoid infinite loops
+
+  return { variant, isLoading };
+}
+

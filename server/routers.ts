@@ -1,7 +1,7 @@
 import { COOKIE_NAME } from "../shared/const.js";
 import { desc, eq, and, inArray } from "drizzle-orm";
 import { z } from "zod";
-import { creditPacks, models, photos, transactions, users, modelTrainingImages, photoGenerationBatches, photoGenerationQueue, bugReports, featureSuggestions } from "../drizzle/schema.js";
+import { creditPacks, models, photos, transactions, users, modelTrainingImages, photoGenerationBatches, photoGenerationQueue, page2GenerationBatches, page2GenerationQueue, bugReports, featureSuggestions } from "../drizzle/schema.js";
 import { getDb, upsertUser } from "./db.js";
 import { getSessionCookieOptions } from "./_core/cookies.js";
 import { supabaseServer } from "./_core/lib/supabase.js";
@@ -890,6 +890,156 @@ export const appRouter = router({
           photos: batchPhotos,
         };
       }),
+    getPage2BatchStatus: protectedProcedure
+      .input(z.object({ batchId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const db = await getDb();
+        
+        if (!db) {
+          // Use REST API
+          const { data: batch, error } = await supabaseServer
+            .from('page2_generation_batches')
+            .select('id, status, totalImagesGenerated, createdAt, completedAt')
+            .eq('id', input.batchId)
+            .eq('userId', ctx.user.id)
+            .single();
+          
+          if (error || !batch) {
+            throw new Error("Batch not found");
+          }
+          
+          // Check queue jobs status
+          const { data: queueJobs } = await supabaseServer
+            .from('page2_generation_queue')
+            .select('id, status, errorMessage, generatedImageUrl')
+            .eq('batchId', input.batchId);
+          
+          // Update batch status if needed
+          if (queueJobs && queueJobs.length > 0) {
+            const allFailed = queueJobs.every(j => j.status === "failed");
+            const allCompleted = queueJobs.every(j => j.status === "completed" || j.status === "failed");
+            
+            if (allFailed && batch.status !== "failed") {
+              await supabaseServer
+                .from('page2_generation_batches')
+                .update({ status: "failed" })
+                .eq('id', input.batchId);
+              batch.status = "failed";
+            } else if (allCompleted && batch.status === "generating") {
+              const successfulJobs = queueJobs.filter(j => j.status === "completed").length;
+              await supabaseServer
+                .from('page2_generation_batches')
+                .update({
+                  status: successfulJobs > 0 ? "completed" : "failed",
+                  completedAt: new Date().toISOString(),
+                })
+                .eq('id', input.batchId);
+              batch.status = successfulJobs > 0 ? "completed" : "failed";
+            }
+          }
+          
+          // Get generated photos - for page2, we get from photos table where page2GenerationBatchId matches
+          const { data: photos } = await supabaseServer
+            .from('photos')
+            .select('id, url, status')
+            .eq('userId', ctx.user.id)
+            .eq('page2GenerationBatchId', input.batchId)
+            .order('id', { ascending: true });
+          
+          return {
+            batch: {
+              id: batch.id,
+              status: batch.status,
+              totalImagesGenerated: batch.totalImagesGenerated,
+              createdAt: batch.createdAt,
+              completedAt: batch.completedAt,
+            },
+            photos: (photos || []).map((p: any) => ({
+              id: p.id,
+              url: p.url,
+              status: p.status,
+            })),
+          };
+        }
+        
+        // Use direct database connection
+        const [batch] = await db
+          .select()
+          .from(page2GenerationBatches)
+          .where(
+            and(
+              eq(page2GenerationBatches.id, input.batchId),
+              eq(page2GenerationBatches.userId, ctx.user.id)
+            )
+          )
+          .limit(1);
+        
+        if (!batch) {
+          throw new Error("Batch not found");
+        }
+        
+        // Check queue jobs
+        const queueJobs = await db
+          .select({ 
+            id: page2GenerationQueue.id, 
+            status: page2GenerationQueue.status, 
+            errorMessage: page2GenerationQueue.errorMessage,
+            generatedImageUrl: page2GenerationQueue.generatedImageUrl,
+          })
+          .from(page2GenerationQueue)
+          .where(eq(page2GenerationQueue.batchId, input.batchId));
+        
+        // Update batch status if needed
+        if (queueJobs && queueJobs.length > 0) {
+          const allFailed = queueJobs.every(j => j.status === "failed");
+          const allCompleted = queueJobs.every(j => j.status === "completed" || j.status === "failed");
+          
+          if (allFailed && batch.status !== "failed") {
+            await db
+              .update(page2GenerationBatches)
+              .set({ status: "failed" })
+              .where(eq(page2GenerationBatches.id, input.batchId));
+            batch.status = "failed";
+          } else if (allCompleted && batch.status === "generating") {
+            const successfulJobs = queueJobs.filter(j => j.status === "completed").length;
+            await db
+              .update(page2GenerationBatches)
+              .set({
+                status: successfulJobs > 0 ? "completed" : "failed",
+                completedAt: new Date(),
+              })
+              .where(eq(page2GenerationBatches.id, input.batchId));
+            batch.status = successfulJobs > 0 ? "completed" : "failed";
+          }
+        }
+        
+        // Get generated photos - for page2, we get from photos table where page2GenerationBatchId matches
+        const batchPhotos = await db
+          .select({
+            id: photos.id,
+            url: photos.url,
+            status: photos.status,
+          })
+          .from(photos)
+          .where(
+            and(
+              eq(photos.userId, ctx.user.id),
+              eq(photos.page2GenerationBatchId, input.batchId)
+            )
+          )
+          .orderBy(photos.id);
+        
+        return {
+          batch: {
+            id: batch.id,
+            status: batch.status,
+            totalImagesGenerated: batch.totalImagesGenerated,
+            createdAt: batch.createdAt,
+            completedAt: batch.completedAt,
+          },
+          photos: batchPhotos,
+        };
+      }),
     list: protectedProcedure
       .input(z.object({ 
         sortBy: z.enum(["newest", "favourites"]).default("newest"),
@@ -926,8 +1076,8 @@ export const appRouter = router({
       }),
     generate: protectedProcedure
       .input(z.object({ 
-        modelId: z.number(),
-        trainingImageUrls: z.array(z.string()).min(1), // Model's training images
+        modelId: z.number().optional(), // Optional for page2 variant (no model required)
+        trainingImageUrls: z.array(z.string()).optional(), // Optional for page2 variant
         exampleImages: z.array(z.object({
           id: z.number(),
           url: z.string(),
@@ -956,43 +1106,50 @@ export const appRouter = router({
            throw new Error(getServerString("insufficientCredits"));
         }
 
-        // Use Supabase REST API if direct DB connection is not available
-        if (!db) {
-          // Verify model ownership via REST API
-          const { data: model, error: modelError } = await supabaseServer
-            .from('models')
-            .select('id, userId, status')
-            .eq('id', input.modelId)
-            .eq('userId', ctx.user.id)
-            .single();
+        // Verify model ownership only if modelId is provided (page1 variant)
+        if (input.modelId) {
+          if (!db) {
+            // Verify model ownership via REST API
+            const { data: model, error: modelError } = await supabaseServer
+              .from('models')
+              .select('id, userId, status')
+              .eq('id', input.modelId)
+              .eq('userId', ctx.user.id)
+              .single();
 
-          if (modelError || !model) {
-            throw new Error(getServerString("modelNotFound"));
-          }
+            if (modelError || !model) {
+              throw new Error(getServerString("modelNotFound"));
+            }
 
-          if (model.status !== "ready") {
-            throw new Error(getServerString("modelNotReady"));
-          }
-        } else {
-          // Get model to verify ownership (direct DB connection)
-          const [model] = await db
-            .select()
-            .from(models)
-            .where(and(eq(models.id, input.modelId), eq(models.userId, ctx.user.id)))
-            .limit(1);
+            if (model.status !== "ready") {
+              throw new Error(getServerString("modelNotReady"));
+            }
+          } else {
+            // Get model to verify ownership (direct DB connection)
+            const [model] = await db
+              .select()
+              .from(models)
+              .where(and(eq(models.id, input.modelId), eq(models.userId, ctx.user.id)))
+              .limit(1);
 
-          if (!model) {
-            throw new Error(getServerString("modelNotFound"));
-          }
+            if (!model) {
+              throw new Error(getServerString("modelNotFound"));
+            }
 
-          if (model.status !== "ready") {
-            throw new Error(getServerString("modelNotReady"));
+            if (model.status !== "ready") {
+              throw new Error(getServerString("modelNotReady"));
+            }
           }
         }
+        // For page2 variant (no modelId), skip model verification
 
         // No need to fetch images here - Edge Function will handle it
         console.log(`\n${'='.repeat(80)}`);
-        console.log(`[Photo Generate] 📥 Preparing batch with ${input.trainingImageUrls.length} training image(s) and ${input.exampleImages.length} example image(s)`);
+        const trainingCount = input.trainingImageUrls?.length || 0;
+        console.log(`[Photo Generate] 📥 Preparing batch with ${trainingCount} training image(s) and ${input.exampleImages.length} example image(s)`);
+        if (!input.modelId) {
+          console.log(`[Photo Generate] ⚠️  Page2 variant: No model required, using example images only`);
+        }
         console.log(`${'='.repeat(80)}\n`);
         
         // Deduct credits immediately (before async processing)
@@ -1021,7 +1178,7 @@ export const appRouter = router({
             .from('photo_generation_batches')
             .insert({
               userId: ctx.user.id,
-              modelId: input.modelId,
+              modelId: input.modelId || null, // Null for page2 variant
               totalImagesGenerated: 0, // Will be updated by Edge Function
               creditsUsed: creditsNeeded,
               aspectRatio: input.aspectRatio,
@@ -1044,7 +1201,7 @@ export const appRouter = router({
           // Use direct database connection
           const [batch] = await db.insert(photoGenerationBatches).values({
             userId: ctx.user.id,
-            modelId: input.modelId,
+            ...(input.modelId ? { modelId: input.modelId } : {}), // Only include if provided
             totalImagesGenerated: 0, // Will be updated by Edge Function
             creditsUsed: creditsNeeded,
             aspectRatio: input.aspectRatio,
@@ -1073,11 +1230,11 @@ export const appRouter = router({
         const jobs = input.exampleImages.map(example => ({
           batchId,
           userId: ctx.user.id,
-          modelId: input.modelId,
+          ...(input.modelId ? { modelId: input.modelId } : {}), // Only include if provided
           exampleImageId: example.id,
           exampleImageUrl: example.url,
           exampleImagePrompt: example.prompt,
-          trainingImageUrls: input.trainingImageUrls,
+          trainingImageUrls: input.trainingImageUrls || [], // Empty array for page2 variant
           basePrompt: input.basePrompt,
           aspectRatio: input.aspectRatio,
           numImagesPerExample: input.numImagesPerExample,
@@ -1153,6 +1310,356 @@ export const appRouter = router({
           batchId,
           message: "Image generation jobs queued. Processing will happen shortly.",
         };
+      }),
+    generateFromPage2: protectedProcedure
+      .input(z.object({
+        // User's uploaded images (base64)
+        userImages: z.array(z.object({
+          data: z.string(), // base64 encoded image
+          fileName: z.string(),
+          contentType: z.string(),
+        })).min(1).max(10),
+        // Form data from DashboardV2
+        formData: z.object({
+          gender: z.string().optional(),
+          age: z.string().optional(),
+          hairColor: z.string().optional(),
+          hairLength: z.string().optional(),
+          hairStyle: z.string().optional(),
+          ethnicity: z.string().optional(),
+          bodyType: z.string().optional(),
+          attire: z.array(z.string()).default([]),
+          backgrounds: z.array(z.string()).default([]),
+        }),
+        // Example image to use (default to first one)
+        exampleImageId: z.number().default(1),
+        aspectRatio: z.enum(["1:1", "9:16", "16:9"]).default("9:16"),
+        numImagesPerExample: z.number().default(4),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Helper function to map hairStyle values to valid database values
+        const mapHairStyle = (hairStyle: string | undefined | null): string | null => {
+          if (!hairStyle) return null;
+          
+          // Map DashboardV2 values to database values
+          const hairStyleMap: Record<string, string> = {
+            "wavy": "curly", // Map wavy to curly
+            "straight": "medium", // Map straight to medium
+            "curly": "curly",
+            "dreadlocks": "curly", // Map dreadlocks to curly
+            "short": "short",
+            "medium": "medium",
+            "long": "long",
+            "no-preference": "no-preference",
+          };
+          
+          const mappedValue = hairStyleMap[hairStyle] || hairStyle;
+          
+          // Only allow valid values, otherwise set to null
+          const validHairStyles = ["no-preference", "short", "medium", "long", "curly"];
+          return validHairStyles.includes(mappedValue) ? mappedValue : null;
+        };
+        
+        console.log(`[Photo Generate Page2] Starting generation for user ${ctx.user.id}`);
+        console.log(`[Photo Generate Page2] User images: ${input.userImages.length}, Example image ID: ${input.exampleImageId}`);
+        
+        // First, upload user images to storage
+        const uploadedUrls: string[] = [];
+        const baseTimestamp = Date.now();
+        
+        for (let i = 0; i < input.userImages.length; i++) {
+          const image = input.userImages[i];
+          const imageBuffer = Buffer.from(image.data, "base64");
+          const fileName = `page2/${ctx.user.id}/${baseTimestamp}-${i}-${image.fileName}`;
+          
+          // Upload using service role (bypasses RLS)
+          const { data: uploadData, error: uploadError } = await supabaseServer.storage
+            .from("model-training-images")
+            .upload(fileName, imageBuffer, {
+              contentType: image.contentType,
+              upsert: false,
+            });
+
+          if (uploadError) {
+            throw new Error(`Failed to upload user image ${i + 1}: ${uploadError.message}`);
+          }
+
+          // Get signed URL for private bucket
+          const { data: signedUrlData, error: signedUrlError } = await supabaseServer.storage
+            .from("model-training-images")
+            .createSignedUrl(fileName, 3600 * 24 * 365); // 1 year expiry
+
+          if (signedUrlError || !signedUrlData) {
+            throw new Error(`Failed to create signed URL for image ${i + 1}: ${signedUrlError?.message || 'Unknown error'}`);
+          }
+
+          uploadedUrls.push(signedUrlData.signedUrl);
+        }
+
+        console.log(`[Photo Generate Page2] ✅ Uploaded ${uploadedUrls.length} user images`);
+
+        // Get example image URL - use the first example image
+        const exampleImageUrl = "https://gxwtcdplfkjfidwyrunk.supabase.co/storage/v1/object/public/example-images/image.webp";
+        const exampleImagePrompt = "Create a professional business portrait with formal attire, corporate setting, confident pose, high-quality studio lighting";
+
+        // Build base prompt from form data
+        let basePrompt = `Create a photorealistic professional portrait image of the person in the reference photos.`;
+        
+        if (input.formData.gender) {
+          basePrompt += ` Gender: ${input.formData.gender}.`;
+        }
+        if (input.formData.age) {
+          basePrompt += ` Age: ${input.formData.age}.`;
+        }
+        if (input.formData.hairColor) {
+          basePrompt += ` Hair color: ${input.formData.hairColor}.`;
+        }
+        if (input.formData.hairLength) {
+          basePrompt += ` Hair length: ${input.formData.hairLength}.`;
+        }
+        if (input.formData.hairStyle) {
+          basePrompt += ` Hair style: ${input.formData.hairStyle}.`;
+        }
+        if (input.formData.ethnicity) {
+          basePrompt += ` Ethnicity: ${input.formData.ethnicity}.`;
+        }
+        if (input.formData.bodyType) {
+          basePrompt += ` Body type: ${input.formData.bodyType}.`;
+        }
+        if (input.formData.attire && input.formData.attire.length > 0) {
+          basePrompt += ` Attire: ${input.formData.attire.join(", ")}.`;
+        }
+        if (input.formData.backgrounds && input.formData.backgrounds.length > 0) {
+          basePrompt += ` Background: ${input.formData.backgrounds.join(", ")}.`;
+        }
+        
+        basePrompt += ` High quality, professional photography, natural lighting, sharp focus.`;
+
+        // Calculate total images and credits
+        const totalImages = input.numImagesPerExample;
+        const creditsNeeded = totalImages;
+        
+        console.log(`[Photo Generate Page2] Total images to generate: ${totalImages}, Credits needed: ${creditsNeeded}`);
+
+        // Check credits
+        const db = await getDb();
+        if ((ctx.user.credits || 0) < creditsNeeded) {
+          throw new Error(getServerString("insufficientCredits"));
+        }
+
+        // Deduct credits immediately
+        const userCreditsBefore = ctx.user.credits || 0;
+        const userCreditsAfter = userCreditsBefore - creditsNeeded;
+        
+        if (!db) {
+          const { error: creditsError } = await supabaseServer
+            .from('users')
+            .update({ credits: userCreditsAfter })
+            .eq('id', ctx.user.id);
+
+          if (creditsError) {
+            throw new Error(`${getServerString("failedToDeductCredits")}: ${creditsError.message}`);
+          }
+          
+          console.log(`[Photo Generate Page2] ✅ Credits deducted: ${userCreditsBefore} → ${userCreditsAfter} (${creditsNeeded} credits used)`);
+        } else {
+          await db
+            .update(users)
+            .set({ credits: userCreditsAfter })
+            .where(eq(users.id, ctx.user.id));
+          
+          console.log(`[Photo Generate Page2] ✅ Credits deducted: ${userCreditsBefore} → ${userCreditsAfter} (${creditsNeeded} credits used)`);
+        }
+
+        // Create generation batch
+        let batchId: number | undefined;
+        
+        if (!db) {
+          // For page2, don't include modelId in the insert (it's optional)
+          const insertData: any = {
+            userId: ctx.user.id,
+            totalImagesGenerated: 0,
+            creditsUsed: creditsNeeded,
+            aspectRatio: input.aspectRatio,
+            glasses: "no",
+            hairColor: input.formData.hairColor || null,
+            hairStyle: mapHairStyle(input.formData.hairStyle),
+            backgrounds: input.formData.backgrounds,
+            styles: input.formData.attire,
+            status: "generating",
+          };
+          
+          const { data: batchData, error: batchError } = await supabaseServer
+            .from('page2_generation_batches')
+            .insert(insertData)
+            .select()
+            .single();
+
+          if (batchError) {
+            throw new Error(`${getServerString("failedToCreateGenerationBatch")}: ${batchError.message}`);
+          }
+
+          batchId = batchData?.id;
+        } else {
+          // For page2, modelId is optional - use undefined instead of null
+          const batchValues: any = {
+            userId: ctx.user.id,
+            totalImagesGenerated: 0,
+            creditsUsed: creditsNeeded,
+            aspectRatio: input.aspectRatio,
+            glasses: "no",
+            hairColor: input.formData.hairColor || null,
+            hairStyle: mapHairStyle(input.formData.hairStyle),
+            backgrounds: input.formData.backgrounds,
+            styles: input.formData.attire,
+            status: "generating",
+          };
+          
+          // Only include modelId if it's not null/undefined (for page2, it's undefined)
+          // Don't include modelId at all for page2 variant
+          
+          const [batch] = await db.insert(page2GenerationBatches).values(batchValues).returning();
+
+          batchId = batch?.id;
+        }
+
+        if (!batchId) {
+          throw new Error("Failed to create generation batch");
+        }
+
+        console.log(`[Photo Generate Page2] ✅ Created batch ${batchId}`);
+
+        // Create queue job
+        const absoluteExampleUrl = exampleImageUrl; // Already absolute URL
+
+        if (!db) {
+          // For page2, don't include modelId in the insert (it's optional)
+          const queueInsertData: any = {
+            batchId: batchId,
+            userId: ctx.user.id,
+            exampleImageId: input.exampleImageId,
+            exampleImageUrl: absoluteExampleUrl,
+            exampleImagePrompt: exampleImagePrompt,
+            trainingImageUrls: uploadedUrls, // User's uploaded images
+            basePrompt: basePrompt,
+            aspectRatio: input.aspectRatio,
+            numImagesPerExample: input.numImagesPerExample,
+            glasses: "no",
+            hairColor: input.formData.hairColor || null,
+            hairStyle: input.formData.hairStyle || null,
+            backgrounds: input.formData.backgrounds,
+            styles: input.formData.attire,
+            status: "pending",
+          };
+          
+          const { data: queueData, error: queueError } = await supabaseServer
+            .from('page2_generation_queue')
+            .insert(queueInsertData)
+            .select()
+            .single();
+
+          if (queueError) {
+            console.error(`[Photo Generate Page2] ❌ Failed to create queue job:`, queueError);
+            throw new Error(`Failed to create queue job: ${queueError.message}`);
+          }
+
+          const queueJobId = queueData?.id;
+          if (queueJobId) {
+            console.log(`[Photo Generate Page2] ✅ Created queue job ${queueJobId}`);
+            
+            // Trigger API processing asynchronously (use new page2 API)
+            const apiUrl = process.env.VERCEL_URL 
+              ? `https://${process.env.VERCEL_URL}/api/photo-generation-page2`
+              : process.env.PHOTO_API_URL || "http://localhost:3000/api/photo-generation-page2";
+            
+            console.log(`[Photo Generate Page2] 🚀 Triggering API processing for job ${queueJobId}`);
+            
+            // Call API asynchronously (don't wait for response)
+            fetch(apiUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                id: queueJobId,
+                batchId: batchId,
+                userId: ctx.user.id,
+                exampleImageId: input.exampleImageId,
+                exampleImageUrl: absoluteExampleUrl,
+                exampleImagePrompt: exampleImagePrompt,
+                trainingImageUrls: uploadedUrls,
+                basePrompt: basePrompt,
+                aspectRatio: input.aspectRatio,
+                numImagesPerExample: input.numImagesPerExample,
+                glasses: "no",
+                hairColor: input.formData.hairColor || null,
+                hairStyle: mapHairStyle(input.formData.hairStyle),
+                backgrounds: input.formData.backgrounds,
+                styles: input.formData.attire,
+              }),
+            }).catch((error) => {
+              console.error(`[Photo Generate Page2] ❌ API call error:`, error);
+            });
+          }
+        } else {
+          // Use direct database connection
+          // For page2, don't include modelId (it's optional)
+          const queueJobValues: any = {
+            batchId: batchId,
+            userId: ctx.user.id,
+            exampleImageId: input.exampleImageId,
+            exampleImageUrl: absoluteExampleUrl,
+            exampleImagePrompt: exampleImagePrompt,
+            trainingImageUrls: uploadedUrls,
+            basePrompt: basePrompt,
+            aspectRatio: input.aspectRatio,
+            numImagesPerExample: input.numImagesPerExample,
+            glasses: "no",
+            hairColor: input.formData.hairColor || null,
+            hairStyle: mapHairStyle(input.formData.hairStyle),
+            backgrounds: input.formData.backgrounds,
+            styles: input.formData.attire,
+            status: "pending",
+          };
+          
+          const [queueJob] = await db.insert(page2GenerationQueue).values(queueJobValues).returning();
+
+          if (queueJob?.id) {
+            console.log(`[Photo Generate Page2] ✅ Created queue job ${queueJob.id}`);
+            
+            // Trigger API processing asynchronously (use new page2 API)
+            const apiUrl = process.env.VERCEL_URL 
+              ? `https://${process.env.VERCEL_URL}/api/photo-generation-page2`
+              : process.env.PHOTO_API_URL || "http://localhost:3000/api/photo-generation-page2";
+            
+            console.log(`[Photo Generate Page2] 🚀 Triggering API processing for job ${queueJob.id}`);
+            
+            // Call API asynchronously (don't wait for response)
+            fetch(apiUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                id: queueJob.id,
+                batchId: batchId,
+                userId: ctx.user.id,
+                exampleImageId: input.exampleImageId,
+                exampleImageUrl: absoluteExampleUrl,
+                exampleImagePrompt: exampleImagePrompt,
+                trainingImageUrls: uploadedUrls,
+                basePrompt: basePrompt,
+                aspectRatio: input.aspectRatio,
+                numImagesPerExample: input.numImagesPerExample,
+                glasses: "no",
+                hairColor: input.formData.hairColor || null,
+                hairStyle: mapHairStyle(input.formData.hairStyle),
+                backgrounds: input.formData.backgrounds,
+                styles: input.formData.attire,
+              }),
+            }).catch((error) => {
+              console.error(`[Photo Generate Page2] ❌ API call error:`, error);
+            });
+          }
+        }
+
+        return { batchId, success: true };
       }),
     createBatch: protectedProcedure
       .input(z.object({ 
