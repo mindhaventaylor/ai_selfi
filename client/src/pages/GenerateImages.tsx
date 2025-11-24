@@ -55,7 +55,7 @@ export default function GenerateImages() {
   
   // State hooks
   const [gender, setGender] = useState<"man" | "woman">("man");
-  const [selectedImages, setSelectedImages] = useState<number[]>([]);
+  const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [selectedBackgrounds, setSelectedBackgrounds] = useState<string[]>([]);
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [aspectRatio, setAspectRatio] = useState<"1:1" | "9:16" | "16:9">("9:16");
@@ -123,7 +123,7 @@ export default function GenerateImages() {
   const { data: modelsData, isLoading: isLoadingModels } = trpc.model.list.useQuery();
   const generateMutation = trpc.photo.generate.useMutation();
   const getBatchStatusQuery = trpc.photo.getBatchStatus.useQuery(
-    { batchId: currentBatchId! },
+    currentBatchId ? { batchId: currentBatchId } : { batchId: 0 },
     { 
       enabled: !!currentBatchId && !isPage2Variant && isGenerating,
       refetchInterval: isGenerating && !isPage2Variant ? 2000 : false, // Poll every 2 seconds while generating
@@ -416,9 +416,7 @@ export default function GenerateImages() {
   );
 
   const toggleImage = (id: number) => {
-    setSelectedImages((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
+    setSelectedImage((prev) => (prev === id ? null : id));
   };
 
   const toggleBackground = (bg: string) => {
@@ -594,12 +592,12 @@ export default function GenerateImages() {
     }
     // For page2 variant, we skip model images and use only example images
     
-    // Get selected example images with their prompts
-    const selectedExampleImages = filteredExampleImages.filter((img) => 
-      selectedImages.includes(img.id)
+    // Get selected example image with its prompt
+    const selectedExampleImage = filteredExampleImages.find((img) => 
+      img.id === selectedImage
     );
     
-    if (selectedExampleImages.length === 0) {
+    if (!selectedExampleImage) {
       alert(t("generateImages.noImagesSelected"));
       return;
     }
@@ -625,7 +623,7 @@ export default function GenerateImages() {
     
     // Reset state
     setIsGenerating(true);
-    setGenerationProgress(0);
+    setGenerationProgress(0); // Will be updated to 5% when batch status is first received
     setCompletedImages(0);
     setGeneratedImages([]);
     setErrorMessage(null);
@@ -633,6 +631,23 @@ export default function GenerateImages() {
     setShowModal(true);
     
     try {
+      // Convert relative URL to absolute URL
+      let absoluteUrl = selectedExampleImage.url;
+      
+      if (!selectedExampleImage.url.startsWith('http')) {
+        // If it's a relative URL, convert to absolute
+        if (selectedExampleImage.url.startsWith('/')) {
+          // Use production domain if available, otherwise use current origin
+          // In production, this should be your actual domain
+          const publicDomain = import.meta.env.VITE_PUBLIC_DOMAIN || window.location.origin;
+          absoluteUrl = `${publicDomain}${selectedExampleImage.url}`;
+        } else {
+          // If it doesn't start with /, assume it's relative to root
+          const publicDomain = import.meta.env.VITE_PUBLIC_DOMAIN || window.location.origin;
+          absoluteUrl = `${publicDomain}/${selectedExampleImage.url}`;
+        }
+      }
+
       // Call the API with new structure
       const result = await generateMutation.mutateAsync({
         modelId: isPage2Variant ? undefined : parseInt(modelId), // Optional for page2
@@ -673,7 +688,10 @@ export default function GenerateImages() {
 
       // Set batch ID for polling
       if (result.batchId) {
+        console.log(`[GenerateImages] Setting batch ID to ${result.batchId}`);
         setCurrentBatchId(result.batchId);
+        // Force a small delay to ensure state is updated before query starts
+        await new Promise(resolve => setTimeout(resolve, 100));
       } else {
         // Fallback if no batch ID (shouldn't happen)
         setIsGenerating(false);
@@ -709,7 +727,7 @@ export default function GenerateImages() {
             {/* Gender Selection */}
             <div className="space-y-2">
               <label className="text-sm font-medium">{t("generateImages.selectGender")}</label>
-              <div className="flex gap-3">
+              <div className="flex gap-3 mt-1.5">
                 <Button
                   variant={gender === "man" ? "default" : "outline"}
                   onClick={() => setGender("man")}
@@ -731,7 +749,7 @@ export default function GenerateImages() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">{t("generateImages.background")}</label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mt-1.5">
                   {backgrounds.map((bg) => (
                     <Button
                       key={bg}
@@ -750,7 +768,7 @@ export default function GenerateImages() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">{t("generateImages.style")}</label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mt-1.5">
                   {styles.map((style) => (
                     <Button
                       key={style}
@@ -791,7 +809,7 @@ export default function GenerateImages() {
               <p className="text-sm text-muted-foreground">
                 {t("generateImages.selectReferenceImages")}
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {filteredExampleImages.length === 0 ? (
                   <div className="col-span-full text-center py-8 text-muted-foreground">
                     {t("generateImages.noImagesMatchFilters")}
@@ -800,8 +818,8 @@ export default function GenerateImages() {
                   filteredExampleImages.map((image) => (
                   <div
                     key={image.id}
-                    className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
-                      selectedImages.includes(image.id)
+                    className={`relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
+                      selectedImage === image.id
                         ? "border-primary ring-2 ring-primary/50"
                         : "border-border hover:border-primary/50"
                     }`}
@@ -825,7 +843,7 @@ export default function GenerateImages() {
                         {image.badge}
                       </Badge>
                     )}
-                    {selectedImages.includes(image.id) && (
+                    {selectedImage === image.id && (
                       <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
                         <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                           <span className="text-white font-bold">✓</span>

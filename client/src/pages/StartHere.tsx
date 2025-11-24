@@ -21,9 +21,9 @@ export default function StartHere() {
 
   // Mock photos for the grid background
   const gridPhotos = [
-    "/image.webp",
-    "/image_1.webp",
-    "/image_10.webp",
+    "/image.jpg",
+    "/image_1.jpg",
+    "/image_10.jpg",
     "/image_100.jpg",
     "/image_101.jpg",
     "/image_102.jpg",

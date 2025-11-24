@@ -43,6 +43,8 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const [scrollY, setScrollY] = useState(0);
   const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
+  const [expandedReviewsGrid, setExpandedReviewsGrid] = useState<Set<number>>(new Set()); // For reviews grid section
+  const [reviewsToShow, setReviewsToShow] = useState(6); // Start with 2 rows (6 items in 3-column grid)
 
   // Check for variant parameter in URL and save it (even if home screen doesn't change)
   useEffect(() => {
@@ -106,7 +108,7 @@ export default function Home() {
             }}
           >
             <img
-              src="/image.webp"
+              src="/image.jpg"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
             />
@@ -125,7 +127,7 @@ export default function Home() {
             }}
           >
             <img
-              src="/image_1.webp"
+              src="/image_1.jpg"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
             />
@@ -162,7 +164,7 @@ export default function Home() {
             }}
           >
             <img
-              src="/image_10.webp"
+              src="/image_10.jpg"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
             />
@@ -213,7 +215,7 @@ export default function Home() {
             {/* Badge with avatars */}
             <div className="flex items-center gap-3 bg-secondary/50 backdrop-blur-sm px-6 py-3 rounded-full">
               <div className="flex -space-x-2">
-                {["/image.webp", "/image_1.webp", "/image_10.webp", "/image_100.jpg", "/image_101.jpg"].map(
+                {["/image.jpg", "/image_1.jpg", "/image_10.jpg", "/image_100.jpg", "/image_101.jpg"].map(
                   (img, idx) => (
                     <div
                       key={idx}
@@ -257,7 +259,7 @@ export default function Home() {
 
           {/* Mobile - Simple Grid */}
           <div className="grid grid-cols-2 gap-4 lg:hidden max-w-md mx-auto mt-12">
-            {["/image.webp", "/image_1.webp", "/image_10.webp", "/image_100.jpg"].map((img, idx) => (
+            {["/image.jpg", "/image_1.jpg", "/image_10.jpg", "/image_100.jpg"].map((img, idx) => (
               <div
                 key={idx}
                 className="aspect-[3/4] rounded-2xl overflow-hidden shadow-xl"
@@ -295,7 +297,7 @@ export default function Home() {
               >
                 <CarouselContent className="-ml-2 md:-ml-4">
                   {(
-                    t("supportReviews.reviews", {
+                    t("examples.reviews", {
                       returnObjects: true,
                     }) as Array<{
                       name: string;
@@ -325,19 +327,17 @@ export default function Home() {
                       // Jorge is example 9 - 1 profile + 6 results
                       profileImage = "/9_profile.jpg";
                       resultImages = [
-                        "/9_result1.png",
-                        "/9_result2.png",
-                        "/9_result3.png",
-                        "/9_result4.png",
-                        "/9_result5.png",
-                        "/9_result6.png",
+                        "/9_result1.jpg",
+                        "/9_result2.jpg",
+                        "/9_result3.jpg",
+                        "/9_result4.jpg",
+                        "/9_result5.jpg",
+                        "/9_result6.jpg",
                       ];
                     } else {
                       // Other examples: 1 profile + 1 result
-                      // Example 3 uses .png, others use .jpg
-                      const resultExtension = exampleNumber === 3 ? "png" : "jpg";
                       profileImage = `/${exampleNumber}_profile.jpg`;
-                      resultImages = [`/${exampleNumber}_result.${resultExtension}`];
+                      resultImages = [`/${exampleNumber}_result.jpg`];
                     }
 
                     return (
@@ -584,8 +584,8 @@ export default function Home() {
                   </div>
 
               {/* Reviews - 3x5 Grid Layout (15 components, same as carousel card layout) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-7xl mx-auto">
-                {Array.from({ length: 15 }).map((_, idx) => {
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-w-[90%] mx-auto">
+                {Array.from({ length: reviewsToShow }).map((_, idx) => {
                   const reviews = t("supportReviews.reviews", {
                     returnObjects: true,
                   }) as Array<{
@@ -598,36 +598,21 @@ export default function Home() {
                   // Cycle through reviews, reusing them if needed
                   const review = reviews[idx % reviews.length];
                   
-                  // Direct mapping: map each review index to an example number with complete files
-                  // Review order: 0=Marta, 1=Alba, 2=Jorge, 3=Faby, 4=Andres, 5=Andrea, 6=Pamela, 7=Ingrid, 8=Samuel
-                  // Complete examples: 1, 2, 3, 4, 7, 9, 10, 11 (have both profile and result)
-                  // Multiple image examples: 14, 15
-                  const reviewToExampleMapping = [
-                    1,  // Marta → example 1
-                    2,  // Alba → example 2
-                    3,  // Jorge → example 3
-                    4,  // Faby → example 4
-                    7,  // Andres → example 7 (5 missing result)
-                    9,  // Andrea → example 9 (6 missing both)
-                    10, // Pamela → example 10
-                    11, // Ingrid → example 11
-                    14, // Samuel → example 14 (multiple images)
-                    // For remaining slots (9-14), cycle through available examples
-                    1, 2, 3, 4, 7, 15, // examples 15 has multiple images
-                  ];
-                  
-                  const exampleNumber = reviewToExampleMapping[idx] || reviewToExampleMapping[idx % reviewToExampleMapping.length];
+                  // Map each review index sequentially to examples 1-15
+                  // All examples 1-15 now have complete files
+                  const exampleNumber = idx + 1;
                   const hasMultipleResults = exampleNumber === 14 || exampleNumber === 15;
                   
                   let profileImage: string;
                   let resultImages: string[];
                   
                   if (hasMultipleResults) {
-                    // Example 14: 1 profile + 5 results (14_result_1.jpg through 14_result_5.jpg)
-                    // Example 15: 1 profile + 3 results (15_result.jpg, 15_result_4.jpg, 15_result_5.jpg)
+                    // Example 14: 1 profile + 6 results (14_result.jpg + 14_result_1.jpg through 14_result_5.jpg)
+                    // Example 15: 1 profile + 6 results (15_result.jpg + 15_result_1.jpg through 15_result_5.jpg)
                     profileImage = `/reviews/${exampleNumber}_profile.jpg`;
                     if (exampleNumber === 14) {
                       resultImages = [
+                        `/reviews/14_result.jpg`,
                         `/reviews/14_result_1.jpg`,
                         `/reviews/14_result_2.jpg`,
                         `/reviews/14_result_3.jpg`,
@@ -635,18 +620,29 @@ export default function Home() {
                         `/reviews/14_result_5.jpg`,
                       ];
                     } else {
-                      // Example 15 - only has 3 result images available
+                      // Example 15 - all 6 result images
                       resultImages = [
                         `/reviews/15_result.jpg`,
+                        `/reviews/15_result_1.jpg`,
+                        `/reviews/15_result_2.jpg`,
+                        `/reviews/15_result_3.jpg`,
                         `/reviews/15_result_4.jpg`,
                         `/reviews/15_result_5.jpg`,
                       ];
                     }
                   } else {
-                    // Complete examples: 1 profile + 1 result
+                    // Examples 1-13: 1 profile + 1 result
                     profileImage = `/reviews/${exampleNumber}_profile.jpg`;
                     resultImages = [`/reviews/${exampleNumber}_result.jpg`];
                   }
+                  
+                  // Check if review should be truncated (more than 4 lines, roughly 200 characters)
+                  const isExpanded = expandedReviewsGrid.has(idx);
+                  const reviewText = review.review;
+                  const shouldTruncate = reviewText.length > 200;
+                  const displayText = shouldTruncate && !isExpanded
+                    ? reviewText.substring(0, 200) + "..."
+                    : reviewText;
                   
                   // Highlight key phrases
                   const highlightPhrases = [
@@ -657,13 +653,12 @@ export default function Home() {
                     "están padrísimas",
                   ];
                   
-                  let reviewText = review.review;
                   const parts: (string | React.ReactElement)[] = [];
                   let lastIndex = 0;
                   const matches: Array<{ start: number; end: number; text: string }> = [];
                   
                   highlightPhrases.forEach((phrase) => {
-                    const index = reviewText.indexOf(phrase, lastIndex);
+                    const index = displayText.indexOf(phrase, lastIndex);
                     if (index !== -1) {
                       const overlaps = matches.some(
                         (m) => !(index >= m.end || index + phrase.length <= m.start)
@@ -679,7 +674,7 @@ export default function Home() {
                   if (matches.length > 0) {
                     matches.forEach((match, i) => {
                       if (match.start > lastIndex) {
-                        parts.push(reviewText.substring(lastIndex, match.start));
+                        parts.push(displayText.substring(lastIndex, match.start));
                       }
                       parts.push(
                         <span key={`highlight-${idx}-${i}`} className="bg-yellow-200 px-1 rounded font-semibold">
@@ -688,11 +683,11 @@ export default function Home() {
                       );
                       lastIndex = match.end;
                     });
-                    if (lastIndex < reviewText.length) {
-                      parts.push(reviewText.substring(lastIndex));
+                    if (lastIndex < displayText.length) {
+                      parts.push(displayText.substring(lastIndex));
                     }
                   } else {
-                    parts.push(reviewText);
+                    parts.push(displayText);
                   }
 
                   return (
@@ -702,8 +697,8 @@ export default function Home() {
                     >
                       {/* Profile Section */}
                       <CardContent className="px-5 pt-0 pb-0">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Avatar className="w-10 h-10 border-2 border-purple-200">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Avatar className="w-9 h-9 border-2 border-purple-200">
                             <AvatarImage src={profileImage} alt={review.name} />
                             <AvatarFallback className="bg-purple-100 text-purple-700">
                               {review.name
@@ -724,15 +719,31 @@ export default function Home() {
                         </div>
 
                         {/* Review Text */}
-                        <div className="mb-0.5">
-                          <p className="text-xs text-black leading-relaxed">
-                            {parts.length > 0 ? parts : reviewText}
+                        <div className="mb-0">
+                          <p className={`text-xs text-black leading-tight ${shouldTruncate && !isExpanded ? 'line-clamp-4' : ''}`}>
+                            {parts.length > 0 ? parts : displayText}
                           </p>
+                          {shouldTruncate && (
+                            <button
+                              onClick={() => {
+                                const newExpanded = new Set(expandedReviewsGrid);
+                                if (isExpanded) {
+                                  newExpanded.delete(idx);
+                                } else {
+                                  newExpanded.add(idx);
+                                }
+                                setExpandedReviewsGrid(newExpanded);
+                              }}
+                              className="text-xs text-primary hover:underline mt-1 font-medium"
+                            >
+                              {isExpanded ? t("supportReviews.showLess") : t("supportReviews.readMore")}
+                            </button>
+                          )}
                         </div>
                       </CardContent>
 
                       {/* Professional Photo(s) */}
-                      <div className="w-full px-3 -mt-3">
+                      <div className="w-full px-3 -mt-2">
                         {hasMultipleResults ? (
                           // Multiple images grid for examples 14 and 15
                           <div className="grid grid-cols-3 gap-1">
@@ -751,7 +762,7 @@ export default function Home() {
                           </div>
                         ) : (
                           // Single image for others
-                          <div className="aspect-[3/4] overflow-hidden bg-gray-100 rounded-[20px]">
+                          <div className="aspect-[4/5] overflow-hidden bg-gray-100 rounded-[20px]">
                             <img
                               src={resultImages[0]}
                               alt={`${review.name} - Professional Photo`}
@@ -763,6 +774,27 @@ export default function Home() {
                     </Card>
                   );
                 })}
+              </div>
+
+              {/* See More / Show Less Button */}
+              <div className="flex justify-center mt-8">
+                <Button
+                  onClick={() => {
+                    if (reviewsToShow === 6) {
+                      setReviewsToShow(12); // Show 2 more rows (4 rows total)
+                    } else if (reviewsToShow === 12) {
+                      setReviewsToShow(15); // Show last row (all 15)
+                    } else if (reviewsToShow === 15) {
+                      setReviewsToShow(6); // Collapse back to initial state
+                    }
+                  }}
+                  className="bg-gray-800 hover:bg-gray-700 text-white px-8 py-6 rounded-full text-base font-medium transition-all duration-300 hover:scale-105"
+                >
+                  {reviewsToShow === 15 
+                    ? (t("supportReviews.showLess") || "Show less")
+                    : (t("supportReviews.seeMore") || "See more")
+                  }
+                </Button>
               </div>
                     </div>
 
@@ -1057,10 +1089,10 @@ export default function Home() {
                 </h3>
                 <div className="grid grid-cols-2 gap-4 max-w-xs">
                   {[
-                    "/girl_image_sample.png",
-                    "/girl_image_sample2.png",
-                    "/girl_image_sample3.png",
-                    "/girl_image_sample4.png",
+                    "/girl_image_sample.jpg",
+                    "/girl_image_sample2.jpg",
+                    "/girl_image_sample3.jpg",
+                    "/girl_image_sample4.jpg",
                   ].map((img, idx) => (
                     <div
                       key={idx}
@@ -1140,9 +1172,9 @@ export default function Home() {
                 <div className="flex items-center gap-4">
                   <div className="flex -space-x-2">
                     {[
-                      "/image.webp",
-                      "/image_1.webp",
-                      "/image_10.webp",
+                      "/image.jpg",
+                      "/image_1.jpg",
+                      "/image_10.jpg",
                       "/image_100.jpg",
                       "/image_101.jpg",
                     ].map((img, idx) => (
@@ -1190,7 +1222,7 @@ export default function Home() {
                   }}
                 >
                   <img
-                    src="/image_1.webp"
+                    src="/image_1.jpg"
                     alt="Professional Photo 2"
                     className="w-full h-full object-cover"
                   />
@@ -1205,7 +1237,7 @@ export default function Home() {
                   }}
                 >
                   <img
-                    src="/image_10.webp"
+                    src="/image_10.jpg"
                     alt="Professional Photo 3"
                     className="w-full h-full object-cover"
                   />

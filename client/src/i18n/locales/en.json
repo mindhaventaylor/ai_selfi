@@ -17,7 +17,63 @@
   },
   "examples": {
     "title": "Examples of professional AI photos",
-    "subtitle": "These photos look real but were created with AI."
+    "subtitle": "These photos look real but were created with AI.",
+    "reviews": [
+      {
+        "name": "Laura Mancini",
+        "title": "Communication Consultant",
+        "review": "Extraordinary service! I got professional photos of the highest quality in no time. I use them for my website and promotional materials. The ease of use and speed of the process really impressed me. Highly recommended!",
+        "date": "Jan 20, 2025"
+      },
+      {
+        "name": "Federica Ricci",
+        "title": "Entrepreneur and CEO",
+        "review": "Finally, I found the perfect solution for my professional photos! The result is incredible: realistic photos of superior quality. I've received many compliments from my clients. The service is fast, professional and affordable. I can only recommend it!",
+        "date": "Feb 10, 2025"
+      },
+      {
+        "name": "Andrea Marino",
+        "title": "Strategic Consultant",
+        "review": "Excellent results! I created several professional photos for my personal brand and they're all perfect. The quality is really impressive and the process was super simple. Now I have a consistent professional image across all channels. Great investment!",
+        "date": "Mar 5, 2025"
+      },
+      {
+        "name": "Beatrice Greco",
+        "title": "Marketing Director",
+        "review": "I was really impressed by the quality of the generated photos. They're natural, professional and perfect for my work. I updated all my professional material in just a few minutes. The service was fast and the results exceeded my expectations!",
+        "date": "Apr 14, 2025"
+      },
+      {
+        "name": "Giorgia Santoro",
+        "title": "Branding Consultant",
+        "review": "Fantastic! I got an entire collection of professional photos in record time. The variety of available styles is impressive and every photo is of superior quality. I use them for my website, social media and presentations. Really professional service!",
+        "date": "May 22, 2025"
+      },
+      {
+        "name": "Elisa De Luca",
+        "title": "Project Manager",
+        "review": "Perfect for my professional needs! I created high-quality photos that I use for company presentations and marketing materials. The process was intuitive and fast. The results are so realistic they look like they were taken by a professional photographer. Excellent!",
+        "date": "Jun 8, 2025"
+      },
+      {
+        "name": "Caterina Ferri",
+        "title": "Financial Consultant",
+        "review": "Highest quality service! I got professional photos that perfectly reflect my professional image. I use them for my website and promotional materials. Client feedback has been very positive. I highly recommend this service!",
+        "date": "Jul 15, 2025"
+      },
+      {
+        "name": "Silvia Neri",
+        "title": "HR Consultant",
+        "review": "Incredible! I updated all my professional photos in just a few minutes. The quality is excellent and the results are very natural. I've received many compliments from colleagues. The service is fast, professional and offers great value for money. Perfect!",
+        "date": "Aug 28, 2025"
+      },
+      {
+        "name": "Stefano Bruno",
+        "title": "Business Consultant",
+        "review": "Really impressive results! I created superior quality professional photos for my profile. The system is easy to use and results arrive quickly. The photos are so realistic that many asked me who the photographer was. Top service!",
+        "date": "Sep 12, 2025"
+      }
+    ]
   },
   "comparison": {
     "badge": "Professional AI photo without wasting time",
@@ -914,60 +970,97 @@
     "readCommunity": "Read what our community says about AISelfies",
     "readMore": "Read more",
     "seeMore": "See more",
+    "showLess": "Show less",
     "reviews": [
       {
-        "name": "Marta Giménez Carrión",
-        "title": "Fundadora conmdemarketing",
-        "review": "40 fotacas profesionales por 30 euros. Pues ¿Qué quieres que te diga?... ¡Es una pasada! Ideal para quien empieza con su marca y no puede pagar una sesión profesional que cuesta por encima de los 250€....",
-        "date": "Oct 8, 2025"
+        "name": "Sofia Bianchi",
+        "title": "Digital Marketing Consultant",
+        "review": "I created 40 professional photos in less than 10 minutes. I couldn't believe it was possible to get such realistic results with artificial intelligence. The photos are perfect for my LinkedIn profile and my website. Finally, I have a consistent professional image without having to spend hundreds of euros on a photographer!",
+        "date": "Jan 15, 2025"
       },
       {
-        "name": "Alba Ripoll Cucó",
-        "title": "Technology and Automation Co...",
-        "review": "Fotos nuevas en 15 minutos. Hace un tiempo probé una IA para generar fotos profesionales, pero el resultado me pareció poco natural para mi estilo. Gracias a Laura Pérez Hoyos y Jorge Bosch...",
-        "date": "May 22, 2025"
+        "name": "Marco Rossi",
+        "title": "Entrepreneur and Founder",
+        "review": "Amazing! I updated all my professional photos in just a few minutes. The quality is incredible and the results are very natural. I've already received several compliments on my new shots. Highly recommended for anyone who wants to improve their online presence without investing too much time or money.",
+        "date": "Feb 22, 2025"
       },
       {
-        "name": "Jorge Bosch Alés",
-        "title": "Creador de Cosas de Freelance",
-        "review": "He renovado todas mis fotos en 15 minutos. 4 pasos para que tú puedes hacerlo 1 Selecciona 10 - 20 fotos Que sean de calidad y donde salgas...",
-        "date": "Mar 18, 2025"
+        "name": "Giulia Ferrari",
+        "title": "Content Creator and Influencer",
+        "review": "Finally, I found a solution for my professional photos! The process is super simple: I uploaded some selfies and within minutes I had dozens of photos ready. The variety of available styles is impressive. I use them for all my social channels and the feedback has been fantastic.",
+        "date": "Mar 8, 2025"
       },
       {
-        "name": "Faby U",
-        "title": "CEO @BizGrow Growth Partner",
-        "review": "No solo me encantó — me sacó una sonrisa de oreja a oreja. Fue rápido, y el nivel de detalle... ¡Una locura! Hasta las uñas rosadas me dejó perfectas 💅 Real. Profesional. MIL GRACIAS!",
-        "date": "Apr 25, 2025"
+        "name": "Chiara Romano",
+        "title": "HR Manager",
+        "review": "Perfect for my job! I need professional photos for presentations and company materials, and this tool solved my problem quickly and affordably. The photos are high quality and really look like they were taken in a studio. Great value for money!",
+        "date": "Apr 3, 2025"
       },
       {
-        "name": "Andres Montano",
-        "title": "Marketing Expert",
-        "review": "Subí un par de fotos para alimentar al modelo (realmente me costó encontrar fotos mías) y, para mi sorpresa, en unos minutos ya tenía una galería de fotos que parecían hechas en estudio. Nada de filtros exagerados. Solo una versión...",
-        "date": "Jul 29, 2025"
+        "name": "Elena Conti",
+        "title": "Financial Consultant",
+        "review": "I didn't think AI could create such realistic photos. I've tried other similar services but the results were always a bit artificial. Here, however, the photos look completely natural. I've already used them for my professional website and clients have really appreciated them.",
+        "date": "May 12, 2025"
       },
       {
-        "name": "Andrea P.",
-        "title": "I Help you land a job at Big Tec...",
-        "review": "Hoy en día no hay excusas para tener una foto poco profesional. Y es que yo misma acabo de crear 40 fotos mías en solo 10 minutos. Todo ello gracias aiselfi, una herramienta de inteligencia artificial que crea fotos...",
-        "date": "Apr 25, 2025"
+        "name": "Valentina Marchetti",
+        "title": "Graphic Designer",
+        "review": "Fantastic! I created an entire gallery of professional photos in less than 15 minutes. What impressed me most is the attention to detail: every photo is perfect and professional. Now I have enough material for all my future projects. Really satisfied!",
+        "date": "Jun 20, 2025"
       },
       {
-        "name": "Pamela Salas",
-        "title": "Te ayudo a encontrar trabajo al...",
-        "review": "mi foto es de aiselfi.es y wow con lo real",
-        "date": "Oct 6, 2025"
+        "name": "Luca De Santis",
+        "title": "Business Coach",
+        "review": "I updated my professional profile with superior quality photos. The process was fast and intuitive, and the results exceeded my expectations. The photos are so realistic that many colleagues asked me who the photographer was. Recommended to all professionals!",
+        "date": "Jul 5, 2025"
       },
       {
-        "name": "Ingrid Mora Rodríguez",
-        "title": "Transformo Culturas",
-        "review": "Totalmente recomendado: Por el resultado, por la atención y por la experiencia de sentir que detrás de cada proceso digital, todavía hay personas que hacen la diferencia. Hace 5 meses, cuando decidí transformar mi...",
-        "date": "Apr 25, 2025"
+        "name": "Francesca Lombardi",
+        "title": "Lawyer",
+        "review": "Excellent service! I need professional photos for my law firm and this tool allowed me to get them quickly and at an affordable price. The photos are perfect for the website and promotional materials. Customer service is also very helpful.",
+        "date": "Aug 18, 2025"
       },
       {
-        "name": "Samuel Tavira",
-        "title": "",
-        "review": "La calidad de las fotos es estupenda, muy contento. Utilizo estas fotos para perfil profesional de redes. Incluso he recibido comentarios positivos sobre ellas. Gracias!",
-        "date": "Nov 5, 2025"
+        "name": "Alessandro Moretti",
+        "title": "IT Consultant",
+        "review": "Impressive results! I created several professional photos for my profile and they're all of excellent quality. The system is easy to use and results arrive in no time. Finally, I have photos that reflect my professionalism without having to organize complicated photo sessions.",
+        "date": "Sep 10, 2025"
+      },
+      {
+        "name": "Davide Colombo",
+        "title": "Architect",
+        "review": "Really professional service. I got high-quality photos that I use for my portfolio and my projects. The variety of available styles allows me to have photos suitable for different contexts. Great investment for anyone who wants to improve their professional image.",
+        "date": "Oct 25, 2025"
+      },
+      {
+        "name": "Martina Rizzo",
+        "title": "Psychologist and Life Coach",
+        "review": "I was pleasantly surprised by the quality of the photos. They're very natural and professional, perfect for my website and marketing materials. The process was simple and fast. I recommend this service to all professionals who want to improve their online presence.",
+        "date": "Nov 8, 2025"
+      },
+      {
+        "name": "Alessia Galli",
+        "title": "Professional Photographer",
+        "review": "As a photographer, I've always been skeptical about AI-generated photos, but I have to admit the results are really impressive. The photos are realistic and high quality. I use them as reference for some of my projects and I'm very satisfied with the service.",
+        "date": "Dec 12, 2025"
+      },
+      {
+        "name": "Matteo Fontana",
+        "title": "Tech Entrepreneur",
+        "review": "I've tried several professional photo services and this is definitely the best. The quality is excellent, the process is fast and the results are always perfect. I updated all my professional photos and received many compliments. Top service!",
+        "date": "Jan 5, 2025"
+      },
+      {
+        "name": "Camilla Esposito",
+        "title": "Journalist and Writer",
+        "review": "Fantastic! I created an entire collection of professional photos for my new book and promotional materials. The variety of styles and quality of images are exceptional. The photos are so realistic they look like they were taken by a professional photographer. Highly recommended!",
+        "date": "Feb 18, 2025"
+      },
+      {
+        "name": "Riccardo Vitale",
+        "title": "Business Consultant",
+        "review": "Excellent service! I got high-quality professional photos in no time. I use them for my website, company presentations and marketing materials. Clients immediately noticed the difference and appreciated my new professional image. Great investment!",
+        "date": "Mar 30, 2025"
       }
     ]
   },
@@ -1130,23 +1223,23 @@
     "privacyPolicy": "Privacy Policy",
     "testimonials": [
       {
-        "text": "Ya me tocaba un upgrade en las fotos del trabajo y LinkedIn y vaya que lo he logrado!",
-        "author": "Cristian",
+        "text": "I created 40 professional photos in less than 10 minutes. I couldn't believe it was possible to get such realistic results with artificial intelligence. The photos are perfect for my LinkedIn profile and my website.",
+        "author": "Sofia Bianchi",
         "stars": 5
       },
       {
-        "text": "Increíble calidad, mis fotos profesionales en minutos. Totalmente recomendado!",
-        "author": "María",
+        "text": "Amazing! I updated all my professional photos in just a few minutes. The quality is incredible and the results are very natural. I've already received several compliments on my new shots.",
+        "author": "Marco Rossi",
         "stars": 5
       },
       {
-        "text": "Perfecto para mi perfil profesional. Las fotos quedaron espectaculares!",
-        "author": "Carlos",
+        "text": "Perfect for my job! I need professional photos for presentations and company materials, and this tool solved my problem quickly and affordably.",
+        "author": "Chiara Romano",
         "stars": 5
       },
       {
-        "text": "Me ahorré mucho tiempo y dinero. Las fotos son de calidad profesional!",
-        "author": "Ana",
+        "text": "Fantastic! I created an entire gallery of professional photos in less than 15 minutes. What impressed me most is the attention to detail: every photo is perfect and professional.",
+        "author": "Valentina Marchetti",
         "stars": 5
       }
     ]

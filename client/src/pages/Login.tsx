@@ -7,12 +7,13 @@ import { useLocation } from "wouter";
 import { Check } from "lucide-react";
 
 
-// Images for carousel
+// Images for carousel - matching the 4 testimonials
+// Sofia Bianchi (example 1), Marco Rossi (example 2), Chiara Romano (example 4), Valentina Marchetti (example 6)
 const carouselImages = [
-  "/image_102.jpg",
-  "/image_103.jpg",
-  "/image_104.jpg",
-  "/image_105.jpg",
+  "/reviews/1_result.jpg",
+  "/reviews/2_result.jpg",
+  "/reviews/4_result.jpg",
+  "/reviews/6_result.jpg",
 ];
 
 export default function Login() {
@@ -39,24 +40,16 @@ export default function Login() {
     return () => clearTimeout(timer);
   }, [user, loading, setLocation]);
 
-  // Rotate images every 5 seconds
-  useEffect(() => {
-    const imageInterval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % carouselImages.length);
-    }, 5000);
-
-    return () => clearInterval(imageInterval);
-  }, []);
-
-  // Rotate testimonials every 6 seconds
+  // Sync image and testimonial rotation - rotate together every 6 seconds
   useEffect(() => {
     if (!testimonials || testimonials.length === 0) return;
     
-    const testimonialInterval = setInterval(() => {
+    const rotationInterval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % carouselImages.length);
       setCurrentTestimonialIndex((prev) => (prev + 1) % testimonials.length);
     }, 6000);
 
-    return () => clearInterval(testimonialInterval);
+    return () => clearInterval(rotationInterval);
   }, [testimonials]);
 
   const handleSignIn = async () => {
@@ -120,7 +113,10 @@ export default function Login() {
                     {testimonials.map((_, idx) => (
                       <button
                         key={idx}
-                        onClick={() => setCurrentTestimonialIndex(idx)}
+                        onClick={() => {
+                          setCurrentTestimonialIndex(idx);
+                          setCurrentImageIndex(idx);
+                        }}
                         className={`w-2 h-2 rounded-full transition-all ${
                           idx === currentTestimonialIndex
                             ? "bg-background w-6"
