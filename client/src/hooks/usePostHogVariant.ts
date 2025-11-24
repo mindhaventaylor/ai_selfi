@@ -16,7 +16,7 @@ declare global {
 }
 
 const VARIANT_CACHE_KEY = "aiselfi_dashboard_variant";
-const FIRST_VARIANT_KEY = "aiselfi_first_variant_seen"; // Store the first variant the user ever sees
+const FIRST_VARIANT_KEY = "aiselfi_first_dashboard_variant"; // Store the first variant the user ever sees
 const POSTHOG_API_KEY = "phc_67dWkHktFLDuxuUy7zOYyyRBwOj25sw3plZHtKjZzy0";
 const FEATURE_FLAG_KEY = "dashboard-variant";
 
@@ -36,7 +36,9 @@ export function usePostHogVariant(userId?: string | number): {
     const urlVariant = urlParams.get("variant") as DashboardVariant | null;
     
     if (urlVariant && (urlVariant === "page1" || urlVariant === "page2")) {
-      // Save variant from URL to cache immediately
+      // If variant is provided in URL, update it as the new default (first variant)
+      // This allows users to change their default by changing the URL
+      localStorage.setItem(FIRST_VARIANT_KEY, urlVariant);
       localStorage.setItem(VARIANT_CACHE_KEY, urlVariant);
       setVariant(urlVariant);
       setIsLoading(false);
@@ -181,12 +183,26 @@ export function usePostHogVariant(userId?: string | number): {
         }
 
     function loadCachedVariant() {
-      const cached = localStorage.getItem(VARIANT_CACHE_KEY) as DashboardVariant | null;
-      if (cached && (cached === "page1" || cached === "page2")) {
-        setVariant(cached);
+      // Check if first variant exists
+      const firstVariant = localStorage.getItem(FIRST_VARIANT_KEY) as DashboardVariant | null;
+      if (firstVariant && (firstVariant === "page1" || firstVariant === "page2")) {
+        // Use first variant if it exists
+        setVariant(firstVariant);
+        localStorage.setItem(VARIANT_CACHE_KEY, firstVariant);
       } else {
-        setVariant("page1");
-        localStorage.setItem(VARIANT_CACHE_KEY, "page1");
+        // Check cache
+        const cached = localStorage.getItem(VARIANT_CACHE_KEY) as DashboardVariant | null;
+        if (cached && (cached === "page1" || cached === "page2")) {
+          // Save cache as first variant if it doesn't exist
+          localStorage.setItem(FIRST_VARIANT_KEY, cached);
+          setVariant(cached);
+        } else {
+          // Default to page1 and save as first variant
+          const defaultVariant: DashboardVariant = "page1";
+          localStorage.setItem(FIRST_VARIANT_KEY, defaultVariant);
+          localStorage.setItem(VARIANT_CACHE_KEY, defaultVariant);
+          setVariant(defaultVariant);
+        }
       }
       setIsLoading(false);
     }
