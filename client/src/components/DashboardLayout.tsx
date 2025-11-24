@@ -353,7 +353,7 @@ function DashboardLayoutContent({
                       }`}
                     >
                       {t("dashboardLayout.suggestFeature")}
-                    </button>
+                </button>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
