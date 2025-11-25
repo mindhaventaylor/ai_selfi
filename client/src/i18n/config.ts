@@ -7,6 +7,38 @@ import en from './locales/en.json';
 import it from './locales/it.json';
 import { getCookie, setCookie } from '../utils/cookies';
 
+// Safe localStorage helper to prevent crashes in private browsing or when localStorage is disabled
+const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        return localStorage.getItem(key);
+      }
+    } catch (e) {
+      console.warn('[i18n] Could not read from localStorage:', e);
+    }
+    return null;
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem(key, value);
+      }
+    } catch (e) {
+      console.warn('[i18n] Could not write to localStorage:', e);
+    }
+  },
+  removeItem: (key: string): void => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem(key);
+      }
+    } catch (e) {
+      console.warn('[i18n] Could not remove from localStorage:', e);
+    }
+  }
+};
+
 // Função para detectar idioma por IP
 const detectLanguageFromIP = async (): Promise<string> => {
   try {
@@ -47,7 +79,7 @@ const detectLanguageFromIP = async (): Promise<string> => {
   } catch (error) {
     console.error('Error detecting language from IP:', error);
     // Fallback: usar idioma do navegador
-    const browserLang = navigator.language || 'it';
+    const browserLang = (typeof navigator !== 'undefined' ? navigator.language : null) || 'it';
     if (browserLang.startsWith('it')) return 'it';
     if (browserLang.startsWith('en')) return 'en';
     if (browserLang.startsWith('es')) return 'es';
@@ -73,7 +105,7 @@ i18n
       if (typeof window !== 'undefined') {
         const cookieLang = getCookie('i18nextLng');
         if (cookieLang) return cookieLang;
-        const storageLang = localStorage.getItem('i18nextLng');
+        const storageLang = safeLocalStorage.getItem('i18nextLng');
         if (storageLang) return storageLang;
       }
       return 'it';
@@ -92,16 +124,18 @@ i18n
 
 // Detectar idioma por IP após inicialização (apenas se não houver preferência salva)
 if (typeof window !== 'undefined') {
-  const currentLang = getCookie('i18nextLng') || localStorage.getItem('i18nextLng');
+  const currentLang = getCookie('i18nextLng') || safeLocalStorage.getItem('i18nextLng');
   
   // Sync cookie with localStorage if cookie exists but localStorage doesn't
-  if (getCookie('i18nextLng') && !localStorage.getItem('i18nextLng')) {
-    localStorage.setItem('i18nextLng', getCookie('i18nextLng')!);
+  const cookieLang = getCookie('i18nextLng');
+  if (cookieLang && !safeLocalStorage.getItem('i18nextLng')) {
+    safeLocalStorage.setItem('i18nextLng', cookieLang);
   }
   
   // Sync localStorage to cookie if localStorage exists but cookie doesn't
-  if (localStorage.getItem('i18nextLng') && !getCookie('i18nextLng')) {
-    setCookie('i18nextLng', localStorage.getItem('i18nextLng')!, 365);
+  const storageLang = safeLocalStorage.getItem('i18nextLng');
+  if (storageLang && !getCookie('i18nextLng')) {
+    setCookie('i18nextLng', storageLang, 365);
   }
   
   if (!currentLang) {
@@ -111,7 +145,7 @@ if (typeof window !== 'undefined') {
       setCookie('i18nextLng', detectedLang, 365);
     }).catch(() => {
       // Se falhar, usar idioma do navegador
-      const browserLang = navigator.language || 'it';
+      const browserLang = (typeof navigator !== 'undefined' ? navigator.language : null) || 'it';
       let detectedLang = 'it';
       if (browserLang.startsWith('it')) detectedLang = 'it';
       else if (browserLang.startsWith('en')) detectedLang = 'en';
@@ -127,8 +161,8 @@ if (typeof window !== 'undefined') {
   // Listen for language changes and sync to cookie
   i18n.on('languageChanged', (lng) => {
     setCookie('i18nextLng', lng, 365);
-    localStorage.setItem('i18nextLng', lng);
-    });
+    safeLocalStorage.setItem('i18nextLng', lng);
+  });
 }
 
 export default i18n;

@@ -47,7 +47,12 @@ export function useAuth(options?: UseAuthOptions) {
       
       // Clear custom localStorage items
       if (typeof window !== "undefined") {
-        localStorage.removeItem("manus-runtime-user-info");
+        try {
+          localStorage.removeItem("manus-runtime-user-info");
+        } catch (e) {
+          // Silently fail - localStorage might be disabled
+          console.warn("[useAuth] Could not clear localStorage:", e);
+        }
       }
       
       // Redirect to login page
@@ -90,10 +95,19 @@ export function useAuth(options?: UseAuthOptions) {
   }, []);
 
   const state = useMemo(() => {
-    localStorage.setItem(
-      "manus-runtime-user-info",
-      JSON.stringify(meQuery.data)
-    );
+    // Safely write to localStorage with error handling
+    // This prevents crashes when localStorage is full, disabled, or in private browsing
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        localStorage.setItem(
+          "manus-runtime-user-info",
+          JSON.stringify(meQuery.data)
+        );
+      }
+    } catch (e) {
+      // Silently fail - localStorage might be full, disabled, or in private mode
+      console.warn("[useAuth] Could not write to localStorage:", e);
+    }
     return {
       user: meQuery.data ?? null,
       loading: meQuery.isLoading || logoutMutation.isPending,

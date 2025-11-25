@@ -7,17 +7,33 @@ const geminiApiKey = process.env.GEMINI_API_KEY ?? "";
 const geminiModel = process.env.GEMINI_MODEL_NAME ?? "gemini-2.5-flash-image";
 const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`;
 
+// Log warnings instead of throwing to prevent app crashes during build/startup
+let envError: string | null = null;
 if (!supabaseUrl || !supabaseServiceKey || !geminiApiKey) {
-  throw new Error(
-    "SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and GEMINI_API_KEY must be set."
-  );
+  envError = "SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and GEMINI_API_KEY must be set.";
+  console.error("[photo-generation-page2] Environment variables missing:", envError);
+  console.error("[photo-generation-page2] SUPABASE_URL:", supabaseUrl ? "set" : "missing");
+  console.error("[photo-generation-page2] SUPABASE_SERVICE_ROLE_KEY:", supabaseServiceKey ? "set" : "missing");
+  console.error("[photo-generation-page2] GEMINI_API_KEY:", geminiApiKey ? "set" : "missing");
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+// Create supabase client only if we have credentials
+const supabase = supabaseUrl && supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : null;
 
 const router = express.Router();
 
 router.post("/", async (req, res) => {
+  // Check if we have the required environment variables
+  if (envError || !supabase) {
+    console.error("[photo-generation-page2] Cannot process job - missing env vars");
+    return res.status(500).json({
+      success: false,
+      error: envError || "Supabase client not initialized",
+    });
+  }
+
   const job = req.body as Page2JobPayload;
 
   try {

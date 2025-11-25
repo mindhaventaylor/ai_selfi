@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { exampleImages, filterExampleImages, type ExampleImage } from "@/data/exampleImages";
 import { toast } from "sonner";
+import { safeLocalStorage } from "@/utils/localStorage";
 
 import DashboardV2 from "./DashboardV2";
 
@@ -73,12 +74,8 @@ export default function GenerateImages() {
   
   // For page2 variant, if there's a batchId, we should show the modal immediately
   const urlVariantSync = urlParamsSync.get("variant");
-  const firstVariantSync = typeof window !== "undefined" 
-    ? localStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null
-    : null;
-  const cachedVariantSync = typeof window !== "undefined" 
-    ? localStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null
-    : null;
+  const firstVariantSync = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
+  const cachedVariantSync = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
   const isPage2VariantSync = urlVariantSync === "page2" || firstVariantSync === "page2" || cachedVariantSync === "page2";
   // Show modal initially if there's a batchId (for both page1 and page2)
   const shouldShowModalInitially = hasInitialBatchId;
@@ -99,14 +96,10 @@ export default function GenerateImages() {
   const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
   
   // Also check localStorage directly (in case URL param was already removed)
-  const cachedVariant = typeof window !== "undefined" 
-    ? localStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null
-    : null;
+  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
   
   // Also check first variant (permanent storage) - highest priority after URL
-  const firstVariant = typeof window !== "undefined"
-    ? localStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null
-    : null;
+  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
   
   // Determine if this is page2 variant - check all sources
   // Priority: URL > first variant (permanent) > cached variant > PostHog variant
@@ -134,12 +127,8 @@ export default function GenerateImages() {
   const urlParamsForQuery = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
   const batchIdFromUrlForQuery = urlParamsForQuery.get("batchId");
   const urlVariantForQuery = urlParamsForQuery.get("variant");
-  const firstVariantForQuery = typeof window !== "undefined"
-    ? (localStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null)
-    : null;
-  const cachedVariantForQuery = typeof window !== "undefined" 
-    ? (localStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null)
-    : null;
+  const firstVariantForQuery = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
+  const cachedVariantForQuery = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
   const isPage2ForQuery = urlVariantForQuery === "page2" || 
     (firstVariantForQuery !== null && firstVariantForQuery === "page2") || 
     (cachedVariantForQuery !== null && cachedVariantForQuery === "page2") || 
@@ -177,12 +166,8 @@ export default function GenerateImages() {
     const urlVariant = urlParams.get("variant");
     
     // Check all variant sources
-    const firstVariant = typeof window !== "undefined"
-      ? localStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null
-      : null;
-    const cachedVariant = typeof window !== "undefined" 
-      ? localStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null
-      : null;
+    const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
+    const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
     const isPage2 = urlVariant === "page2" || firstVariant === "page2" || cachedVariant === "page2" || isPage2Variant;
     
     if (isPage2 && batchIdFromUrl) {
@@ -221,13 +206,13 @@ export default function GenerateImages() {
     
     // If we detect page2 variant from URL, save it immediately
     if (urlVariant === "page2" && cachedVariant !== "page2") {
-      localStorage.setItem("aiselfi_dashboard_variant", "page2");
+      safeLocalStorage.setItem("aiselfi_dashboard_variant", "page2");
       console.log("[GenerateImages] Saved page2 variant to cache");
     }
 
     // Check for page2 data from DashboardV2
     if (isPage2Variant && !page2Data) {
-      const savedData = localStorage.getItem('dashboardV2_data');
+      const savedData = safeLocalStorage.getItem('dashboardV2_data');
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData);
@@ -237,11 +222,11 @@ export default function GenerateImages() {
             console.log("[GenerateImages] Found page2 data from DashboardV2:", parsed);
           } else {
             // Data is too old, remove it
-            localStorage.removeItem('dashboardV2_data');
+            safeLocalStorage.removeItem('dashboardV2_data');
           }
         } catch (e) {
           console.error("[GenerateImages] Failed to parse page2 data:", e);
-          localStorage.removeItem('dashboardV2_data');
+          safeLocalStorage.removeItem('dashboardV2_data');
         }
       }
     }
@@ -291,12 +276,8 @@ export default function GenerateImages() {
     const urlVariantForBatch = urlParamsForBatch.get("variant");
     
     // Check all variant sources synchronously
-    const firstVariantForBatch = typeof window !== "undefined"
-      ? localStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null
-      : null;
-    const cachedVariantForBatch = typeof window !== "undefined" 
-      ? localStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null
-      : null;
+    const firstVariantForBatch = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
+    const cachedVariantForBatch = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
     const isPage2ForBatch = urlVariantForBatch === "page2" || firstVariantForBatch === "page2" || cachedVariantForBatch === "page2";
     
     console.log("[GenerateImages] Initial mount check:", {
@@ -646,7 +627,7 @@ export default function GenerateImages() {
       }
 
       // Clear page2 data after successful start
-      localStorage.removeItem('dashboardV2_data');
+      safeLocalStorage.removeItem('dashboardV2_data');
     } catch (error: any) {
       console.error("[GenerateImages] Generation error:", error);
       setIsGenerating(false);

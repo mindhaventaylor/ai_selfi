@@ -16,6 +16,28 @@ interface ThemeProviderProps {
   switchable?: boolean;
 }
 
+// Safe localStorage helper to prevent crashes
+const safeGetTheme = (key: string, fallback: string): string => {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return localStorage.getItem(key) || fallback;
+    }
+  } catch (e) {
+    console.warn('[ThemeContext] Could not read from localStorage:', e);
+  }
+  return fallback;
+};
+
+const safeSetTheme = (key: string, value: string): void => {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem(key, value);
+    }
+  } catch (e) {
+    console.warn('[ThemeContext] Could not write to localStorage:', e);
+  }
+};
+
 export function ThemeProvider({
   children,
   defaultTheme = "light",
@@ -23,7 +45,7 @@ export function ThemeProvider({
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (switchable) {
-      const stored = localStorage.getItem("theme");
+      const stored = safeGetTheme("theme", defaultTheme);
       return (stored as Theme) || defaultTheme;
     }
     return defaultTheme;
@@ -38,7 +60,7 @@ export function ThemeProvider({
     }
 
     if (switchable) {
-      localStorage.setItem("theme", theme);
+      safeSetTheme("theme", theme);
     }
   }, [theme, switchable]);
 

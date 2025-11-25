@@ -267,7 +267,7 @@
     "language": "Idioma"
   },
   "dashboard": {
-    "title": "AISelfie.org",
+    "title": "AI Selfie",
     "subtitle": "Convierte tus selfies en fotos profesionales",
     "generateImages": "Generar Imágenes →",
     "newModelAvailable": "Nuevo modelo de IA disponible",
@@ -1343,7 +1343,7 @@
     ]
   },
   "dashboard": {
-    "title": "AISelfie.org",
+    "title": "AI Selfie",
     "subtitle": "Transforma tus selfies en fotos profesionales",
     "generateImages": "Generar Imágenes →",
     "newModelAvailable": "Nuevo modelo de IA disponible",

@@ -52,6 +52,7 @@ import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
+import { safeLocalStorage } from "@/utils/localStorage";
 
 // menuItems will be created inside component to use translation
 
@@ -67,13 +68,13 @@ export default function DashboardLayout({
 }) {
   const { t } = useTranslation();
   const [sidebarWidth, setSidebarWidth] = useState(() => {
-    const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
+    const saved = safeLocalStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
   const { loading, user } = useAuth();
 
   useEffect(() => {
-    localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
+    safeLocalStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
   }, [sidebarWidth]);
 
   if (loading) {
@@ -152,12 +153,8 @@ function DashboardLayoutContent({
   // Check for variant in URL and localStorage
   const urlParams = new URLSearchParams(window.location.search);
   const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
-  const cachedVariant = typeof window !== "undefined"
-    ? localStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null
-    : null;
-  const firstVariant = typeof window !== "undefined"
-    ? localStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null
-    : null;
+  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
+  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
   const isPage2Variant = variant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
   
   // Determine current variant to pass to generate page

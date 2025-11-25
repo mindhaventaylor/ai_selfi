@@ -18,6 +18,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import DashboardV2 from "./DashboardV2";
+import { safeLocalStorage } from "@/utils/localStorage";
 
 export default function Dashboard() {
   // All hooks must be called at the top, before any conditional returns
@@ -36,9 +37,7 @@ export default function Dashboard() {
   
   // Also check localStorage directly - use state initialized once to avoid re-reading on every render
   const [cachedVariant] = useState<"page1" | "page2" | null>(() => {
-    return typeof window !== "undefined"
-      ? localStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null
-      : null;
+    return safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
   });
   
   // Use forced variant from URL if present, then cached, then PostHog variant
@@ -57,7 +56,7 @@ export default function Dashboard() {
   const savedVariantRef = useRef<string | null>(null);
   useEffect(() => {
     if (forcedVariant && forcedVariant !== savedVariantRef.current) {
-      localStorage.setItem("aiselfi_dashboard_variant", forcedVariant);
+      safeLocalStorage.setItem("aiselfi_dashboard_variant", forcedVariant);
       savedVariantRef.current = forcedVariant;
       console.log(`[Dashboard] Saved variant ${forcedVariant} to cache`);
     }
