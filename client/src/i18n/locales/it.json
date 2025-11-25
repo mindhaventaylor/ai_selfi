@@ -73,6 +73,13 @@
         "review": "Risultati davvero impressionanti! Ho creato foto professionali di qualità superiore per il mio profilo. Il sistema è facile da usare e i risultati arrivano rapidamente. Le foto sono così realistiche che molti mi hanno chiesto chi fosse il fotografo. Servizio top!",
         "date": "Set 12, 2025"
       }
+    ],
+    "highlightPhrases": [
+      "È fantastico!",
+      "Ideale per chi inizia con il proprio brand",
+      "Ho rinnovato tutte le mie foto in 15 minuti",
+      "galleria di foto che sembravano fatte in studio",
+      "sono fantastiche"
     ]
   },
   "comparison": {
@@ -95,7 +102,7 @@
       "cost": "Costo medio: $150-$500"
     },
     "ai": {
-      "title": "La Tua Sessione Fotografica con AIselfi",
+      "title": "La Tua Sessione Fotografica con AISelfie",
       "items": [
         "Carica selfie dal tuo telefono (5 minuti)",
         "Scegli tra oltre 100 pose e idee professionali",
@@ -114,7 +121,7 @@
     "cta": "Crea le Tue Foto Ora"
   },
   "howItWorks": {
-    "title": "Come funziona AISelfi",
+    "title": "Come funziona AISelfie",
     "steps": [
       {
         "title": "Carica i Tuoi Selfie",
@@ -207,7 +214,8 @@
       }
     ],
     "viewAll": "Vedi tutte le domande",
-    "hideAll": "Nascondi tutto"
+    "hideAll": "Nascondi tutto",
+    "badge": "GENERATO CON IA"
   },
   "footer": {
     "cta": "Crea le mie foto professionali",
@@ -249,7 +257,7 @@
       "aiPhotoshoot": "Servizio Fotografico IA"
     },
     "language": "🇮🇹 Italiano",
-    "copyright": "© 2025 AIselfi. Tutti i diritti riservati.",
+    "copyright": "© 2025 AISelfie. Tutti i diritti riservati.",
     "featuredOn": "In evidenza su Fazier"
   },
   "header": {
@@ -258,12 +266,12 @@
     "language": "Lingua"
   },
   "dashboard": {
-    "title": "AISelfi.es",
+    "title": "AISelfie.org",
     "subtitle": "Trasforma i tuoi selfie in foto professionali",
     "generateImages": "Genera Immagini →",
     "newModelAvailable": "Nuovo modello IA disponibile",
     "moreRealisticPhotos": "Foto più realistiche e qualità 4k",
-    "in60Seconds": "AISelfi.es in 60\"",
+    "in60Seconds": "AISelfie.org in 60\"",
     "trainModel": "Addestra un modello",
     "newAIModel": "Nuovo modello IA",
     "createCustomAI": "Crea la tua IA personalizzata",
@@ -342,6 +350,15 @@
     "pleaseSelectValidModel": "Per favore seleziona un modello valido",
     "noTrainingImagesFound": "Nessuna immagine di addestramento trovata per questo modello",
     "errorGenerating": "Errore nella generazione delle immagini. Per favore riprova.",
+    "userNotAuthenticated": "Utente non autenticato",
+    "failedToStartGeneration": "Errore nell'avvio della generazione",
+    "failedToGenerateImages": "Errore nella generazione delle immagini",
+    "pleaseTryAgain": "Per favore riprova",
+    "generationInProgress": "Generazione in corso",
+    "modelSelectionHidden": "Selezione modello nascosta",
+    "batchNotFound": "Lotto non trovato. La generazione potrebbe non essere iniziata. Per favore riprova.",
+    "generationFailed": "Generazione immagini fallita. Per favore riprova.",
+    "generatedImageAlt": "Immagine generata {{number}}",
     "badges": {
       "premium": "Premium",
       "new": "Nuovo",
@@ -367,6 +384,13 @@
     "termsOfService": "Termini di Servizio",
     "and": "e",
     "privacyPolicy": "Politica sulla Privacy",
+    "altText": {
+      "professionalPhoto": "Foto professionale {{number}}",
+      "logo": "AISelfie"
+    },
+    "ariaLabel": {
+      "goToTestimonial": "Vai al testimonianza {{number}}"
+    },
     "testimonials": [
       {
         "text": "Ho creato 40 foto professionali in meno di 10 minuti. Non credevo fosse possibile ottenere risultati così realistici con l'intelligenza artificiale. Le foto sono perfette per il mio profilo LinkedIn e il mio sito web.",
@@ -448,7 +472,39 @@
     "errorUploadingImage": "Errore nel caricamento dell'immagine",
     "errorCreatingSignedUrl": "Errore nella creazione dell'URL firmato",
     "couldNotUploadImages": "Impossibile caricare le immagini",
-    "errorUploadingModel": "Errore nel caricamento del modello. Per favore riprova."
+    "errorUploadingModel": "Errore nel caricamento del modello. Per favore riprova.",
+    "uploadSuccessDescription": "Le tue immagini sono state caricate e il modello sta essere addestrato",
+    "sessionExpired": "Sessione scaduta",
+    "sessionExpiredDescription": "La tua sessione è scaduta. Per favore, accedi di nuovo.",
+    "loginButton": "Accedi",
+    "errorCreatingModel": "Errore nella creazione del modello",
+    "imagesOnlyInBrowser": "Le immagini sono solo nel tuo browser. Clicca su \"Carica Immagini\" per caricarle.",
+    "removeImage": "Rimuovi immagine",
+    "userNotAuthenticated": "Utente non autenticato",
+    "maxFilesErrorDesc": "Puoi selezionare un massimo di {{maxFiles}} immagini. Ne hai già {{currentCount}} e stai cercando di aggiungerne {{newCount}}.",
+    "maxFilesErrorDescSimple": "Puoi selezionare un massimo di {{maxFiles}} immagini",
+    "invalidFileTypeDesc": "Il file \"{{fileName}}\" non è un formato valido",
+    "fileTooLargeDesc": "Il file \"{{fileName}}\" è troppo grande (massimo 3MB)",
+    "imagesReadyForUpload": "Le immagini sono pronte per l'invio",
+    "pleaseEnterModelNameDesc": "Per favore, inserisci un nome per il modello",
+    "pleaseSelectGenderDesc": "Per favore, seleziona il genere del modello",
+    "pleaseUploadAtLeastOneDesc": "Devi selezionare almeno un'immagine",
+    "max5ImagesDesc": "Puoi selezionare un massimo di 5 immagini",
+    "needTrainingCreditsDesc": "Hai bisogno di crediti per addestrare i modelli",
+    "imageSelected": "immagine selezionata",
+    "imagesSelectedPlural": "immagini selezionate",
+    "imageReadyToSend": "immagine pronta per l'invio",
+    "imagesReadyToSend": "immagini pronte per l'invio",
+    "summaryTitle": "Riepilogo di ciò che verrà inviato:",
+    "summaryModel": "Modello:",
+    "summaryType": "Tipo:",
+    "summaryImages": "Immagini:",
+    "image": "immagine",
+    "images": "immagini",
+    "summaryDescription": "Le immagini verranno inviate al server e il modello verrà creato nel database.",
+    "buyCreditsToUpload": "per caricare",
+    "goodPhotoExampleAlt": "Esempio di foto buona {{number}}",
+    "badPhotoExampleAlt": "Esempio di foto cattiva {{number}}"
   },
   "gallery": {
     "title": "La Tua Galleria",
@@ -466,7 +522,8 @@
     "noImagesFound": "Nessuna immagine trovata nella tua galleria.",
     "startCreatingImages": "Inizia a creare immagini per vederle qui.",
     "areYouSureDeleteOne": "Sei sicuro di voler eliminare questa foto?",
-    "areYouSureDeleteMany": "Sei sicuro di voler eliminare"
+    "areYouSureDeleteMany": "Sei sicuro di voler eliminare",
+    "photoAlt": "Foto {{number}}"
   },
   "viewModels": {
     "title": "Modelli Addestrati",
@@ -476,6 +533,7 @@
     "allModels": "Tutti i modelli",
     "ready": "Pronto",
     "training": "Addestramento",
+    "trainingInProgress": "Addestramento...",
     "failed": "Fallito",
     "model": "modello",
     "models": "modelli",
@@ -536,6 +594,7 @@
     "forBusinesses": "Per Aziende",
     "forBusinessesDesc": "Foto professionali IA per team e aziende",
     "buy": "Acquista",
+    "loading": "Caricamento...",
     "starterPack": "Pacchetto Starter",
     "starterCredits": "40 crediti",
     "proPack": "Pacchetto Pro",
@@ -591,14 +650,18 @@
       }
     ],
     "checkoutError": "Errore nella creazione della sessione di checkout. Riprova.",
-    "noFaq": "Nessuna domanda frequente disponibile."
+    "noFaq": "Nessuna domanda frequente disponibile.",
+    "packNotFound": "Pacchetto non trovato. Per favore riprova.",
+    "checkoutFailed": "Errore nella creazione della sessione di checkout. Riprova.",
+    "checkoutStartFailed": "Errore nell'avvio del checkout. Riprova."
   },
   "payment": {
     "success": {
       "title": "Pagamento Riuscito!",
       "message": "Il tuo pagamento è stato elaborato con successo. I crediti sono stati aggiunti al tuo account.",
       "goToDashboard": "Vai alla Dashboard",
-      "buyMore": "Acquista Altri Crediti"
+      "buyMore": "Acquista Altri Crediti",
+      "sessionIdLabel": "ID Sessione:"
     },
     "cancel": {
       "title": "Pagamento Annullato",
@@ -652,15 +715,17 @@
     "networkError": "Errore di rete: Impossibile connettersi al server. Per favore assicurati che il server sia in esecuzione e riprova.",
     "databaseError": "Errore di connessione al database: Impossibile connettersi al database Supabase. Per favore controlla DATABASE_URL nel tuo file .env e assicurati che sia configurato correttamente.",
     "apiKeyError": "Errore di configurazione del server: Chiave API Supabase non valida. Per favore controlla SUPABASE_SERVICE_ROLE_KEY nel tuo file .env.",
-    "tokenError": "Autenticazione fallita: Impossibile verificare la tua sessione. Per favore prova ad accedere di nuovo."
+    "tokenError": "Autenticazione fallita: Impossibile verificare la tua sessione. Per favore prova ad accedere di nuovo.",
+    "failedToFetchUserData": "Impossibile recuperare i dati dell'utente dopo la sincronizzazione",
+    "unknownError": "Si è verificato un errore sconosciuto"
   },
   "startHere": {
-    "title": "Inizia Qui: Impara come funziona AISelfi.es",
+    "title": "Inizia Qui: Impara come funziona AISelfie.org",
     "subtitle": "Se è la prima volta che sei qui, ti suggerisco di guardare il seguente breve video per imparare come funziona l'app.",
     "aiselfies": "AISelfies",
     "convertSelfiesToProfessional": "Trasforma i tuoi selfie in foto professionali",
     "generateImages": "Genera Immagini →",
-    "aiselfiIn60Seconds": "AISelfi.es in meno di 60'",
+    "aiselfiIn60Seconds": "AISelfie.org in meno di 60'",
     "explainHowAppWorks": "Spiega come funziona l'app in meno di 60 secondi",
     "videoPlaceholder": "Segnaposto video",
     "videoWillPlayHere": "Il video verrà riprodotto qui",
@@ -751,13 +816,16 @@
     "organizeTip4": "Elimina foto di cui non hai bisogno per liberare spazio",
     "importantInfo": "Informazioni importanti:",
     "importantInfoText": "Tutte le tue foto sono private e solo tu puoi accedervi. Le foto rimangono nella tua galleria finché non le elimini.",
-    "viewYourGallery": "Vedi la Tua Galleria →"
+    "viewYourGallery": "Vedi la Tua Galleria →",
+    "photoAlt": "Foto {{number}}",
+    "videoTime": "0:00 / 1:11",
+    "videoTimePlaying": "0:04 / 1:11"
   },
   "supportGeneral": {
     "title": "Centro Supporto",
     "contactUs": "Contattaci",
     "contactUsDesc": "Hai bisogno di aiuto? Il nostro team di supporto è qui per aiutarti.",
-    "email": "hola@aiselfi.es",
+    "email": "hola@aiselfie.org",
     "faq": "Domande Frequenti",
     "howDoIStart": "Come inizio?",
     "howDoIStartAnswer": "Registrati per ottenere un account e segui la nostra guida rapida per iniziare a usare i nostri servizi.",
@@ -811,7 +879,7 @@
   },
   "afiliados": {
     "title": "Guadagna il 30% di Commissione per ogni vendita che generi",
-    "subtitle": "Unisciti al programma di affiliazione AISelfi.es e inizia a generare reddito passivo promuovendo il nostro strumento di creazione foto profilo IA.",
+    "subtitle": "Unisciti al programma di affiliazione AISelfie.org e inizia a generare reddito passivo promuovendo il nostro strumento di creazione foto profilo IA.",
     "badge": "Programma di Affiliazione",
     "registerAsAffiliate": "Registrati come Affiliato!",
     "howItWorks": "Come Funziona",
@@ -821,7 +889,7 @@
     "step1Desc": "Registrati in pochi minuti. Nessuna carta di credito richiesta. Ottieni accesso immediato alla tua dashboard affiliato e materiali di marketing.",
     "step2": "Passo 2",
     "step2Title": "Condividi",
-    "step2Subtitle": "Promuovi AISelfi.es con il tuo link unico",
+    "step2Subtitle": "Promuovi AISelfie.org con il tuo link unico",
     "step2Desc": "Condividi il tuo link affiliato unico sul tuo blog, social media o con la tua rete.",
     "step3": "Passo 3",
     "step3Title": "Guadagna",
@@ -883,11 +951,11 @@
     "refundable": "100% rimborsabile",
     "needCustomQuote": "Hai Bisogno di un Preventivo Personalizzato?",
     "needCustomQuoteDesc": "Per ordini grandi, pacchetti team o requisiti personalizzati, contattaci.",
-    "contactEmail": "hola@aiselfi.es"
+    "contactEmail": "hola@aiselfie.org"
   },
   "giftCards": {
     "title": "Carte Regalo",
-    "subtitle": "Regala AISelfi.es ad amici e famiglia.",
+    "subtitle": "Regala AISelfie.org ad amici e famiglia.",
     "buyGiftCard": "Acquista Carta Regalo",
     "faqTitle": "Domande Frequenti",
     "faq": [
@@ -999,16 +1067,21 @@
     "redirecting": "Reindirizzamento a WhatsApp...",
     "notRedirected": "Se non vieni reindirizzato automaticamente,",
     "clickHere": "clicca qui",
-    "message": "Ciao, ho bisogno di aiuto con AISelfi.es"
+    "message": "Ciao, ho bisogno di aiuto con AISelfie.org"
   },
   "supportReviews": {
     "leaveReview": "Lascia una Recensione",
     "weWouldLove": "Ci piacerebbe conoscere la tua esperienza con AISelfies!",
-    "doYouEnjoy": "Ti piace usare aiselfi.es?",
+    "doYouEnjoy": "Ti piace usare aiselfie.org?",
     "howWouldYouRate": "Su una scala da 1 a 5, come ci valuteresti?",
     "continue": "Continua",
     "whatUsersSay": "Cosa Dicono gli Utenti",
     "readCommunity": "Leggi cosa dice la nostra comunità su AISelfies",
+    "sectionTitlePart1": "Vale la pena una foto",
+    "sectionTitleHighlight": "professionale con IA?",
+    "sectionTitlePart2": "Guarda cosa dicono.",
+    "statsText": "Più di 75.523 foto professionali con intelligenza artificiale create... e contando.",
+    "statsTextShort": "Più di 75.523 foto professionali create",
     "readMore": "Leggi di più",
     "seeMore": "Vedi di più",
     "showLess": "Mostra meno",
@@ -1109,7 +1182,7 @@
     "title": "Politica sulla Privacy",
     "section1": {
       "title": "1. Informazioni che Raccogliamo",
-      "description": "Raccogliamo le seguenti informazioni quando usi AISelfi:",
+      "description": "Raccogliamo le seguenti informazioni quando usi AISelfie:",
       "items": [
         "Informazioni account: nome, email e metodo di accesso",
         "Foto caricate: selfie che fornisci per l'elaborazione",
@@ -1174,18 +1247,18 @@
     "title": "Termini di Servizio",
     "section1": {
       "title": "1. Accettazione dei Termini",
-      "description": "Accedendo e usando AISelfi, accetti di rispettare ed essere vincolato da questi Termini di Servizio. Se non sei d'accordo con qualsiasi parte di questi termini, non dovresti usare i nostri servizi."
+      "description": "Accedendo e usando AISelfie, accetti di rispettare ed essere vincolato da questi Termini di Servizio. Se non sei d'accordo con qualsiasi parte di questi termini, non dovresti usare i nostri servizi."
     },
     "section2": {
       "title": "2. Descrizione del Servizio",
-      "description": "AISelfi è una piattaforma che utilizza l'intelligenza artificiale per generare foto professionali da selfie forniti dagli utenti. Offriamo diversi pacchetti di foto con vari stili disponibili."
+      "description": "AISelfie è una piattaforma che utilizza l'intelligenza artificiale per generare foto professionali da selfie forniti dagli utenti. Offriamo diversi pacchetti di foto con vari stili disponibili."
     },
     "section3": {
       "title": "3. Uso delle Immagini",
-      "description": "Caricando le tue foto su AISelfi, tu:",
+      "description": "Caricando le tue foto su AISelfie, tu:",
       "items": [
         "Garantisci di avere tutti i diritti sulle immagini caricate",
-        "Concedi a AISelfi la licenza per elaborare le tue immagini usando l'IA",
+        "Concedi a AISelfie la licenza per elaborare le tue immagini usando l'IA",
         "Mantieni tutti i diritti di proprietà sulle foto generate",
         "Accetti di non usare il servizio per contenuti illegali o offensivi"
       ]
@@ -1205,7 +1278,7 @@
     },
     "section6": {
       "title": "6. Limitazione di Responsabilità",
-      "description": "AISelfi non è responsabile per danni indiretti, incidentali o consequenziali derivanti dall'uso o dall'incapacità di usare i nostri servizi. Le foto generate sono create dall'IA e potrebbero non soddisfare perfettamente le aspettative di tutti gli utenti."
+      "description": "AISelfie non è responsabile per danni indiretti, incidentali o consequenziali derivanti dall'uso o dall'incapacità di usare i nostri servizi. Le foto generate sono create dall'IA e potrebbero non soddisfare perfettamente le aspettative di tutti gli utenti."
     },
     "section7": {
       "title": "7. Modifiche ai Termini",
@@ -1237,16 +1310,42 @@
     ],
     "altText": {
       "professionalPhoto": "Foto Professionale IA",
-      "style": "Stile"
+      "style": "Stile",
+      "aiProfessionalPhoto": "Foto Professionale IA",
+      "reviewPhoto": "{{name}} - Foto {{number}}",
+      "reviewProfessionalPhoto": "{{name}} - Foto Professionale",
+      "danielaMora": "Daniela Mora Solís",
+      "styleNumber": "Stile {{number}}",
+      "selfieNumber": "Selfie {{number}}",
+      "aiGeneratedPhoto": "Foto Professionale Generata da IA",
+      "userNumber": "Utente {{number}}",
+      "professionalPhotoNumber": "Foto Professionale {{number}}"
+    },
+    "testimonial": {
+      "text": "Ho lavorato con 450 professionisti che vogliono potenziare il loro marchio personale, e una delle loro paure più grandi è farsi foto. Con aiselfie.org possono ottenere immagini professionali senza il disagio di una sessione tradizionale, sentendosi sicuri e professionali in ogni foto.",
+      "attribution": "- Daniela Mora Solís • Consulente di Brand Personale +400 clienti di successo | Top 200 creatori di contenuti di lingua spagnola di LinkedIn 2024 (Favikon) #64 in spagnolo | #1 in Costa Rica | Speaker TEDx"
+    },
+    "styles": {
+      "badgePopular": "Popolare",
+      "badgeNew": "Nuovo",
+      "verifiedBuyer": "Acquirente Verificato"
+    },
+    "uploadSelfies": {
+      "title": "Carica i tuoi selfie"
+    },
+    "boostPersonalBrand": {
+      "title": "Potenzia il tuo marchio personale",
+      "subtitle": "Ottieni le tue foto professionali in pochi minuti.",
+      "cta": "Crea le mie foto professionali"
     }
   },
   "dashboard": {
-    "title": "AISelfi.es",
+    "title": "AISelfie.org",
     "subtitle": "Trasforma i tuoi selfie in foto professionali",
     "generateImages": "Genera Immagini →",
     "newModelAvailable": "Nuovo modello IA disponibile",
     "moreRealisticPhotos": "Foto più realistiche e qualità 4k",
-    "in60Seconds": "AISelfi.es in 60\"",
+    "in60Seconds": "AISelfie.org in 60\"",
     "trainModel": "Addestra un modello",
     "newAIModel": "Nuovo modello IA",
     "createCustomAI": "Crea la tua IA personalizzata",
@@ -1258,7 +1357,133 @@
     "learnProcess": "Impara il processo",
     "moreInfo": "Maggiori Informazioni →",
     "aiselfies": "AISelfies",
-    "videoTime": "0:00 / 1:11"
+    "videoTime": "0:00 / 1:11",
+    "loading": "Caricamento...",
+    "photoAlt": "Foto {{number}}",
+    "galleryAlt": "Galleria {{number}}"
+  },
+  "dashboardV2": {
+    "welcome": "Benvenuto",
+    "gender": "Genere",
+    "age": "Età",
+    "hairColor": "Colore dei Capelli",
+    "hairLength": "Lunghezza dei Capelli",
+    "hairStyle": "Stile dei Capelli",
+    "ethnicity": "Etnia",
+    "bodyType": "Tipo di Corpo",
+    "attire": "Abbigliamento",
+    "background": "Sfondo",
+    "upload": "Carica Foto",
+    "back": "Indietro",
+    "continue": "Continua",
+    "welcomeTitle": "Crea ritratti professionali con IA",
+    "welcomeDescription": "Trasforma le tue foto esistenti in ritratti realistici con IA per il tuo curriculum, LinkedIn e profili sui social media.",
+    "createHeadshots": "Crea ritratti",
+    "whatIsYourGender": "Qual è il tuo genere?",
+    "genderDescription": "Ci piacerebbe saperne di più su di te! Aiutaci a generare foto perfette che riflettano chi sei.",
+    "male": "Maschio",
+    "female": "Femmina",
+    "nonBinary": "Non binario",
+    "howOldAreYou": "Quanti anni hai?",
+    "ageDescription": "Ci piacerebbe saperne di più su di te! Aiutaci a generare foto perfette che riflettano chi sei.",
+    "whatIsYourHairColor": "Qual è il colore dei tuoi capelli?",
+    "hairColorDescription": "Aiutaci a generare foto che ti rappresentino davvero. Se il colore dei tuoi capelli non corrisponde esattamente a nessuna opzione, scegli quella più vicina.",
+    "brown": "Castano",
+    "black": "Nero",
+    "blonde": "Biondo",
+    "gray": "Grigio",
+    "auburn": "Castano rossiccio",
+    "red": "Rosso",
+    "white": "Bianco",
+    "other": "Altro",
+    "bald": "Calvo",
+    "whatIsYourHairLength": "Qual è la lunghezza dei tuoi capelli?",
+    "hairLengthDescription": "Aiutaci a generare foto che ti rappresentino davvero. Se la lunghezza dei tuoi capelli è tra le opzioni, scegli quella più vicina.",
+    "buzzCut": "Taglio a spazzola",
+    "short": "Corto",
+    "mediumLength": "Lunghezza media",
+    "long": "Lungo",
+    "whatIsYourHairType": "Qual è il tuo tipo di capelli?",
+    "hairTypeDescription": "Aiutaci a generare foto che ti rappresentino davvero. Se il tuo tipo di capelli è tra le opzioni, scegli quella più vicina.",
+    "straight": "Liscio",
+    "wavy": "Ondulato",
+    "curly": "Riccio",
+    "dreadlocks": "Dreadlocks",
+    "whatIsYourEthnicity": "Qual è la tua etnia?",
+    "ethnicityDescription": "Ci piacerebbe saperne di più su di te! Aiutaci a generare foto perfette che riflettano chi sei.",
+    "whiteCaucasian": "Bianco / Caucasico",
+    "blackAfrican": "Nero / Discendente africano",
+    "hispanicLatino": "Ispanico, latino, di origine spagnola",
+    "asianEast": "Asia centrale o orientale",
+    "asianSouth": "Asia meridionale (indiano, pakistano, bengalese, ecc.)",
+    "asianSoutheast": "Asia sudorientale (vietnamita, cambogiano, ecc.)",
+    "middleEastern": "Medio Oriente, Nord Africa o Arabo",
+    "pacificIslander": "Hawaiano nativo o altro isolano del Pacifico",
+    "multiracial": "Multirazziale",
+    "whatIsYourBodyType": "Qual è il tuo tipo di corpo?",
+    "bodyTypeDescription": "Aiutaci a generare foto che ti rappresentino davvero. Se sei tra le opzioni di tipo di corpo, scegli quella più vicina.",
+    "slim": "Magro",
+    "regular": "Regolare",
+    "athletic": "Atletico",
+    "mediumLarge": "Medio grande",
+    "large": "Grande",
+    "plusSize": "Taglia grande",
+    "selectYourAttire": "Seleziona il tuo abbigliamento",
+    "attireDescription": "Riceverai una miscela uguale di risultati con gli abbigliamenti più popolari.",
+    "professionalBusiness": "Professionale Business",
+    "professionalBusinessDesc": "Camicie e abiti formali con cravatte abbinate",
+    "businessCasual": "Business Casual",
+    "businessCasualDesc": "Blazer e giacche, camicie a maniche lunghe",
+    "attireNote": "Puoi modificare le tue selezioni con i nostri strumenti di editing IA, anche dopo che le tue foto sono state generate.",
+    "selectYourBackgrounds": "Seleziona i tuoi sfondi",
+    "backgroundDescription": "Seleziona gli sfondi che vuoi! La maggior parte delle persone sceglie tutti e 4 gli sfondi per una maggiore varietà.",
+    "city": "Città",
+    "cityDesc": "Strade urbane vibranti",
+    "nature": "Natura",
+    "natureDesc": "Parchi all'aperto o strade alberate",
+    "office": "Ufficio",
+    "officeDesc": "Ufficio aziendale luminoso e minimalista",
+    "studio": "Studio",
+    "studioDesc": "Studio fotografico professionale",
+    "uploadPhotos": "Carica foto",
+    "uploadDescription": "Ora inizia il divertimento! Seleziona almeno le tue migliori foto. Caricare una miscela di primi piani, selfie e foto a media distanza può aiutare l'IA a catturare meglio il tuo viso e tipo di corpo.",
+    "uploadFromComputer": "Carica dal tuo computer",
+    "uploadFiles": "Carica file ↑",
+    "uploadFormats": "o trascina e rilascia le tue foto PNG, JPG, HEIC, WEBP fino a 120MB",
+    "uploadedImages": "Immagini caricate",
+    "maxFilesError": "Troppi file",
+    "invalidFileType": "Tipo di file non valido",
+    "fileTooLarge": "File troppo grande",
+    "fileSelected": "file selezionato",
+    "filesSelected": "file selezionati",
+    "filesReady": "I file sono pronti per il caricamento",
+    "fileRemoved": "File rimosso",
+    "noFilesSelected": "Nessun file selezionato",
+    "pleaseSelectFiles": "Per favore seleziona almeno una foto per continuare",
+    "minFilesError": "File insufficienti",
+    "clearAll": "Cancella tutto",
+    "uploadingImages": "Caricamento immagini...",
+    "imagesUploaded": "Immagini caricate con successo!",
+    "uploadError": "Errore nel caricamento delle immagini",
+    "userNotAuthenticated": "Utente non autenticato",
+    "pleaseLogin": "Per favore accedi per continuare",
+    "couldNotUploadImages": "Impossibile caricare le immagini",
+    "generatingImages": "Generazione immagini...",
+    "generationStarted": "Generazione immagini avviata!",
+    "generationError": "Errore nella generazione delle immagini",
+    "appName": "AI Selfi",
+    "exampleAlt": "Esempio {{id}}",
+    "exampleForAlt": "Esempio per {{label}}",
+    "maxFilesErrorDesc": "Puoi selezionare un massimo di {{maxFiles}} immagini. Ne hai già {{currentCount}} e stai cercando di aggiungerne {{newCount}}.",
+    "maxFilesErrorDescSimple": "Puoi selezionare un massimo di {{maxFiles}} immagini",
+    "invalidFileTypeDesc": "Il file \"{{fileName}}\" non è un formato valido. Usa PNG, JPG, HEIC o WEBP.",
+    "fileTooLargeDesc": "Il file \"{{fileName}}\" è troppo grande (massimo 120MB)",
+    "fileSizeUnit": "MB",
+    "of": "di"
+  },
+  "errorBoundary": {
+    "title": "Si è verificato un errore imprevisto.",
+    "reloadPage": "Ricarica Pagina"
   }
 }
 

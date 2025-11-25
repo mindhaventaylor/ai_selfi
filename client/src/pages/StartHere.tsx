@@ -96,7 +96,7 @@ export default function StartHere() {
                   >
                     <img
                       src={photo}
-                      alt={`Photo ${idx + 1}`}
+                      alt={t("startHere.photoAlt", { number: idx + 1 })}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = "none";
@@ -155,7 +155,7 @@ export default function StartHere() {
                       </div>
                       <div className="w-full px-4">
                         <div className="bg-background/80 backdrop-blur-sm rounded-lg px-4 py-2 text-sm text-center">
-                          0:04 / 1:11
+                          {t("startHere.videoTimePlaying")}
                         </div>
                       </div>
                     </div>
@@ -163,7 +163,7 @@ export default function StartHere() {
                   {/* Video Info */}
                   <div className="absolute bottom-4 left-4 right-4 z-20">
                     <div className="bg-background/80 backdrop-blur-sm rounded-lg px-4 py-2 text-sm max-w-fit mx-auto">
-                      {isPlaying ? "0:04 / 1:11" : "0:00 / 1:11"}
+                      {isPlaying ? t("startHere.videoTimePlaying") : t("startHere.videoTime")}
                     </div>
                   </div>
                 </div>
@@ -206,7 +206,7 @@ export default function StartHere() {
           </CardContent>
         </Card>
 
-        {/* Step 1: Comprar Créditos */}
+        {/* Step 1: Buy Credits */}
         <Card id="step-1" className="bg-card/50 border-border mb-6">
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
@@ -215,47 +215,42 @@ export default function StartHere() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold">
-                  Paso 1: Comprar Créditos
+                  {t("startHere.step1Title")}
                 </h2>
               </div>
             </div>
 
               <div className="space-y-4 text-sm">
                 <p>
-                  Elige entre nuestros paquetes de pago único. Cada paquete
-                  incluye créditos tanto para entrenar modelos de IA como para
-                  generar fotos.
+                  {t("startHere.step1Desc")}
                 </p>
                 <p>
-                  Selecciona el paquete que mejor se adapte a tus necesidades.
+                  {t("startHere.step1Desc2")}
                 </p>
 
                 <div className="mt-6">
                   <h3 className="font-semibold mb-3">
-                    Cada paquete incluye:
+                    {t("startHere.step1Includes")}
                   </h3>
                   <ul className="space-y-2 list-disc list-inside text-muted-foreground">
                     <li>
-                      Créditos para entrenar modelos de IA (1 o 5 - dependiendo
-                      del paquete elegido)
+                      {t("startHere.step1Includes1")}
                     </li>
                     <li>
-                      Créditos para generar fotos (1 crédito = 1 foto) [estos
-                      son los créditos que se ven en tu perfil]
+                      {t("startHere.step1Includes2")}
                     </li>
                   </ul>
                 </div>
 
                 <div className="mt-6">
-                  <h3 className="font-semibold mb-3">Notas importantes:</h3>
+                  <h3 className="font-semibold mb-3">{t("startHere.step1Notes")}</h3>
                   <ul className="space-y-2 list-disc list-inside text-muted-foreground">
                     <li>
-                      Todos los paquetes son de pago único - sin suscripciones
+                      {t("startHere.step1Notes1")}
                     </li>
-                    <li>Los créditos nunca caducan</li>
+                    <li>{t("startHere.step1Notes2")}</li>
                     <li>
-                      Para tu privacidad y protección de datos, los modelos de
-                      IA entrenados caducan automáticamente después de 30 días.
+                      {t("startHere.step1Notes3")}
                     </li>
                   </ul>
                 </div>
@@ -264,13 +259,13 @@ export default function StartHere() {
                   className={`mt-6 ${steps[0].buttonColor} text-white rounded-full`}
                   onClick={() => setLocation("/dashboard/credits/buy")}
                 >
-                  Comprar Créditos →
+                  {t("startHere.buyCredits")}
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-        {/* Step 2: Entrenar un Modelo de IA */}
+        {/* Step 2: Train an AI Model */}
         <Card id="step-2" className="bg-card/50 border-border mb-6">
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
@@ -279,12 +274,10 @@ export default function StartHere() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold">
-                  Paso 2: Entrenar un Modelo de IA - Consejos para Mejores
-                  Resultados
+                  {t("startHere.step2Title")}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Tips y errores a evitar al entrenar tu modelo de IA. Qué
-                  fotos elegir para entrenar tu modelo.
+                  {t("startHere.step2Subtitle")}
                 </p>
               </div>
             </div>
@@ -292,45 +285,45 @@ export default function StartHere() {
               <div className="space-y-6 text-sm">
                 <div>
                   <h3 className="font-semibold mb-3">
-                    Buenas fotos para el entrenamiento:
+                    {t("startHere.goodPhotosForTraining")}
                   </h3>
                   <ul className="space-y-2 list-disc list-inside text-muted-foreground">
-                    <li>Fotos claras y bien iluminadas de tu rostro</li>
-                    <li>Fotos tomadas desde diferentes ángulos</li>
-                    <li>Expresiones naturales</li>
-                    <li>Diferentes condiciones de iluminación</li>
-                    <li>Fondos simples, sin distracciones</li>
-                    <li>Imágenes de alta calidad y nitidez</li>
+                    <li>{t("startHere.goodPhoto1")}</li>
+                    <li>{t("startHere.goodPhoto2")}</li>
+                    <li>{t("startHere.goodPhoto3")}</li>
+                    <li>{t("startHere.goodPhoto4")}</li>
+                    <li>{t("startHere.goodPhoto5")}</li>
+                    <li>{t("startHere.goodPhoto6")}</li>
                     <li>
-                      Primeros planos que muestren claramente tu rostro
+                      {t("startHere.goodPhoto7")}
                     </li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-3">Fotos a evitar:</h3>
+                  <h3 className="font-semibold mb-3">{t("startHere.photosToAvoid")}</h3>
                   <ul className="space-y-2 list-disc list-inside text-muted-foreground">
-                    <li>Fotos grupales</li>
-                    <li>Fotos borrosas o de baja calidad</li>
-                    <li>Fotos con filtros o ediciones pesadas</li>
-                    <li>Fotos con gafas de sol</li>
-                    <li>Fotos con objetos que oculten el rostro</li>
-                    <li>Selfies extremos o distorsionados</li>
-                    <li>Fotos con maquillaje excesivo</li>
-                    <li>Fotos muy antiguas o de baja resolución</li>
+                    <li>{t("startHere.badPhoto1")}</li>
+                    <li>{t("startHere.badPhoto2")}</li>
+                    <li>{t("startHere.badPhoto3")}</li>
+                    <li>{t("startHere.badPhoto4")}</li>
+                    <li>{t("startHere.badPhoto5")}</li>
+                    <li>{t("startHere.badPhoto6")}</li>
+                    <li>{t("startHere.badPhoto7")}</li>
+                    <li>{t("startHere.badPhoto8")}</li>
                   </ul>
                 </div>
 
                 <div>
                   <h3 className="font-semibold mb-3">
-                    Para mejores resultados:
+                    {t("startHere.forBestResults")}
                   </h3>
                   <ul className="space-y-2 list-disc list-inside text-muted-foreground">
-                    <li>Sube entre 10-20 fotos de calidad</li>
-                    <li>Asegúrate de que tu rostro sea claramente visible</li>
-                    <li>Varía las expresiones y ángulos</li>
-                    <li>Usa fotos recientes que te representen bien</li>
-                    <li>Evita fotos muy similares entre sí</li>
+                    <li>{t("startHere.bestResult1")}</li>
+                    <li>{t("startHere.bestResult2")}</li>
+                    <li>{t("startHere.bestResult3")}</li>
+                    <li>{t("startHere.bestResult4")}</li>
+                    <li>{t("startHere.bestResult5")}</li>
                   </ul>
                 </div>
 
@@ -338,13 +331,13 @@ export default function StartHere() {
                   className={`mt-6 ${steps[1].buttonColor} text-white rounded-full`}
                   onClick={() => setLocation("/dashboard/models")}
                 >
-                  Entrenar tu Modelo de IA →
+                  {t("startHere.trainYourAIModel")}
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-        {/* Step 3: Creando tus Fotos */}
+        {/* Step 3: Creating Your Photos */}
         <Card id="step-3" className="bg-card/50 border-border mb-6">
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
@@ -353,81 +346,76 @@ export default function StartHere() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold">
-                  Paso 3: Creando tus Fotos
+                  {t("startHere.step3Title")}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Aprende cómo crear fotos increíbles con IA.
+                  {t("startHere.step3Subtitle")}
                 </p>
               </div>
             </div>
 
               <div className="space-y-6 text-sm">
                 <p>
-                  Mira el video de arriba para aprender cómo crear tus fotos
-                  con IA.
+                  {t("startHere.step3Desc")}
                 </p>
 
                 <div>
-                  <h3 className="font-semibold mb-3">Cómo crear fotos:</h3>
+                  <h3 className="font-semibold mb-3">{t("startHere.howToCreatePhotos")}</h3>
                   <ul className="space-y-2 list-disc list-inside text-muted-foreground">
-                    <li>Ve a la sección Create</li>
-                    <li>Elige tu género (hombre/mujer)</li>
+                    <li>{t("startHere.createPhoto1")}</li>
+                    <li>{t("startHere.createPhoto2")}</li>
                     <li>
-                      Usa los filtros para encontrar los estilos que te gusten
+                      {t("startHere.createPhoto3")}
                     </li>
                     <li>
-                      Haz clic en los estilos que quieres replicar (cada estilo
-                      seleccionado crea 4 variantes)
+                      {t("startHere.createPhoto4")}
                     </li>
                   </ul>
                 </div>
 
                 <div>
                   <h3 className="font-semibold mb-3">
-                    Elige los parámetros:
+                    {t("startHere.chooseParameters")}
                   </h3>
                   <ul className="space-y-2 list-disc list-inside text-muted-foreground">
-                    <li>Proporción de la imagen (1:1 o 9:16)</li>
-                    <li>Uso de gafas (opcional)</li>
-                    <li>Color de pelo (opcional)</li>
-                    <li>Estilo de pelo (opcional)</li>
+                    <li>{t("startHere.param1")}</li>
+                    <li>{t("startHere.param2")}</li>
+                    <li>{t("startHere.param3")}</li>
+                    <li>{t("startHere.param4")}</li>
                   </ul>
                 </div>
 
                 <div>
                   <h3 className="font-semibold mb-3">
-                    Consejos para mejores resultados:
+                    {t("startHere.tipsForBestResults")}
                   </h3>
                   <ul className="space-y-2 list-disc list-inside text-muted-foreground">
                     <li>
-                      Comienza con una foto de prueba sin parámetros
+                      {t("startHere.tip1")}
                     </li>
                     <li>
-                      Si los resultados necesitan ajustes, modifica los
-                      parámetros
+                      {t("startHere.tip2")}
                     </li>
-                    <li>Prueba diferentes categorías de estilo</li>
-                    <li>Experimenta con varios looks</li>
-                    <li>Genera múltiples sets</li>
+                    <li>{t("startHere.tip3")}</li>
+                    <li>{t("startHere.tip4")}</li>
+                    <li>{t("startHere.tip5")}</li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-3">Notas importantes:</h3>
+                  <h3 className="font-semibold mb-3">{t("startHere.importantNotes")}</h3>
                   <ul className="space-y-2 list-disc list-inside text-muted-foreground">
                     <li>
-                      Cada foto seleccionada usara 4 créditos (se crean 4 fotos
-                      por cada estilo seleccionado)
+                      {t("startHere.note1")}
                     </li>
                     <li>
-                      Puedes generar tantas fotos como créditos tengas
+                      {t("startHere.note2")}
                     </li>
                     <li>
-                      Las fotos estarán disponibles en la Galería en 1-2
-                      minutos después de la confirmación
+                      {t("startHere.note3")}
                     </li>
                     <li>
-                      Las fotos se guardan automáticamente en tu galería
+                      {t("startHere.note4")}
                     </li>
                   </ul>
                 </div>
@@ -436,13 +424,13 @@ export default function StartHere() {
                   className={`mt-6 ${steps[2].buttonColor} text-white rounded-full`}
                   onClick={() => setLocation("/dashboard/generate")}
                 >
-                  Crear tus Fotos con IA →
+                  {t("startHere.createYourPhotosWithAI")}
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-        {/* Step 4: Galería */}
+        {/* Step 4: Gallery */}
         <Card id="step-4" className="bg-card/50 border-border mb-6">
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
@@ -451,11 +439,10 @@ export default function StartHere() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold">
-                  Paso 4: Galería - Tus Fotos
+                  {t("startHere.step4Title")}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Tu galería es donde todas tus fotos generadas se guardan
-                  automáticamente
+                  {t("startHere.step4Subtitle")}
                 </p>
               </div>
             </div>
@@ -463,30 +450,30 @@ export default function StartHere() {
               <div className="space-y-6 text-sm">
                 <div>
                   <h3 className="font-semibold mb-3">
-                    Qué puedes hacer en la galería:
+                    {t("startHere.whatYouCanDo")}
                   </h3>
                   <ul className="space-y-2 list-disc list-inside text-muted-foreground">
-                    <li>Explorar todas tus fotos generadas</li>
-                    <li>Ver fotos en pantalla completa</li>
-                    <li>Hacer zoom para ver detalles</li>
-                    <li>Marcar y guardar favoritos</li>
-                    <li>Descargar fotos en alta calidad</li>
-                    <li>Eliminar fotos no deseadas</li>
-                    <li>Filtrar por fecha de creación</li>
-                    <li>Ordenar por diferentes criterios</li>
+                    <li>{t("startHere.galleryFeature1")}</li>
+                    <li>{t("startHere.galleryFeature2")}</li>
+                    <li>{t("startHere.galleryFeature3")}</li>
+                    <li>{t("startHere.galleryFeature4")}</li>
+                    <li>{t("startHere.galleryFeature5")}</li>
+                    <li>{t("startHere.galleryFeature6")}</li>
+                    <li>{t("startHere.galleryFeature7")}</li>
+                    <li>{t("startHere.galleryFeature8")}</li>
                   </ul>
                 </div>
 
                 <div>
                   <h3 className="font-semibold mb-3">
-                    Consejos para organizar tus fotos:
+                    {t("startHere.tipsToOrganize")}
                   </h3>
                   <ul className="space-y-2 list-disc list-inside text-muted-foreground">
-                    <li>Marca tus favoritos para acceso rápido</li>
-                    <li>Usa el filtro de favoritos para ver solo las mejores</li>
-                    <li>Descarga las fotos que más te gusten</li>
+                    <li>{t("startHere.organizeTip1")}</li>
+                    <li>{t("startHere.organizeTip2")}</li>
+                    <li>{t("startHere.organizeTip3")}</li>
                     <li>
-                      Elimina las fotos que no necesites para liberar espacio
+                      {t("startHere.organizeTip4")}
                     </li>
                   </ul>
                 </div>
@@ -494,9 +481,7 @@ export default function StartHere() {
                 <Alert className="bg-yellow-500/20 border-yellow-500/50">
                   <AlertCircle className="h-4 w-4 text-yellow-400" />
                   <AlertDescription className="text-sm">
-                    <strong>Información importante:</strong> Todas tus fotos son
-                    privadas y solo tú puedes acceder a ellas. Las fotos
-                    permanecen en tu galería hasta que las elimines.
+                    <strong>{t("startHere.importantInfo")}</strong> {t("startHere.importantInfoText")}
                   </AlertDescription>
                 </Alert>
 
@@ -504,7 +489,7 @@ export default function StartHere() {
                   className={`mt-6 ${steps[3].buttonColor} text-white rounded-full`}
                   onClick={() => setLocation("/dashboard/gallery")}
                 >
-                  Ver tu Galería →
+                  {t("startHere.viewYourGallery")}
                 </Button>
               </div>
             </CardContent>

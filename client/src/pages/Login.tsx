@@ -88,7 +88,7 @@ export default function Login() {
                 <img
                   key={idx}
                   src={img}
-                  alt={`Professional photo ${idx + 1}`}
+                  alt={t("login.altText.professionalPhoto", { number: idx + 1 })}
                   className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
                     idx === currentImageIndex ? "opacity-100" : "opacity-0"
                   }`}
@@ -122,7 +122,7 @@ export default function Login() {
                             ? "bg-background w-6"
                             : "bg-background/50"
                         }`}
-                        aria-label={`Go to testimonial ${idx + 1}`}
+                        aria-label={t("login.ariaLabel.goToTestimonial", { number: idx + 1 })}
                       />
                     ))}
                   </div>
@@ -139,8 +139,8 @@ export default function Login() {
         <div className="flex flex-col items-start w-full max-w-md">
           {/* Logo */}
           <div className="flex items-center gap-2 mb-8">
-            <img src={APP_LOGO} alt="AISelfi" className="h-8 w-auto" />
-            <span className="text-xl font-bold">aiselfi.es</span>
+            <img src={APP_LOGO} alt={t("login.altText.logo")} className="h-8 w-auto" />
+            <span className="text-xl font-bold">aiselfie.org</span>
           </div>
 
           {/* Stats Banner */}

@@ -59,7 +59,7 @@ export default function SupportReviews() {
                     <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
                       <Star className="w-5 h-5 text-primary" />
                     </div>
-                    <span className="font-semibold text-lg">aiselfi.es</span>
+                    <span className="font-semibold text-lg">aiselfie.org</span>
                   </div>
 
                   {/* Question */}

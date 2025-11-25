@@ -14,7 +14,7 @@ function htmlReplacePlugin(): Plugin {
       // Replace environment variable placeholders
       const envReplacements: Record<string, string> = {
         "%VITE_APP_LOGO%": process.env.VITE_APP_LOGO || "/favicon.png",
-        "%VITE_APP_TITLE%": process.env.VITE_APP_TITLE || "AISelfi",
+        "%VITE_APP_TITLE%": process.env.VITE_APP_TITLE || "AISelfie",
       };
       
       let result = html;

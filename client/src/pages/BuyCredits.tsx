@@ -38,7 +38,7 @@ export default function BuyCredits() {
 
   const handleBuyClick = async (packId: number | null) => {
     if (!packId) {
-      toast.error("Pacote não encontrado. Por favor, tente novamente.");
+      toast.error(t("buyCredits.packNotFound"));
       return;
     }
 
@@ -57,12 +57,12 @@ export default function BuyCredits() {
         window.location.href = result.url;
       } else {
         console.error("[BuyCredits] No URL in result:", result);
-        toast.error("Falha ao criar sessão de checkout. Tente novamente.");
+        toast.error(t("buyCredits.checkoutFailed"));
         setLoadingPackId(null);
       }
     } catch (error: any) {
       console.error("[BuyCredits] Checkout error:", error);
-      toast.error(error?.message || "Falha ao iniciar o checkout. Tente novamente.");
+      toast.error(error?.message || t("buyCredits.checkoutStartFailed"));
       setLoadingPackId(null);
     }
   };
@@ -141,7 +141,7 @@ export default function BuyCredits() {
                   onClick={() => handleBuyClick(starterPackId)}
                   disabled={!starterPackId || loadingPackId === starterPackId}
                 >
-                  {loadingPackId === starterPackId ? "Carregando..." : t("buyCredits.buy")}
+                  {loadingPackId === starterPackId ? t("buyCredits.loading") : t("buyCredits.buy")}
                 </Button>
 
                 {/* Payment Terms */}
@@ -214,7 +214,7 @@ export default function BuyCredits() {
                   onClick={() => handleBuyClick(proPackId)}
                   disabled={!proPackId || loadingPackId === proPackId}
                 >
-                  {loadingPackId === proPackId ? "Carregando..." : t("buyCredits.buy")}
+                  {loadingPackId === proPackId ? t("buyCredits.loading") : t("buyCredits.buy")}
                 </Button>
 
                 {/* Payment Terms */}
@@ -281,7 +281,7 @@ export default function BuyCredits() {
                   onClick={() => handleBuyClick(premiumPackId)}
                   disabled={!premiumPackId || loadingPackId === premiumPackId}
                 >
-                  {loadingPackId === premiumPackId ? "Carregando..." : t("buyCredits.buy")}
+                  {loadingPackId === premiumPackId ? t("buyCredits.loading") : t("buyCredits.buy")}
                 </Button>
 
                 {/* Payment Terms */}
@@ -312,16 +312,16 @@ export default function BuyCredits() {
                 className="border-border bg-card/50 rounded-lg px-4"
               >
                 <AccordionTrigger className="text-left hover:no-underline py-4">
-                    {item.q || item.question || ""}
+                    {item.q}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground pb-4">
-                    {item.a || item.answer || ""}
+                    {item.a}
                 </AccordionContent>
               </AccordionItem>
               ))
             ) : (
               <div className="text-center text-muted-foreground py-8">
-                {t("buyCredits.noFaq") || "No frequently asked questions available."}
+                {t("buyCredits.noFaq")}
               </div>
             )}
           </Accordion>

@@ -69,7 +69,7 @@ export default function Dashboard() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <Sparkles className="h-8 w-8 mx-auto text-primary animate-pulse" />
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t("dashboard.loading")}</p>
         </div>
       </div>
     );
@@ -124,7 +124,7 @@ export default function Dashboard() {
                   <div key={idx} className="aspect-[3/4] rounded-lg overflow-hidden">
                     <img
                       src={photo}
-                      alt={`Photo ${idx + 1}`}
+                      alt={t("dashboard.photoAlt", { number: idx + 1 })}
                       className="w-full h-full object-cover"
                     />
             </div>
@@ -208,7 +208,7 @@ export default function Dashboard() {
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-yellow-500/20 to-yellow-500/5">
                     <div className="text-center space-y-2">
                       <Play className="w-6 h-6 md:w-8 md:h-8 mx-auto text-yellow-400" />
-                      <div className="text-xs text-muted-foreground">0:00 / 1:11</div>
+                      <div className="text-xs text-muted-foreground">{t("dashboard.videoTime")}</div>
                     </div>
                   </div>
                 </div>
@@ -234,7 +234,7 @@ export default function Dashboard() {
                     <div key={idx} className="aspect-square overflow-hidden">
                       <img
                         src={photo}
-                        alt={`Gallery ${idx + 1}`}
+                        alt={t("dashboard.galleryAlt", { number: idx + 1 })}
                         className="w-full h-full object-cover"
                       />
                     </div>

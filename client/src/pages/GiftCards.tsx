@@ -238,10 +238,10 @@ export default function GiftCards() {
                 className="border-border bg-card/50 rounded-lg px-4"
               >
                 <AccordionTrigger className="text-left hover:no-underline py-4">
-                  {item.question}
+                  {item.q}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground pb-4">
-                  {item.answer}
+                  {item.a}
                 </AccordionContent>
               </AccordionItem>
             ))}

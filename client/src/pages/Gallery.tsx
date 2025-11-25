@@ -238,7 +238,7 @@ export default function Gallery() {
                   {photo.url ? (
                     <img
                       src={photo.url}
-                      alt={`Photo ${photo.id}`}
+                      alt={t("gallery.photoAlt", { number: photo.id })}
                       className="w-full h-full object-cover"
                       loading="lazy"
                       onError={(e) => {

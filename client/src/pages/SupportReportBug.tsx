@@ -43,7 +43,7 @@ export default function SupportReportBug() {
     e.preventDefault();
     
     if (!formData.title.trim() || !formData.description.trim()) {
-      toast.error(t("supportReportBug.fillRequired") || "Please fill in all required fields");
+      toast.error(t("supportReportBug.fillRequired"));
       return;
     }
 
@@ -60,7 +60,7 @@ export default function SupportReportBug() {
       });
 
       setIsSubmitted(true);
-      toast.success(t("supportReportBug.success") || "Bug report submitted successfully!");
+      toast.success(t("supportReportBug.success"));
       
       // Reset form
       setFormData({
@@ -74,7 +74,7 @@ export default function SupportReportBug() {
       });
     } catch (error: any) {
       console.error("Error submitting bug report:", error);
-      toast.error(error?.message || t("supportReportBug.error") || "Failed to submit bug report");
+      toast.error(error?.message || t("supportReportBug.error"));
     } finally {
       setIsSubmitting(false);
     }
@@ -88,15 +88,15 @@ export default function SupportReportBug() {
             <div className="flex justify-center">
               <CheckCircle2 className="w-16 h-16 text-green-500" />
             </div>
-            <h2 className="text-2xl font-bold">{t("supportReportBug.thankYou") || "Thank You!"}</h2>
+            <h2 className="text-2xl font-bold">{t("supportReportBug.thankYou")}</h2>
             <p className="text-muted-foreground">
-              {t("supportReportBug.successMessage") || "Your bug report has been submitted successfully. We'll review it and get back to you soon."}
+              {t("supportReportBug.successMessage")}
             </p>
             <Button
               onClick={() => setIsSubmitted(false)}
               className="w-full"
             >
-              {t("supportReportBug.submitAnother") || "Submit Another Report"}
+              {t("supportReportBug.submitAnother")}
             </Button>
           </CardContent>
         </Card>
@@ -110,31 +110,31 @@ export default function SupportReportBug() {
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
             <Bug className="w-8 h-8 text-primary" />
-            {t("supportReportBug.title") || "Report a Bug"}
+            {t("supportReportBug.title")}
           </h1>
           <p className="text-muted-foreground">
-            {t("supportReportBug.subtitle") || "Help us improve by reporting any issues you encounter"}
+            {t("supportReportBug.subtitle")}
           </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>{t("supportReportBug.formTitle") || "Bug Report Form"}</CardTitle>
+            <CardTitle>{t("supportReportBug.formTitle")}</CardTitle>
             <CardDescription>
-              {t("supportReportBug.formDescription") || "Please provide as much detail as possible"}
+              {t("supportReportBug.formDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="title">
-                  {t("supportReportBug.titleLabel") || "Title"} <span className="text-destructive">*</span>
+                  {t("supportReportBug.titleLabel")} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder={t("supportReportBug.titlePlaceholder") || "Brief description of the bug"}
+                  placeholder={t("supportReportBug.titlePlaceholder")}
                   required
                   maxLength={200}
                 />
@@ -142,13 +142,13 @@ export default function SupportReportBug() {
 
               <div className="space-y-2">
                 <Label htmlFor="description">
-                  {t("supportReportBug.descriptionLabel") || "Description"} <span className="text-destructive">*</span>
+                  {t("supportReportBug.descriptionLabel")} <span className="text-destructive">*</span>
                 </Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder={t("supportReportBug.descriptionPlaceholder") || "Detailed description of what happened"}
+                  placeholder={t("supportReportBug.descriptionPlaceholder")}
                   required
                   rows={6}
                   maxLength={5000}
@@ -157,13 +157,13 @@ export default function SupportReportBug() {
 
               <div className="space-y-2">
                 <Label htmlFor="stepsToReproduce">
-                  {t("supportReportBug.stepsLabel") || "Steps to Reproduce"}
+                  {t("supportReportBug.stepsLabel")}
                 </Label>
                 <Textarea
                   id="stepsToReproduce"
                   value={formData.stepsToReproduce}
                   onChange={(e) => setFormData({ ...formData, stepsToReproduce: e.target.value })}
-                  placeholder={t("supportReportBug.stepsPlaceholder") || "1. Go to...\n2. Click on...\n3. See error"}
+                  placeholder={t("supportReportBug.stepsPlaceholder")}
                   rows={4}
                   maxLength={2000}
                 />
@@ -172,13 +172,13 @@ export default function SupportReportBug() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="expectedBehavior">
-                    {t("supportReportBug.expectedLabel") || "Expected Behavior"}
+                    {t("supportReportBug.expectedLabel")}
                   </Label>
                   <Textarea
                     id="expectedBehavior"
                     value={formData.expectedBehavior}
                     onChange={(e) => setFormData({ ...formData, expectedBehavior: e.target.value })}
-                    placeholder={t("supportReportBug.expectedPlaceholder") || "What should have happened"}
+                    placeholder={t("supportReportBug.expectedPlaceholder")}
                     rows={3}
                     maxLength={1000}
                   />
@@ -186,13 +186,13 @@ export default function SupportReportBug() {
 
                 <div className="space-y-2">
                   <Label htmlFor="actualBehavior">
-                    {t("supportReportBug.actualLabel") || "Actual Behavior"}
+                    {t("supportReportBug.actualLabel")}
                   </Label>
                   <Textarea
                     id="actualBehavior"
                     value={formData.actualBehavior}
                     onChange={(e) => setFormData({ ...formData, actualBehavior: e.target.value })}
-                    placeholder={t("supportReportBug.actualPlaceholder") || "What actually happened"}
+                    placeholder={t("supportReportBug.actualPlaceholder")}
                     rows={3}
                     maxLength={1000}
                   />
@@ -208,12 +208,12 @@ export default function SupportReportBug() {
                   {isSubmitting ? (
                     <>
                       <span className="animate-spin mr-2">⏳</span>
-                      {t("supportReportBug.submitting") || "Submitting..."}
+                      {t("supportReportBug.submitting")}
                     </>
                   ) : (
                     <>
                       <Send className="w-4 h-4 mr-2" />
-                      {t("supportReportBug.submit") || "Submit Report"}
+                      {t("supportReportBug.submit")}
                     </>
                   )}
                 </Button>

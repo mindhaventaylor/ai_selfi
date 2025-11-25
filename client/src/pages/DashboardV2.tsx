@@ -113,7 +113,7 @@ export default function DashboardV2() {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              <span className="font-semibold text-lg">AI Selfi</span>
+              <span className="font-semibold text-lg">{t("dashboardV2.appName")}</span>
             </div>
             <div className="flex-1 max-w-md mx-4">
               <Progress value={progress} className="h-2" />
@@ -271,7 +271,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
           <div key={img.id} className="aspect-[3/4] rounded-lg overflow-hidden border border-border hover:border-primary/50 transition-colors">
             <img
               src={img.url}
-              alt={`Example ${img.id}`}
+              alt={t("dashboardV2.exampleAlt", { id: img.id })}
               className="w-full h-full object-cover"
               loading="lazy"
             />
@@ -562,7 +562,7 @@ function HairStyleStep({ value, onChange, onNext, formData }: { value: string; o
                 <div className="w-full aspect-[3/4] relative">
                   <img
                     src={exampleImage.url}
-                    alt={`Example for ${style.label}`}
+                    alt={t("dashboardV2.exampleForAlt", { label: style.label })}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -763,7 +763,7 @@ function AttireStep({ value, onChange, onNext, formData }: { value: string[]; on
               <div className="w-full aspect-[3/4] relative">
                 <img
                   src={exampleImage.url}
-                  alt={`Example for ${attire.label}`}
+                  alt={t("dashboardV2.exampleForAlt", { label: attire.label })}
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
@@ -859,7 +859,7 @@ function BackgroundStep({ value, onChange, onNext, formData }: { value: string[]
               <div className="w-full aspect-video relative">
                 <img
                   src={exampleImage.url}
-                  alt={`Example for ${bg.label}`}
+                  alt={t("dashboardV2.exampleForAlt", { label: bg.label })}
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
@@ -929,8 +929,8 @@ function UploadStep({
 
     // Check total files limit
     if (totalFiles > maxFiles) {
-      toast.error(t("dashboardV2.maxFilesError") || "Too many files", {
-        description: `You can select a maximum of ${maxFiles} images. You already have ${currentCount} and are trying to add ${files.length}.`,
+      toast.error(t("dashboardV2.maxFilesError"), {
+        description: t("dashboardV2.maxFilesErrorDesc", { maxFiles, currentCount, newCount: files.length }),
       });
       return;
     }
@@ -939,8 +939,8 @@ function UploadStep({
     for (const file of Array.from(files)) {
       // Check if we've reached the limit
       if (currentCount + newFiles.length >= maxFiles) {
-        toast.error(t("dashboardV2.maxFilesError") || "Too many files", {
-          description: `You can select a maximum of ${maxFiles} images`,
+        toast.error(t("dashboardV2.maxFilesError"), {
+          description: t("dashboardV2.maxFilesErrorDescSimple", { maxFiles }),
         });
         break;
       }
@@ -948,16 +948,16 @@ function UploadStep({
       // Validate file type
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/webp'];
       if (!validTypes.includes(file.type.toLowerCase())) {
-        toast.error(t("dashboardV2.invalidFileType") || "Invalid file type", {
-          description: `The file "${file.name}" is not a valid format. Please use PNG, JPG, HEIC, or WEBP.`,
+        toast.error(t("dashboardV2.invalidFileType"), {
+          description: t("dashboardV2.invalidFileTypeDesc", { fileName: file.name }),
         });
         continue;
       }
 
       // Validate file size
       if (file.size > maxFileSize) {
-        toast.error(t("dashboardV2.fileTooLarge") || "File too large", {
-          description: `The file "${file.name}" is too large (maximum 120MB)`,
+        toast.error(t("dashboardV2.fileTooLarge"), {
+          description: t("dashboardV2.fileTooLargeDesc", { fileName: file.name }),
         });
         continue;
       }
@@ -1152,7 +1152,7 @@ function UploadStep({
         <div className="mt-8">
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm font-semibold">
-              {t("dashboardV2.uploadedImages") || "Uploaded images"} {uploadedFiles.length} of {maxFiles}
+              {t("dashboardV2.uploadedImages")} {uploadedFiles.length} {t("dashboardV2.of")} {maxFiles}
             </p>
             <Button
               variant="ghost"
@@ -1185,7 +1185,7 @@ function UploadStep({
                   {uploadedFile.file.name}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {(uploadedFile.file.size / 1024 / 1024).toFixed(2)} MB
+                  {(uploadedFile.file.size / 1024 / 1024).toFixed(2)} {t("dashboardV2.fileSizeUnit")}
                 </p>
               </div>
             ))}
@@ -1196,7 +1196,7 @@ function UploadStep({
       {uploadedFiles.length === 0 && (
         <div className="mt-8">
           <p className="text-sm text-muted-foreground mb-4 text-center">
-            {t("dashboardV2.uploadedImages") || "Uploaded images"} 0 of {maxFiles}
+            {t("dashboardV2.uploadedImages")} 0 {t("dashboardV2.of")} {maxFiles}
           </p>
         </div>
       )}
