@@ -69,7 +69,7 @@ export default function OAuthCallback() {
             console.log("[OAuth] User data fetched:", userData);
             
             if (!userData) {
-              throw new Error("Failed to fetch user data after sync");
+              throw new Error(t("oauthCallback.failedToFetchUserData"));
             }
             
             // Redirect to dashboard
@@ -116,7 +116,7 @@ export default function OAuthCallback() {
         }
       } catch (err) {
         console.error("Callback error:", err);
-        setError(err instanceof Error ? err.message : "Unknown error");
+        setError(err instanceof Error ? err.message : t("oauthCallback.unknownError"));
       }
     };
 

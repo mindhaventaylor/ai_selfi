@@ -33,16 +33,16 @@ export default function PaymentSuccess() {
           
           <div className="space-y-2">
             <h1 className="text-3xl font-bold">
-              {t("payment.success.title") || "Pagamento Realizado!"}
+              {t("payment.success.title")}
             </h1>
             <p className="text-muted-foreground break-words">
-              {t("payment.success.message") || "Seu pagamento foi processado com sucesso. Os créditos foram adicionados à sua conta."}
+              {t("payment.success.message")}
             </p>
           </div>
 
           {sessionId && (
             <div className="text-xs text-muted-foreground break-all bg-muted/50 p-3 rounded-md">
-              <p className="font-semibold mb-1">ID da Sessão:</p>
+              <p className="font-semibold mb-1">{t("payment.success.sessionIdLabel")}</p>
               <p className="font-mono text-[10px] leading-relaxed">{sessionId}</p>
             </div>
           )}
@@ -52,14 +52,14 @@ export default function PaymentSuccess() {
               onClick={() => setLocation("/dashboard")}
               className="w-full"
             >
-              {t("payment.success.goToDashboard") || "Ir para o Dashboard"}
+              {t("payment.success.goToDashboard")}
             </Button>
             <Button
               variant="outline"
               onClick={() => setLocation("/dashboard/credits/buy")}
               className="w-full"
             >
-              {t("payment.success.buyMore") || "Comprar Mais Créditos"}
+              {t("payment.success.buyMore")}
             </Button>
           </div>
         </CardContent>

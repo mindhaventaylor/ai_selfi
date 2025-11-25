@@ -341,7 +341,7 @@ export default function GenerateImages() {
           getBatchStatusQuery.error.message?.includes("Batch not found")) {
         console.error(`[GenerateImages] Batch ${currentBatchId} not found - this might be a stale batch ID`);
         setIsGenerating(false);
-        setErrorMessage("Batch not found. The generation may have failed to start. Please try again.");
+        setErrorMessage(t("generateImages.batchNotFound"));
       }
     }
     
@@ -354,7 +354,7 @@ export default function GenerateImages() {
           getPage2BatchStatusQuery.error.message?.includes("Batch not found")) {
         console.error(`[GenerateImages] Page2 batch ${currentBatchId} not found - this might be a stale batch ID`);
         setIsGenerating(false);
-        setErrorMessage("Batch not found. The generation may have failed to start. Please try again.");
+        setErrorMessage(t("generateImages.batchNotFound"));
       }
     }
   }, [getBatchStatusQuery.error, getPage2BatchStatusQuery.error, currentBatchId, isGenerating, isPage2Variant]);
@@ -415,7 +415,7 @@ export default function GenerateImages() {
         setShowModal((prev) => prev ? prev : true);
       } else if (batch.status === "failed") {
         setIsGenerating(false);
-        setErrorMessage("Image generation failed. Please try again.");
+        setErrorMessage(t("generateImages.generationFailed"));
         console.log("[GenerateImages] Generation failed");
         // Open modal when failed so user can see error
         setShowModal((prev) => prev ? prev : true);
@@ -564,7 +564,7 @@ export default function GenerateImages() {
   // Handle generation with page2 data (auto-called)
   const handleGenerateWithPage2Data = async (data: any, exampleImage: any) => {
     if (!user?.id) {
-      toast.error("User not authenticated");
+      toast.error(t("generateImages.userNotAuthenticated"));
       return;
     }
 
@@ -650,9 +650,9 @@ export default function GenerateImages() {
     } catch (error: any) {
       console.error("[GenerateImages] Generation error:", error);
       setIsGenerating(false);
-      setErrorMessage(error?.message || "Failed to start generation");
-      toast.error("Failed to generate images", {
-        description: error?.message || "Please try again",
+      setErrorMessage(error?.message || t("generateImages.failedToStartGeneration"));
+      toast.error(t("generateImages.failedToGenerateImages"), {
+        description: error?.message || t("generateImages.pleaseTryAgain"),
       });
     }
   };
@@ -779,7 +779,7 @@ export default function GenerateImages() {
       } else {
         // Fallback if no batch ID (shouldn't happen)
         setIsGenerating(false);
-        setErrorMessage("Failed to start generation. Please try again.");
+        setErrorMessage(t("generateImages.failedToStartGeneration"));
       }
     } catch (error: any) {
       console.error("Error generating images:", error);
@@ -796,7 +796,7 @@ export default function GenerateImages() {
       {/* Debug indicator for page2 variant */}
       {isPage2Variant && (
         <div className="bg-primary/10 border-b border-primary/20 px-6 py-2 text-center text-sm text-primary font-semibold">
-          🎯 Page2 Variant Active - {hasBatchId ? "Generation in progress" : "Model selection hidden"}
+          🎯 Page2 Variant Active - {hasBatchId ? t("generateImages.generationInProgress") : t("generateImages.modelSelectionHidden")}
         </div>
       )}
       {/* Only show page1 UI if not page2 variant with batchId */}
@@ -1245,7 +1245,7 @@ export default function GenerateImages() {
                 >
                   <img
                     src={image.url}
-                    alt={`Generated image ${index + 1}`}
+                    alt={t("generateImages.generatedImageAlt", { number: index + 1 })}
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;

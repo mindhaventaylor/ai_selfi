@@ -39,7 +39,7 @@ export default function SupportGeneral() {
                 {/* Email Button */}
                 <Button
                   className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full"
-                  onClick={() => (window.location.href = "mailto:hola@aiselfi.es")}
+                  onClick={() => (window.location.href = "mailto:hola@aiselfie.org")}
                 >
                   {t("supportGeneral.email")}
                 </Button>

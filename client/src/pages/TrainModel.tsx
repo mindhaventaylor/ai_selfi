@@ -24,6 +24,8 @@ import {
 import { Upload, X, ArrowRight, XCircle, AlertCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { TRPCClientError } from "@trpc/client";
+import { UNAUTHED_ERR_MSG } from "@shared/const";
 
 interface UploadedFile {
   id: string;
@@ -62,7 +64,7 @@ export default function TrainModel() {
     // Check total files limit first
     if (totalFiles > maxFiles) {
       toast.error(t("trainModel.max5Images"), {
-        description: `Você pode selecionar no máximo ${maxFiles} imagens. Você já tem ${currentCount} e está tentando adicionar ${files.length}.`,
+        description: t("trainModel.maxFilesErrorDesc", { maxFiles, currentCount, newCount: files.length }),
       });
       return;
     }
@@ -72,7 +74,7 @@ export default function TrainModel() {
       // Check if we've reached the limit
       if (currentCount + newFiles.length >= maxFiles) {
         toast.error(t("trainModel.max5Images"), {
-          description: `Você pode selecionar no máximo ${maxFiles} imagens`,
+          description: t("trainModel.maxFilesErrorDescSimple", { maxFiles }),
         });
         break;
       }
@@ -80,7 +82,7 @@ export default function TrainModel() {
       // Validate file type
       if (!file.type.match(/^image\/(jpeg|jpg|png)$/i)) {
         toast.error(t("trainModel.onlyJpgPng"), {
-          description: `O arquivo "${file.name}" não é um formato válido`,
+          description: t("trainModel.invalidFileTypeDesc", { fileName: file.name }),
         });
         continue;
       }
@@ -88,7 +90,7 @@ export default function TrainModel() {
       // Validate file size (3MB)
       if (file.size > 3 * 1024 * 1024) {
         toast.error(t("trainModel.fileTooLarge"), {
-          description: `O arquivo "${file.name}" é muito grande (máximo 3MB)`,
+          description: t("trainModel.fileTooLargeDesc", { fileName: file.name }),
         });
         continue;
       }
@@ -100,8 +102,8 @@ export default function TrainModel() {
 
     if (newFiles.length > 0) {
       setUploadedFiles((prev) => [...prev, ...newFiles]);
-      toast.success(`${newFiles.length} ${newFiles.length === 1 ? "imagem selecionada" : "imagens selecionadas"}`, {
-        description: "As imagens estão prontas para envio",
+      toast.success(`${newFiles.length} ${newFiles.length === 1 ? t("trainModel.imageSelected") : t("trainModel.imagesSelectedPlural")}`, {
+        description: t("trainModel.imagesReadyForUpload"),
       });
     }
     setShowCreditsAlert(false);
@@ -142,35 +144,35 @@ export default function TrainModel() {
 
     if (!modelName.trim()) {
       toast.error(t("trainModel.pleaseEnterModelName"), {
-        description: "Por favor, digite um nome para o modelo",
+        description: t("trainModel.pleaseEnterModelNameDesc"),
       });
       return;
     }
 
     if (!gender) {
       toast.error(t("trainModel.pleaseSelectGender"), {
-        description: "Por favor, selecione o gênero do modelo",
+        description: t("trainModel.pleaseSelectGenderDesc"),
       });
       return;
     }
 
     if (uploadedFiles.length === 0) {
       toast.error(t("trainModel.pleaseUploadAtLeastOne"), {
-        description: "Você precisa selecionar pelo menos uma imagem",
+        description: t("trainModel.pleaseUploadAtLeastOneDesc"),
       });
       return;
     }
 
     if (uploadedFiles.length > 5) {
       toast.error(t("trainModel.max5Images"), {
-        description: "Você pode selecionar no máximo 5 imagens",
+        description: t("trainModel.max5ImagesDesc"),
       });
       return;
     }
 
     if (!user?.id) {
-      toast.error("Usuário não autenticado", {
-        description: "Por favor, faça login novamente",
+      toast.error(t("trainModel.userNotAuthenticated") || t("generateImages.userNotAuthenticated"), {
+        description: t("trainModel.sessionExpiredDescription"),
       });
       return;
     }
@@ -178,9 +180,9 @@ export default function TrainModel() {
     // Check credits only when actually uploading (not when selecting files)
     if (!hasTrainingCredits) {
       toast.warning(t("trainModel.needTrainingCredits"), {
-        description: "Você precisa de créditos para treinar modelos",
+        description: t("trainModel.needTrainingCreditsDesc"),
         action: {
-          label: t("trainModel.buyCredits") || "Comprar Créditos",
+          label: t("trainModel.buyCredits"),
           onClick: () => setLocation("/dashboard/credits/buy"),
         },
       });
@@ -237,18 +239,22 @@ export default function TrainModel() {
       setGender("");
       setUploadedFiles([]);
       
-      toast.success(t("trainModel.uploadSuccess") || "Modelo criado com sucesso!", {
-        description: "Suas imagens foram enviadas e o modelo está sendo treinado",
+      toast.success(t("trainModel.uploadSuccess"), {
+        description: t("trainModel.uploadSuccessDescription"),
       });
     } catch (error: any) {
-      const errorMessage = error?.message || t("trainModel.errorUploadingModel") || "Erro ao fazer upload do modelo";
+      const errorMessage = error?.message || t("trainModel.errorUploadingModel");
       
       // Check if it's a session/auth error
-      if (errorMessage.includes("sessão") || errorMessage.includes("session") || errorMessage.includes("expired") || errorMessage.includes("autenticação") || errorMessage.includes("authentication")) {
-        toast.error("Sessão expirada", {
-          description: "Sua sessão expirou. Por favor, faça login novamente.",
+      const isAuthError = 
+        error instanceof TRPCClientError && 
+        (error.data?.code === "UNAUTHORIZED" || error.message === UNAUTHED_ERR_MSG);
+      
+      if (isAuthError) {
+        toast.error(t("trainModel.sessionExpired"), {
+          description: t("trainModel.sessionExpiredDescription"),
           action: {
-            label: "Fazer Login",
+            label: t("trainModel.loginButton"),
             onClick: async () => {
               await logout();
             },
@@ -256,7 +262,7 @@ export default function TrainModel() {
           duration: 10000,
         });
       } else {
-        toast.error("Erro ao criar modelo", {
+        toast.error(t("trainModel.errorCreatingModel"), {
           description: errorMessage,
         });
       }
@@ -388,12 +394,12 @@ export default function TrainModel() {
                     </p>
                     {uploadedFiles.length > 0 && (
                       <p className="text-sm text-green-500 font-medium mt-2">
-                        {uploadedFiles.length} {uploadedFiles.length === 1 ? "imagem selecionada" : "imagens selecionadas"}
+                        {uploadedFiles.length} {uploadedFiles.length === 1 ? t("trainModel.imageSelected") : t("trainModel.imagesSelectedPlural")}
                       </p>
                     )}
                     {!hasTrainingCredits && uploadedFiles.length === 0 && (
                       <p className="text-sm text-muted-foreground mt-2">
-                        {t("trainModel.needTrainingCredits")} {t("trainModel.buyCredits")} para fazer upload
+                        {t("trainModel.needTrainingCredits")} {t("trainModel.buyCredits")} {t("trainModel.buyCreditsToUpload")}
                       </p>
                     )}
                   </div>
@@ -406,11 +412,11 @@ export default function TrainModel() {
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">{t("trainModel.previewImages")}</h3>
                     <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                      {uploadedFiles.length} {uploadedFiles.length === 1 ? "imagem pronta para enviar" : "imagens prontas para enviar"}
+                      {uploadedFiles.length} {uploadedFiles.length === 1 ? t("trainModel.imageReadyToSend") : t("trainModel.imagesReadyToSend")}
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    As imagens estão apenas no seu navegador. Clique em "Enviar Imagens" para fazer upload.
+                    {t("trainModel.imagesOnlyInBrowser")}
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {uploadedFiles.map((file, index) => (
@@ -432,7 +438,7 @@ export default function TrainModel() {
                             removeFile(file.id);
                           }}
                           className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="Remover imagem"
+                          title={t("trainModel.removeImage")}
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -448,13 +454,13 @@ export default function TrainModel() {
               {/* Upload Summary */}
               {uploadedFiles.length > 0 && modelName && gender && !isUploading && (
                 <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-2">
-                  <p className="text-sm font-medium">Resumo do que será enviado:</p>
+                  <p className="text-sm font-medium">{t("trainModel.summaryTitle")}</p>
                   <div className="text-sm text-muted-foreground space-y-1">
-                    <p>• Modelo: <span className="font-medium text-foreground">{modelName}</span></p>
-                    <p>• Tipo: <span className="font-medium text-foreground">{gender === "hombre" ? t("trainModel.male") : t("trainModel.female")}</span></p>
-                    <p>• Imagens: <span className="font-medium text-foreground">{uploadedFiles.length} {uploadedFiles.length === 1 ? "imagem" : "imagens"}</span></p>
+                    <p>• {t("trainModel.summaryModel")} <span className="font-medium text-foreground">{modelName}</span></p>
+                    <p>• {t("trainModel.summaryType")} <span className="font-medium text-foreground">{gender === "hombre" ? t("trainModel.male") : t("trainModel.female")}</span></p>
+                    <p>• {t("trainModel.summaryImages")} <span className="font-medium text-foreground">{uploadedFiles.length} {uploadedFiles.length === 1 ? t("trainModel.image") : t("trainModel.images")}</span></p>
                     <p className="text-xs mt-2 text-muted-foreground">
-                      As imagens serão enviadas para o servidor e o modelo será criado no banco de dados.
+                      {t("trainModel.summaryDescription")}
                     </p>
                   </div>
                 </div>
@@ -478,7 +484,7 @@ export default function TrainModel() {
                   {isUploading ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                      {t("trainModel.uploading") || "Enviando..."}
+                      {t("trainModel.uploading")}
                     </>
                   ) : (
                     <>
@@ -537,7 +543,7 @@ export default function TrainModel() {
                     >
                       <img
                         src={photo}
-                        alt={`Good photo example ${index + 1}`}
+                        alt={t("trainModel.goodPhotoExampleAlt", { number: index + 1 })}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
@@ -577,7 +583,7 @@ export default function TrainModel() {
                     >
                       <img
                         src={photo}
-                        alt={`Bad photo example ${index + 1}`}
+                        alt={t("trainModel.badPhotoExampleAlt", { number: index + 1 })}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;

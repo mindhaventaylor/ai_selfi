@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 
 export default function ViewModels() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [filterStatus, setFilterStatus] = useState<"all" | "training" | "ready" | "failed">("all");
@@ -74,7 +74,15 @@ export default function ViewModels() {
 
   const formatDate = (date: Date | string) => {
     const dateObj = typeof date === "string" ? new Date(date) : date;
-    return dateObj.toLocaleDateString("es-ES", {
+    // Map i18n language codes to locale codes for date formatting
+    const localeMap: Record<string, string> = {
+      "en": "en-US",
+      "es": "es-ES",
+      "pt-BR": "pt-BR",
+      "it": "it-IT",
+    };
+    const locale = localeMap[i18n.language] || i18n.language;
+    return dateObj.toLocaleDateString(locale, {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -163,7 +171,7 @@ export default function ViewModels() {
                   <h3 className="text-xl font-semibold mb-2">
                     {filterStatus === "all"
                       ? t("viewModels.noTrainedModels")
-                      : `${t("viewModels.noModelsWithStatus")} "${filterStatus}"`}
+                      : `${t("viewModels.noModelsWithStatus")} "${t(`viewModels.${filterStatus}`)}"`}
                   </h3>
                   <p className="text-sm text-muted-foreground mb-6">
                     {filterStatus === "all"
@@ -222,7 +230,7 @@ export default function ViewModels() {
                       </div>
                       {model.gender && (
                         <p className="text-sm text-muted-foreground capitalize">
-                          {model.gender}
+                          {model.gender === "hombre" ? t("trainModel.male") : model.gender === "mujer" ? t("trainModel.female") : model.gender}
                         </p>
                       )}
                       <p className="text-xs text-muted-foreground">
@@ -256,7 +264,7 @@ export default function ViewModels() {
                       {model.status === "training" && (
                         <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
                           <Clock className="w-4 h-4 mr-1 animate-spin" />
-                          {t("viewModels.training")}...
+                          {t("viewModels.trainingInProgress")}
                         </div>
                       )}
                       <Button

@@ -20,10 +20,10 @@ export default function PaymentCancel() {
           
           <div className="space-y-2">
             <h1 className="text-3xl font-bold">
-              {t("payment.cancel.title") || "Pagamento Cancelado"}
+              {t("payment.cancel.title")}
             </h1>
             <p className="text-muted-foreground break-words">
-              {t("payment.cancel.message") || "Você cancelou o processo de pagamento. Nenhum valor foi cobrado."}
+              {t("payment.cancel.message")}
             </p>
           </div>
 
@@ -32,14 +32,14 @@ export default function PaymentCancel() {
               onClick={() => setLocation("/dashboard/credits/buy")}
               className="w-full"
             >
-              {t("payment.cancel.tryAgain") || "Tentar Novamente"}
+              {t("payment.cancel.tryAgain")}
             </Button>
             <Button
               variant="outline"
               onClick={() => setLocation("/dashboard")}
               className="w-full"
             >
-              {t("payment.cancel.goToDashboard") || "Ir para o Dashboard"}
+              {t("payment.cancel.goToDashboard")}
             </Button>
           </div>
         </CardContent>

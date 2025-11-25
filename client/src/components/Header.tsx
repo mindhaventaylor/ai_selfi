@@ -36,11 +36,11 @@ export function Header() {
         {/* Logo */}
         <a href="/" className="flex items-center gap-3 group">
           <div className="relative">
-            <img src={APP_LOGO} alt="AISelfi" className="h-9 w-auto transition-transform duration-300 group-hover:scale-105" />
+            <img src={APP_LOGO} alt="AISelfie" className="h-9 w-auto transition-transform duration-300 group-hover:scale-105" />
             <div className="absolute inset-0 bg-primary/10 rounded-lg blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
           <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/80 transition-all duration-300">
-            AIselfi
+            AISelfie
           </span>
         </a>
 

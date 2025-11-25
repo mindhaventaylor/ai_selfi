@@ -14,7 +14,7 @@ export default function UnderConstruction() {
     // Get feature name from URL query parameter
     const params = new URLSearchParams(window.location.search);
     const feature = params.get("feature");
-    setFeatureName(feature || t("pro.thisFeature") || "Esta funcionalidade");
+    setFeatureName(feature || t("pro.thisFeature"));
   }, [t]);
 
   return (
@@ -37,10 +37,10 @@ export default function UnderConstruction() {
             {/* Title */}
             <div className="space-y-4">
               <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-orange-500 bg-clip-text text-transparent">
-                {t("pro.underConstruction") || "Em Construção"}
+                {t("pro.underConstruction")}
               </h1>
               <p className="text-lg text-muted-foreground">
-                {t("pro.underConstructionDesc") || "Estamos trabalhando duro para trazer funcionalidades incríveis para você!"}
+                {t("pro.underConstructionDesc")}
               </p>
             </div>
 
@@ -56,7 +56,7 @@ export default function UnderConstruction() {
             {/* Message */}
             <div className="pt-4">
               <p className="text-sm text-muted-foreground">
-                {t("pro.stayTuned") || "Fique ligado! Em breve você terá acesso a todas essas funcionalidades incríveis."}
+                {t("pro.stayTuned")}
               </p>
             </div>
 
@@ -68,14 +68,14 @@ export default function UnderConstruction() {
                 className="rounded-full"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                {t("pro.backToPro") || "Voltar para Pro"}
+                {t("pro.backToPro")}
               </Button>
               <Button
                 onClick={() => setLocation("/dashboard/credits/buy")}
                 className="bg-gradient-to-r from-purple-500 to-orange-500 hover:from-purple-600 hover:to-orange-600 text-white rounded-full"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                {t("pro.buyCredits") || "Comprar Créditos"}
+                {t("pro.buyCredits")}
               </Button>
             </div>
           </CardContent>

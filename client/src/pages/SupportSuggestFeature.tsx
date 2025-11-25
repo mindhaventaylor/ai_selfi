@@ -26,7 +26,7 @@ export default function SupportSuggestFeature() {
     e.preventDefault();
     
     if (!formData.title.trim() || !formData.description.trim()) {
-      toast.error(t("supportSuggestFeature.fillRequired") || "Please fill in all required fields");
+      toast.error(t("supportSuggestFeature.fillRequired"));
       return;
     }
 
@@ -39,7 +39,7 @@ export default function SupportSuggestFeature() {
       });
 
       setIsSubmitted(true);
-      toast.success(t("supportSuggestFeature.success") || "Feature suggestion submitted successfully!");
+      toast.success(t("supportSuggestFeature.success"));
       
       // Reset form
       setFormData({
@@ -49,7 +49,7 @@ export default function SupportSuggestFeature() {
       });
     } catch (error: any) {
       console.error("Error submitting feature suggestion:", error);
-      toast.error(error?.message || t("supportSuggestFeature.error") || "Failed to submit feature suggestion");
+      toast.error(error?.message || t("supportSuggestFeature.error"));
     } finally {
       setIsSubmitting(false);
     }
@@ -63,15 +63,15 @@ export default function SupportSuggestFeature() {
             <div className="flex justify-center">
               <CheckCircle2 className="w-16 h-16 text-green-500" />
             </div>
-            <h2 className="text-2xl font-bold">{t("supportSuggestFeature.thankYou") || "Thank You!"}</h2>
+            <h2 className="text-2xl font-bold">{t("supportSuggestFeature.thankYou")}</h2>
             <p className="text-muted-foreground">
-              {t("supportSuggestFeature.successMessage") || "Your feature suggestion has been submitted successfully. We'll review it and consider it for future updates."}
+              {t("supportSuggestFeature.successMessage")}
             </p>
             <Button
               onClick={() => setIsSubmitted(false)}
               className="w-full"
             >
-              {t("supportSuggestFeature.suggestAnother") || "Suggest Another Feature"}
+              {t("supportSuggestFeature.suggestAnother")}
             </Button>
           </CardContent>
         </Card>
@@ -85,31 +85,31 @@ export default function SupportSuggestFeature() {
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
             <Lightbulb className="w-8 h-8 text-primary" />
-            {t("supportSuggestFeature.title") || "Suggest a Feature"}
+            {t("supportSuggestFeature.title")}
           </h1>
           <p className="text-muted-foreground">
-            {t("supportSuggestFeature.subtitle") || "Have an idea? We'd love to hear it!"}
+            {t("supportSuggestFeature.subtitle")}
           </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>{t("supportSuggestFeature.formTitle") || "Feature Suggestion Form"}</CardTitle>
+            <CardTitle>{t("supportSuggestFeature.formTitle")}</CardTitle>
             <CardDescription>
-              {t("supportSuggestFeature.formDescription") || "Share your ideas to help us improve"}
+              {t("supportSuggestFeature.formDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="title">
-                  {t("supportSuggestFeature.titleLabel") || "Feature Title"} <span className="text-destructive">*</span>
+                  {t("supportSuggestFeature.titleLabel")} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder={t("supportSuggestFeature.titlePlaceholder") || "Brief name for your feature idea"}
+                  placeholder={t("supportSuggestFeature.titlePlaceholder")}
                   required
                   maxLength={200}
                 />
@@ -117,13 +117,13 @@ export default function SupportSuggestFeature() {
 
               <div className="space-y-2">
                 <Label htmlFor="description">
-                  {t("supportSuggestFeature.descriptionLabel") || "Description"} <span className="text-destructive">*</span>
+                  {t("supportSuggestFeature.descriptionLabel")} <span className="text-destructive">*</span>
                 </Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder={t("supportSuggestFeature.descriptionPlaceholder") || "Detailed description of the feature you'd like to see"}
+                  placeholder={t("supportSuggestFeature.descriptionPlaceholder")}
                   required
                   rows={6}
                   maxLength={5000}
@@ -132,13 +132,13 @@ export default function SupportSuggestFeature() {
 
               <div className="space-y-2">
                 <Label htmlFor="useCase">
-                  {t("supportSuggestFeature.useCaseLabel") || "Use Case"}
+                  {t("supportSuggestFeature.useCaseLabel")}
                 </Label>
                 <Textarea
                   id="useCase"
                   value={formData.useCase}
                   onChange={(e) => setFormData({ ...formData, useCase: e.target.value })}
-                  placeholder={t("supportSuggestFeature.useCasePlaceholder") || "How would you use this feature? What problem would it solve?"}
+                  placeholder={t("supportSuggestFeature.useCasePlaceholder")}
                   rows={4}
                   maxLength={2000}
                 />
@@ -153,12 +153,12 @@ export default function SupportSuggestFeature() {
                   {isSubmitting ? (
                     <>
                       <span className="animate-spin mr-2">⏳</span>
-                      {t("supportSuggestFeature.submitting") || "Submitting..."}
+                      {t("supportSuggestFeature.submitting")}
                     </>
                   ) : (
                     <>
                       <Send className="w-4 h-4 mr-2" />
-                      {t("supportSuggestFeature.submit") || "Submit Suggestion"}
+                      {t("supportSuggestFeature.submit")}
                     </>
                   )}
                 </Button>

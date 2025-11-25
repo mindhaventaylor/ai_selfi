@@ -255,7 +255,7 @@ export default function Home() {
                   transform: `rotate(${idx % 2 === 0 ? "-3deg" : "3deg"})`,
                 }}
               >
-                <img src={img} alt="AI Professional Photo" className="w-full h-full object-cover" />
+                <img src={img} alt={t("home.altText.aiProfessionalPhoto")} className="w-full h-full object-cover" />
               </div>
             ))}
           </div>
@@ -365,12 +365,7 @@ export default function Home() {
                                   const parts: (string | React.ReactElement)[] = [];
                                   
                                   // Key phrases to highlight (shorter, more distinctive)
-                                  const highlightPhrases = [
-                                    "¡Es una pasada!",
-                                    "Ideal para quien empieza con su marca",
-                                    "He renovado todas mis fotos en 15 minutos",
-                                    "están padrísimas",
-                                  ];
+                                  const highlightPhrases = t("examples.highlightPhrases", { returnObjects: true }) as string[];
                                   
                                   // Find and highlight phrases (avoid overlaps)
                                   let lastIndex = 0;
@@ -447,7 +442,7 @@ export default function Home() {
                                   >
                                     <img
                                       src={imgSrc}
-                                      alt={`${review.name} - Photo ${imgIdx + 1}`}
+                                      alt={t("home.altText.reviewPhoto", { name: review.name, number: imgIdx + 1 })}
                                       className="w-full h-full object-cover rounded-[24px]"
                                     />
                                   </div>
@@ -458,7 +453,7 @@ export default function Home() {
                               <div className="aspect-[4/5] overflow-hidden bg-gray-100 rounded-[24px]">
                                 <img
                                   src={resultImages[0]}
-                                  alt={`${review.name} - Professional Photo`}
+                                  alt={t("home.altText.reviewProfessionalPhoto", { name: review.name })}
                                   className="w-full h-full object-cover rounded-[24px]"
                                 />
                               </div>
@@ -563,11 +558,11 @@ export default function Home() {
                   {/* Section Title */}
               <div className="text-center mb-8">
                     <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
-                      ¿Vale la pena una foto{" "}
-                      <span className="text-blue-400">profesional con IA?</span> Mira lo que dicen.
+                      {t("supportReviews.sectionTitlePart1")}{" "}
+                      <span className="text-blue-400">{t("supportReviews.sectionTitleHighlight")}</span> {t("supportReviews.sectionTitlePart2")}
                     </h2>
                     <p className="text-lg text-muted-foreground">
-                      Más de 75.523 fotos profesionales con inteligencia artificial creadas... y contando.
+                      {t("supportReviews.statsText")}
                     </p>
                   </div>
 
@@ -633,13 +628,7 @@ export default function Home() {
                     : reviewText;
                   
                   // Highlight key phrases
-                  const highlightPhrases = [
-                    "¡Es una pasada!",
-                    "Ideal para quien empieza con su marca",
-                    "He renovado todas mis fotos en 15 minutos",
-                    "galería de fotos que parecían hechas en estudio",
-                    "están padrísimas",
-                  ];
+                  const highlightPhrases = t("examples.highlightPhrases", { returnObjects: true }) as string[];
                   
                   const parts: (string | React.ReactElement)[] = [];
                   let lastIndex = 0;
@@ -742,7 +731,7 @@ export default function Home() {
                               >
                                 <img
                                   src={imgSrc}
-                                  alt={`${review.name} - Photo ${imgIdx + 1}`}
+                                  alt={t("home.altText.reviewPhoto", { name: review.name, number: imgIdx + 1 })}
                                   className="w-full h-full object-cover rounded-[20px]"
                                 />
                               </div>
@@ -753,7 +742,7 @@ export default function Home() {
                           <div className="aspect-[4/5] overflow-hidden bg-gray-100 rounded-[20px]">
                             <img
                               src={resultImages[0]}
-                              alt={`${review.name} - Professional Photo`}
+                              alt={t("home.altText.reviewProfessionalPhoto", { name: review.name })}
                               className="w-full h-full object-cover rounded-[20px]"
                             />
                           </div>
@@ -796,7 +785,7 @@ export default function Home() {
                 <div className="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-gray-900">
                   <img
                     src="/image_101.jpg"
-                    alt="Daniela Mora Solís"
+                    alt={t("home.altText.danielaMora")}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -832,16 +821,13 @@ export default function Home() {
                 <div className="bg-white border-2 border-purple-600 rounded-2xl p-6 md:p-8 shadow-xl relative z-10">
                   {/* Main Text */}
                   <p className="text-black text-base md:text-lg leading-relaxed mb-4 text-left">
-                    He trabajado con 450 profesionales que quieren potenciar su marca personal, y uno de sus mayores miedos es tomarse fotos.
-                    Con{" "}
-                    <span className="text-purple-600 font-semibold">aiselfi.es</span>{" "}
-                    pueden obtener imágenes profesionales sin la incomodidad de una sesión tradicional, sintiéndose seguros y profesionales en cada foto.
+                    {t("home.testimonial.text")}
                   </p>
 
                   {/* Attribution */}
                   <div className="text-sm md:text-base text-gray-600 leading-relaxed text-left">
                     <p>
-                      - Daniela Mora Solís • Consultora de marca personal +400 clientes exitosos | Top 200 creadores hispanohablantes de Linkedin 2024 (Favikon) #64 en español | #1 en Costa Rica | TEDx speaker
+                      {t("home.testimonial.attribution")}
                     </p>
                   </div>
                 </div>
@@ -870,26 +856,29 @@ export default function Home() {
                     { img: "/over100_7.jpg", label: "Popular" },
                     { img: "/over100_8.jpg", label: null },
                     { img: "/over100_9.jpg", label: null },
-                  ].map((item, idx) => (
-                    <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-gray-700">
-                      <img
-                        src={item.img}
-                        alt={`Style ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      {item.label && (
-                        <div className="absolute top-2 left-2">
-                          <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                            item.label === "Popular" 
-                              ? "bg-purple-500 text-white" 
-                              : "bg-green-500 text-white"
-                          }`}>
-                            {item.label}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                  ].map((item, idx) => {
+                    const badgeLabels = t("generateImages.badges", { returnObjects: true }) as { premium: string; new: string; popular: string };
+                    return (
+                      <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-gray-700">
+                        <img
+                          src={item.img}
+                          alt={t("home.altText.styleNumber", { number: idx + 1 })}
+                          className="w-full h-full object-cover"
+                        />
+                        {item.label && (
+                          <div className="absolute top-2 left-2">
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                              item.label === "Popular" 
+                                ? "bg-purple-500 text-white" 
+                                : "bg-green-500 text-white"
+                            }`}>
+                              {item.label === "Popular" ? badgeLabels.popular : item.label === "New" ? badgeLabels.new : item.label}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -902,8 +891,7 @@ export default function Home() {
 
                 {/* Body Text */}
                 <p className="text-lg md:text-xl text-gray-200 leading-relaxed">
-                  Tu marca personal, tu estilo. Elige entre más de 100 atuendos seleccionados y crea el look profesional perfecto para cualquier ocasión—rápido, fácil y adaptado a ti. Sin probadores, sin estrés con{" "}
-                  <span className="text-purple-400 font-semibold">aiselfi.es</span>
+                  {t("styles.subtitle")}
                 </p>
 
                 {/* CTA Button */}
@@ -934,7 +922,7 @@ export default function Home() {
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-white">Aldo M.</span>
                           <span className="bg-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded">
-                            Comprador Verificado
+                            {t("home.styles.verifiedBuyer")}
                           </span>
                         </div>
                       </div>
@@ -1073,7 +1061,7 @@ export default function Home() {
               {/* Left Side - Upload Selfies */}
               <div className="space-y-6">
                 <h3 className="text-2xl md:text-3xl font-bold text-white mb-6">
-                  sube tus selfies
+                  {t("home.uploadSelfies.title")}
                 </h3>
                 <div className="grid grid-cols-2 gap-4 max-w-xs">
                   {[
@@ -1088,7 +1076,7 @@ export default function Home() {
                     >
                       <img
                         src={img}
-                        alt={`Selfie ${idx + 1}`}
+                        alt={t("home.altText.selfieNumber", { number: idx + 1 })}
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -1107,13 +1095,13 @@ export default function Home() {
                 <div className="relative rounded-2xl overflow-hidden bg-gray-800">
                   <img
                     src="/girl_image_result.jpg"
-                    alt="AI Generated Professional Photo"
+                    alt={t("home.altText.aiGeneratedPhoto")}
                     className="w-full h-full object-cover aspect-[3/4]"
                   />
                   {/* Badge - Bottom Right */}
                   <div className="absolute bottom-4 right-4">
                     <div className="bg-pink-100 border-2 border-pink-400 text-gray-900 text-[10px] font-bold px-2 py-1 rounded-md shadow-lg">
-                      GENERADO CON IA
+                      {t("faq.badge")}
                     </div>
                   </div>
                 </div>
@@ -1137,10 +1125,10 @@ export default function Home() {
               <div className="space-y-6 text-white">
                 <div>
                   <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-                    Potencia tu marca personal
+                    {t("home.boostPersonalBrand.title")}
                   </h2>
                   <p className="text-xl md:text-2xl text-gray-200">
-                    Consigue tus fotos profesionales en minutos.
+                    {t("home.boostPersonalBrand.subtitle")}
                   </p>
                 </div>
 
@@ -1151,7 +1139,7 @@ export default function Home() {
                   className="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
                   <a href="/login">
-                    Crear mis fotos profesionales
+                    {t("home.boostPersonalBrand.cta")}
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </a>
                 </Button>
@@ -1172,14 +1160,14 @@ export default function Home() {
                       >
                         <img
                           src={img}
-                          alt={`User ${idx + 1}`}
+                          alt={t("home.altText.userNumber", { number: idx + 1 })}
                           className="w-full h-full object-cover"
                         />
                       </div>
                     ))}
                   </div>
                   <p className="text-sm md:text-base text-gray-200">
-                    Más de 75,523 fotos profesionales creadas
+                    {t("supportReviews.statsTextShort")}
                   </p>
                 </div>
               </div>
@@ -1196,7 +1184,7 @@ export default function Home() {
                 >
                   <img
                     src="/similar_human2.jpeg"
-                    alt="Professional Photo 1"
+                    alt={t("home.altText.professionalPhotoNumber", { number: 1 })}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -1211,7 +1199,7 @@ export default function Home() {
                 >
                   <img
                     src="/image_1.jpg"
-                    alt="Professional Photo 2"
+                    alt={t("home.altText.professionalPhotoNumber", { number: 2 })}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -1226,7 +1214,7 @@ export default function Home() {
                 >
                   <img
                     src="/image_10.jpg"
-                    alt="Professional Photo 3"
+                    alt={t("home.altText.professionalPhotoNumber", { number: 3 })}
                     className="w-full h-full object-cover"
                   />
                 </div>
