@@ -9,7 +9,7 @@
     "tools": "Strumenti"
   },
   "hero": {
-    "badge": "+75k foto generate",
+    "badge": "+25k foto generate",
     "title": "Foto professionali in minuti, non giorni",
     "subtitle": "Dimentica il fotografo. Carica i tuoi selfie e ricevi ritratti pronti per LinkedIn, CV o il tuo brand personale.",
     "cta": "Crea le tue foto ora",
@@ -104,7 +104,7 @@
         "Nessuna posa imbarazzante - l'IA fa il lavoro",
         "Risultati istantanei, download immediato"
       ],
-      "stats": "Oltre 75.523 foto professionali create"
+      "stats": "Oltre 25.256 foto professionali create"
     }
   },
   "styles": {
@@ -134,6 +134,12 @@
       }
     ],
     "cta": "Crea le Tue Foto Ora"
+  },
+  "ctaSection": {
+    "title": "Potenzia il tuo brand personale",
+    "subtitle": "Ottieni le tue foto professionali in minuti.",
+    "button": "Crea le mie foto professionali",
+    "stats": "Più di 25.256 foto professionali create"
   },
   "pricing": {
     "title": "La tua foto professionale a 5 volte meno di una sessione in studio",
@@ -200,7 +206,7 @@
         "a": "Sì, offriamo una garanzia di rimborso completo se non sei soddisfatto dei risultati."
       }
     ],
-    "viewAll": "Vedi tutte le domande →",
+    "viewAll": "Vedi tutte le domande",
     "hideAll": "Nascondi tutto"
   },
   "footer": {

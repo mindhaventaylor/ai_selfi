@@ -17,7 +17,7 @@ export function Footer() {
 
       {/* Links Section */}
       <div className="container py-12 border-t border-border">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
           {/* Product */}
           <div>
             <h3 className="font-bold mb-4">{t("footer.product.title")}</h3>
@@ -33,7 +33,7 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <a href="/blog" className="text-muted-foreground hover:text-primary transition-colors">
                   {t("footer.product.blog")}
                 </a>
               </li>
@@ -65,46 +65,13 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <a href="/refund" className="text-muted-foreground hover:text-primary transition-colors">
                   {t("footer.legal.refund")}
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Tools */}
-          <div>
-            <h3 className="font-bold mb-4">{t("footer.tools.title")}</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  {t("footer.tools.freeTool")}
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  {t("footer.tools.pfpMaker")}
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  {t("footer.tools.analyzer")}
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Social */}
-          <div>
-            <h3 className="font-bold mb-4">{t("footer.social.title")}</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                  {t("footer.social.linkedin")}
-                </a>
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
 
@@ -114,11 +81,6 @@ export function Footer() {
           <div className="flex items-center gap-2">
             <img src={APP_LOGO} alt="AISelfi" className="h-6 w-auto" />
             <span>{t("footer.copyright")}</span>
-          </div>
-          <div className="flex gap-4">
-            <a href="#" className="hover:text-primary transition-colors">
-              {t("footer.featuredOn")}
-            </a>
           </div>
         </div>
       </div>

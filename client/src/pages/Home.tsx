@@ -6,7 +6,7 @@ import type React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Check, X, Sparkles, ChevronLeft, ChevronRight, ArrowRight, Quote } from "lucide-react";
+import { Star, Check, X, Sparkles, ChevronLeft, ChevronRight, ArrowRight, ArrowDown, Quote } from "lucide-react";
 import { FAQ } from "@/components/FAQ";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
@@ -564,10 +564,11 @@ export default function Home() {
               <div className="text-center mb-8">
                     <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
                       ¿Vale la pena una foto{" "}
-                      <span className="text-blue-400">profesional con IA?</span> Mira lo que dicen.
+                      <span className="text-blue-400">profesional</span> con{" "}
+                      <span className="text-blue-400">IA</span>? Mira lo que dicen.
                     </h2>
                     <p className="text-lg text-muted-foreground">
-                      Más de 75.523 fotos profesionales con inteligencia artificial creadas... y contando.
+                      Más de 25.256 fotos profesionales con inteligencia artificial creadas... y contando.
                     </p>
                   </div>
 
@@ -961,17 +962,35 @@ export default function Home() {
                   title: string;
                   description: string;
                 }>
-              ).map((step, idx) => (
-                <AnimatedSection key={idx} delay={idx * 100}>
-                  <Card className="p-6 text-center h-full">
-                    <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-                      {idx + 1}
-                    </div>
-                    <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-                    <p className="text-muted-foreground">{step.description}</p>
-                  </Card>
-                </AnimatedSection>
-              ))}
+              ).map((step, idx) => {
+                // Images for each step
+                const stepImages = [
+                  "/girl_image_sample.jpg", // Step 1: Upload selfies
+                  "/over100_1.jpg", // Step 2: Choose style
+                  "/image.jpg", // Step 3: AI magic
+                  "/image_1.jpg", // Step 4: Download and share
+                ];
+                
+                return (
+                  <AnimatedSection key={idx} delay={idx * 100}>
+                    <Card className="p-6 text-center h-full">
+                      {/* Step Image */}
+                      <div className="w-32 h-32 md:w-40 md:h-40 mx-auto mb-4 rounded-lg overflow-hidden shadow-lg">
+                        <img
+                          src={stepImages[idx] || stepImages[0]}
+                          alt={step.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                        {idx + 1}
+                      </div>
+                      <h3 className="text-xl font-bold mb-3">{step.title}</h3>
+                      <p className="text-muted-foreground">{step.description}</p>
+                    </Card>
+                  </AnimatedSection>
+                );
+              })}
             </div>
 
             <div className="text-center">
@@ -988,7 +1007,34 @@ export default function Home() {
         <section id="pricing" className="py-20 bg-card">
           <div className="container">
             <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">{t("pricing.title")}</h2>
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                {(() => {
+                  const title = t("pricing.title");
+                  // Match "5x less", "5x menos", "5 volte meno", etc.
+                  const match = title.match(/(.*?)(5x?\s*(?:less|menos|volte\s+meno))(?:\s+than\s+|\s+que\s+|di\s+)(.*)/i);
+                  if (match) {
+                    return (
+                      <>
+                        {match[1]}
+                        <span className="text-green-700">{match[2]}</span>
+                        {match[3] ? ` ${match[3]}` : ""}
+                      </>
+                    );
+                  }
+                  // Fallback: try to find and highlight "5x" pattern
+                  const parts = title.split(/(5x?\s*(?:less|menos|volte\s+meno))/i);
+                  if (parts.length > 1) {
+                    return parts.map((part, idx) => 
+                      /5x?\s*(?:less|menos|volte\s+meno)/i.test(part) ? (
+                        <span key={idx} className="text-green-700">{part}</span>
+                      ) : (
+                        part
+                      )
+                    );
+                  }
+                  return title;
+                })()}
+              </h2>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                 {t("pricing.subtitle")}
               </p>
@@ -1069,13 +1115,23 @@ export default function Home() {
       <AnimatedSection>
         <section className="py-20 bg-gray-900">
           <div className="container max-w-7xl mx-auto px-4">
-            <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center relative">
+              {/* Arrow Icon - Vertical on mobile, horizontal on desktop */}
+              {/* Mobile: Vertical arrow between sections */}
+              <div className="flex justify-center my-6 md:hidden">
+                <ArrowDown className="w-16 h-16 text-pink-500" strokeWidth={3} />
+              </div>
+              {/* Desktop: Horizontal arrow between columns */}
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 hidden md:block">
+                <ArrowRight className="w-20 h-20 md:w-24 md:h-24 text-pink-500" strokeWidth={3} />
+              </div>
+
               {/* Left Side - Upload Selfies */}
               <div className="space-y-6">
                 <h3 className="text-2xl md:text-3xl font-bold text-white mb-6">
                   sube tus selfies
                 </h3>
-                <div className="grid grid-cols-2 gap-4 max-w-xs">
+                <div className="grid grid-cols-2 gap-4 max-w-lg md:max-w-xl">
                   {[
                     "/girl_image_sample.jpg",
                     "/girl_image_sample2.jpg",
@@ -1098,11 +1154,6 @@ export default function Home() {
 
               {/* Right Side - Generated Image */}
               <div className="relative">
-                {/* Arrow Icon */}
-                <div className="absolute -left-12 md:-left-16 top-1/2 -translate-y-1/2 z-10 hidden md:block">
-                  <ArrowRight className="w-12 h-12 text-pink-500" strokeWidth={3} />
-                </div>
-
                 {/* Large Generated Image */}
                 <div className="relative rounded-2xl overflow-hidden bg-gray-800">
                   <img
@@ -1137,10 +1188,10 @@ export default function Home() {
               <div className="space-y-6 text-white">
                 <div>
                   <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-                    Potencia tu marca personal
+                    {t("ctaSection.title")}
                   </h2>
                   <p className="text-xl md:text-2xl text-gray-200">
-                    Consigue tus fotos profesionales en minutos.
+                    {t("ctaSection.subtitle")}
                   </p>
                 </div>
 
@@ -1151,7 +1202,7 @@ export default function Home() {
                   className="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
                   <a href="/login">
-                    Crear mis fotos profesionales
+                    {t("ctaSection.button")}
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </a>
                 </Button>
@@ -1179,18 +1230,18 @@ export default function Home() {
                     ))}
                   </div>
                   <p className="text-sm md:text-base text-gray-200">
-                    Más de 75,523 fotos profesionales creadas
+                    {t("ctaSection.stats")}
                   </p>
                 </div>
               </div>
 
-              {/* Right Side - Overlapping Photos */}
-              <div className="relative h-[420px] md:h-[490px]">
-                {/* Bottom Photo - Tilted Right */}
+              {/* Right Side - Overlapping Photos in Arc Pattern (Symmetrical) */}
+              <div className="relative h-[480px] md:h-[560px]">
+                {/* Left Photo - Man in Suit (Bottom, Left, With Increased Negative Angle) */}
                 <div
-                  className="absolute bottom-0 left-0 w-48 md:w-56 h-56 md:h-72 rounded-2xl overflow-hidden shadow-2xl"
+                  className="absolute bottom-0 left-0 md:bottom-0 md:left-0 w-64 md:w-80 h-80 md:h-[480px] rounded-2xl overflow-hidden shadow-2xl"
                   style={{
-                    transform: "rotate(5deg)",
+                    transform: "rotate(-6deg)",
                     zIndex: 1,
                   }}
                 >
@@ -1201,11 +1252,10 @@ export default function Home() {
                   />
                 </div>
 
-                {/* Middle Photo - Tilted Left */}
+                {/* Center Photo - Woman (Higher Up, On Top of Left, Middle, No Angle, Straight) */}
                 <div
-                  className="absolute top-14 right-6 md:right-12 w-48 md:w-56 h-56 md:h-72 rounded-2xl overflow-hidden shadow-2xl"
+                  className="absolute -top-4 left-40 md:-top-8 md:left-56 w-64 md:w-80 h-80 md:h-[480px] rounded-2xl overflow-hidden shadow-2xl"
                   style={{
-                    transform: "rotate(-8deg)",
                     zIndex: 2,
                   }}
                 >
@@ -1216,11 +1266,11 @@ export default function Home() {
                   />
                 </div>
 
-                {/* Top Photo - Tilted Left */}
+                {/* Right Photo - Third Image (Foreground, Right, With Increased Positive Angle - Mirrored) */}
                 <div
-                  className="absolute top-0 right-0 md:right-6 w-48 md:w-56 h-56 md:h-72 rounded-2xl overflow-hidden shadow-2xl"
+                  className="absolute bottom-0 -right-20 md:bottom-0 md:-right-32 w-64 md:w-80 h-80 md:h-[480px] rounded-2xl overflow-hidden shadow-2xl"
                   style={{
-                    transform: "rotate(-12deg)",
+                    transform: "rotate(6deg)",
                     zIndex: 3,
                   }}
                 >

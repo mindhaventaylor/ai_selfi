@@ -27,6 +27,11 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
+import Blog from "./pages/Blog";
+import BlogPost1 from "./pages/BlogPost1";
+import BlogPost2 from "./pages/BlogPost2";
+import BlogPost3 from "./pages/BlogPost3";
+import Refund from "./pages/Refund";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { WhatsAppButton } from "./components/WhatsAppButton";
@@ -48,6 +53,11 @@ function Router() {
           <Route path={"/oauth/callback"} component={OAuthCallback} />
           <Route path={"/terms"} component={Terms} />
           <Route path={"/privacy"} component={Privacy} />
+          <Route path={"/refund"} component={Refund} />
+          <Route path={"/blog"} component={Blog} />
+          <Route path={"/blog/how-ai-professional-photos-transform-personal-brand"} component={BlogPost1} />
+          <Route path={"/blog/5-reasons-ai-photos-better-than-traditional"} component={BlogPost2} />
+          <Route path={"/blog/choose-perfect-professional-photo-style"} component={BlogPost3} />
           <Route path={"/dashboard"}>
             <ProtectedRoute>
               <DashboardLayout>

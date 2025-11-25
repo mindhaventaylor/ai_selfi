@@ -3,8 +3,8 @@ import { useEffect } from "react";
 
 export default function SupportWhatsApp() {
   const { t } = useTranslation();
-  // TODO: Replace with actual WhatsApp number when provided
-  const whatsappNumber = "1234567890"; // Placeholder - update this with the actual number
+  // WhatsApp number: +1 (813) 729-1689
+  const whatsappNumber = "18137291689";
   const whatsappMessage = encodeURIComponent(t("supportWhatsApp.message"));
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
 
