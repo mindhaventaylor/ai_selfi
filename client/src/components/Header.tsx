@@ -17,6 +17,7 @@ export function Header() {
   
   // Se estiver no dashboard, links devem ir para home com âncora
   const isOnDashboard = location === "/dashboard";
+  const isOnLoginPage = location === "/login";
   const getNavLink = (anchor: string) => isOnDashboard ? `/${anchor}` : anchor;
 
   const languages = [
@@ -45,51 +46,62 @@ export function Header() {
         </a>
 
         {/* Navigation */}
-        <nav className="hidden md:flex items-center gap-8">
-          <a 
-            href={getNavLink("#examples")} 
-            className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-300 relative group py-2"
-          >
-            {t("nav.examples")}
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
-          </a>
-          <a 
-            href={getNavLink("#how-it-works")} 
-            className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-300 relative group py-2"
-          >
-            {t("nav.howItWorks")}
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
-          </a>
-          <a 
-            href={getNavLink("#pricing")} 
-            className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-300 relative group py-2"
-          >
-            {t("nav.pricing")}
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
-          </a>
-        </nav>
+        {!isOnLoginPage && (
+          <nav className="hidden md:flex items-center gap-8">
+            <a 
+              href={getNavLink("#examples")} 
+              className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-300 relative group py-2"
+            >
+              {t("nav.examples")}
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
+            </a>
+            <a 
+              href={getNavLink("#how-it-works")} 
+              className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-300 relative group py-2"
+            >
+              {t("nav.howItWorks")}
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
+            </a>
+            <a 
+              href={getNavLink("#pricing")} 
+              className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-300 relative group py-2"
+            >
+              {t("nav.pricing")}
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
+            </a>
+            <a 
+              href={getNavLink("#testimonials")} 
+              className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-300 relative group py-2"
+            >
+              {t("nav.testimonials")}
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
+            </a>
+          </nav>
+        )}
 
         {/* Actions */}
         <div className="flex items-center gap-3">
           {/* Auth Button */}
-          {!isAuthenticated ? (
-            <Button 
-              asChild 
-              variant="default" 
-              size="sm" 
-              className="rounded-full shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 bg-gradient-to-r from-primary to-primary/90 hover:from-primary hover:to-primary border-0 px-6 font-semibold"
-            >
-              <a href="/login">{t("header.signIn")}</a>
-            </Button>
-          ) : (
-            <Button 
-              asChild 
-              variant="outline" 
-              size="sm"
-              className="rounded-full border-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 px-6 font-semibold"
-            >
-              <a href="/dashboard">{t("header.dashboard")}</a>
-            </Button>
+          {!isOnLoginPage && (
+            !isAuthenticated ? (
+              <Button 
+                asChild 
+                variant="default" 
+                size="sm" 
+                className="rounded-full shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 bg-gradient-to-r from-primary to-primary/90 hover:from-primary hover:to-primary border-0 px-6 font-semibold"
+              >
+                <a href="/login">{t("header.signIn")}</a>
+              </Button>
+            ) : (
+              <Button 
+                asChild 
+                variant="outline" 
+                size="sm"
+                className="rounded-full border-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 px-6 font-semibold"
+              >
+                <a href="/dashboard">{t("header.dashboard")}</a>
+              </Button>
+            )
           )}
 
           {/* Language Selector */}

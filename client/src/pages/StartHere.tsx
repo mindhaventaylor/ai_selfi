@@ -26,10 +26,10 @@ export default function StartHere() {
     "/image_10.jpg",
     "/image_100.jpg",
     "/image_101.jpg",
-    "/image_102.jpg",
-    "/image_103.jpg",
-    "/image_104.jpg",
-    "/image_105.jpg",
+    "/over100_1.jpg",
+    "/over100_2.jpg",
+    "/over100_3.jpg",
+    "/over100_4.jpg",
   ];
 
   const steps = [

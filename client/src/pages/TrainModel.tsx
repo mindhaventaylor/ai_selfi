@@ -278,7 +278,7 @@ export default function TrainModel() {
     "/image_10.jpg",
     "/image_100.jpg",
     "/image_101.jpg",
-    "/image_102.jpg",
+    "/over100_1.jpg",
   ];
 
   // Bad photos examples (with red X)
@@ -288,7 +288,7 @@ export default function TrainModel() {
     "/image_10.jpg",
     "/image_100.jpg",
     "/image_101.jpg",
-    "/image_102.jpg",
+    "/over100_2.jpg",
   ];
 
   return (

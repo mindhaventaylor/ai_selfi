@@ -1,5 +1,4 @@
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@/components/ui/button";
 import { APP_LOGO } from "@/const";
 
 export function Footer() {
@@ -7,14 +6,6 @@ export function Footer() {
 
   return (
     <footer className="bg-card border-t border-border">
-      {/* CTA Section */}
-      <div className="container py-16 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold mb-6">{t("footer.cta")}</h2>
-        <Button asChild size="lg" className="text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">
-          <a href="/login">{t("hero.cta")} ✨</a>
-        </Button>
-      </div>
-
       {/* Links Section */}
       <div className="container py-12 border-t border-border">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8">

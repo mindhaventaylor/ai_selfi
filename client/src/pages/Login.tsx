@@ -77,12 +77,12 @@ export default function Login() {
   const currentTestimonial = testimonials && testimonials.length > 0 ? testimonials[currentTestimonialIndex] : null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="flex w-full max-w-6xl items-center justify-center gap-8">
-        {/* Left Side - Image Carousel with Testimonial */}
-        <div className="hidden lg:flex flex-col items-center w-full max-w-md">
+    <div className="min-h-screen flex items-start justify-center bg-background pt-6 lg:pt-24 px-4 lg:px-0">
+      <div className="flex flex-col lg:flex-row w-full max-w-6xl items-center justify-center gap-8">
+        {/* Left Side - Image Carousel with Testimonial (moved to bottom on mobile) */}
+        <div className="flex flex-col items-center w-full max-w-[30.8rem] order-2 lg:order-1">
           {/* Rotating Image with Overlay Testimonial */}
-          <div className="relative w-full aspect-[3/4]">
+          <div className="relative w-full h-[25rem] lg:h-[37.3rem]">
             <div className="absolute inset-0 rounded-lg overflow-hidden shadow-2xl">
               {carouselImages.map((img, idx) => (
                 <img
@@ -98,14 +98,14 @@ export default function Login() {
 
             {/* Testimonial Card Overlay */}
             {currentTestimonial && (
-              <div className="absolute bottom-0 left-0 right-0 bg-foreground text-background rounded-b-lg p-6 shadow-xl">
+              <div className="absolute bottom-4 left-4 right-4 bg-black/50 backdrop-blur-sm text-white rounded-xl p-6 shadow-xl">
                 <div className="flex gap-1 mb-3">
                   {Array.from({ length: currentTestimonial.stars }).map((_, i) => (
                     <span key={i} className="text-yellow-400 text-lg">★</span>
                   ))}
                 </div>
-                <p className="text-sm mb-4 italic">"{currentTestimonial.text}"</p>
-                <p className="text-xs font-semibold">- {currentTestimonial.author}</p>
+                <p className="text-sm mb-4 italic text-white">"{currentTestimonial.text}"</p>
+                <p className="text-xs font-semibold text-white">- {currentTestimonial.author}</p>
                 
                 {/* Testimonial Indicators */}
                 {testimonials && testimonials.length > 0 && (
@@ -119,8 +119,8 @@ export default function Login() {
                         }}
                         className={`w-2 h-2 rounded-full transition-all ${
                           idx === currentTestimonialIndex
-                            ? "bg-background w-6"
-                            : "bg-background/50"
+                            ? "bg-white w-6"
+                            : "bg-white/50"
                         }`}
                         aria-label={t("login.ariaLabel.goToTestimonial", { number: idx + 1 })}
                       />
@@ -135,10 +135,10 @@ export default function Login() {
         {/* Gap between panels */}
         <div className="hidden lg:block w-8" aria-hidden="true"></div>
 
-        {/* Right Side - Login Form */}
-        <div className="flex flex-col items-start w-full max-w-md">
+        {/* Right Side - Login Form (moved to top on mobile) */}
+        <div className="flex flex-col items-start w-full max-w-md order-1 lg:order-2">
           {/* Logo */}
-          <div className="flex items-center gap-2 mb-8">
+          <div className="hidden lg:flex items-center gap-2 mb-8">
             <img src={APP_LOGO} alt={t("login.altText.logo")} className="h-8 w-auto" />
             <span className="text-xl font-bold">aiselfie.org</span>
           </div>

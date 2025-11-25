@@ -88,8 +88,8 @@ export default function Dashboard() {
   // Mock photos for the grid background
   const gridPhotos = [
     "/image.jpg", "/image_1.jpg", "/image_10.jpg", "/image_100.jpg",
-    "/image_101.jpg", "/image_102.jpg", "/image_103.jpg", "/image_104.jpg",
-    "/image_105.jpg", "/image_106.jpg", "/image_107.jpg", "/image_108.jpg",
+    "/image_101.jpg", "/over100_1.jpg", "/over100_2.jpg", "/over100_3.jpg",
+    "/over100_4.jpg", "/over100_5.jpg", "/over100_6.jpg", "/over100_7.jpg",
   ];
 
   return (

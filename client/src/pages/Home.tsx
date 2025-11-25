@@ -80,7 +80,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Hero Section */}
-      <section className="relative min-h-screen overflow-hidden py-20">
+      <section className="relative min-h-screen overflow-hidden pt-7 pb-20 lg:py-20">
         {/* Floating Images Container - Desktop */}
         <div className="absolute inset-0 w-full h-full hidden lg:block pointer-events-none">
           {/* Left Side Images */}
@@ -198,7 +198,7 @@ export default function Home() {
         </div>
 
         {/* Center Content */}
-        <div className="container relative z-10 pt-6">
+        <div className="container relative z-10 pt-2 lg:pt-6">
           <div className="flex flex-col items-center text-center space-y-6 max-w-3xl mx-auto">
             {/* Badge with avatars */}
             <div className="flex items-center gap-3 bg-secondary/50 backdrop-blur-sm px-6 py-3 rounded-full">
@@ -554,7 +554,7 @@ export default function Home() {
       </AnimatedSection>
 
             {/* Reviews Section */}
-            <div className="mb-16 max-w-7xl mx-auto">
+            <div id="testimonials" className="mb-16 max-w-7xl mx-auto scroll-mt-20">
                   {/* Section Title */}
               <div className="text-center mb-8">
                     <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
