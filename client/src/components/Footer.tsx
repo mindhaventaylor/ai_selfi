@@ -70,7 +70,7 @@ export function Footer() {
       <div className="container py-6 border-t border-border">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <img src={APP_LOGO} alt="AISelfie" className="h-6 w-auto" />
+            <img src={APP_LOGO} alt="aiselfie" className="h-6 w-auto" />
             <span>{t("footer.copyright")}</span>
           </div>
         </div>

@@ -9,6 +9,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Download, Check, Image as ImageIcon, Trash2, Heart } from "lucide-react";
 
 export default function Gallery() {
@@ -16,6 +26,9 @@ export default function Gallery() {
   const [sortBy, setSortBy] = useState<"newest" | "favourites">("newest");
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set());
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [photoToDelete, setPhotoToDelete] = useState<number | null>(null);
+  const [isMultipleDelete, setIsMultipleDelete] = useState(false);
 
   // Fetch photos from database
   const { data, isLoading, refetch } = trpc.photo.list.useQuery({
@@ -97,14 +110,25 @@ export default function Gallery() {
     
     if (selectedImages.size === 1) {
       const photoId = Array.from(selectedImages)[0];
-      if (confirm(t("gallery.areYouSureDeleteOne"))) {
-        deletePhotoMutation.mutate({ photoId });
-      }
+      setPhotoToDelete(photoId);
+      setIsMultipleDelete(false);
+      setDeleteDialogOpen(true);
     } else {
-      if (confirm(`${t("gallery.areYouSureDeleteMany")} ${selectedImages.size} ${t("gallery.images")}?`)) {
-        deleteManyMutation.mutate({ photoIds: Array.from(selectedImages) });
-      }
+      setPhotoToDelete(null);
+      setIsMultipleDelete(true);
+      setDeleteDialogOpen(true);
     }
+  };
+
+  const handleConfirmDelete = () => {
+    if (isMultipleDelete && selectedImages.size > 0) {
+      deleteManyMutation.mutate({ photoIds: Array.from(selectedImages) });
+    } else if (photoToDelete !== null) {
+      deletePhotoMutation.mutate({ photoId: photoToDelete });
+    }
+    setDeleteDialogOpen(false);
+    setPhotoToDelete(null);
+    setIsMultipleDelete(false);
   };
 
   const handleDownloadImage = (photoId: number, url: string) => {
@@ -273,9 +297,9 @@ export default function Gallery() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (confirm(t("gallery.areYouSureDeleteOne"))) {
-                            deletePhotoMutation.mutate({ photoId: photo.id });
-                          }
+                          setPhotoToDelete(photo.id);
+                          setIsMultipleDelete(false);
+                          setDeleteDialogOpen(true);
                         }}
                         className="bg-background/90 rounded-full p-1.5 text-destructive"
                       >
@@ -306,6 +330,29 @@ export default function Gallery() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("gallery.areYouSure")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {isMultipleDelete
+                ? `${t("gallery.areYouSureDeleteMany")} ${selectedImages.size} ${t("gallery.images")}?`
+                : t("gallery.areYouSureDeleteOne")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("gallery.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t("gallery.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

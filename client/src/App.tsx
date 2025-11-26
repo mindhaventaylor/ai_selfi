@@ -13,6 +13,7 @@ import GenerateImages from "./pages/GenerateImages";
 import BuyCredits from "./pages/BuyCredits";
 import Pro from "./pages/Pro";
 import UnderConstruction from "./pages/UnderConstruction";
+import SubscribeToPro from "./pages/SubscribeToPro";
 import Gallery from "./pages/Gallery";
 import Models from "./pages/Models";
 import TrainModel from "./pages/TrainModel";
@@ -76,6 +77,13 @@ function Router() {
             <ProtectedRoute>
               <DashboardLayout>
                 <Pro />
+              </DashboardLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route path={"/dashboard/pro/subscribe"}>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <SubscribeToPro />
               </DashboardLayout>
             </ProtectedRoute>
           </Route>
