@@ -558,7 +558,7 @@ export default function GenerateImages() {
   
   // Define helper functions and constants (not hooks, safe to call after hooks)
   const backgrounds = ["office", "studio", "city", "nature", "interior"];
-  const styles = ["formal", "casual", "elegant", "professional"];
+  const styles = ["professional", "casual", "elegant", "formal"];
   const badges = t("generateImages.badges", { returnObjects: true }) as { premium: string; new: string; popular: string };
   
   // Filter example images based on gender and selected styles/backgrounds
