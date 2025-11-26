@@ -557,7 +557,7 @@ export default function GenerateImages() {
     : imageCount > 0 && hasEnoughCredits && modelId !== "" && isModelReady;
   
   // Define helper functions and constants (not hooks, safe to call after hooks)
-  const backgrounds = ["office", "neutral", "studio", "city", "nature", "interior"];
+  const backgrounds = ["office", "studio", "city", "nature", "interior"];
   const styles = ["formal", "casual", "elegant", "professional"];
   const badges = t("generateImages.badges", { returnObjects: true }) as { premium: string; new: string; popular: string };
   
