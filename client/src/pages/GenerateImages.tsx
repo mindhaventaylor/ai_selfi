@@ -89,6 +89,8 @@ export default function GenerateImages() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastBatchStatusRef = useRef<string | null>(null); // Track last batch status to avoid unnecessary updates
+  const progressAnimationRef = useRef<NodeJS.Timeout | null>(null); // Track progress animation interval
+  const targetProgressRef = useRef<number>(0); // Track target progress for smooth animation
 
   // Check for variant - prioritize URL param, then first variant (permanent), then cached, then PostHog
   // This ensures we detect page2 even when navigating with batchId
@@ -258,6 +260,11 @@ export default function GenerateImages() {
           setCompletedImages(0);
           setGeneratedImages([]);
           setErrorMessage(null);
+          targetProgressRef.current = 0; // Reset target progress
+          if (progressAnimationRef.current) {
+            clearInterval(progressAnimationRef.current);
+            progressAnimationRef.current = null;
+          }
           console.log("[GenerateImages] Page2: Modal opened, showModal set to true, isGenerating set to true");
         }
         // Don't check showModal/isGenerating here to avoid loops - only set when batchId changes
@@ -301,6 +308,11 @@ export default function GenerateImages() {
           setCompletedImages(0);
           setGeneratedImages([]);
           setErrorMessage(null);
+          targetProgressRef.current = 0; // Reset target progress
+          if (progressAnimationRef.current) {
+            clearInterval(progressAnimationRef.current);
+            progressAnimationRef.current = null;
+          }
           console.log("[GenerateImages] Page2: Modal opened on mount, showModal:", true, "isGenerating:", true);
         } else if (!showModal) {
           // If batchId is already set but modal is closed, open it
@@ -379,7 +391,13 @@ export default function GenerateImages() {
       // Only open modal automatically when generation completes or fails (so user sees results)
       if (batch.status === "completed") {
         setIsGenerating(false);
+        // Clear progress animation and set to 100%
+        if (progressAnimationRef.current) {
+          clearInterval(progressAnimationRef.current);
+          progressAnimationRef.current = null;
+        }
         setGenerationProgress(100);
+        targetProgressRef.current = 100;
         setCompletedImages(batch.totalImagesGenerated);
         const completedImages = photos
           .filter((p: { id: number; url: string; status: string }) => p.url) // Only include photos with URLs
@@ -405,40 +423,59 @@ export default function GenerateImages() {
         // Only update progress (modal can be closed by user)
         setIsGenerating(true);
         
-        // Use batch.totalImagesGenerated as fallback if photos array is empty or incomplete
-        // This handles the case where photos are being generated but not yet in the photos table
-        const actualPhotosCount = Math.max(photos.length, batch.totalImagesGenerated || 0);
+        // Use photos.length as primary source since photos are created one by one
+        // Only use batch.totalImagesGenerated if photos array is empty (fallback)
+        const currentPhotosCount = photos.length > 0 ? photos.length : (batch.totalImagesGenerated || 0);
         const expectedTotal = isPage2Variant 
           ? 4 // Page2 always generates 4 images
           : totalImagesToGenerate;
         
-        // Update completed images count
-        setCompletedImages(actualPhotosCount);
+        // Update completed images count immediately (show images as they're created)
+        setCompletedImages(currentPhotosCount);
         
-        // Calculate progress based on actual images completed
+        // Calculate target progress based on actual images completed
         // Progress = (completed images / total images) * 100
-        // Use a smooth calculation that increments as each image is created
-        let progress = 0;
-        if (actualPhotosCount === 0) {
+        let targetProgress = 0;
+        if (currentPhotosCount === 0) {
           // Just started - show 2% to indicate processing has begun
-          progress = 2;
-        } else if (actualPhotosCount >= expectedTotal) {
+          targetProgress = 2;
+        } else if (currentPhotosCount >= expectedTotal) {
           // All images generated - show 100%
-          progress = 100;
+          targetProgress = 100;
         } else {
           // Calculate progress: each completed image adds (98 / expectedTotal)%
           // This gives us 2% to 100% range (2% start + 98% for images)
           // Example: 4 images = 2% + (1/4 * 98%) = 26.5% for first image
-          const imageProgress = (actualPhotosCount / expectedTotal) * 98;
-          progress = 2 + imageProgress;
+          const imageProgress = (currentPhotosCount / expectedTotal) * 98;
+          targetProgress = 2 + imageProgress;
         }
         
-        // Smooth progress update - only update if it's higher than current to avoid going backwards
-        setGenerationProgress((prev) => {
-          const newProgress = Math.min(100, Math.max(0, Math.round(progress)));
-          // Only update if new progress is higher (smooth upward animation)
-          return newProgress > prev ? newProgress : prev;
-        });
+        // Update target progress ref
+        targetProgressRef.current = Math.min(100, Math.max(0, Math.round(targetProgress)));
+        
+        // Smooth progress animation - increment gradually towards target
+        // Clear any existing animation
+        if (progressAnimationRef.current) {
+          clearInterval(progressAnimationRef.current);
+        }
+        
+        // Animate progress smoothly towards target
+        progressAnimationRef.current = setInterval(() => {
+          setGenerationProgress((prev) => {
+            const target = targetProgressRef.current;
+            if (prev >= target) {
+              // Reached target, clear interval
+              if (progressAnimationRef.current) {
+                clearInterval(progressAnimationRef.current);
+                progressAnimationRef.current = null;
+              }
+              return prev;
+            }
+            // Increment by 2% per interval (smooth animation)
+            const increment = Math.min(2, target - prev);
+            return Math.min(100, prev + increment);
+          });
+        }, 200); // Update every 200ms for smooth animation
         
         // Update generated images list immediately as they're created - show one by one
         // Filter out photos without URLs and only add new ones
@@ -465,10 +502,10 @@ export default function GenerateImages() {
           isPage2Variant,
           batchTotalImagesGenerated: batch.totalImagesGenerated,
           photosArrayLength: photos.length,
-          actualPhotosCount,
+          currentPhotosCount,
           photosWithUrls: newImages.length,
           expectedTotal,
-          progress,
+          targetProgress: targetProgressRef.current,
           images: newImages,
         });
       }
@@ -478,6 +515,16 @@ export default function GenerateImages() {
       lastBatchStatusRef.current = null; // Reset when batchId changes
     }
   }, [batchStatusData, currentBatchId, isPage2Variant]);
+  
+  // Cleanup progress animation on unmount or when generation stops
+  useEffect(() => {
+    return () => {
+      if (progressAnimationRef.current) {
+        clearInterval(progressAnimationRef.current);
+        progressAnimationRef.current = null;
+      }
+    };
+  }, []);
   
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   // Define handleDownloadImage using useCallback (must be before return)
@@ -613,6 +660,11 @@ export default function GenerateImages() {
     setErrorMessage(null);
     setCurrentBatchId(null);
     setShowModal(true);
+    targetProgressRef.current = 0; // Reset target progress
+    if (progressAnimationRef.current) {
+      clearInterval(progressAnimationRef.current);
+      progressAnimationRef.current = null;
+    }
 
     try {
       // Convert example image URL to absolute if needed
@@ -1187,6 +1239,11 @@ export default function GenerateImages() {
                             setGenerationProgress(0);
                             setCompletedImages(0);
                             setGeneratedImages([]);
+                            targetProgressRef.current = 0; // Reset target progress
+                            if (progressAnimationRef.current) {
+                              clearInterval(progressAnimationRef.current);
+                              progressAnimationRef.current = null;
+                            }
                             handleGenerate();
                           }}
                         >
