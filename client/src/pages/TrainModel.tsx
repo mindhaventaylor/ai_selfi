@@ -50,6 +50,18 @@ export default function TrainModel() {
   const trainingCredits = user?.credits ?? 0;
   const hasTrainingCredits = trainingCredits > 0;
 
+  const readFileAsBase64 = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.includes(",") ? result.split(",")[1] : result;
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
   const handleFileSelect = (files: FileList | null) => {
     if (!files || files.length === 0) {
       return;
@@ -192,29 +204,26 @@ export default function TrainModel() {
     setIsUploading(true);
     try {
       // Upload images via backend (bypasses RLS by using service role)
-      // Convert files to base64 and send to backend
-      const imagesToUpload = await Promise.all(
-        uploadedFiles.map(async (file) => {
-          return new Promise<{ data: string; fileName: string; contentType: string }>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-              const base64 = (reader.result as string).split(',')[1]; // Remove data:image/jpeg;base64, prefix
-              resolve({
-                data: base64,
-                fileName: file.file.name,
-                contentType: file.file.type,
-              });
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file.file);
-          });
-        })
-      );
+      // Send each file individually to avoid exceeding serverless body limits
+      const uploadedUrls: string[] = [];
+      for (const file of uploadedFiles) {
+        const base64 = await readFileAsBase64(file.file);
+        const { urls } = await uploadImagesMutation.mutateAsync({
+          images: [
+            {
+              data: base64,
+              fileName: file.file.name,
+              contentType: file.file.type,
+            },
+          ],
+        });
 
-      // Upload via backend (uses service role, bypasses RLS)
-      const { urls: uploadedUrls } = await uploadImagesMutation.mutateAsync({
-        images: imagesToUpload,
-      });
+        if (!urls || urls.length === 0) {
+          throw new Error(t("trainModel.couldNotUploadImages"));
+        }
+
+        uploadedUrls.push(urls[0]);
+      }
 
       // Ensure we have at least one image
       if (uploadedUrls.length === 0) {
