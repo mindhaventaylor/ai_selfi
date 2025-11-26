@@ -558,12 +558,13 @@ export default function Home() {
                   {/* Section Title */}
               <div className="text-center mb-8">
                     <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
-                      ¿Vale la pena una foto{" "}
-                      <span className="text-blue-400">profesional</span> con{" "}
-                      <span className="text-blue-400">IA</span>? Mira lo que dicen.
+                      {t("home.testimonialsTitlePart1")}{" "}
+                      <span className="text-blue-400">{t("home.testimonialsTitleProfessional")}</span>{" "}
+                      {t("home.testimonialsTitlePart2")}{" "}
+                      <span className="text-blue-400">{t("home.testimonialsTitleAI")}</span>? {t("home.testimonialsTitlePart3")}
                     </h2>
                     <p className="text-lg text-muted-foreground">
-                      Más de 25.256 fotos profesionales con inteligencia artificial creadas... y contando.
+                      {t("home.testimonialsSubtitle")}
                     </p>
                   </div>
 
