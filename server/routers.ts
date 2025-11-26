@@ -1,4 +1,4 @@
-import { COOKIE_NAME } from "../shared/const.js";
+import { COOKIE_NAME, PRODUCTION_DOMAIN } from "../shared/const.js";
 import { desc, eq, and, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { creditPacks, models, photos, transactions, users, modelTrainingImages, photoGenerationBatches, photoGenerationQueue, page2GenerationBatches, page2GenerationQueue, bugReports, featureSuggestions } from "../drizzle/schema.js";
@@ -1275,17 +1275,17 @@ export const appRouter = router({
 
         console.log(`[Photo Generate] ✅ Enqueued ${jobs.length} job(s) for batch ${batchId}`);
 
-        // Call API directly for each job (don't await - process in background)
-        // Determine API URL: use env var, or construct from current request, or default to localhost
-        let apiUrl = process.env.PHOTO_API_URL;
-        if (!apiUrl) {
-          if (process.env.VERCEL_URL) {
-            // Production: use Vercel URL
-            apiUrl = `https://${process.env.VERCEL_URL}/api/photo-generation`;
-          } else {
-            // Development: use localhost
-            apiUrl = `http://localhost:${process.env.PORT || 3000}/api/photo-generation`;
-          }
+        // Call API directly for each job
+        // Determine API URL: use production domain in production, otherwise localhost
+        let apiUrl: string;
+        if (process.env.VERCEL === "1" || process.env.NODE_ENV === "production") {
+          // In production, use the production domain from constants
+          apiUrl = `https://${PRODUCTION_DOMAIN}/api/photo-generation`;
+        } else if (process.env.PHOTO_API_URL) {
+          apiUrl = process.env.PHOTO_API_URL;
+        } else {
+          // Development: use localhost
+          apiUrl = `http://localhost:${process.env.PORT || 3000}/api/photo-generation`;
         }
         
         console.log(`[Photo Generate] 🚀 Triggering API processing at ${apiUrl}...`);
@@ -1577,11 +1577,9 @@ export const appRouter = router({
             // Trigger API processing - use production domain or VERCEL_URL
             // In Vercel, we need to use the actual production domain, not the deployment URL
             let apiUrl: string;
-            if (process.env.PRODUCTION_DOMAIN) {
-              apiUrl = `https://${process.env.PRODUCTION_DOMAIN}/api/photo-generation-page2`;
-            } else if (process.env.VERCEL_URL && !process.env.VERCEL_URL.includes('localhost')) {
-              // Use VERCEL_URL for deployment URLs (not localhost)
-              apiUrl = `https://${process.env.VERCEL_URL}/api/photo-generation-page2`;
+            if (process.env.VERCEL === "1" || process.env.NODE_ENV === "production") {
+              // In production, use the production domain from constants
+              apiUrl = `https://${PRODUCTION_DOMAIN}/api/photo-generation-page2`;
             } else if (process.env.PHOTO_API_URL) {
               apiUrl = process.env.PHOTO_API_URL;
             } else {
@@ -1655,10 +1653,9 @@ export const appRouter = router({
             
             // Trigger API processing - use production domain or VERCEL_URL
             let apiUrl: string;
-            if (process.env.PRODUCTION_DOMAIN) {
-              apiUrl = `https://${process.env.PRODUCTION_DOMAIN}/api/photo-generation-page2`;
-            } else if (process.env.VERCEL_URL && !process.env.VERCEL_URL.includes('localhost')) {
-              apiUrl = `https://${process.env.VERCEL_URL}/api/photo-generation-page2`;
+            if (process.env.VERCEL === "1" || process.env.NODE_ENV === "production") {
+              // In production, use the production domain from constants
+              apiUrl = `https://${PRODUCTION_DOMAIN}/api/photo-generation-page2`;
             } else if (process.env.PHOTO_API_URL) {
               apiUrl = process.env.PHOTO_API_URL;
             } else {
