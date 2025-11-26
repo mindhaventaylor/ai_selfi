@@ -1,7 +1,7 @@
 import { useTranslation } from "@/hooks/useTranslation";
 
 export default function Privacy() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const section1Items = t("privacy.section1.items", { returnObjects: true }) as string[];
   const section2Items = t("privacy.section2.items", { returnObjects: true }) as string[];
   const section4Items = t("privacy.section4.items", { returnObjects: true }) as string[];
@@ -97,7 +97,20 @@ export default function Privacy() {
           </section>
 
           <p className="text-sm text-muted-foreground mt-12">
-            {t("privacy.lastUpdated")} {new Date().toLocaleDateString()}
+            {t("privacy.lastUpdated")} {(() => {
+              const localeMap: Record<string, string> = {
+                "en": "en-US",
+                "es": "es-ES",
+                "pt-BR": "pt-BR",
+                "it": "it-IT",
+              };
+              const locale = localeMap[i18n.language] || i18n.language;
+              return new Date().toLocaleDateString(locale, {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              });
+            })()}
           </p>
         </div>
       </div>

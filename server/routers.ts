@@ -1290,26 +1290,27 @@ export const appRouter = router({
         
         console.log(`[Photo Generate] 🚀 Triggering API processing at ${apiUrl}...`);
         
+        // In production (Vercel), we need to await the API calls to ensure they complete
+        // In serverless environments, background tasks are killed when the function returns
         for (const job of insertedJobs) {
-          // Call API asynchronously (don't block the response)
-          fetch(apiUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(job),
-          })
-            .then((response) => {
-              if (!response.ok) {
-                console.error(`[Photo Generate] API error for job ${job.id}: ${response.status}`);
-              } else {
-                console.log(`[Photo Generate] ✅ API processing started for job ${job.id}`);
-              }
-            })
-            .catch((error) => {
-              console.error(`[Photo Generate] Failed to trigger API for job ${job.id}:`, error);
+          try {
+            const response = await fetch(apiUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(job),
             });
+            
+            if (!response.ok) {
+              console.error(`[Photo Generate] API error for job ${job.id}: ${response.status}`);
+            } else {
+              console.log(`[Photo Generate] ✅ API processing completed for job ${job.id}`);
+            }
+          } catch (error) {
+            console.error(`[Photo Generate] Failed to trigger API for job ${job.id}:`, error);
+          }
         }
         
-        console.log(`[Photo Generate] 🚀 Triggered API processing for ${insertedJobs.length} job(s)`);
+        console.log(`[Photo Generate] ✅ Completed API processing for ${insertedJobs.length} job(s)`);
 
         return { 
           success: true, 
@@ -1573,37 +1574,47 @@ export const appRouter = router({
           if (queueJobId) {
             console.log(`[Photo Generate Page2] ✅ Created queue job ${queueJobId}`);
             
-            // Trigger API processing asynchronously (use new page2 API)
+            // Trigger API processing (use new page2 API)
             const apiUrl = process.env.VERCEL_URL 
               ? `https://${process.env.VERCEL_URL}/api/photo-generation-page2`
               : process.env.PHOTO_API_URL || "http://localhost:3000/api/photo-generation-page2";
             
             console.log(`[Photo Generate Page2] 🚀 Triggering API processing for job ${queueJobId}`);
             
-            // Call API asynchronously (don't wait for response)
-            fetch(apiUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                id: queueJobId,
-                batchId: batchId,
-                userId: ctx.user.id,
-                exampleImageId: input.exampleImageId,
-                exampleImageUrl: absoluteExampleUrl,
-                exampleImagePrompt: exampleImagePrompt,
-                trainingImageUrls: uploadedUrls,
-                basePrompt: basePrompt,
-                aspectRatio: input.aspectRatio,
-                numImagesPerExample: input.numImagesPerExample,
-                glasses: "no",
-                hairColor: input.formData.hairColor || null,
-                hairStyle: mapHairStyle(input.formData.hairStyle),
-                backgrounds: input.formData.backgrounds,
-                styles: input.formData.attire,
-              }),
-            }).catch((error) => {
+            // In production (Vercel), we need to await the API call to ensure it completes
+            // In serverless environments, background tasks are killed when the function returns
+            try {
+              const response = await fetch(apiUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  id: queueJobId,
+                  batchId: batchId,
+                  userId: ctx.user.id,
+                  exampleImageId: input.exampleImageId,
+                  exampleImageUrl: absoluteExampleUrl,
+                  exampleImagePrompt: exampleImagePrompt,
+                  trainingImageUrls: uploadedUrls,
+                  basePrompt: basePrompt,
+                  aspectRatio: input.aspectRatio,
+                  numImagesPerExample: input.numImagesPerExample,
+                  glasses: "no",
+                  hairColor: input.formData.hairColor || null,
+                  hairStyle: mapHairStyle(input.formData.hairStyle),
+                  backgrounds: input.formData.backgrounds,
+                  styles: input.formData.attire,
+                }),
+              });
+              
+              if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`[Photo Generate Page2] ❌ API error for job ${queueJobId}: ${response.status} ${errorText}`);
+              } else {
+                console.log(`[Photo Generate Page2] ✅ API processing completed for job ${queueJobId}`);
+              }
+            } catch (error) {
               console.error(`[Photo Generate Page2] ❌ API call error:`, error);
-            });
+            }
           }
         } else {
           // Use direct database connection
@@ -1631,37 +1642,47 @@ export const appRouter = router({
           if (queueJob?.id) {
             console.log(`[Photo Generate Page2] ✅ Created queue job ${queueJob.id}`);
             
-            // Trigger API processing asynchronously (use new page2 API)
+            // Trigger API processing (use new page2 API)
             const apiUrl = process.env.VERCEL_URL 
               ? `https://${process.env.VERCEL_URL}/api/photo-generation-page2`
               : process.env.PHOTO_API_URL || "http://localhost:3000/api/photo-generation-page2";
             
             console.log(`[Photo Generate Page2] 🚀 Triggering API processing for job ${queueJob.id}`);
             
-            // Call API asynchronously (don't wait for response)
-            fetch(apiUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                id: queueJob.id,
-                batchId: batchId,
-                userId: ctx.user.id,
-                exampleImageId: input.exampleImageId,
-                exampleImageUrl: absoluteExampleUrl,
-                exampleImagePrompt: exampleImagePrompt,
-                trainingImageUrls: uploadedUrls,
-                basePrompt: basePrompt,
-                aspectRatio: input.aspectRatio,
-                numImagesPerExample: input.numImagesPerExample,
-                glasses: "no",
-                hairColor: input.formData.hairColor || null,
-                hairStyle: mapHairStyle(input.formData.hairStyle),
-                backgrounds: input.formData.backgrounds,
-                styles: input.formData.attire,
-              }),
-            }).catch((error) => {
+            // In production (Vercel), we need to await the API call to ensure it completes
+            // In serverless environments, background tasks are killed when the function returns
+            try {
+              const response = await fetch(apiUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  id: queueJob.id,
+                  batchId: batchId,
+                  userId: ctx.user.id,
+                  exampleImageId: input.exampleImageId,
+                  exampleImageUrl: absoluteExampleUrl,
+                  exampleImagePrompt: exampleImagePrompt,
+                  trainingImageUrls: uploadedUrls,
+                  basePrompt: basePrompt,
+                  aspectRatio: input.aspectRatio,
+                  numImagesPerExample: input.numImagesPerExample,
+                  glasses: "no",
+                  hairColor: input.formData.hairColor || null,
+                  hairStyle: mapHairStyle(input.formData.hairStyle),
+                  backgrounds: input.formData.backgrounds,
+                  styles: input.formData.attire,
+                }),
+              });
+              
+              if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`[Photo Generate Page2] ❌ API error for job ${queueJob.id}: ${response.status} ${errorText}`);
+              } else {
+                console.log(`[Photo Generate Page2] ✅ API processing completed for job ${queueJob.id}`);
+              }
+            } catch (error) {
               console.error(`[Photo Generate Page2] ❌ API call error:`, error);
-            });
+            }
           }
         }
 

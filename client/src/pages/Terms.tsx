@@ -1,7 +1,7 @@
 import { useTranslation } from "@/hooks/useTranslation";
 
 export default function Terms() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const section3Items = t("terms.section3.items", { returnObjects: true }) as string[];
   const section5Items = t("terms.section5.items", { returnObjects: true }) as string[];
 
@@ -78,7 +78,20 @@ export default function Terms() {
           </section>
 
           <p className="text-sm text-muted-foreground mt-12">
-            {t("terms.lastUpdated")} {new Date().toLocaleDateString()}
+            {t("terms.lastUpdated")} {(() => {
+              const localeMap: Record<string, string> = {
+                "en": "en-US",
+                "es": "es-ES",
+                "pt-BR": "pt-BR",
+                "it": "it-IT",
+              };
+              const locale = localeMap[i18n.language] || i18n.language;
+              return new Date().toLocaleDateString(locale, {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              });
+            })()}
           </p>
         </div>
       </div>

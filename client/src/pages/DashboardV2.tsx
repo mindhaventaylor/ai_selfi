@@ -1089,7 +1089,7 @@ function UploadStep({
         }
       } else {
         console.error("[DashboardV2] No batchId in result:", result);
-        throw new Error("Failed to start generation: No batchId returned");
+        throw new Error(t("generateImages.failedToStartGeneration"));
       }
     } catch (error: any) {
       toast.error(t("dashboardV2.generationError"), {

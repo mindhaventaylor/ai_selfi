@@ -623,7 +623,7 @@ export default function GenerateImages() {
         setCurrentBatchId(result.batchId);
         console.log("[GenerateImages] Generation started, batch ID:", result.batchId);
       } else {
-        throw new Error("No batch ID returned");
+        throw new Error(t("generateImages.failedToStartGeneration"));
       }
 
       // Clear page2 data after successful start

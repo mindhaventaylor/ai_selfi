@@ -21,23 +21,17 @@ export default function Login() {
   const { user, loading, signIn } = useAuth();
   const [, setLocation] = useLocation();
   const [isSigningIn, setIsSigningIn] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
 
   // Get testimonials early so they're available for useEffect
   const testimonials = t("login.testimonials", { returnObjects: true }) as Array<{ text: string; author: string; stars: number }>;
 
-  // Se já estiver autenticado, redirecionar para dashboard
+  // Redirect to dashboard if already authenticated
   useEffect(() => {
-    // Only check auth after initial render to avoid blocking
-    const timer = setTimeout(() => {
-      setIsCheckingAuth(false);
-      if (!loading && user) {
-        setLocation("/dashboard");
-      }
-    }, 100);
-    return () => clearTimeout(timer);
+    if (!loading && user) {
+      setLocation("/dashboard");
+    }
   }, [user, loading, setLocation]);
 
   // Sync image and testimonial rotation - rotate together every 6 seconds
@@ -62,17 +56,8 @@ export default function Login() {
     }
   };
 
-  // Show loading only if we're actively checking auth and it's loading
-  if (isCheckingAuth && loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">{t("login.loading")}</p>
-        </div>
-      </div>
-    );
-  }
+  // No loading state needed - show login form immediately
+  // The auth check happens in the background and redirects if already logged in
 
   const currentTestimonial = testimonials && testimonials.length > 0 ? testimonials[currentTestimonialIndex] : null;
 
