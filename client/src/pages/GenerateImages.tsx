@@ -415,24 +415,27 @@ export default function GenerateImages() {
         // Update completed images count
         setCompletedImages(actualPhotosCount);
         
-        // Calculate progress with smoother animation
-        // Start at 10% when generation begins, go up to 100% as images are generated
+        // Calculate progress based on actual images completed
+        // Progress = (completed images / total images) * 100
+        // Use a smooth calculation that increments as each image is created
         let progress = 0;
         if (actualPhotosCount === 0) {
-          // Just started - show 10% to indicate processing has begun
-          progress = 10;
+          // Just started - show 2% to indicate processing has begun
+          progress = 2;
         } else if (actualPhotosCount >= expectedTotal) {
-          // All images generated, but batch not yet marked as completed
+          // All images generated - show 100%
           progress = 100;
         } else {
-          // Calculate progress: 10% + (actualPhotosCount / expectedTotal) * 90%
-          // This gives us 10% to 100% range with smooth increments
-          progress = 10 + (actualPhotosCount / expectedTotal) * 90;
+          // Calculate progress: each completed image adds (98 / expectedTotal)%
+          // This gives us 2% to 100% range (2% start + 98% for images)
+          // Example: 4 images = 2% + (1/4 * 98%) = 26.5% for first image
+          const imageProgress = (actualPhotosCount / expectedTotal) * 98;
+          progress = 2 + imageProgress;
         }
         
         // Smooth progress update - only update if it's higher than current to avoid going backwards
         setGenerationProgress((prev) => {
-          const newProgress = Math.min(100, Math.max(10, progress));
+          const newProgress = Math.min(100, Math.max(0, Math.round(progress)));
           // Only update if new progress is higher (smooth upward animation)
           return newProgress > prev ? newProgress : prev;
         });
