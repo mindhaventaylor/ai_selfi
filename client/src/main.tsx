@@ -78,25 +78,72 @@ if (!rootElement) {
     </div>
   `;
 } else {
+  // Add a timeout to detect if the app is stuck loading
+  const loadingTimeout = setTimeout(() => {
+    console.warn("[Main] App seems stuck - checking for errors...");
+    // Check if root is still empty after 5 seconds
+    if (rootElement.children.length === 0) {
+      console.error("[Main] App failed to render after 5 seconds - likely cached bundle issue");
+      rootElement.innerHTML = `
+        <div style="padding: 20px; font-family: sans-serif; text-align: center;">
+          <h1>Loading Issue Detected</h1>
+          <p>The app seems to be stuck loading. This might be due to cached files.</p>
+          <p style="margin-top: 20px;">
+            <button onclick="window.location.reload(true)" style="padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px;">
+              Hard Reload (Clear Cache)
+            </button>
+          </p>
+          <p style="margin-top: 10px; font-size: 12px; color: #666;">
+            Or try: Ctrl+Shift+R (Windows/Linux) or Cmd+Shift+R (Mac)
+          </p>
+        </div>
+      `;
+    }
+  }, 5000);
+
   try {
     createRoot(rootElement).render(
-  <trpc.Provider client={trpcClient} queryClient={queryClient}>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </trpc.Provider>
-);
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
+      </trpc.Provider>
+    );
+    
+    // Clear timeout if app renders successfully
+    clearTimeout(loadingTimeout);
+    console.log("[Main] App rendered successfully");
   } catch (error: any) {
+    clearTimeout(loadingTimeout);
     console.error("[Main] Failed to render React app:", error);
+    console.error("[Main] Error stack:", error?.stack);
     rootElement.innerHTML = `
-      <div style="padding: 20px; font-family: sans-serif;">
+      <div style="padding: 20px; font-family: sans-serif; text-align: center;">
         <h1>Application Error</h1>
         <p>The application failed to start.</p>
-        <p>Error: ${error?.message || "Unknown error"}</p>
-        <button onclick="window.location.reload()" style="padding: 10px 20px; margin-top: 10px; cursor: pointer;">
-          Reload Page
-        </button>
+        <p style="color: red; margin: 20px 0;">Error: ${error?.message || "Unknown error"}</p>
+        <div style="margin-top: 20px;">
+          <button onclick="window.location.reload(true)" style="padding: 10px 20px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px;">
+            Hard Reload (Clear Cache)
+          </button>
+          <button onclick="localStorage.clear(); sessionStorage.clear(); window.location.reload(true)" style="padding: 10px 20px; margin: 5px; cursor: pointer; background: #dc3545; color: white; border: none; border-radius: 4px;">
+            Clear All Data & Reload
+          </button>
+        </div>
+        <p style="margin-top: 20px; font-size: 12px; color: #666;">
+          If the problem persists, try opening the site in an incognito/private window.
+        </p>
       </div>
     `;
   }
 }
+
+// Global error handler to catch unhandled errors
+window.addEventListener('error', (event) => {
+  console.error("[Main] Global error caught:", event.error);
+  console.error("[Main] Error source:", event.filename, "line", event.lineno);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error("[Main] Unhandled promise rejection:", event.reason);
+});

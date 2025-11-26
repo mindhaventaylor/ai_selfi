@@ -29,9 +29,9 @@ export default function Login() {
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
-    if (!loading && user) {
-      setLocation("/dashboard");
-    }
+      if (!loading && user) {
+        setLocation("/dashboard");
+      }
   }, [user, loading, setLocation]);
 
   // Sync image and testimonial rotation - rotate together every 6 seconds

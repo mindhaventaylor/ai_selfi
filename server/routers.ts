@@ -1295,18 +1295,18 @@ export const appRouter = router({
         for (const job of insertedJobs) {
           try {
             const response = await fetch(apiUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(job),
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(job),
             });
             
-            if (!response.ok) {
-              console.error(`[Photo Generate] API error for job ${job.id}: ${response.status}`);
-            } else {
+              if (!response.ok) {
+                console.error(`[Photo Generate] API error for job ${job.id}: ${response.status}`);
+              } else {
               console.log(`[Photo Generate] ✅ API processing completed for job ${job.id}`);
-            }
+              }
           } catch (error) {
-            console.error(`[Photo Generate] Failed to trigger API for job ${job.id}:`, error);
+              console.error(`[Photo Generate] Failed to trigger API for job ${job.id}:`, error);
           }
         }
         
@@ -1585,25 +1585,25 @@ export const appRouter = router({
             // In serverless environments, background tasks are killed when the function returns
             try {
               const response = await fetch(apiUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  id: queueJobId,
-                  batchId: batchId,
-                  userId: ctx.user.id,
-                  exampleImageId: input.exampleImageId,
-                  exampleImageUrl: absoluteExampleUrl,
-                  exampleImagePrompt: exampleImagePrompt,
-                  trainingImageUrls: uploadedUrls,
-                  basePrompt: basePrompt,
-                  aspectRatio: input.aspectRatio,
-                  numImagesPerExample: input.numImagesPerExample,
-                  glasses: "no",
-                  hairColor: input.formData.hairColor || null,
-                  hairStyle: mapHairStyle(input.formData.hairStyle),
-                  backgrounds: input.formData.backgrounds,
-                  styles: input.formData.attire,
-                }),
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                id: queueJobId,
+                batchId: batchId,
+                userId: ctx.user.id,
+                exampleImageId: input.exampleImageId,
+                exampleImageUrl: absoluteExampleUrl,
+                exampleImagePrompt: exampleImagePrompt,
+                trainingImageUrls: uploadedUrls,
+                basePrompt: basePrompt,
+                aspectRatio: input.aspectRatio,
+                numImagesPerExample: input.numImagesPerExample,
+                glasses: "no",
+                hairColor: input.formData.hairColor || null,
+                hairStyle: mapHairStyle(input.formData.hairStyle),
+                backgrounds: input.formData.backgrounds,
+                styles: input.formData.attire,
+              }),
               });
               
               if (!response.ok) {
@@ -1653,25 +1653,25 @@ export const appRouter = router({
             // In serverless environments, background tasks are killed when the function returns
             try {
               const response = await fetch(apiUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  id: queueJob.id,
-                  batchId: batchId,
-                  userId: ctx.user.id,
-                  exampleImageId: input.exampleImageId,
-                  exampleImageUrl: absoluteExampleUrl,
-                  exampleImagePrompt: exampleImagePrompt,
-                  trainingImageUrls: uploadedUrls,
-                  basePrompt: basePrompt,
-                  aspectRatio: input.aspectRatio,
-                  numImagesPerExample: input.numImagesPerExample,
-                  glasses: "no",
-                  hairColor: input.formData.hairColor || null,
-                  hairStyle: mapHairStyle(input.formData.hairStyle),
-                  backgrounds: input.formData.backgrounds,
-                  styles: input.formData.attire,
-                }),
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                id: queueJob.id,
+                batchId: batchId,
+                userId: ctx.user.id,
+                exampleImageId: input.exampleImageId,
+                exampleImageUrl: absoluteExampleUrl,
+                exampleImagePrompt: exampleImagePrompt,
+                trainingImageUrls: uploadedUrls,
+                basePrompt: basePrompt,
+                aspectRatio: input.aspectRatio,
+                numImagesPerExample: input.numImagesPerExample,
+                glasses: "no",
+                hairColor: input.formData.hairColor || null,
+                hairStyle: mapHairStyle(input.formData.hairStyle),
+                backgrounds: input.formData.backgrounds,
+                styles: input.formData.attire,
+              }),
               });
               
               if (!response.ok) {
