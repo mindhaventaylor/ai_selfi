@@ -10,7 +10,7 @@ const SERVICE_NAME = "local-photo-webhook";
 const supabaseUrl = process.env.SUPABASE_URL ?? "";
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 const geminiApiKey = process.env.GEMINI_API_KEY ?? "";
-const geminiModel = process.env.GEMINI_MODEL_NAME ?? "gemini-2.5-flash-image";
+const geminiModel = process.env.GEMINI_MODEL_NAME ?? "gemini-3.0-pro";
 
 if (!supabaseUrl || !supabaseServiceKey || !geminiApiKey) {
   throw new Error(

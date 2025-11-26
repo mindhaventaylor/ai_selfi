@@ -11,8 +11,8 @@ const __dirname = path.dirname(__filename);
 const supabaseUrl = process.env.SUPABASE_URL ?? "";
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 const geminiApiKey = process.env.GEMINI_API_KEY ?? "";
-// Available models: gemini-2.5-flash-image (default), gemini-3.0-pro (Nano Banana Pro), gemini-3-pro
-const geminiModel = process.env.GEMINI_MODEL_NAME ?? "gemini-2.5-flash-image";
+// Available models: gemini-3.0-pro (Nano Banana Pro - default), gemini-3-pro, gemini-2.5-flash-image
+const geminiModel = process.env.GEMINI_MODEL_NAME ?? "gemini-3.0-pro";
 const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`;
 
 // Log warnings instead of throwing to prevent app crashes during build/startup
