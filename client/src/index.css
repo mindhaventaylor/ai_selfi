@@ -188,6 +188,17 @@
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes glow-light {
   0%, 100% {
     box-shadow: 0 0 10px rgba(217, 70, 239, 0.3);

@@ -415,28 +415,48 @@ export default function GenerateImages() {
         // Update completed images count
         setCompletedImages(actualPhotosCount);
         
-        // Calculate progress: start at 5% when generation begins, go up to 95% as images are generated
-        // This gives a smoother progress experience
+        // Calculate progress with smoother animation
+        // Start at 10% when generation begins, go up to 100% as images are generated
         let progress = 0;
         if (actualPhotosCount === 0) {
-          // Just started - show 5% to indicate processing has begun
-          progress = 5;
+          // Just started - show 10% to indicate processing has begun
+          progress = 10;
         } else if (actualPhotosCount >= expectedTotal) {
           // All images generated, but batch not yet marked as completed
-          progress = 95;
+          progress = 100;
         } else {
-          // Calculate progress: 5% + (actualPhotosCount / expectedTotal) * 90%
-          // This gives us 5% to 95% range
-          progress = 5 + (actualPhotosCount / expectedTotal) * 90;
+          // Calculate progress: 10% + (actualPhotosCount / expectedTotal) * 90%
+          // This gives us 10% to 100% range with smooth increments
+          progress = 10 + (actualPhotosCount / expectedTotal) * 90;
         }
         
-        setGenerationProgress(Math.min(95, Math.max(5, progress)));
+        // Smooth progress update - only update if it's higher than current to avoid going backwards
+        setGenerationProgress((prev) => {
+          const newProgress = Math.min(100, Math.max(10, progress));
+          // Only update if new progress is higher (smooth upward animation)
+          return newProgress > prev ? newProgress : prev;
+        });
         
-        // Update generated images list - filter out photos without URLs
+        // Update generated images list immediately as they're created - show one by one
+        // Filter out photos without URLs and only add new ones
         const newImages = photos
           .filter((p: { id: number; url: string; status: string }) => p.url) // Only include photos with URLs
           .map((p: { id: number; url: string; status: string }) => ({ id: p.id, url: p.url, status: p.status }));
-        setGeneratedImages(newImages);
+        
+        // Only update if we have new images (avoid unnecessary re-renders)
+        setGeneratedImages((prevImages) => {
+          // If we have more images than before, update
+          if (newImages.length > prevImages.length) {
+            return newImages;
+          }
+          // If same count but different IDs, update (in case of replacement)
+          const prevIds = new Set(prevImages.map(img => img.id));
+          const newIds = new Set(newImages.map(img => img.id));
+          if (prevIds.size !== newIds.size || Array.from(prevIds).some(id => !newIds.has(id))) {
+            return newImages;
+          }
+          return prevImages;
+        });
         
         console.log("[GenerateImages] Updated generated images:", {
           isPage2Variant,
@@ -1217,17 +1237,22 @@ export default function GenerateImages() {
           {/* Images Grid - Scrollable */}
           <div className="px-6 pb-6 flex-1 overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
-              {/* Show generated images */}
+              {/* Show generated images - appear one by one with smooth animation */}
               {generatedImages.map((image, index) => (
                 <div
                   key={`generated-${image.id || index}`}
                   className="relative group aspect-square rounded-lg overflow-hidden border-2 border-border hover:border-primary transition-all cursor-pointer"
+                  style={{ 
+                    animation: `fadeIn 0.5s ease-out forwards`,
+                    animationDelay: `${index * 150}ms`,
+                    opacity: 0
+                  }}
                   onClick={() => handleDownloadImage(image, index)}
                 >
                   <img
                     src={image.url}
                     alt={t("generateImages.generatedImageAlt", { number: index + 1 })}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-opacity duration-300"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = `https://picsum.photos/400/400?random=${index}`;
