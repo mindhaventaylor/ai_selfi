@@ -53,17 +53,17 @@ export default function DashboardV2() {
   });
 
   const steps: { key: Step; number: number; title: string }[] = [
-    { key: "welcome", number: 0, title: t("dashboardV2.welcome") || "Welcome" },
-    { key: "gender", number: 1, title: t("dashboardV2.gender") || "Gender" },
-    { key: "age", number: 2, title: t("dashboardV2.age") || "Age" },
-    { key: "hairColor", number: 3, title: t("dashboardV2.hairColor") || "Hair Color" },
-    { key: "hairLength", number: 4, title: t("dashboardV2.hairLength") || "Hair Length" },
-    { key: "hairStyle", number: 5, title: t("dashboardV2.hairStyle") || "Hair Style" },
-    { key: "ethnicity", number: 6, title: t("dashboardV2.ethnicity") || "Ethnicity" },
-    { key: "bodyType", number: 7, title: t("dashboardV2.bodyType") || "Body Type" },
-    { key: "attire", number: 8, title: t("dashboardV2.attire") || "Attire" },
-    { key: "background", number: 9, title: t("dashboardV2.background") || "Background" },
-    { key: "upload", number: 10, title: t("dashboardV2.upload") || "Upload Photos" },
+    { key: "welcome", number: 0, title: t("dashboardV2.welcome") },
+    { key: "gender", number: 1, title: t("dashboardV2.gender") },
+    { key: "age", number: 2, title: t("dashboardV2.age") },
+    { key: "hairColor", number: 3, title: t("dashboardV2.hairColor") },
+    { key: "hairLength", number: 4, title: t("dashboardV2.hairLength") },
+    { key: "hairStyle", number: 5, title: t("dashboardV2.hairStyle") },
+    { key: "ethnicity", number: 6, title: t("dashboardV2.ethnicity") },
+    { key: "bodyType", number: 7, title: t("dashboardV2.bodyType") },
+    { key: "attire", number: 8, title: t("dashboardV2.attire") },
+    { key: "background", number: 9, title: t("dashboardV2.background") },
+    { key: "upload", number: 10, title: t("dashboardV2.upload") },
   ];
 
   const currentStepIndex = steps.findIndex(s => s.key === currentStep);
@@ -134,7 +134,7 @@ export default function DashboardV2() {
             className="mb-6"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            {t("dashboardV2.back") || "Back"}
+            {t("dashboardV2.back")}
           </Button>
         )}
 
@@ -259,10 +259,10 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
   return (
     <div className="text-center space-y-6">
       <h1 className="text-4xl md:text-5xl font-bold">
-        {t("dashboardV2.welcomeTitle") || "Create professional AI portraits"}
+        {t("dashboardV2.welcomeTitle")}
       </h1>
       <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-        {t("dashboardV2.welcomeDescription") || "Transform your existing photos into realistic AI portrait photos for your resume, LinkedIn, and social media profiles."}
+        {t("dashboardV2.welcomeDescription")}
       </p>
       
       {/* Example Images Grid */}
@@ -284,7 +284,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
         onClick={onNext}
         className="mt-8 bg-primary hover:bg-primary/90 rounded-full px-8 py-6 text-lg"
       >
-        {t("dashboardV2.createHeadshots") || "Create headshots"}
+        {t("dashboardV2.createHeadshots")}
         <ArrowRight className="ml-2 h-5 w-5" />
       </Button>
     </div>
@@ -297,17 +297,17 @@ function GenderStep({ value, onChange, onNext }: { value: string; onChange: (val
   const { user } = useAuth();
 
   const options = [
-    { value: "man", label: t("dashboardV2.male") || "Male", icon: "♂" },
-    { value: "woman", label: t("dashboardV2.female") || "Female", icon: "♀" },
-    { value: "non-binary", label: t("dashboardV2.nonBinary") || "Non-binary", icon: "⚧" },
+    { value: "man", label: t("dashboardV2.male"), icon: "♂" },
+    { value: "woman", label: t("dashboardV2.female"), icon: "♀" },
+    { value: "non-binary", label: t("dashboardV2.nonBinary"), icon: "⚧" },
   ];
 
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourGender") || "What is your gender?"}</h2>
+        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourGender")}</h2>
         <p className="text-muted-foreground">
-          {t("dashboardV2.genderDescription") || `We'd love to learn more about you, ${user?.name || "there"}! Help us generate perfect photos that reflect who you are.`}
+          {t("dashboardV2.genderDescription", { name: user?.name ? `, ${user.name}` : "" })}
         </p>
       </div>
 
@@ -345,7 +345,7 @@ function GenderStep({ value, onChange, onNext }: { value: string; onChange: (val
         disabled={!value}
         className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
       >
-        {t("dashboardV2.continue") || "Continue"}
+        {t("dashboardV2.continue")}
       </Button>
     </div>
   );
@@ -360,9 +360,9 @@ function AgeStep({ value, onChange, onNext }: { value: string; onChange: (value:
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.howOldAreYou") || "How old are you?"}</h2>
+        <h2 className="text-3xl font-bold">{t("dashboardV2.howOldAreYou")}</h2>
         <p className="text-muted-foreground">
-          {t("dashboardV2.ageDescription") || "We'd love to learn more about you! Help us generate perfect photos that reflect who you are."}
+          {t("dashboardV2.ageDescription")}
         </p>
       </div>
 
@@ -395,7 +395,7 @@ function AgeStep({ value, onChange, onNext }: { value: string; onChange: (value:
         disabled={!value}
         className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
       >
-        {t("dashboardV2.continue") || "Continue"}
+        {t("dashboardV2.continue")}
       </Button>
     </div>
   );
@@ -406,23 +406,23 @@ function HairColorStep({ value, onChange, onNext }: { value: string; onChange: (
   const { t } = useTranslation();
 
   const colors = [
-    { value: "brown", label: t("dashboardV2.brown") || "Brown", color: "bg-amber-800" },
-    { value: "black", label: t("dashboardV2.black") || "Black", color: "bg-black" },
-    { value: "blonde", label: t("dashboardV2.blonde") || "Blonde", color: "bg-yellow-300" },
-    { value: "gray", label: t("dashboardV2.gray") || "Gray", color: "bg-gray-400" },
-    { value: "auburn", label: t("dashboardV2.auburn") || "Auburn", color: "bg-red-800" },
-    { value: "red", label: t("dashboardV2.red") || "Red", color: "bg-red-500" },
-    { value: "white", label: t("dashboardV2.white") || "White", color: "bg-white border" },
-    { value: "other", label: t("dashboardV2.other") || "Other", color: "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500" },
-    { value: "bald", label: t("dashboardV2.bald") || "Bald", color: "bg-gray-200" },
+    { value: "brown", label: t("dashboardV2.brown"), color: "bg-amber-800" },
+    { value: "black", label: t("dashboardV2.black"), color: "bg-black" },
+    { value: "blonde", label: t("dashboardV2.blonde"), color: "bg-yellow-300" },
+    { value: "gray", label: t("dashboardV2.gray"), color: "bg-gray-400" },
+    { value: "auburn", label: t("dashboardV2.auburn"), color: "bg-red-800" },
+    { value: "red", label: t("dashboardV2.red"), color: "bg-red-500" },
+    { value: "white", label: t("dashboardV2.white"), color: "bg-white border" },
+    { value: "other", label: t("dashboardV2.other"), color: "bg-gradient-to-r from-purple-500 via-pink-500 to-red-500" },
+    { value: "bald", label: t("dashboardV2.bald"), color: "bg-gray-200" },
   ];
 
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourHairColor") || "What is your hair color?"}</h2>
+        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourHairColor")}</h2>
         <p className="text-muted-foreground">
-          {t("dashboardV2.hairColorDescription") || "Help us generate photos that truly represent you. If your hair color doesn't match any option exactly, choose the closest match."}
+          {t("dashboardV2.hairColorDescription")}
         </p>
       </div>
 
@@ -454,7 +454,7 @@ function HairColorStep({ value, onChange, onNext }: { value: string; onChange: (
         disabled={!value}
         className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
       >
-        {t("dashboardV2.continue") || "Continue"}
+        {t("dashboardV2.continue")}
       </Button>
     </div>
   );
@@ -465,19 +465,19 @@ function HairLengthStep({ value, onChange, onNext }: { value: string; onChange: 
   const { t } = useTranslation();
 
   const lengths = [
-    { value: "bald", label: t("dashboardV2.bald") || "Bald" },
-    { value: "buzz", label: t("dashboardV2.buzzCut") || "Buzz cut" },
-    { value: "short", label: t("dashboardV2.short") || "Short" },
-    { value: "medium", label: t("dashboardV2.mediumLength") || "Medium length" },
-    { value: "long", label: t("dashboardV2.long") || "Long" },
+    { value: "bald", label: t("dashboardV2.bald") },
+    { value: "buzz", label: t("dashboardV2.buzzCut") },
+    { value: "short", label: t("dashboardV2.short") },
+    { value: "medium", label: t("dashboardV2.mediumLength") },
+    { value: "long", label: t("dashboardV2.long") },
   ];
 
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourHairLength") || "What is the length of your hair?"}</h2>
+        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourHairLength")}</h2>
         <p className="text-muted-foreground">
-          {t("dashboardV2.hairLengthDescription") || "Help us generate photos that truly represent you. If your hair length falls between options, choose the closest match."}
+          {t("dashboardV2.hairLengthDescription")}
         </p>
       </div>
 
@@ -508,7 +508,7 @@ function HairLengthStep({ value, onChange, onNext }: { value: string; onChange: 
         disabled={!value}
         className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
       >
-        {t("dashboardV2.continue") || "Continue"}
+        {t("dashboardV2.continue")}
       </Button>
     </div>
   );
@@ -519,10 +519,10 @@ function HairStyleStep({ value, onChange, onNext, formData }: { value: string; o
   const { t } = useTranslation();
 
   const styles = [
-    { value: "straight", label: t("dashboardV2.straight") || "Straight" },
-    { value: "wavy", label: t("dashboardV2.wavy") || "Wavy" },
-    { value: "curly", label: t("dashboardV2.curly") || "Curly" },
-    { value: "dreadlocks", label: t("dashboardV2.dreadlocks") || "Dreadlocks" },
+    { value: "straight", label: t("dashboardV2.straight") },
+    { value: "wavy", label: t("dashboardV2.wavy") },
+    { value: "curly", label: t("dashboardV2.curly") },
+    { value: "dreadlocks", label: t("dashboardV2.dreadlocks") },
   ];
 
   // Filter example images based on selected gender, attire (styles), and backgrounds
@@ -535,9 +535,9 @@ function HairStyleStep({ value, onChange, onNext, formData }: { value: string; o
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourHairType") || "What is your hair type?"}</h2>
+        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourHairType")}</h2>
         <p className="text-muted-foreground">
-          {t("dashboardV2.hairTypeDescription") || "Help us generate photos that truly represent you. If your hair type falls between options, choose the closest match."}
+          {t("dashboardV2.hairTypeDescription")}
         </p>
       </div>
 
@@ -585,7 +585,7 @@ function HairStyleStep({ value, onChange, onNext, formData }: { value: string; o
         disabled={!value}
         className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
       >
-        {t("dashboardV2.continue") || "Continue"}
+        {t("dashboardV2.continue")}
       </Button>
     </div>
   );
@@ -596,16 +596,16 @@ function EthnicityStep({ value, onChange, onNext, formData }: { value: string; o
   const { t } = useTranslation();
 
   const ethnicities = [
-    { value: "white", label: t("dashboardV2.whiteCaucasian") || "White / Caucasian" },
-    { value: "black", label: t("dashboardV2.blackAfrican") || "Black / African descendant" },
-    { value: "hispanic", label: t("dashboardV2.hispanicLatino") || "Hispanic, Latino, of Spanish origin" },
-    { value: "asian-east", label: t("dashboardV2.asianEast") || "Central or East Asia" },
-    { value: "asian-south", label: t("dashboardV2.asianSouth") || "South Asian (Indian, Pakistani, Bangladeshi, etc.)" },
-    { value: "asian-southeast", label: t("dashboardV2.asianSoutheast") || "Southeast Asian (Vietnamese, Cambodian, etc.)" },
-    { value: "middle-eastern", label: t("dashboardV2.middleEastern") || "Middle East, North Africa or Arab" },
-    { value: "pacific-islander", label: t("dashboardV2.pacificIslander") || "Native Hawaiian or other Pacific Islander" },
-    { value: "multiracial", label: t("dashboardV2.multiracial") || "Multiracial" },
-    { value: "other", label: t("dashboardV2.other") || "Other" },
+    { value: "white", label: t("dashboardV2.whiteCaucasian") },
+    { value: "black", label: t("dashboardV2.blackAfrican") },
+    { value: "hispanic", label: t("dashboardV2.hispanicLatino") },
+    { value: "asian-east", label: t("dashboardV2.asianEast") },
+    { value: "asian-south", label: t("dashboardV2.asianSouth") },
+    { value: "asian-southeast", label: t("dashboardV2.asianSoutheast") },
+    { value: "middle-eastern", label: t("dashboardV2.middleEastern") },
+    { value: "pacific-islander", label: t("dashboardV2.pacificIslander") },
+    { value: "multiracial", label: t("dashboardV2.multiracial") },
+    { value: "other", label: t("dashboardV2.other") },
   ];
 
   // Filter example images based on selected gender, attire (styles), and backgrounds
@@ -618,9 +618,9 @@ function EthnicityStep({ value, onChange, onNext, formData }: { value: string; o
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourEthnicity") || "What is your ethnicity?"}</h2>
+        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourEthnicity")}</h2>
         <p className="text-muted-foreground">
-          {t("dashboardV2.ethnicityDescription") || "We'd love to learn more about you! Help us generate perfect photos that reflect who you are."}
+          {t("dashboardV2.ethnicityDescription")}
         </p>
       </div>
 
@@ -653,7 +653,7 @@ function EthnicityStep({ value, onChange, onNext, formData }: { value: string; o
         disabled={!value}
         className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
       >
-        {t("dashboardV2.continue") || "Continue"}
+        {t("dashboardV2.continue")}
       </Button>
     </div>
   );
@@ -664,20 +664,20 @@ function BodyTypeStep({ value, onChange, onNext }: { value: string; onChange: (v
   const { t } = useTranslation();
 
   const bodyTypes = [
-    { value: "slim", label: t("dashboardV2.slim") || "Slim" },
-    { value: "regular", label: t("dashboardV2.regular") || "Regular" },
-    { value: "athletic", label: t("dashboardV2.athletic") || "Athletic" },
-    { value: "medium-large", label: t("dashboardV2.mediumLarge") || "Medium large" },
-    { value: "large", label: t("dashboardV2.large") || "Large" },
-    { value: "plus", label: t("dashboardV2.plusSize") || "Plus size" },
+    { value: "slim", label: t("dashboardV2.slim") },
+    { value: "regular", label: t("dashboardV2.regular") },
+    { value: "athletic", label: t("dashboardV2.athletic") },
+    { value: "medium-large", label: t("dashboardV2.mediumLarge") },
+    { value: "large", label: t("dashboardV2.large") },
+    { value: "plus", label: t("dashboardV2.plusSize") },
   ];
 
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourBodyType") || "What is your body type?"}</h2>
+        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourBodyType")}</h2>
         <p className="text-muted-foreground">
-          {t("dashboardV2.bodyTypeDescription") || "Help us generate photos that truly represent you. If you're between body type options, choose the closest match."}
+          {t("dashboardV2.bodyTypeDescription")}
         </p>
       </div>
 
@@ -708,7 +708,7 @@ function BodyTypeStep({ value, onChange, onNext }: { value: string; onChange: (v
         disabled={!value}
         className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
       >
-        {t("dashboardV2.continue") || "Continue"}
+        {t("dashboardV2.continue")}
       </Button>
     </div>
   );
@@ -719,8 +719,8 @@ function AttireStep({ value, onChange, onNext, formData }: { value: string[]; on
   const { t } = useTranslation();
 
   const attires = [
-    { value: "professional", label: t("dashboardV2.professionalBusiness") || "Professional Business", description: t("dashboardV2.professionalBusinessDesc") || "Formal shirts and suits with matching ties" },
-    { value: "business-casual", label: t("dashboardV2.businessCasual") || "Business Casual", description: t("dashboardV2.businessCasualDesc") || "Blazers and jackets, long-sleeved shirts" },
+    { value: "professional", label: t("dashboardV2.professionalBusiness"), description: t("dashboardV2.professionalBusinessDesc") },
+    { value: "business-casual", label: t("dashboardV2.businessCasual"), description: t("dashboardV2.businessCasualDesc") },
   ];
 
   // Filter example images based on selected gender and backgrounds only
@@ -737,9 +737,9 @@ function AttireStep({ value, onChange, onNext, formData }: { value: string[]; on
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.selectYourAttire") || "Select your attire"}</h2>
+        <h2 className="text-3xl font-bold">{t("dashboardV2.selectYourAttire")}</h2>
         <p className="text-muted-foreground">
-          {t("dashboardV2.attireDescription") || "You will get an equal mix of results with the most popular attires."}
+          {t("dashboardV2.attireDescription")}
         </p>
       </div>
 
@@ -785,7 +785,7 @@ function AttireStep({ value, onChange, onNext, formData }: { value: string[]; on
 
       <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
         <p className="text-sm text-muted-foreground">
-          {t("dashboardV2.attireNote") || "You can change your selections with our AI editing tools, even after your photos are generated."}
+          {t("dashboardV2.attireNote")}
         </p>
       </div>
 
@@ -795,7 +795,7 @@ function AttireStep({ value, onChange, onNext, formData }: { value: string[]; on
         disabled={value.length === 0}
         className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
       >
-        {t("dashboardV2.continue") || "Continue"}
+        {t("dashboardV2.continue")}
       </Button>
     </div>
   );
@@ -806,10 +806,10 @@ function BackgroundStep({ value, onChange, onNext, formData }: { value: string[]
   const { t } = useTranslation();
 
   const backgrounds = [
-    { value: "city", label: t("dashboardV2.city") || "City", description: t("dashboardV2.cityDesc") || "Vibrant urban streets" },
-    { value: "nature", label: t("dashboardV2.nature") || "Nature", description: t("dashboardV2.natureDesc") || "Outdoor parks or tree-lined streets" },
-    { value: "office", label: t("dashboardV2.office") || "Office", description: t("dashboardV2.officeDesc") || "Bright and minimalist corporate office" },
-    { value: "studio", label: t("dashboardV2.studio") || "Studio", description: t("dashboardV2.studioDesc") || "Professional photography studio" },
+    { value: "city", label: t("dashboardV2.city"), description: t("dashboardV2.cityDesc") },
+    { value: "nature", label: t("dashboardV2.nature"), description: t("dashboardV2.natureDesc") },
+    { value: "office", label: t("dashboardV2.office"), description: t("dashboardV2.officeDesc") },
+    { value: "studio", label: t("dashboardV2.studio"), description: t("dashboardV2.studioDesc") },
   ];
 
   // Filter example images based on selected gender and attire (styles)
@@ -830,9 +830,9 @@ function BackgroundStep({ value, onChange, onNext, formData }: { value: string[]
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.selectYourBackgrounds") || "Select your backgrounds"}</h2>
+        <h2 className="text-3xl font-bold">{t("dashboardV2.selectYourBackgrounds")}</h2>
         <p className="text-muted-foreground">
-          {t("dashboardV2.backgroundDescription") || "Select the backgrounds you want! Most people choose all 4 backgrounds for greater variety."}
+          {t("dashboardV2.backgroundDescription")}
         </p>
       </div>
 
@@ -885,7 +885,7 @@ function BackgroundStep({ value, onChange, onNext, formData }: { value: string[]
         disabled={value.length === 0}
         className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
       >
-        {t("dashboardV2.continue") || "Continue"}
+        {t("dashboardV2.continue")}
       </Button>
     </div>
   );
@@ -970,9 +970,9 @@ function UploadStep({
     if (newFiles.length > 0) {
       setUploadedFiles((prev) => [...prev, ...newFiles]);
       toast.success(
-        `${newFiles.length} ${newFiles.length === 1 ? (t("dashboardV2.fileSelected") || "file selected") : (t("dashboardV2.filesSelected") || "files selected")}`,
+        `${newFiles.length} ${newFiles.length === 1 ? t("dashboardV2.fileSelected") : t("dashboardV2.filesSelected")}`,
         {
-          description: t("dashboardV2.filesReady") || "Files are ready for upload",
+          description: t("dashboardV2.filesReady"),
         }
       );
     }
@@ -1001,34 +1001,34 @@ function UploadStep({
       }
       return prev.filter((f) => f.id !== id);
     });
-    toast.success(t("dashboardV2.fileRemoved") || "File removed");
+    toast.success(t("dashboardV2.fileRemoved"));
   };
 
   const handleContinue = async () => {
     if (uploadedFiles.length === 0) {
-      toast.error(t("dashboardV2.noFilesSelected") || "No files selected", {
-        description: t("dashboardV2.pleaseSelectFiles") || "Please select at least one photo to continue",
+      toast.error(t("dashboardV2.noFilesSelected"), {
+        description: t("dashboardV2.pleaseSelectFiles"),
       });
       return;
     }
 
     if (uploadedFiles.length < 1) {
-      toast.error(t("dashboardV2.minFilesError") || "Not enough files", {
-        description: t("dashboardV2.pleaseSelectFiles") || "Please select at least 1 photo",
+      toast.error(t("dashboardV2.minFilesError"), {
+        description: t("dashboardV2.pleaseSelectFiles"),
       });
       return;
     }
 
     if (!user?.id) {
-      toast.error(t("dashboardV2.userNotAuthenticated") || "User not authenticated", {
-        description: t("dashboardV2.pleaseLogin") || "Please log in to continue",
+      toast.error(t("dashboardV2.userNotAuthenticated"), {
+        description: t("dashboardV2.pleaseLogin"),
       });
       return;
     }
 
     // Generate images directly using new page2 API
     try {
-      const loadingToast = toast.loading(t("dashboardV2.generatingImages") || "Generating images...");
+      const loadingToast = toast.loading(t("dashboardV2.generatingImages"));
       
       // Convert files to base64
       const userImages = await Promise.all(
@@ -1066,7 +1066,7 @@ function UploadStep({
         console.log("[DashboardV2] Redirecting to generate page with batchId:", result.batchId);
         
         // Show success toast briefly
-        toast.success(t("dashboardV2.generationStarted") || "Image generation started!", {
+        toast.success(t("dashboardV2.generationStarted"), {
           duration: 1500,
         });
         
@@ -1092,8 +1092,8 @@ function UploadStep({
         throw new Error("Failed to start generation: No batchId returned");
       }
     } catch (error: any) {
-      toast.error(t("dashboardV2.generationError") || "Failed to generate images", {
-        description: error?.message || "Please try again",
+      toast.error(t("dashboardV2.generationError"), {
+        description: error?.message || t("generateImages.pleaseTryAgain"),
       });
     }
   };
@@ -1108,9 +1108,9 @@ function UploadStep({
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.uploadPhotos") || "Upload photos"}</h2>
+        <h2 className="text-3xl font-bold">{t("dashboardV2.uploadPhotos")}</h2>
         <p className="text-muted-foreground">
-          {t("dashboardV2.uploadDescription") || "Now the fun begins! Select at least your best photos. Uploading a mix of close-ups, selfies, and medium-range photos can help the AI better capture your face and body type."}
+          {t("dashboardV2.uploadDescription")}
         </p>
       </div>
 
@@ -1126,7 +1126,7 @@ function UploadStep({
         onDragLeave={handleDragLeave}
       >
         <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-        <p className="text-lg font-semibold mb-2">{t("dashboardV2.uploadFromComputer") || "Upload from your computer"}</p>
+        <p className="text-lg font-semibold mb-2">{t("dashboardV2.uploadFromComputer")}</p>
         <input
           ref={fileInputRef}
           type="file"
@@ -1140,10 +1140,10 @@ function UploadStep({
           className="mt-4"
           onClick={() => fileInputRef.current?.click()}
         >
-          {t("dashboardV2.uploadFiles") || "Upload files ↑"}
+          {t("dashboardV2.uploadFiles")}
         </Button>
         <p className="text-sm text-muted-foreground mt-4">
-          {t("dashboardV2.uploadFormats") || "or drag and drop your photos PNG, JPG, HEIC, WEBP up to 120MB"}
+          {t("dashboardV2.uploadFormats")}
         </p>
       </div>
 
@@ -1162,7 +1162,7 @@ function UploadStep({
                 setUploadedFiles([]);
               }}
             >
-              {t("dashboardV2.clearAll") || "Clear all"}
+              {t("dashboardV2.clearAll")}
             </Button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -1207,7 +1207,7 @@ function UploadStep({
         disabled={uploadedFiles.length === 0}
         className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full disabled:opacity-50"
       >
-        {t("dashboardV2.continue") || "Continue"}
+        {t("dashboardV2.continue")}
       </Button>
     </div>
   );

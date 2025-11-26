@@ -171,7 +171,7 @@ export default function TrainModel() {
     }
 
     if (!user?.id) {
-      toast.error(t("trainModel.userNotAuthenticated") || t("generateImages.userNotAuthenticated"), {
+      toast.error(t("trainModel.userNotAuthenticated"), {
         description: t("trainModel.sessionExpiredDescription"),
       });
       return;

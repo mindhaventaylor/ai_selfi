@@ -16,133 +16,124 @@ export default function BlogPost1() {
           className="mb-8"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Blog
+          {t("blog.backToBlog")}
         </Button>
 
         <article className="prose prose-lg dark:prose-invert max-w-none">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            How AI Professional Photos Can Transform Your Personal Brand
+            {t("blogPost1.title")}
           </h1>
           
           <p className="text-muted-foreground mb-6">
-            Published on January 15, 2025
+            {t("blogPost1.publishedOn")}
           </p>
 
           <div className="mb-8">
             <img
               src="/image.jpg"
-              alt="AI Professional Photos"
+              alt={t("blogPost1.altText")}
               className="w-full rounded-lg shadow-lg"
             />
           </div>
 
           <p className="text-lg mb-4">
-            In today's digital world, your professional image is more important than ever. 
-            Whether you're building your personal brand on LinkedIn, creating content for 
-            social media, or updating your company website, professional photos are essential.
+            {t("blogPost1.intro")}
           </p>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            The Power of Professional Photography
+            {t("blogPost1.powerOfPhotography")}
           </h2>
 
           <p className="mb-4">
-            Professional photos can significantly impact how others perceive you. Studies show 
-            that people form first impressions in just 0.1 seconds, and your profile photo is 
-            often the first thing they see. A high-quality professional photo can:
+            {t("blogPost1.powerDesc")}
           </p>
 
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>Increase your credibility and trustworthiness</li>
-            <li>Make you stand out in a crowded digital landscape</li>
-            <li>Reflect your professionalism and attention to detail</li>
-            <li>Help you build a consistent brand image across platforms</li>
+            <li>{t("blogPost1.power1")}</li>
+            <li>{t("blogPost1.power2")}</li>
+            <li>{t("blogPost1.power3")}</li>
+            <li>{t("blogPost1.power4")}</li>
           </ul>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            The Traditional Photography Challenge
+            {t("blogPost1.traditionalChallenge")}
           </h2>
 
           <p className="mb-4">
-            Traditional professional photography comes with several challenges:
+            {t("blogPost1.traditionalDesc")}
           </p>
 
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li><strong>High costs:</strong> Professional photo sessions can cost hundreds or even thousands of euros</li>
-            <li><strong>Time-consuming:</strong> Scheduling, travel, and the actual session take significant time</li>
-            <li><strong>Limited variety:</strong> You typically get a small selection of photos from one session</li>
-            <li><strong>Inconvenience:</strong> Requires coordinating with photographers and studios</li>
+            <li><strong>{t("blogPost1.traditional1")}</strong></li>
+            <li><strong>{t("blogPost1.traditional2")}</strong></li>
+            <li><strong>{t("blogPost1.traditional3")}</strong></li>
+            <li><strong>{t("blogPost1.traditional4")}</strong></li>
           </ul>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            AI Professional Photos: The Modern Solution
+            {t("blogPost1.aiSolution")}
           </h2>
 
           <p className="mb-4">
-            AI-powered professional photography offers a revolutionary alternative. With AISelfi, 
-            you can create stunning professional photos in minutes, not days. Here's how it works:
+            {t("blogPost1.aiSolutionDesc")}
           </p>
 
           <ol className="list-decimal pl-6 mb-4 space-y-2">
-            <li><strong>Upload your selfies:</strong> Simply upload a few photos of yourself</li>
-            <li><strong>Choose your style:</strong> Select from over 100+ professional outfits and styles</li>
-            <li><strong>AI generates your photos:</strong> Our advanced AI creates professional-quality images</li>
-            <li><strong>Download and use:</strong> Get your photos in high-resolution 4K format</li>
+            <li><strong>{t("blogPost1.aiSolution1")}</strong></li>
+            <li><strong>{t("blogPost1.aiSolution2")}</strong></li>
+            <li><strong>{t("blogPost1.aiSolution3")}</strong></li>
+            <li><strong>{t("blogPost1.aiSolution4")}</strong></li>
           </ol>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            Benefits of AI Professional Photos
+            {t("blogPost1.benefits")}
           </h2>
 
           <p className="mb-4">
-            AI professional photos offer numerous advantages:
+            {t("blogPost1.benefitsDesc")}
           </p>
 
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li><strong>Cost-effective:</strong> Get professional photos for a fraction of the cost</li>
-            <li><strong>Fast:</strong> Receive your photos in minutes, not weeks</li>
-            <li><strong>Variety:</strong> Generate 40-100 different professional photos</li>
-            <li><strong>Convenient:</strong> No need to leave your home or schedule appointments</li>
-            <li><strong>Consistent:</strong> Maintain a cohesive brand image across all platforms</li>
+            <li><strong>{t("blogPost1.benefit1")}</strong></li>
+            <li><strong>{t("blogPost1.benefit2")}</strong></li>
+            <li><strong>{t("blogPost1.benefit3")}</strong></li>
+            <li><strong>{t("blogPost1.benefit4")}</strong></li>
+            <li><strong>{t("blogPost1.benefit5")}</strong></li>
           </ul>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            Real-World Applications
+            {t("blogPost1.applications")}
           </h2>
 
           <p className="mb-4">
-            AI professional photos are perfect for:
+            {t("blogPost1.applicationsDesc")}
           </p>
 
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>LinkedIn profile pictures</li>
-            <li>Company website team pages</li>
-            <li>Social media profiles (Instagram, Facebook, Twitter)</li>
-            <li>Email signatures</li>
-            <li>Business cards and marketing materials</li>
-            <li>Speaking engagement profiles</li>
-            <li>Press releases and media kits</li>
+            <li>{t("blogPost1.application1")}</li>
+            <li>{t("blogPost1.application2")}</li>
+            <li>{t("blogPost1.application3")}</li>
+            <li>{t("blogPost1.application4")}</li>
+            <li>{t("blogPost1.application5")}</li>
+            <li>{t("blogPost1.application6")}</li>
+            <li>{t("blogPost1.application7")}</li>
           </ul>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            Conclusion
+            {t("blogPost1.conclusion")}
           </h2>
 
           <p className="mb-8">
-            Professional photos are essential for building your personal brand in the digital age. 
-            AI-powered solutions like AISelfi make it easier, faster, and more affordable than ever 
-            to get the professional images you need. Start building your professional brand today 
-            with AI professional photos.
+            {t("blogPost1.conclusionDesc")}
           </p>
 
           <div className="mt-12 p-6 bg-primary/10 rounded-lg border border-primary/20">
-            <h3 className="text-2xl font-bold mb-4">Ready to Transform Your Professional Image?</h3>
+            <h3 className="text-2xl font-bold mb-4">{t("blogPost1.ctaTitle")}</h3>
             <p className="mb-4">
-              Create your professional AI photos in minutes. Choose from over 100+ styles and 
-              get 40-100 high-quality images ready to use.
+              {t("blogPost1.ctaDesc")}
             </p>
             <Button asChild size="lg" className="rounded-full">
-              <a href="/login">Create Your Professional Photos Now</a>
+              <a href="/login">{t("blogPost1.ctaButton")}</a>
             </Button>
           </div>
         </article>

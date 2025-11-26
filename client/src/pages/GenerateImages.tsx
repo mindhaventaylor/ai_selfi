@@ -777,7 +777,7 @@ export default function GenerateImages() {
       {/* Debug indicator for page2 variant */}
       {isPage2Variant && (
         <div className="bg-primary/10 border-b border-primary/20 px-6 py-2 text-center text-sm text-primary font-semibold">
-          🎯 Page2 Variant Active - {hasBatchId ? t("generateImages.generationInProgress") : t("generateImages.modelSelectionHidden")}
+          {t("generateImages.page2VariantActive")} - {hasBatchId ? t("generateImages.generationInProgress") : t("generateImages.modelSelectionHidden")}
         </div>
       )}
       {/* Only show page1 UI if not page2 variant with batchId */}

@@ -16,129 +16,122 @@ export default function BlogPost3() {
           className="mb-8"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Blog
+          {t("blog.backToBlog")}
         </Button>
 
         <article className="prose prose-lg dark:prose-invert max-w-none">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            How to Choose the Perfect Professional Photo Style for Your Brand
+            {t("blogPost3.title")}
           </h1>
           
           <p className="text-muted-foreground mb-6">
-            Published on January 25, 2025
+            {t("blogPost3.publishedOn")}
           </p>
 
           <div className="mb-8">
             <img
               src="/image_10.jpg"
-              alt="Professional Photo Styles"
+              alt={t("blogPost3.altText")}
               className="w-full rounded-lg shadow-lg"
             />
           </div>
 
           <p className="text-lg mb-4">
-            Your professional photo is often the first impression people have of you online. 
-            Choosing the right style is crucial for building your personal brand. With over 
-            100+ styles available, here's how to select the perfect professional photo style 
-            for your brand.
+            {t("blogPost3.intro")}
           </p>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            Understand Your Industry
+            {t("blogPost3.understandIndustry")}
           </h2>
 
           <p className="mb-4">
-            Different industries have different expectations for professional photos:
+            {t("blogPost3.understandIndustryDesc")}
           </p>
 
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li><strong>Corporate/Business:</strong> Professional business attire, formal backgrounds, conservative styling</li>
-            <li><strong>Creative Industries:</strong> More casual, artistic backgrounds, creative expression</li>
-            <li><strong>Tech/Startups:</strong> Modern, approachable, slightly casual professional look</li>
-            <li><strong>Healthcare:</strong> Professional, trustworthy, clean and polished</li>
-            <li><strong>Education:</strong> Friendly, approachable, professional but warm</li>
+            <li><strong>{t("blogPost3.industry1")}</strong></li>
+            <li><strong>{t("blogPost3.industry2")}</strong></li>
+            <li><strong>{t("blogPost3.industry3")}</strong></li>
+            <li><strong>{t("blogPost3.industry4")}</strong></li>
+            <li><strong>{t("blogPost3.industry5")}</strong></li>
           </ul>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            Consider Your Platform
+            {t("blogPost3.considerPlatform")}
           </h2>
 
           <p className="mb-4">
-            Different platforms may require different styles:
+            {t("blogPost3.considerPlatformDesc")}
           </p>
 
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li><strong>LinkedIn:</strong> Professional, business-focused, conservative</li>
-            <li><strong>Instagram:</strong> More casual, creative, personality-driven</li>
-            <li><strong>Company Website:</strong> Match your company's brand aesthetic</li>
-            <li><strong>Speaking Engagements:</strong> Professional but approachable</li>
+            <li><strong>{t("blogPost3.platform1")}</strong></li>
+            <li><strong>{t("blogPost3.platform2")}</strong></li>
+            <li><strong>{t("blogPost3.platform3")}</strong></li>
+            <li><strong>{t("blogPost3.platform4")}</strong></li>
           </ul>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            Match Your Personal Brand
+            {t("blogPost3.matchBrand")}
           </h2>
 
           <p className="mb-4">
-            Your professional photo should reflect your personal brand values:
+            {t("blogPost3.matchBrandDesc")}
           </p>
 
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li><strong>If you're innovative:</strong> Choose modern, cutting-edge styles</li>
-            <li><strong>If you're traditional:</strong> Opt for classic, timeless professional looks</li>
-            <li><strong>If you're approachable:</strong> Select warm, friendly styles with natural lighting</li>
-            <li><strong>If you're authoritative:</strong> Choose strong, confident poses and formal attire</li>
+            <li><strong>{t("blogPost3.brand1")}</strong></li>
+            <li><strong>{t("blogPost3.brand2")}</strong></li>
+            <li><strong>{t("blogPost3.brand3")}</strong></li>
+            <li><strong>{t("blogPost3.brand4")}</strong></li>
           </ul>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            Background Selection
+            {t("blogPost3.backgroundSelection")}
           </h2>
 
           <p className="mb-4">
-            The background of your professional photo sets the tone:
+            {t("blogPost3.backgroundSelectionDesc")}
           </p>
 
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li><strong>Studio backgrounds:</strong> Clean, professional, timeless</li>
-            <li><strong>Office backgrounds:</strong> Professional, corporate, business-focused</li>
-            <li><strong>Nature backgrounds:</strong> Approachable, natural, creative</li>
-            <li><strong>City backgrounds:</strong> Modern, dynamic, urban professional</li>
+            <li><strong>{t("blogPost3.background1")}</strong></li>
+            <li><strong>{t("blogPost3.background2")}</strong></li>
+            <li><strong>{t("blogPost3.background3")}</strong></li>
+            <li><strong>{t("blogPost3.background4")}</strong></li>
           </ul>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            Tips for Success
+            {t("blogPost3.tipsForSuccess")}
           </h2>
 
           <p className="mb-4">
-            Here are some additional tips for choosing the perfect professional photo style:
+            {t("blogPost3.tipsForSuccessDesc")}
           </p>
 
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>Start with a few different styles and see which resonates most</li>
-            <li>Consider your target audience and what they expect</li>
-            <li>Ensure consistency across all your professional platforms</li>
-            <li>Update your photos regularly to keep your brand fresh</li>
-            <li>Test different styles to see what gets the best response</li>
+            <li>{t("blogPost3.tip1")}</li>
+            <li>{t("blogPost3.tip2")}</li>
+            <li>{t("blogPost3.tip3")}</li>
+            <li>{t("blogPost3.tip4")}</li>
+            <li>{t("blogPost3.tip5")}</li>
           </ul>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            Conclusion
+            {t("blogPost3.conclusion")}
           </h2>
 
           <p className="mb-8">
-            Choosing the perfect professional photo style is about understanding your industry, 
-            platform, and personal brand. With AI professional photos, you can easily experiment 
-            with different styles until you find the perfect match. Remember, your professional 
-            photo is an investment in your personal brand—choose wisely.
+            {t("blogPost3.conclusionDesc")}
           </p>
 
           <div className="mt-12 p-6 bg-primary/10 rounded-lg border border-primary/20">
-            <h3 className="text-2xl font-bold mb-4">Find Your Perfect Professional Photo Style</h3>
+            <h3 className="text-2xl font-bold mb-4">{t("blogPost3.ctaTitle")}</h3>
             <p className="mb-4">
-              Explore over 100+ professional photo styles and find the perfect match 
-              for your personal brand.
+              {t("blogPost3.ctaDesc")}
             </p>
             <Button asChild size="lg" className="rounded-full">
-              <a href="/login">Browse Professional Photo Styles</a>
+              <a href="/login">{t("blogPost3.ctaButton")}</a>
             </Button>
           </div>
         </article>

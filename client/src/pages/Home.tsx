@@ -769,8 +769,8 @@ export default function Home() {
                   className="bg-gray-800 hover:bg-gray-700 text-white px-8 py-6 rounded-full text-base font-medium transition-all duration-300 hover:scale-105"
                 >
                   {reviewsToShow === 15 
-                    ? (t("supportReviews.showLess") || "Show less")
-                    : (t("supportReviews.seeMore") || "See more")
+                    ? t("supportReviews.showLess")
+                    : t("supportReviews.seeMore")
                   }
                 </Button>
               </div>

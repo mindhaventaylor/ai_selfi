@@ -149,8 +149,8 @@ export default function Afiliados() {
               <div className="space-y-8">
                 {faqItems.map((item, idx) => (
                   <div key={idx} className="border-b border-white/10 last:border-0 pb-8 last:pb-0">
-                    <h3 className="text-xl font-black mb-2">{item.question}</h3>
-                    <p className="text-lg text-muted-foreground">{item.answer}</p>
+                    <h3 className="text-xl font-black mb-2">{item.q}</h3>
+                    <p className="text-lg text-muted-foreground">{item.a}</p>
                   </div>
                 ))}
               </div>

@@ -140,7 +140,7 @@ export default function Login() {
           {/* Logo */}
           <div className="hidden lg:flex items-center gap-2 mb-8">
             <img src={APP_LOGO} alt={t("login.altText.logo")} className="h-8 w-auto" />
-            <span className="text-xl font-bold">aiselfie.org</span>
+            <span className="text-xl font-bold">{t("login.brandName")}</span>
           </div>
 
           {/* Stats Banner */}

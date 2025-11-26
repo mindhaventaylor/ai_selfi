@@ -364,13 +364,36 @@
     "termsOfService": "Terms of Service",
     "and": "and",
     "privacyPolicy": "Privacy Policy",
+    "brandName": "aiselfie.org",
     "altText": {
       "professionalPhoto": "Professional photo {{number}}",
       "logo": "AISelfie"
     },
     "ariaLabel": {
       "goToTestimonial": "Go to testimonial {{number}}"
-    }
+    },
+    "testimonials": [
+      {
+        "text": "I created 40 professional photos in less than 10 minutes. I couldn't believe it was possible to get such realistic results with artificial intelligence. The photos are perfect for my LinkedIn profile and my website.",
+        "author": "Sofia Bianchi",
+        "stars": 5
+      },
+      {
+        "text": "Amazing! I updated all my professional photos in just a few minutes. The quality is incredible and the results are very natural. I've already received several compliments on my new shots.",
+        "author": "Marco Rossi",
+        "stars": 5
+      },
+      {
+        "text": "Perfect for my job! I need professional photos for presentations and company materials, and this tool solved my problem quickly and affordably.",
+        "author": "Chiara Romano",
+        "stars": 5
+      },
+      {
+        "text": "Fantastic! I created an entire gallery of professional photos in less than 15 minutes. What impressed me most is the attention to detail: every photo is perfect and professional.",
+        "author": "Valentina Marchetti",
+        "stars": 5
+      }
+    ]
   },
   "notFound": {
     "title": "404",
@@ -1042,6 +1065,7 @@
     "readMore": "Read more",
     "seeMore": "See more",
     "showLess": "Show less",
+    "brandName": "aiselfie.org",
     "reviews": [
       {
         "name": "Sofia Bianchi",
@@ -1382,7 +1406,7 @@
     "welcomeDescription": "Transform your existing photos into realistic AI portrait photos for your resume, LinkedIn, and social media profiles.",
     "createHeadshots": "Create headshots",
     "whatIsYourGender": "What is your gender?",
-    "genderDescription": "We'd love to learn more about you! Help us generate perfect photos that reflect who you are.",
+    "genderDescription": "We'd love to learn more about you{{name}}! Help us generate perfect photos that reflect who you are.",
     "male": "Male",
     "female": "Female",
     "nonBinary": "Non-binary",
@@ -1554,6 +1578,7 @@
     "pleaseTryAgain": "Please try again",
     "generationInProgress": "Generation in progress",
     "modelSelectionHidden": "Model selection hidden",
+    "page2VariantActive": "Page2 Variant Active",
     "batchNotFound": "Batch not found. The generation may have failed to start. Please try again.",
     "generationFailed": "Image generation failed. Please try again.",
     "generatedImageAlt": "Generated image {{number}}",
@@ -1569,5 +1594,169 @@
   "errorBoundary": {
     "title": "An unexpected error occurred.",
     "reloadPage": "Reload Page"
+  },
+  "refund": {
+    "title": "Refund Policy",
+    "lastUpdated": "Last updated: January 2025",
+    "fullRefundGuarantee": "Full Refund Guarantee",
+    "fullRefundDescription": "At AISelfi, we stand behind the quality of our AI-generated professional photos. We offer a full refund guarantee if you are not satisfied with the results.",
+    "refundEligibility": "Refund Eligibility",
+    "eligibleIf": "You are eligible for a full refund if:",
+    "eligible1": "You are not satisfied with the quality of the generated photos",
+    "eligible2": "The photos do not meet your expectations",
+    "eligible3": "You experience technical issues that prevent you from using the service",
+    "eligible4": "You request a refund within 30 days of purchase",
+    "howToRequest": "How to Request a Refund",
+    "howToRequestDesc": "To request a refund, please contact our support team through one of the following methods:",
+    "method1": "Email us at support@aiselfi.es",
+    "method2": "Use the support form in your dashboard",
+    "method3": "Contact us through WhatsApp (if available)",
+    "requestDetails": "Please include your order number and a brief explanation of why you're requesting a refund. We'll process your refund within 5-7 business days.",
+    "refundProcessing": "Refund Processing",
+    "refundProcessingDesc": "Once your refund is approved, we will process it to the original payment method used for the purchase. Refunds typically appear in your account within 5-10 business days, depending on your payment provider.",
+    "questions": "Questions?",
+    "questionsDesc": "If you have any questions about our refund policy, please don't hesitate to contact our support team. We're here to help ensure you have a positive experience with AISelfi."
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Tips, insights, and guides on professional photography and personal branding",
+    "readMore": "Read more",
+    "backToBlog": "Back to Blog",
+    "posts": {
+      "post1": {
+        "title": "How AI Professional Photos Can Transform Your Personal Brand",
+        "excerpt": "Discover how AI-powered professional photos can revolutionize your personal branding and help you stand out in the digital world.",
+        "date": "January 15, 2025",
+        "publishedOn": "Published on January 15, 2025",
+        "altText": "AI Professional Photos"
+      },
+      "post2": {
+        "title": "5 Reasons Why AI Professional Photos Are Better Than Traditional Photography",
+        "excerpt": "Explore the five key advantages that make AI professional photos superior to traditional photography methods.",
+        "date": "January 20, 2025",
+        "publishedOn": "Published on January 20, 2025",
+        "altText": "AI vs Traditional Photography"
+      },
+      "post3": {
+        "title": "How to Choose the Perfect Professional Photo Style for Your Brand",
+        "excerpt": "Learn how to select the ideal professional photo style that matches your industry, platform, and personal brand values.",
+        "date": "January 25, 2025",
+        "publishedOn": "Published on January 25, 2025",
+        "altText": "Professional Photo Styles"
+      }
+    }
+  },
+  "blogPost1": {
+    "title": "How AI Professional Photos Can Transform Your Personal Brand",
+    "publishedOn": "Published on January 15, 2025",
+    "altText": "AI Professional Photos",
+    "intro": "In today's digital world, your professional image is more important than ever. Whether you're building your personal brand on LinkedIn, creating content for social media, or updating your company website, professional photos are essential.",
+    "powerOfPhotography": "The Power of Professional Photography",
+    "powerDesc": "Professional photos can significantly impact how others perceive you. Studies show that people form first impressions in just 0.1 seconds, and your profile photo is often the first thing they see. A high-quality professional photo can:",
+    "power1": "Increase your credibility and trustworthiness",
+    "power2": "Make you stand out in a crowded digital landscape",
+    "power3": "Reflect your professionalism and attention to detail",
+    "power4": "Help you build a consistent brand image across platforms",
+    "traditionalChallenge": "The Traditional Photography Challenge",
+    "traditionalDesc": "Traditional professional photography comes with several challenges:",
+    "traditional1": "High costs: Professional photo sessions can cost hundreds or even thousands of euros",
+    "traditional2": "Time-consuming: Scheduling, travel, and the actual session take significant time",
+    "traditional3": "Limited variety: You typically get a small selection of photos from one session",
+    "traditional4": "Inconvenience: Requires coordinating with photographers and studios",
+    "aiSolution": "AI Professional Photos: The Modern Solution",
+    "aiSolutionDesc": "AI-powered professional photography offers a revolutionary alternative. With AISelfi, you can create stunning professional photos in minutes, not days. Here's how it works:",
+    "aiSolution1": "Upload your selfies: Simply upload a few photos of yourself",
+    "aiSolution2": "Choose your style: Select from over 100+ professional outfits and styles",
+    "aiSolution3": "AI generates your photos: Our advanced AI creates professional-quality images",
+    "aiSolution4": "Download and use: Get your photos in high-resolution 4K format",
+    "benefits": "Benefits of AI Professional Photos",
+    "benefitsDesc": "AI professional photos offer numerous advantages:",
+    "benefit1": "Cost-effective: Get professional photos for a fraction of the cost",
+    "benefit2": "Fast: Receive your photos in minutes, not weeks",
+    "benefit3": "Variety: Generate 40-100 different professional photos",
+    "benefit4": "Convenient: No need to leave your home or schedule appointments",
+    "benefit5": "Consistent: Maintain a cohesive brand image across all platforms",
+    "applications": "Real-World Applications",
+    "applicationsDesc": "AI professional photos are perfect for:",
+    "application1": "LinkedIn profile pictures",
+    "application2": "Company website team pages",
+    "application3": "Social media profiles (Instagram, Facebook, Twitter)",
+    "application4": "Email signatures",
+    "application5": "Business cards and marketing materials",
+    "application6": "Speaking engagement profiles",
+    "application7": "Press releases and media kits",
+    "conclusion": "Conclusion",
+    "conclusionDesc": "Professional photos are essential for building your personal brand in the digital age. AI-powered solutions like AISelfi make it easier, faster, and more affordable than ever to get the professional images you need. Start building your professional brand today with AI professional photos.",
+    "ctaTitle": "Ready to Transform Your Professional Image?",
+    "ctaDesc": "Create your professional AI photos in minutes. Choose from over 100+ styles and get 40-100 high-quality images ready to use.",
+    "ctaButton": "Create Your Professional Photos Now"
+  },
+  "blogPost2": {
+    "title": "5 Reasons Why AI Professional Photos Are Better Than Traditional Photography",
+    "publishedOn": "Published on January 20, 2025",
+    "altText": "AI vs Traditional Photography",
+    "intro": "The photography industry is experiencing a revolution. AI-powered professional photos are changing how people approach personal branding and professional imagery. Here are five compelling reasons why AI professional photos are superior to traditional photography.",
+    "reason1": "Unbeatable Value",
+    "reason1Desc": "Traditional professional photography sessions can cost anywhere from €200 to €1,500 or more. With AI professional photos, you get 40-100 high-quality images for a fraction of that cost. You're essentially paying 5x less while getting significantly more variety and options.",
+    "reason2": "Speed and Convenience",
+    "reason2Desc": "Traditional photography requires scheduling appointments, traveling to studios, and waiting weeks for edited photos. AI professional photos are generated in minutes. You can upload your selfies, choose your styles, and have professional photos ready to use the same day—all from the comfort of your home.",
+    "reason3": "Unlimited Variety",
+    "reason3Desc": "A single traditional photo session might give you 10-20 final images. With AI professional photos, you can generate 40-100 different images in various styles, outfits, and backgrounds. This variety allows you to:",
+    "variety1": "Match different platforms' aesthetic requirements",
+    "variety2": "Update your professional image regularly",
+    "variety3": "Test different styles to see what works best",
+    "variety4": "Have options for different occasions and purposes",
+    "reason4": "Consistent Quality",
+    "reason4Desc": "AI professional photos ensure consistent quality across all your images. Every photo is generated using the same advanced AI technology, ensuring uniform lighting, professional composition, and high resolution. With traditional photography, quality can vary based on the photographer's skill, equipment, and conditions.",
+    "reason5": "Privacy and Control",
+    "reason5Desc": "AI professional photos give you complete control and privacy. You upload your own photos, choose your styles, and generate images without needing to interact with photographers or visit studios. Your images are processed securely, and you maintain full control over your professional image.",
+    "future": "The Future of Professional Photography",
+    "futureDesc": "AI professional photos represent the future of personal branding. They combine the quality of traditional photography with the convenience, affordability, and variety that modern professionals need. As AI technology continues to improve, the gap between AI and traditional photography will only continue to narrow.",
+    "ctaTitle": "Experience the Future of Professional Photos",
+    "ctaDesc": "Join thousands of professionals who have already made the switch to AI professional photos. Get started today and see the difference.",
+    "ctaButton": "Create Your AI Professional Photos"
+  },
+  "blogPost3": {
+    "title": "How to Choose the Perfect Professional Photo Style for Your Brand",
+    "publishedOn": "Published on January 25, 2025",
+    "altText": "Professional Photo Styles",
+    "intro": "Your professional photo is often the first impression people have of you online. Choosing the right style is crucial for building your personal brand. With over 100+ styles available, here's how to select the perfect professional photo style for your brand.",
+    "understandIndustry": "Understand Your Industry",
+    "understandIndustryDesc": "Different industries have different expectations for professional photos:",
+    "industry1": "Corporate/Business: Professional business attire, formal backgrounds, conservative styling",
+    "industry2": "Creative Industries: More casual, artistic backgrounds, creative expression",
+    "industry3": "Tech/Startups: Modern, approachable, slightly casual professional look",
+    "industry4": "Healthcare: Professional, trustworthy, clean and polished",
+    "industry5": "Education: Friendly, approachable, professional but warm",
+    "considerPlatform": "Consider Your Platform",
+    "considerPlatformDesc": "Different platforms may require different styles:",
+    "platform1": "LinkedIn: Professional, business-focused, conservative",
+    "platform2": "Instagram: More casual, creative, personality-driven",
+    "platform3": "Company Website: Match your company's brand aesthetic",
+    "platform4": "Speaking Engagements: Professional but approachable",
+    "matchBrand": "Match Your Personal Brand",
+    "matchBrandDesc": "Your professional photo should reflect your personal brand values:",
+    "brand1": "If you're innovative: Choose modern, cutting-edge styles",
+    "brand2": "If you're traditional: Opt for classic, timeless professional looks",
+    "brand3": "If you're approachable: Select warm, friendly styles with natural lighting",
+    "brand4": "If you're authoritative: Choose strong, confident poses and formal attire",
+    "backgroundSelection": "Background Selection",
+    "backgroundSelectionDesc": "The background of your professional photo sets the tone:",
+    "background1": "Studio backgrounds: Clean, professional, timeless",
+    "background2": "Office backgrounds: Professional, corporate, business-focused",
+    "background3": "Nature backgrounds: Approachable, natural, creative",
+    "background4": "City backgrounds: Modern, dynamic, urban professional",
+    "tipsForSuccess": "Tips for Success",
+    "tipsForSuccessDesc": "Here are some additional tips for choosing the perfect professional photo style:",
+    "tip1": "Start with a few different styles and see which resonates most",
+    "tip2": "Consider your target audience and what they expect",
+    "tip3": "Ensure consistency across all your professional platforms",
+    "tip4": "Update your photos regularly to keep your brand fresh",
+    "tip5": "Test different styles to see what gets the best response",
+    "conclusion": "Conclusion",
+    "conclusionDesc": "Choosing the perfect professional photo style is about understanding your industry, platform, and personal brand. With AI professional photos, you can easily experiment with different styles until you find the perfect match. Remember, your professional photo is an investment in your personal brand—choose wisely.",
+    "ctaTitle": "Find Your Perfect Professional Photo Style",
+    "ctaDesc": "Explore over 100+ professional photo styles and find the perfect match for your personal brand.",
+    "ctaButton": "Browse Professional Photo Styles"
   }
 }

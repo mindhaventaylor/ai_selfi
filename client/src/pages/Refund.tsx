@@ -8,74 +8,68 @@ export default function Refund() {
       <main className="container max-w-4xl mx-auto px-4 py-16">
         <article className="prose prose-lg dark:prose-invert max-w-none">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Refund Policy
+            {t("refund.title")}
           </h1>
           
           <p className="text-muted-foreground mb-6">
-            Last updated: January 2025
+            {t("refund.lastUpdated")}
           </p>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            Full Refund Guarantee
+            {t("refund.fullRefundGuarantee")}
           </h2>
 
           <p className="mb-4">
-            At AISelfi, we stand behind the quality of our AI-generated professional photos. 
-            We offer a full refund guarantee if you are not satisfied with the results.
+            {t("refund.fullRefundDescription")}
           </p>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            Refund Eligibility
+            {t("refund.refundEligibility")}
           </h2>
 
           <p className="mb-4">
-            You are eligible for a full refund if:
+            {t("refund.eligibleIf")}
           </p>
 
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>You are not satisfied with the quality of the generated photos</li>
-            <li>The photos do not meet your expectations</li>
-            <li>You experience technical issues that prevent you from using the service</li>
-            <li>You request a refund within 30 days of purchase</li>
+            <li>{t("refund.eligible1")}</li>
+            <li>{t("refund.eligible2")}</li>
+            <li>{t("refund.eligible3")}</li>
+            <li>{t("refund.eligible4")}</li>
           </ul>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            How to Request a Refund
+            {t("refund.howToRequest")}
           </h2>
 
           <p className="mb-4">
-            To request a refund, please contact our support team through one of the following methods:
+            {t("refund.howToRequestDesc")}
           </p>
 
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>Email us at support@aiselfi.es</li>
-            <li>Use the support form in your dashboard</li>
-            <li>Contact us through WhatsApp (if available)</li>
+            <li>{t("refund.method1")}</li>
+            <li>{t("refund.method2")}</li>
+            <li>{t("refund.method3")}</li>
           </ul>
 
           <p className="mb-4">
-            Please include your order number and a brief explanation of why you're requesting 
-            a refund. We'll process your refund within 5-7 business days.
+            {t("refund.requestDetails")}
           </p>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            Refund Processing
+            {t("refund.refundProcessing")}
           </h2>
 
           <p className="mb-4">
-            Once your refund is approved, we will process it to the original payment method 
-            used for the purchase. Refunds typically appear in your account within 5-10 
-            business days, depending on your payment provider.
+            {t("refund.refundProcessingDesc")}
           </p>
 
           <h2 className="text-3xl font-bold mt-8 mb-4">
-            Questions?
+            {t("refund.questions")}
           </h2>
 
           <p className="mb-8">
-            If you have any questions about our refund policy, please don't hesitate to 
-            contact our support team. We're here to help ensure you have a positive 
-            experience with AISelfi.
+            {t("refund.questionsDesc")}
           </p>
         </article>
       </main>

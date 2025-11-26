@@ -11,25 +11,25 @@ export default function Blog() {
   const blogPosts = [
     {
       id: 1,
-      title: "How AI Professional Photos Can Transform Your Personal Brand",
-      excerpt: "Discover how AI-powered professional photos can revolutionize your personal branding and help you stand out in the digital world.",
-      date: "January 15, 2025",
+      title: t("blog.posts.post1.title"),
+      excerpt: t("blog.posts.post1.excerpt"),
+      date: t("blog.posts.post1.date"),
       image: "/image.jpg",
       slug: "/blog/how-ai-professional-photos-transform-personal-brand",
     },
     {
       id: 2,
-      title: "5 Reasons Why AI Professional Photos Are Better Than Traditional Photography",
-      excerpt: "Explore the five key advantages that make AI professional photos superior to traditional photography methods.",
-      date: "January 20, 2025",
+      title: t("blog.posts.post2.title"),
+      excerpt: t("blog.posts.post2.excerpt"),
+      date: t("blog.posts.post2.date"),
       image: "/image_1.jpg",
       slug: "/blog/5-reasons-ai-photos-better-than-traditional",
     },
     {
       id: 3,
-      title: "How to Choose the Perfect Professional Photo Style for Your Brand",
-      excerpt: "Learn how to select the ideal professional photo style that matches your industry, platform, and personal brand values.",
-      date: "January 25, 2025",
+      title: t("blog.posts.post3.title"),
+      excerpt: t("blog.posts.post3.excerpt"),
+      date: t("blog.posts.post3.date"),
       image: "/image_10.jpg",
       slug: "/blog/choose-perfect-professional-photo-style",
     },
@@ -39,9 +39,9 @@ export default function Blog() {
     <div className="min-h-screen bg-background">
       <main className="container max-w-6xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Blog</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">{t("blog.title")}</h1>
           <p className="text-xl text-muted-foreground">
-            Tips, insights, and guides on professional photography and personal branding
+            {t("blog.subtitle")}
           </p>
         </div>
 
@@ -71,7 +71,7 @@ export default function Blog() {
                     setLocation(post.slug);
                   }}
                 >
-                  Read more
+                  {t("blog.readMore")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardContent>
