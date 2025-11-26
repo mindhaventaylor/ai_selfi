@@ -502,7 +502,6 @@
     "images": "images",
     "noImagesFound": "No images found in your gallery.",
     "startCreatingImages": "Start creating images to see them here.",
-    "areYouSure": "Are you sure?",
     "areYouSureDeleteOne": "Are you sure you want to delete this photo?",
     "areYouSureDeleteMany": "Are you sure you want to delete",
     "photoAlt": "Photo {{number}}"
@@ -662,7 +661,7 @@
     "viewModels": "View Models"
   },
   "dashboardLayout": {
-    "startHere": "Tutorial",
+    "startHere": "Start Here",
     "models": "Models",
     "create": "Create",
     "gallery": "Gallery",
@@ -702,7 +701,7 @@
     "unknownError": "Unknown error occurred"
   },
   "startHere": {
-    "title": "Tutorial: Learn how AISelfie.org works",
+    "title": "Start Here: Learn how AISelfie.org works",
     "subtitle": "If this is your first time here, I suggest watching the following short video to learn how the app works.",
     "aiselfies": "AISelfies",
     "convertSelfiesToProfessional": "Convert your selfies into professional photos",
@@ -857,15 +856,7 @@
     "backToGenerate": "Back to Generation",
     "backToPro": "Back to Pro",
     "buyCredits": "Buy Credits",
-    "thisFeature": "This feature",
-    "acquireProPlan": "Acquire Pro Plan",
-    "acquireProPlanDesc": "Get access to Pro features by acquiring a Pro plan.",
-    "acquireProPlanButton": "Acquire Pro Plan",
-    "proPlanRedirect": "Redirecting to purchase page...",
-    "subscribeToPro": "Subscribe to Pro",
-    "subscribeToProDesc": "Unlock all Pro features and credits with a Pro subscription.",
-    "subscribeNow": "Subscribe Now",
-    "proFeaturesTitle": "Pro Features Included"
+    "thisFeature": "This feature"
   },
   "afiliados": {
     "title": "Earn 30% Commission for every sale you generate",

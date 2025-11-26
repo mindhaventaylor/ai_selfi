@@ -38,28 +38,28 @@ export default function StartHere() {
       title: t("startHere.step1"),
       icon: CreditCard,
       color: "blue",
-      buttonColor: "bg-blue-600 hover:bg-blue-700",
+      buttonColor: "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl",
     },
     {
       id: 2,
       title: t("startHere.step2"),
       icon: FlaskConical,
-      color: "orange",
-      buttonColor: "bg-orange-500 hover:bg-orange-600",
+      color: "yellow",
+      buttonColor: "bg-gradient-to-br from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 shadow-lg hover:shadow-xl",
     },
     {
       id: 3,
       title: t("startHere.step3"),
       icon: Sparkles,
       color: "purple",
-      buttonColor: "bg-purple-600 hover:bg-purple-700",
+      buttonColor: "bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg hover:shadow-xl",
     },
     {
       id: 4,
       title: t("startHere.step4"),
       icon: ImageIcon,
       color: "green",
-      buttonColor: "bg-emerald-600 hover:bg-emerald-700",
+      buttonColor: "bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl",
     },
   ];
 
@@ -182,21 +182,21 @@ export default function StartHere() {
         </Card>
 
         {/* Contenido Section */}
-        <Card className="bg-gray-800/90 border border-gray-700/50 mb-8 shadow-lg rounded-xl overflow-hidden">
-          <CardContent className="p-6 md:p-8">
-            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-white">{t("startHere.content")}</h2>
-            <div className="flex flex-col md:flex-row gap-4 md:gap-4 overflow-hidden">
+        <Card className="bg-card/50 border-border mb-8">
+          <CardContent className="p-6">
+            <h2 className="text-2xl font-bold mb-6">{t("startHere.content")}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {steps.map((step) => {
                 const IconComponent = step.icon;
                 return (
                   <Button
                     key={step.id}
                     variant="outline"
-                    className={`flex-1 min-w-0 h-auto min-h-[80px] flex-row items-center justify-start gap-3 py-6 px-5 ${step.buttonColor} text-white border-0 hover:opacity-95 transition-all duration-200 shadow-md hover:shadow-lg rounded-lg overflow-hidden`}
+                    className={`h-auto flex-col py-4 px-3 ${step.buttonColor} text-white border-0 hover:scale-105 transition-all duration-200 w-full`}
                     onClick={() => scrollToStep(step.id)}
                   >
-                    <IconComponent className="w-6 h-6 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-left leading-relaxed font-medium break-words overflow-wrap-anywhere">
+                    <IconComponent className="w-6 h-6 mb-2 drop-shadow-sm flex-shrink-0" />
+                    <span className="text-[10px] sm:text-xs text-center leading-tight font-semibold drop-shadow-sm break-words whitespace-normal px-1 w-full">
                       {step.title}
                     </span>
                   </Button>
@@ -207,7 +207,7 @@ export default function StartHere() {
         </Card>
 
         {/* Step 1: Buy Credits */}
-        <Card id="step-1" className="bg-blue-500/20 border-blue-500/30 mb-6">
+        <Card id="step-1" className="bg-gradient-to-br from-blue-500/10 via-blue-400/5 to-blue-600/10 border-blue-500/20 mb-6">
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center">
@@ -266,11 +266,11 @@ export default function StartHere() {
           </Card>
 
         {/* Step 2: Train an AI Model */}
-        <Card id="step-2" className="bg-orange-500/20 border-orange-500/30 mb-6">
+        <Card id="step-2" className="bg-gradient-to-br from-yellow-500/10 via-yellow-400/5 to-yellow-600/10 border-yellow-500/20 mb-6">
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                <FlaskConical className="w-6 h-6 text-orange-400" />
+              <div className="w-12 h-12 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                <FlaskConical className="w-6 h-6 text-yellow-400" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold">
@@ -338,7 +338,7 @@ export default function StartHere() {
           </Card>
 
         {/* Step 3: Creating Your Photos */}
-        <Card id="step-3" className="bg-purple-500/20 border-purple-500/30 mb-6">
+        <Card id="step-3" className="bg-gradient-to-br from-purple-500/10 via-purple-400/5 to-purple-600/10 border-purple-500/20 mb-6">
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center">
@@ -431,7 +431,7 @@ export default function StartHere() {
           </Card>
 
         {/* Step 4: Gallery */}
-        <Card id="step-4" className="bg-green-500/20 border-green-500/30 mb-6">
+        <Card id="step-4" className="bg-gradient-to-br from-green-500/10 via-green-400/5 to-green-600/10 border-green-500/20 mb-6">
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center">

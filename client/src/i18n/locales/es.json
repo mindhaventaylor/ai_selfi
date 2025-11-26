@@ -473,7 +473,6 @@
     "images": "images",
     "noImagesFound": "No images found in your gallery.",
     "startCreatingImages": "Start creating images to see them here.",
-    "areYouSure": "¿Estás seguro?",
     "areYouSureDeleteOne": "¿Estás seguro de que quieres eliminar esta foto?",
     "areYouSureDeleteMany": "¿Estás seguro de que quieres eliminar",
     "photoAlt": "Foto {{number}}"
@@ -633,7 +632,7 @@
     "viewModels": "Ver Modelos"
   },
   "dashboardLayout": {
-    "startHere": "Tutorial",
+    "startHere": "Start Here",
     "models": "Models",
     "create": "Create",
     "gallery": "Gallery",
@@ -673,7 +672,7 @@
     "unknownError": "Ocurrió un error desconocido"
   },
   "startHere": {
-    "title": "Tutorial: Aprende cómo funciona AISelfie.org",
+    "title": "Empieza aquí: Aprende cómo funciona AISelfie.org",
     "subtitle": "Si es tu primera vez aquí, te sugiero ver el siguiente corto video para aprender cómo funciona la app.",
     "aiselfies": "AISelfies",
     "convertSelfiesToProfessional": "Convierte tus selfies en fotos profesionales",
@@ -828,15 +827,7 @@
     "backToGenerate": "Volver a Generación",
     "backToPro": "Volver a Pro",
     "buyCredits": "Comprar Créditos",
-    "thisFeature": "Esta función",
-    "acquireProPlan": "Adquirir Plan Pro",
-    "acquireProPlanDesc": "Obtén acceso a funciones Pro adquiriendo un plan Pro.",
-    "acquireProPlanButton": "Adquirir Plan Pro",
-    "proPlanRedirect": "Redirigiendo a la página de compra...",
-    "subscribeToPro": "Suscribirse a Pro",
-    "subscribeToProDesc": "Desbloquea todas las funciones Pro y créditos con una suscripción Pro.",
-    "subscribeNow": "Suscribirse Ahora",
-    "proFeaturesTitle": "Funciones Pro Incluidas"
+    "thisFeature": "Esta función"
   },
   "afiliados": {
     "title": "Gana el 30% de Comisión por cada venta que generes",
@@ -1593,7 +1584,7 @@
     "title": "Política de Reembolso",
     "lastUpdated": "Última actualización: Enero 2025",
     "fullRefundGuarantee": "Garantía de Reembolso Completo",
-    "fullRefundDescription": "En aiselfie, respaldamos la calidad de nuestras fotos profesionales generadas con IA. Ofrecemos una garantía de reembolso completo si no estás satisfecho con los resultados.",
+    "fullRefundDescription": "En AISelfi, respaldamos la calidad de nuestras fotos profesionales generadas con IA. Ofrecemos una garantía de reembolso completo si no estás satisfecho con los resultados.",
     "refundEligibility": "Elegibilidad para Reembolso",
     "eligibleIf": "Eres elegible para un reembolso completo si:",
     "eligible1": "No estás satisfecho con la calidad de las fotos generadas",
@@ -1609,7 +1600,7 @@
     "refundProcessing": "Procesamiento del Reembolso",
     "refundProcessingDesc": "Una vez que tu reembolso sea aprobado, lo procesaremos al método de pago original utilizado para la compra. Los reembolsos generalmente aparecen en tu cuenta dentro de 5-10 días hábiles, dependiendo de tu proveedor de pago.",
     "questions": "¿Preguntas?",
-    "questionsDesc": "Si tienes alguna pregunta sobre nuestra política de reembolso, no dudes en contactar a nuestro equipo de soporte. Estamos aquí para ayudarte a asegurar que tengas una experiencia positiva con aiselfie."
+    "questionsDesc": "Si tienes alguna pregunta sobre nuestra política de reembolso, no dudes en contactar a nuestro equipo de soporte. Estamos aquí para ayudarte a asegurar que tengas una experiencia positiva con AISelfi."
   },
   "blog": {
     "title": "Blog",
@@ -1658,7 +1649,7 @@
     "traditional3": "Variedad limitada: Típicamente obtienes una pequeña selección de fotos de una sesión",
     "traditional4": "Inconveniente: Requiere coordinar con fotógrafos y estudios",
     "aiSolution": "Fotos Profesionales con IA: La Solución Moderna",
-    "aiSolutionDesc": "La fotografía profesional impulsada por IA ofrece una alternativa revolucionaria. Con aiselfie, puedes crear fotos profesionales impresionantes en minutos, no días. Así es como funciona:",
+    "aiSolutionDesc": "La fotografía profesional impulsada por IA ofrece una alternativa revolucionaria. Con AISelfi, puedes crear fotos profesionales impresionantes en minutos, no días. Así es como funciona:",
     "aiSolution1": "Sube tus selfies: Simplemente sube algunas fotos tuyas",
     "aiSolution2": "Elige tu estilo: Selecciona entre más de 100+ atuendos y estilos profesionales",
     "aiSolution3": "La IA genera tus fotos: Nuestra IA avanzada crea imágenes de calidad profesional",

@@ -85,8 +85,8 @@ export default function Pro() {
   ];
 
   const handleFeatureClick = (feature: typeof features[0]) => {
-    // Redirect to subscribe to pro page with feature name
-    setLocation(`/dashboard/pro/subscribe?feature=${encodeURIComponent(feature.title)}`);
+    // Redirect to under construction page with feature name
+    setLocation(`/dashboard/pro/under-construction?feature=${encodeURIComponent(feature.title)}`);
   };
 
   return (

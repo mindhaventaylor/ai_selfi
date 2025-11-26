@@ -11,12 +11,35 @@ import { generateImagesWithGemini } from "./_core/gemini.js";
 import { getServerString } from "./_core/strings.js";
 import { ENV } from "./_core/env.js";
 import { stripe, CREDIT_PACKS } from "./_core/stripe.js";
+import { trainModelLogic, type TrainModelRequest } from "./api/train-model/route.js";
 
 // Helper function to get API URL (local or production)
 function getApiUrl(): string {
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
+  // Check for explicit API URL first (most reliable)
+  if (process.env.API_URL) {
+    return process.env.API_URL;
   }
+  
+  // Check for Vercel URL (includes protocol)
+  if (process.env.VERCEL_URL) {
+    // VERCEL_URL might already include https:// or might not
+    const vercelUrl = process.env.VERCEL_URL;
+    if (vercelUrl.startsWith('http://') || vercelUrl.startsWith('https://')) {
+      return vercelUrl;
+    }
+    return `https://${vercelUrl}`;
+  }
+  
+  // Check for NEXT_PUBLIC_VERCEL_URL (sometimes used)
+  if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+    const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
+    if (vercelUrl.startsWith('http://') || vercelUrl.startsWith('https://')) {
+      return vercelUrl;
+    }
+    return `https://${vercelUrl}`;
+  }
+  
+  // Local development fallback
   const port = process.env.PORT || 3000;
   return `http://localhost:${port}`;
 }
@@ -42,6 +65,15 @@ async function callTrainModelApi(body: { modelId: number; userId: number; prompt
   const apiUrl = getApiUrl();
   const trainModelUrl = `${apiUrl}/api/train-model`;
   
+  console.log(`[callTrainModelApi] Calling train-model API:`, {
+    url: trainModelUrl,
+    modelId: body.modelId,
+    userId: body.userId,
+    environment: process.env.VERCEL ? 'Vercel' : 'Local',
+    vercelUrl: process.env.VERCEL_URL,
+    apiUrl: process.env.API_URL,
+  });
+  
   try {
     const response = await fetch(trainModelUrl, {
       method: "POST",
@@ -49,6 +81,8 @@ async function callTrainModelApi(body: { modelId: number; userId: number; prompt
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
+      // Add timeout for Vercel (30 seconds)
+      signal: AbortSignal.timeout(30000),
     });
     
     if (!response.ok) {
@@ -60,12 +94,38 @@ async function callTrainModelApi(body: { modelId: number; userId: number; prompt
       } catch {
         // Keep original error text
       }
+      
+      console.error(`[callTrainModelApi] API returned error:`, {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorMessage,
+        url: trainModelUrl,
+      });
+      
       throw new Error(`Train model API failed: ${response.status} ${errorMessage}`);
     }
     
-    return await response.json();
+    const result = await response.json();
+    console.log(`[callTrainModelApi] Success:`, {
+      modelId: body.modelId,
+      result: result,
+    });
+    
+    return result;
   } catch (error: any) {
-    console.error(`[callTrainModelApi] Error calling train-model API:`, error);
+    // Log detailed error information
+    console.error(`[callTrainModelApi] Error calling train-model API:`, {
+      error: error?.message || String(error),
+      stack: error?.stack,
+      url: trainModelUrl,
+      modelId: body.modelId,
+      userId: body.userId,
+      environment: process.env.VERCEL ? 'Vercel' : 'Local',
+      vercelUrl: process.env.VERCEL_URL,
+      apiUrl: process.env.API_URL,
+      errorName: error?.name,
+      errorCode: error?.code,
+    });
     throw error;
   }
 }
@@ -531,54 +591,76 @@ export const appRouter = router({
             if (imagesError) throw new Error(`${getServerString("failedToInsertTrainingImages")}: ${imagesError.message}`);
           }
 
-          // Call train-model API for async training (runs even if site is down)
+          // Call train-model logic for async training (runs even if site is down)
           if (modelData) {
             try {
-              console.log(`[Model Training] Calling train-model API for model ${modelData.id}`);
+              console.log(`[Model Training] Starting training for model ${modelData.id}`);
               
               // Generate prompt from model information
               const trainingPrompt = `Train a model for ${input.name}, ${input.gender === "hombre" ? "male" : "female"} gender, with ${input.trainingImageUrls.length} training images`;
               
-              // Call API asynchronously (don't await - let it run in background)
-              callTrainModelApi({
+              const trainModelRequest: TrainModelRequest = {
                 modelId: modelData.id,
                 userId: ctx.user.id,
                 prompt: trainingPrompt,
-            }).catch(async (error: any) => {
-              const errorMessage = error?.message || String(error);
-              console.error(`[Model Training] Train model API error for model ${modelData.id}:`, {
-                error: errorMessage,
-                modelId: modelData.id,
-                userId: ctx.user.id,
-                stack: error?.stack,
-              });
+              };
               
-              // Try to set status to "failed" if API fails
+              // Try to call directly first (more reliable in Vercel)
+              // If that fails, fall back to HTTP call
+              (async () => {
+                try {
+                  // Try direct call first
+                  await trainModelLogic(trainModelRequest);
+                  console.log(`[Model Training] Model ${modelData.id} training completed successfully (direct call)`);
+                } catch (directError: any) {
+                  console.warn(`[Model Training] Direct call failed, trying HTTP:`, directError?.message);
+                  
+                  // Fall back to HTTP call
+                  try {
+                    await callTrainModelApi(trainModelRequest);
+                    console.log(`[Model Training] Model ${modelData.id} training completed successfully (HTTP call)`);
+                  } catch (httpError: any) {
+                    const errorMessage = httpError?.message || String(httpError);
+                    console.error(`[Model Training] Train model failed for model ${modelData.id}:`, {
+                      directError: directError?.message,
+                      httpError: errorMessage,
+                      modelId: modelData.id,
+                      userId: ctx.user.id,
+                      stack: httpError?.stack,
+                    });
+                    
+                    // Try to set status to "failed" if both methods fail
+                    try {
+                      const { error: updateError } = await supabaseServer
+                        .from('models')
+                        .update({ status: "failed" })
+                        .eq('id', modelData.id);
+                      
+                      if (updateError) {
+                        console.error(`[Model Training] Error setting model ${modelData.id} to failed:`, updateError);
+                      } else {
+                        console.log(`[Model Training] Model ${modelData.id} status set to failed due to training error`);
+                      }
+                    } catch (failError: any) {
+                      console.error(`[Model Training] Error setting model ${modelData.id} to failed:`, failError);
+                    }
+                  }
+                }
+              })();
+              
+              console.log(`[Model Training] Training started for model ${modelData.id} (processing asynchronously)`);
+            } catch (error) {
+              console.error(`[Model Training] Error starting training for model ${modelData.id}:`, error);
+              // Set status to "failed" if we can't even start training
               try {
-                const { error: updateError } = await supabaseServer
+                await supabaseServer
                   .from('models')
                   .update({ status: "failed" })
                   .eq('id', modelData.id);
-                
-                if (updateError) {
-                  console.error(`[Model Training] Error setting model ${modelData.id} to failed:`, updateError);
-                } else {
-                  console.log(`[Model Training] Model ${modelData.id} status set to failed due to API error`);
-                }
-              } catch (failError: any) {
-                console.error(`[Model Training] Error setting model ${modelData.id} to failed:`, failError);
+              } catch (updateError) {
+                console.error(`[Model Training] Error setting model ${modelData.id} to failed:`, updateError);
               }
-            });
-              
-              console.log(`[Model Training] Train model API called for model ${modelData.id} (processing asynchronously)`);
-              } catch (error) {
-              console.error(`[Model Training] Error calling train-model API for model ${modelData.id}:`, error);
-              // Set status to "failed" if we can't even call the API
-                  await supabaseServer
-                    .from('models')
-                    .update({ status: "failed" })
-                    .eq('id', modelData.id);
-                }
+            }
           }
 
           return { success: true, modelId: modelData?.id };
@@ -618,56 +700,74 @@ export const appRouter = router({
           );
         }
 
-        // Call train-model API for async training (runs even if site is down)
+        // Call train-model logic for async training (runs even if site is down)
         if (model) {
           try {
-            console.log(`[Model Training] Calling train-model API for model ${model.id}`);
+            console.log(`[Model Training] Starting training for model ${model.id}`);
             
             // Generate prompt from model information
             const trainingPrompt = `Train a model for ${input.name}, ${input.gender === "hombre" ? "male" : "female"} gender, with ${input.trainingImageUrls.length} training images`;
             
-            // Call API asynchronously (don't await - let it run in background)
-            callTrainModelApi({
+            const trainModelRequest: TrainModelRequest = {
               modelId: model.id,
               userId: ctx.user.id,
               prompt: trainingPrompt,
-            }).catch(async (error: any) => {
-              const errorMessage = error?.message || String(error);
-              console.error(`[Model Training] Train model API error for model ${model.id}:`, {
-                error: errorMessage,
-                modelId: model.id,
-                userId: ctx.user.id,
-                stack: error?.stack,
-              });
-              
-              // Try to set status to "failed" if API fails
-            try {
-              const updateDb = await getDb();
-              if (updateDb) {
-                await updateDb
-                  .update(models)
-                    .set({ status: "failed" })
-                  .where(eq(models.id, model.id));
-              } else {
-                  const { error: updateError } = await supabaseServer
-                  .from('models')
-                    .update({ status: "failed" })
-                  .eq('id', model.id);
-                  if (updateError) {
-                    console.error(`[Model Training] Error setting model ${model.id} to failed via REST API:`, updateError);
-                  } else {
-                    console.log(`[Model Training] Model ${model.id} status set to failed due to API error`);
+            };
+            
+            // Try to call directly first (more reliable in Vercel)
+            // If that fails, fall back to HTTP call
+            (async () => {
+              try {
+                // Try direct call first
+                await trainModelLogic(trainModelRequest);
+                console.log(`[Model Training] Model ${model.id} training completed successfully (direct call)`);
+              } catch (directError: any) {
+                console.warn(`[Model Training] Direct call failed, trying HTTP:`, directError?.message);
+                
+                // Fall back to HTTP call
+                try {
+                  await callTrainModelApi(trainModelRequest);
+                  console.log(`[Model Training] Model ${model.id} training completed successfully (HTTP call)`);
+                } catch (httpError: any) {
+                  const errorMessage = httpError?.message || String(httpError);
+                  console.error(`[Model Training] Train model failed for model ${model.id}:`, {
+                    directError: directError?.message,
+                    httpError: errorMessage,
+                    modelId: model.id,
+                    userId: ctx.user.id,
+                    stack: httpError?.stack,
+                  });
+                  
+                  // Try to set status to "failed" if both methods fail
+                  try {
+                    const updateDb = await getDb();
+                    if (updateDb) {
+                      await updateDb
+                        .update(models)
+                        .set({ status: "failed" })
+                        .where(eq(models.id, model.id));
+                    } else {
+                      const { error: updateError } = await supabaseServer
+                        .from('models')
+                        .update({ status: "failed" })
+                        .eq('id', model.id);
+                      if (updateError) {
+                        console.error(`[Model Training] Error setting model ${model.id} to failed via REST API:`, updateError);
+                      } else {
+                        console.log(`[Model Training] Model ${model.id} status set to failed due to training error`);
+                      }
+                    }
+                  } catch (failError: any) {
+                    console.error(`[Model Training] Error setting model ${model.id} to failed:`, failError);
                   }
                 }
-              } catch (failError: any) {
-                console.error(`[Model Training] Error setting model ${model.id} to failed:`, failError);
               }
-            });
+            })();
             
-            console.log(`[Model Training] Train model API called for model ${model.id} (processing asynchronously)`);
-            } catch (error) {
-            console.error(`[Model Training] Error calling train-model API for model ${model.id}:`, error);
-            // Set status to "failed" if we can't even call the Edge Function
+            console.log(`[Model Training] Training started for model ${model.id} (processing asynchronously)`);
+          } catch (error) {
+            console.error(`[Model Training] Error starting training for model ${model.id}:`, error);
+            // Set status to "failed" if we can't even start training
                 const updateDb = await getDb();
                 if (updateDb) {
                   await updateDb

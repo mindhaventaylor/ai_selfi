@@ -482,7 +482,6 @@
     "images": "imagens",
     "noImagesFound": "Nenhuma imagem encontrada em sua galeria.",
     "startCreatingImages": "Comece a criar imagens para vê-las aqui.",
-    "areYouSure": "Tem certeza?",
     "areYouSureDeleteOne": "Tem certeza de que deseja excluir esta foto?",
     "areYouSureDeleteMany": "Tem certeza de que deseja excluir",
     "photoAlt": "Foto {{number}}"
@@ -642,7 +641,7 @@
     "viewModels": "Ver Modelos"
   },
   "dashboardLayout": {
-    "startHere": "Tutorial",
+    "startHere": "Começar Aqui",
     "models": "Modelos",
     "create": "Criar",
     "gallery": "Galeria",
@@ -682,7 +681,7 @@
     "unknownError": "Erro desconhecido ocorreu"
   },
   "startHere": {
-    "title": "Tutorial: Aprenda como funciona o AISelfie.org",
+    "title": "Comece Aqui: Aprenda como funciona o AISelfie.org",
     "subtitle": "Se esta é sua primeira vez aqui, sugiro assistir ao seguinte vídeo curto para aprender como o aplicativo funciona.",
     "aiselfies": "AISelfies",
     "convertSelfiesToProfessional": "Transforme seus selfies em fotos profissionais",
@@ -837,15 +836,7 @@
     "backToGenerate": "Voltar para Geração",
     "backToPro": "Voltar para Pro",
     "buyCredits": "Comprar Créditos",
-    "thisFeature": "Esta funcionalidade",
-    "acquireProPlan": "Adquirir Plano Pro",
-    "acquireProPlanDesc": "Obtenha acesso a recursos Pro adquirindo um plano Pro.",
-    "acquireProPlanButton": "Adquirir Plano Pro",
-    "proPlanRedirect": "Redirecionando para a página de compra...",
-    "subscribeToPro": "Assinar Pro",
-    "subscribeToProDesc": "Desbloqueie todos os recursos Pro e créditos com uma assinatura Pro.",
-    "subscribeNow": "Assinar Agora",
-    "proFeaturesTitle": "Recursos Pro Incluídos"
+    "thisFeature": "Esta funcionalidade"
   },
   "afiliados": {
     "title": "Ganhe 30% de Comissão por cada venda que você gerar",
@@ -1594,7 +1585,7 @@
     "title": "Política de Reembolso",
     "lastUpdated": "Última atualização: Janeiro 2025",
     "fullRefundGuarantee": "Garantia de Reembolso Completo",
-    "fullRefundDescription": "Na aiselfie, garantimos a qualidade de nossas fotos profissionais geradas com IA. Oferecemos uma garantia de reembolso completo se você não estiver satisfeito com os resultados.",
+    "fullRefundDescription": "Na AISelfi, garantimos a qualidade de nossas fotos profissionais geradas com IA. Oferecemos uma garantia de reembolso completo se você não estiver satisfeito com os resultados.",
     "refundEligibility": "Elegibilidade para Reembolso",
     "eligibleIf": "Você é elegível para um reembolso completo se:",
     "eligible1": "Você não está satisfeito com a qualidade das fotos geradas",
@@ -1659,7 +1650,7 @@
     "traditional3": "Variedade limitada: Você normalmente obtém uma pequena seleção de fotos de uma sessão",
     "traditional4": "Inconveniente: Requer coordenar com fotógrafos e estúdios",
     "aiSolution": "Fotos Profissionais com IA: A Solução Moderna",
-    "aiSolutionDesc": "A fotografia profissional alimentada por IA oferece uma alternativa revolucionária. Com aiselfie, você pode criar fotos profissionais impressionantes em minutos, não dias. Veja como funciona:",
+    "aiSolutionDesc": "A fotografia profissional alimentada por IA oferece uma alternativa revolucionária. Com AISelfi, você pode criar fotos profissionais impressionantes em minutos, não dias. Veja como funciona:",
     "aiSolution1": "Envie seus selfies: Simplesmente envie algumas fotos suas",
     "aiSolution2": "Escolha seu estilo: Selecione entre mais de 100+ roupas e estilos profissionais",
     "aiSolution3": "A IA gera suas fotos: Nossa IA avançada cria imagens de qualidade profissional",
