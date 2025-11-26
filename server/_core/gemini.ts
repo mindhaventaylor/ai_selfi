@@ -11,12 +11,11 @@ if (!GEMINI_API_KEY) {
 }
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
 // Available models:
-// - gemini-3.0-pro (Gemini 3 Pro - Nano Banana Pro - current default)
-// - gemini-3-pro (alternative name for Gemini 3 Pro)
-// - gemini-2.5-flash-image (previous default)
+// - gemini-3-pro-image-preview (Gemini 3 Pro Image Preview - Nano Banana Pro - current default)
+// - gemini-2.5-flash-image (Gemini 2.5 Flash Image - Nano Banana - fast, 1024px)
 // - gemini-2.5-flash-preview-image (alternative)
 // Set GEMINI_MODEL_NAME environment variable to use a different model
-const GEMINI_MODEL_NAME = process.env.GEMINI_MODEL_NAME || "gemini-3.0-pro";
+const GEMINI_MODEL_NAME = process.env.GEMINI_MODEL_NAME || "gemini-3-pro-image-preview";
 const GEMINI_API_URL = `${GEMINI_BASE_URL}/models/${GEMINI_MODEL_NAME}:generateContent`;
 
 // Rate limiting: delay between requests (in milliseconds)

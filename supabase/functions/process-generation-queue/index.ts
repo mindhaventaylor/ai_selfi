@@ -490,7 +490,7 @@ async function runWorker() {
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || Deno.env.get("PROJECT_URL") || "";
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SERVICE_ROLE_KEY") || "";
   const geminiApiKey = Deno.env.get("GEMINI_API_KEY") || "AIzaSyA-7_0RKEYOcDRkwBuVlJTWQycGh5tW8K8";
-  const geminiModel = Deno.env.get("GEMINI_MODEL_NAME") || "gemini-3.0-pro";
+  const geminiModel = Deno.env.get("GEMINI_MODEL_NAME") || "gemini-3-pro-image-preview";
   const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`;
 
   if (!supabaseUrl || !supabaseServiceKey) {
