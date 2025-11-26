@@ -68,7 +68,7 @@ type Page2JobPayload = {
   styles: string[];
 };
 
-async function processPage2Job(job: Page2JobPayload, supabase: SupabaseClient) {
+export async function processPage2Job(job: Page2JobPayload, supabase: SupabaseClient) {
   console.log(`[photo-generation-page2] Processing job ${job.id} for batch ${job.batchId}`);
 
   // Update job status to processing

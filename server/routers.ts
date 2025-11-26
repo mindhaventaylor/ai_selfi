@@ -1574,17 +1574,25 @@ export const appRouter = router({
           if (queueJobId) {
             console.log(`[Photo Generate Page2] ✅ Created queue job ${queueJobId}`);
             
-            // Trigger API processing (use new page2 API)
-            const apiUrl = process.env.VERCEL_URL 
-              ? `https://${process.env.VERCEL_URL}/api/photo-generation-page2`
-              : process.env.PHOTO_API_URL || "http://localhost:3000/api/photo-generation-page2";
+            // Trigger API processing - use production domain or VERCEL_URL
+            // In Vercel, we need to use the actual production domain, not the deployment URL
+            let apiUrl: string;
+            if (process.env.PRODUCTION_DOMAIN) {
+              apiUrl = `https://${process.env.PRODUCTION_DOMAIN}/api/photo-generation-page2`;
+            } else if (process.env.VERCEL_URL && !process.env.VERCEL_URL.includes('localhost')) {
+              // Use VERCEL_URL for deployment URLs (not localhost)
+              apiUrl = `https://${process.env.VERCEL_URL}/api/photo-generation-page2`;
+            } else if (process.env.PHOTO_API_URL) {
+              apiUrl = process.env.PHOTO_API_URL;
+            } else {
+              apiUrl = "http://localhost:3000/api/photo-generation-page2";
+            }
             
-            console.log(`[Photo Generate Page2] 🚀 Triggering API processing for job ${queueJobId}`);
+            console.log(`[Photo Generate Page2] 🚀 Triggering API processing for job ${queueJobId} at ${apiUrl}`);
             
-            // In production (Vercel), we need to await the API call to ensure it completes
-            // In serverless environments, background tasks are killed when the function returns
-            try {
-              const response = await fetch(apiUrl, {
+            // Fire and forget - don't await to avoid blocking the mutation response
+            // The API endpoint will process the job asynchronously
+            fetch(apiUrl, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -1604,17 +1612,20 @@ export const appRouter = router({
                 backgrounds: input.formData.backgrounds,
                 styles: input.formData.attire,
               }),
-              });
-              
+            })
+            .then(async (response) => {
               if (!response.ok) {
                 const errorText = await response.text();
                 console.error(`[Photo Generate Page2] ❌ API error for job ${queueJobId}: ${response.status} ${errorText}`);
               } else {
-                console.log(`[Photo Generate Page2] ✅ API processing completed for job ${queueJobId}`);
+                const result = await response.json();
+                console.log(`[Photo Generate Page2] ✅ API processing started for job ${queueJobId}:`, result);
               }
-            } catch (error) {
-              console.error(`[Photo Generate Page2] ❌ API call error:`, error);
-            }
+            })
+            .catch((error) => {
+              console.error(`[Photo Generate Page2] ❌ API call error for job ${queueJobId}:`, error);
+              console.error(`[Photo Generate Page2] API URL was: ${apiUrl}`);
+            });
           }
         } else {
           // Use direct database connection
@@ -1642,17 +1653,22 @@ export const appRouter = router({
           if (queueJob?.id) {
             console.log(`[Photo Generate Page2] ✅ Created queue job ${queueJob.id}`);
             
-            // Trigger API processing (use new page2 API)
-            const apiUrl = process.env.VERCEL_URL 
-              ? `https://${process.env.VERCEL_URL}/api/photo-generation-page2`
-              : process.env.PHOTO_API_URL || "http://localhost:3000/api/photo-generation-page2";
+            // Trigger API processing - use production domain or VERCEL_URL
+            let apiUrl: string;
+            if (process.env.PRODUCTION_DOMAIN) {
+              apiUrl = `https://${process.env.PRODUCTION_DOMAIN}/api/photo-generation-page2`;
+            } else if (process.env.VERCEL_URL && !process.env.VERCEL_URL.includes('localhost')) {
+              apiUrl = `https://${process.env.VERCEL_URL}/api/photo-generation-page2`;
+            } else if (process.env.PHOTO_API_URL) {
+              apiUrl = process.env.PHOTO_API_URL;
+            } else {
+              apiUrl = "http://localhost:3000/api/photo-generation-page2";
+            }
             
-            console.log(`[Photo Generate Page2] 🚀 Triggering API processing for job ${queueJob.id}`);
+            console.log(`[Photo Generate Page2] 🚀 Triggering API processing for job ${queueJob.id} at ${apiUrl}`);
             
-            // In production (Vercel), we need to await the API call to ensure it completes
-            // In serverless environments, background tasks are killed when the function returns
-            try {
-              const response = await fetch(apiUrl, {
+            // Fire and forget - don't await to avoid blocking the mutation response
+            fetch(apiUrl, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -1672,17 +1688,20 @@ export const appRouter = router({
                 backgrounds: input.formData.backgrounds,
                 styles: input.formData.attire,
               }),
-              });
-              
+            })
+            .then(async (response) => {
               if (!response.ok) {
                 const errorText = await response.text();
                 console.error(`[Photo Generate Page2] ❌ API error for job ${queueJob.id}: ${response.status} ${errorText}`);
               } else {
-                console.log(`[Photo Generate Page2] ✅ API processing completed for job ${queueJob.id}`);
+                const result = await response.json();
+                console.log(`[Photo Generate Page2] ✅ API processing started for job ${queueJob.id}:`, result);
               }
-            } catch (error) {
-              console.error(`[Photo Generate Page2] ❌ API call error:`, error);
-            }
+            })
+            .catch((error) => {
+              console.error(`[Photo Generate Page2] ❌ API call error for job ${queueJob.id}:`, error);
+              console.error(`[Photo Generate Page2] API URL was: ${apiUrl}`);
+            });
           }
         }
 
