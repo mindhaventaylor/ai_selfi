@@ -1208,11 +1208,15 @@ export default function GenerateImages() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">{t("generateImages.progress")}</span>
-                  <span className={`text-sm font-bold ${generationProgress === 100 ? 'text-green-500' : 'text-primary'}`}>
-                    {generationProgress}%
+                  <span className={`text-sm font-bold transition-colors duration-300 ${generationProgress === 100 ? 'text-green-500' : 'text-primary'}`}>
+                    {Math.round(generationProgress)}%
                   </span>
                 </div>
-                <Progress value={generationProgress} className="h-2" />
+                <Progress 
+                  value={generationProgress} 
+                  className="h-3" 
+                  animated={isGenerating && generationProgress < 100}
+                />
                 <p className="text-sm text-muted-foreground">
                   {completedImages} {t("generateImages.of")} {totalImagesToGenerate} {t("generateImages.imagesCompleted")}
                 </p>
@@ -1241,10 +1245,10 @@ export default function GenerateImages() {
               {generatedImages.map((image, index) => (
                 <div
                   key={`generated-${image.id || index}`}
-                  className="relative group aspect-square rounded-lg overflow-hidden border-2 border-border hover:border-primary transition-all cursor-pointer"
+                  className="relative group aspect-square rounded-lg overflow-hidden border-2 border-border hover:border-primary hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 cursor-pointer"
                   style={{ 
-                    animation: `fadeIn 0.5s ease-out forwards`,
-                    animationDelay: `${index * 150}ms`,
+                    animation: `slideInUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards`,
+                    animationDelay: `${index * 100}ms`,
                     opacity: 0
                   }}
                   onClick={() => handleDownloadImage(image, index)}
@@ -1252,7 +1256,7 @@ export default function GenerateImages() {
                   <img
                     src={image.url}
                     alt={t("generateImages.generatedImageAlt", { number: index + 1 })}
-                    className="w-full h-full object-cover transition-opacity duration-300"
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = `https://picsum.photos/400/400?random=${index}`;
@@ -1275,13 +1279,18 @@ export default function GenerateImages() {
               {Array.from({ length: totalImagesToGenerate - generatedImages.length }).map((_, index) => (
                 <div
                   key={`loading-${index}`}
-                  className="relative aspect-square rounded-lg overflow-hidden border-2 border-border"
+                  className="relative aspect-square rounded-lg overflow-hidden border-2 border-dashed border-primary/30 bg-primary/5"
                 >
                   <Skeleton className="w-full h-full" />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center space-y-2">
-                      <Sparkles className="w-6 h-6 text-muted-foreground mx-auto animate-pulse" />
-                      <p className="text-xs text-muted-foreground">{t("generateImages.generating")}</p>
+                      <div className="relative">
+                        <Sparkles className="w-8 h-8 text-primary mx-auto animate-pulse" />
+                        <div className="absolute inset-0 w-8 h-8 mx-auto rounded-full bg-primary/20 animate-ping" />
+                      </div>
+                      <p className="text-xs text-muted-foreground font-medium">
+                        {index === 0 ? t("generateImages.generating") : `${t("generateImages.generating")}...`}
+                      </p>
                     </div>
                   </div>
                 </div>

@@ -4,6 +4,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 const supabaseUrl = process.env.SUPABASE_URL ?? "";
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 const geminiApiKey = process.env.GEMINI_API_KEY ?? "";
+// Available models: gemini-2.5-flash-image (default), gemini-3.0-pro (Nano Banana Pro), gemini-3-pro
 const geminiModel = process.env.GEMINI_MODEL_NAME ?? "gemini-2.5-flash-image";
 const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`;
 

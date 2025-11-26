@@ -191,12 +191,38 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(10px) scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
+}
+
+@keyframes progress-pulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(var(--primary), 0.4);
+  }
+  50% {
+    opacity: 0.85;
+    box-shadow: 0 0 16px rgba(var(--primary), 0.6);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-progress-pulse {
+  animation: progress-pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes glow-light {

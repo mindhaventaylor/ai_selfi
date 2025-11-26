@@ -10,9 +10,12 @@ if (!GEMINI_API_KEY) {
   throw new Error("GEMINI_API_KEY environment variable is required");
 }
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
-// Try alternative model names if the primary doesn't work
-// Primary: gemini-2.5-flash-image
-// Alternative: gemini-2.5-flash-preview-image
+// Available models:
+// - gemini-2.5-flash-image (current default)
+// - gemini-2.5-flash-preview-image (alternative)
+// - gemini-3.0-pro (Gemini 3 Pro - includes Nano Banana Pro features)
+// - gemini-3-pro (alternative name for Gemini 3 Pro)
+// Set GEMINI_MODEL_NAME environment variable to use a different model
 const GEMINI_MODEL_NAME = process.env.GEMINI_MODEL_NAME || "gemini-2.5-flash-image";
 const GEMINI_API_URL = `${GEMINI_BASE_URL}/models/${GEMINI_MODEL_NAME}:generateContent`;
 
