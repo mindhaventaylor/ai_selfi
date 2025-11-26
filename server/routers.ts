@@ -1053,8 +1053,38 @@ export const appRouter = router({
         offset: z.number().min(0).default(0),
       }).optional())
       .query(async ({ ctx, input }) => {
-      const db = await getDb();
-        if (!db) return { photos: [], total: 0 };
+        const db = await getDb();
+        
+        // REST API fallback when direct DB connection is not available
+        if (!db) {
+          try {
+            let query = supabaseServer
+              .from('photos')
+              .select('*', { count: 'exact' })
+              .eq('userId', ctx.user.id)
+              .order('createdAt', { ascending: false })
+              .range(input?.offset || 0, (input?.offset || 0) + (input?.limit || 50) - 1);
+
+            if (input?.sortBy === "favourites") {
+              query = query.eq('isFavorite', true);
+            }
+
+            const { data, count, error } = await query;
+
+            if (error) {
+              console.error("[Photo List] REST API error:", error);
+              return { photos: [], total: 0 };
+            }
+
+            return {
+              photos: data || [],
+              total: count || 0,
+            };
+          } catch (error) {
+            console.error("[Photo List] REST API fallback failed:", error);
+            return { photos: [], total: 0 };
+          }
+        }
 
         const whereConditions = [eq(photos.userId, ctx.user.id)];
         if (input?.sortBy === "favourites") {
@@ -1071,8 +1101,8 @@ export const appRouter = router({
 
         // Get total count
         const totalPhotos = await db
-        .select()
-        .from(photos)
+          .select()
+          .from(photos)
           .where(and(...whereConditions));
 
         return { 
@@ -1283,9 +1313,9 @@ export const appRouter = router({
           apiUrl = `https://${PRODUCTION_DOMAIN}/api/photo-generation`;
         } else if (process.env.PHOTO_API_URL) {
           apiUrl = process.env.PHOTO_API_URL;
-        } else {
-          // Development: use localhost
-          apiUrl = `http://localhost:${process.env.PORT || 3000}/api/photo-generation`;
+          } else {
+            // Development: use localhost
+            apiUrl = `http://localhost:${process.env.PORT || 3000}/api/photo-generation`;
         }
         
         console.log(`[Photo Generate] 🚀 Triggering API processing at ${apiUrl}...`);
@@ -1772,7 +1802,34 @@ export const appRouter = router({
       .input(z.object({ photoId: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
-        if (!db) throw new Error(getServerString("databaseNotAvailable"));
+        
+        // REST API fallback
+        if (!db) {
+          // Verify ownership and get current state
+          const { data: photo, error: fetchError } = await supabaseServer
+            .from('photos')
+            .select('id, isFavorite')
+            .eq('id', input.photoId)
+            .eq('userId', ctx.user.id)
+            .single();
+
+          if (fetchError || !photo) {
+            throw new Error(getServerString("photoNotFound"));
+          }
+
+          // Toggle favorite
+          const { error: updateError } = await supabaseServer
+            .from('photos')
+            .update({ isFavorite: !photo.isFavorite })
+            .eq('id', input.photoId);
+
+          if (updateError) {
+            console.error("[Photo toggleFavorite] REST API error:", updateError);
+            throw new Error("Failed to update photo");
+          }
+
+          return { success: true, isFavorite: !photo.isFavorite };
+        }
 
         // Verify ownership
         const [photo] = await db
@@ -1797,7 +1854,34 @@ export const appRouter = router({
       .input(z.object({ photoId: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
-        if (!db) throw new Error(getServerString("databaseNotAvailable"));
+        
+        // REST API fallback
+        if (!db) {
+          // Verify ownership
+          const { data: photo, error: fetchError } = await supabaseServer
+            .from('photos')
+            .select('id')
+            .eq('id', input.photoId)
+            .eq('userId', ctx.user.id)
+            .single();
+
+          if (fetchError || !photo) {
+            throw new Error(getServerString("photoNotFound"));
+          }
+
+          // Delete photo
+          const { error: deleteError } = await supabaseServer
+            .from('photos')
+            .delete()
+            .eq('id', input.photoId);
+
+          if (deleteError) {
+            console.error("[Photo delete] REST API error:", deleteError);
+            throw new Error("Failed to delete photo");
+          }
+
+          return { success: true };
+        }
 
         // Verify ownership
         const [photo] = await db
@@ -1819,9 +1903,25 @@ export const appRouter = router({
       .input(z.object({ photoIds: z.array(z.number()) }))
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
-        if (!db) throw new Error(getServerString("databaseNotAvailable"));
-
+        
         if (input.photoIds.length === 0) {
+          return { success: true };
+        }
+
+        // REST API fallback
+        if (!db) {
+          // Delete photos (only user's own)
+          const { error: deleteError } = await supabaseServer
+            .from('photos')
+            .delete()
+            .eq('userId', ctx.user.id)
+            .in('id', input.photoIds);
+
+          if (deleteError) {
+            console.error("[Photo deleteMany] REST API error:", deleteError);
+            throw new Error("Failed to delete photos");
+          }
+
           return { success: true };
         }
 
@@ -1839,7 +1939,34 @@ export const appRouter = router({
       .input(z.object({ photoId: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
-        if (!db) throw new Error(getServerString("databaseNotAvailable"));
+        
+        // REST API fallback
+        if (!db) {
+          // Verify ownership and get current count
+          const { data: photo, error: fetchError } = await supabaseServer
+            .from('photos')
+            .select('id, downloadCount')
+            .eq('id', input.photoId)
+            .eq('userId', ctx.user.id)
+            .single();
+
+          if (fetchError || !photo) {
+            throw new Error(getServerString("photoNotFound"));
+          }
+
+          // Increment download count
+          const { error: updateError } = await supabaseServer
+            .from('photos')
+            .update({ downloadCount: (photo.downloadCount || 0) + 1 })
+            .eq('id', input.photoId);
+
+          if (updateError) {
+            console.error("[Photo incrementDownload] REST API error:", updateError);
+            throw new Error("Failed to update download count");
+          }
+
+          return { success: true };
+        }
 
         // Verify ownership and increment download count
         const [photo] = await db

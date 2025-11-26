@@ -103,12 +103,12 @@ if (!rootElement) {
 
   try {
     createRoot(rootElement).render(
-      <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>
-          <App />
-        </QueryClientProvider>
-      </trpc.Provider>
-    );
+  <trpc.Provider client={trpcClient} queryClient={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
+  </trpc.Provider>
+);
     
     // Clear timeout if app renders successfully
     clearTimeout(loadingTimeout);
@@ -128,7 +128,7 @@ if (!rootElement) {
           </button>
           <button onclick="localStorage.clear(); sessionStorage.clear(); window.location.reload(true)" style="padding: 10px 20px; margin: 5px; cursor: pointer; background: #dc3545; color: white; border: none; border-radius: 4px;">
             Clear All Data & Reload
-          </button>
+        </button>
         </div>
         <p style="margin-top: 20px; font-size: 12px; color: #666;">
           If the problem persists, try opening the site in an incognito/private window.
