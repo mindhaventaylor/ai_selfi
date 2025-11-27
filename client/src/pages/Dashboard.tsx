@@ -5,17 +5,12 @@ import { usePostHogVariant } from "@/hooks/usePostHogVariant";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   Sparkles, 
   X, 
   ArrowDown, 
-  Play, 
-  Brain, 
-  Image as ImageIcon,
-  HelpCircle,
-  ArrowRight
+  Play
 } from "lucide-react";
 import DashboardV2 from "./DashboardV2";
 import { safeLocalStorage } from "@/utils/localStorage";
@@ -187,87 +182,6 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
-
-          {/* Feature Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
-            {/* Train Model Card */}
-            <Card className="bg-card/50">
-              <CardContent className="p-4 md:p-6 space-y-3 md:space-y-4">
-                  <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <Brain className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                    <h3 className="text-lg md:text-xl font-bold">{t("dashboard.trainModel")}</h3>
-                  </div>
-                  <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50 text-xs">
-                    {t("dashboard.newAIModel")}
-                  </Badge>
-                </div>
-                <p className="text-sm md:text-base text-muted-foreground">{t("dashboard.createCustomAI")}</p>
-                <div className="aspect-video bg-muted rounded-lg overflow-hidden mb-3 md:mb-4">
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-yellow-500/20 to-yellow-500/5">
-                    <div className="text-center space-y-2">
-                      <Play className="w-6 h-6 md:w-8 md:h-8 mx-auto text-yellow-400" />
-                      <div className="text-xs text-muted-foreground">{t("dashboard.videoTime")}</div>
-                    </div>
-                  </div>
-                </div>
-                <Button
-                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-white rounded-full text-sm md:text-base"
-                  size="lg"
-                >
-                  {t("dashboard.startTraining")}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Gallery Card */}
-            <Card className="bg-card/50">
-              <CardContent className="p-4 md:p-6 space-y-3 md:space-y-4">
-                <div className="flex items-center gap-2 md:gap-3">
-                  <ImageIcon className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                  <h3 className="text-lg md:text-xl font-bold">{t("dashboard.gallery")}</h3>
-                </div>
-                <p className="text-sm md:text-base text-muted-foreground">{t("dashboard.exploreCreations")}</p>
-                <div className="aspect-video bg-muted rounded-lg overflow-hidden mb-3 md:mb-4 grid grid-cols-3 gap-1">
-                  {gridPhotos.slice(0, 6).map((photo, idx) => (
-                    <div key={idx} className="aspect-square overflow-hidden">
-                      <img
-                        src={photo}
-                        alt={t("dashboard.galleryAlt", { number: idx + 1 })}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-              ))}
-            </div>
-                <Button
-                  className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full text-sm md:text-base"
-                  size="lg"
-                >
-                  {t("dashboard.viewGallery")}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* How It Works Card */}
-            <Card className="bg-card/50">
-              <CardContent className="p-4 md:p-6 space-y-3 md:space-y-4">
-                <div className="flex items-center gap-2 md:gap-3">
-                  <HelpCircle className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                  <h3 className="text-lg md:text-xl font-bold">{t("dashboard.howItWorks")}</h3>
-                </div>
-                <p className="text-sm md:text-base text-muted-foreground">{t("dashboard.learnProcess")}</p>
-                <div className="aspect-video bg-muted rounded-lg overflow-hidden mb-3 md:mb-4 flex items-center justify-center bg-gradient-to-br from-green-500/20 to-green-500/5">
-                  <Play className="w-10 h-10 md:w-12 md:h-12 text-green-400" />
-                </div>
-                <Button
-                  className="w-full bg-green-500 hover:bg-green-600 text-white rounded-full text-sm md:text-base"
-                  size="lg"
-                >
-                  {t("dashboard.moreInfo")}
-                </Button>
-          </CardContent>
-        </Card>
-          </div>
         </div>
       </div>
     </div>

@@ -21,7 +21,7 @@ export default function Models() {
         {/* Feature Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {/* Train New Model Card */}
-          <Card className="bg-card/50 border-border">
+          <Card className="bg-blue-500/10 border-blue-500/20">
             <CardContent className="p-8">
               <div className="space-y-6 text-center">
                 {/* Icon */}
@@ -52,13 +52,13 @@ export default function Models() {
           </Card>
 
           {/* View Trained Models Card */}
-          <Card className="bg-card/50 border-border">
+          <Card className="bg-pink-500/10 border-pink-500/20">
             <CardContent className="p-8">
               <div className="space-y-6 text-center">
                 {/* Icon */}
                 <div className="flex justify-center">
-                  <div className="w-16 h-16 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                    <FlaskConical className="w-8 h-8 text-purple-400" />
+                  <div className="w-16 h-16 rounded-lg bg-pink-500/20 flex items-center justify-center">
+                    <FlaskConical className="w-8 h-8 text-pink-400" />
                   </div>
                 </div>
 
@@ -72,7 +72,7 @@ export default function Models() {
 
                 {/* Button */}
                 <Button
-                  className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+                  className="w-full bg-pink-500 hover:bg-pink-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
                   onClick={() => setLocation("/dashboard/models/view")}
                 >

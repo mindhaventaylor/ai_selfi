@@ -59,7 +59,7 @@ export default function SettingsGeneral() {
 
         <div className="space-y-6">
           {/* Language Section */}
-          <Card className="bg-card/50 border-border">
+          <Card className="bg-purple-500/10 border-purple-500/20">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
@@ -115,7 +115,7 @@ export default function SettingsGeneral() {
           </Card>
 
           {/* Account Section */}
-          <Card className="bg-card/50 border-border">
+          <Card className="bg-red-500/10 border-red-500/20">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
