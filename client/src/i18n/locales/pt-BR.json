@@ -366,7 +366,7 @@
     "termsOfService": "Termos de Serviço",
     "and": "e",
     "privacyPolicy": "Política de Privacidade",
-    "brandName": "aiselfie.org",
+    "brandName": "Aiselfie",
     "altText": {
       "professionalPhoto": "Foto profissional {{number}}",
       "logo": "AISelfie"
@@ -681,12 +681,12 @@
     "unknownError": "Erro desconhecido ocorreu"
   },
   "startHere": {
-    "title": "Comece Aqui: Aprenda como funciona o AISelfie.org",
+    "title": "Comece Aqui: Aprenda como funciona o Aiselfie",
     "subtitle": "Se esta é sua primeira vez aqui, sugiro assistir ao seguinte vídeo curto para aprender como o aplicativo funciona.",
     "aiselfies": "AISelfies",
     "convertSelfiesToProfessional": "Transforme seus selfies em fotos profissionais",
     "generateImages": "Gerar Imagens →",
-    "aiselfiIn60Seconds": "AISelfie.org em menos de 60'",
+    "aiselfiIn60Seconds": "Aiselfie em menos de 60'",
     "explainHowAppWorks": "Explique como o aplicativo funciona em menos de 60 segundos",
     "videoPlaceholder": "Espaço reservado para vídeo",
     "videoWillPlayHere": "O vídeo será reproduzido aqui",
@@ -840,7 +840,7 @@
   },
   "afiliados": {
     "title": "Ganhe 30% de Comissão por cada venda que você gerar",
-    "subtitle": "Junte-se ao programa de afiliados do AISelfie.org e comece a gerar renda passiva promovendo nossa ferramenta de criação de fotos de perfil com IA.",
+    "subtitle": "Junte-se ao programa de afiliados do Aiselfie e comece a gerar renda passiva promovendo nossa ferramenta de criação de fotos de perfil com IA.",
     "badge": "Programa de Afiliados",
     "registerAsAffiliate": "Registre-se como Afiliado!",
     "howItWorks": "Como Funciona",
@@ -850,7 +850,7 @@
     "step1Desc": "Registre-se em apenas alguns minutos. Não é necessário cartão de crédito. Obtenha acesso instantâneo ao seu painel de afiliado e materiais de marketing.",
     "step2": "Passo 2",
     "step2Title": "Compartilhe",
-    "step2Subtitle": "Promova AISelfie.org com seu link único",
+    "step2Subtitle": "Promova Aiselfie com seu link único",
     "step2Desc": "Compartilhe seu link único de afiliado em seu blog, redes sociais ou com sua rede de contatos.",
     "step3": "Passo 3",
     "step3Title": "Ganhe",
@@ -916,7 +916,7 @@
   },
   "giftCards": {
     "title": "Gift Cards",
-    "subtitle": "Presenteie AISelfie.org para amigos e familiares.",
+    "subtitle": "Presenteie Aiselfie para amigos e familiares.",
     "buyGiftCard": "Comprar Gift Card",
     "faqTitle": "Perguntas Frequentes",
     "faq": [
@@ -1032,7 +1032,7 @@
   "supportReviews": {
     "leaveReview": "Deixar uma Avaliação",
     "weWouldLove": "Adoraríamos saber sua experiência com AISelfies!",
-    "doYouEnjoy": "Você gosta de usar aiselfie.org?",
+    "doYouEnjoy": "Você gosta de usar Aiselfie?",
     "howWouldYouRate": "Em uma escala de 1 a 5, como você nos classificaria?",
     "continue": "Continuar",
     "whatUsersSay": "O Que os Usuários Dizem",
@@ -1045,7 +1045,7 @@
     "readMore": "Ler mais",
     "seeMore": "Ver mais",
     "showLess": "Ver menos",
-    "brandName": "aiselfie.org",
+    "brandName": "Aiselfie",
     "reviews": [
       {
         "name": "Sofia Bianchi",
@@ -1255,7 +1255,7 @@
     "redirecting": "Redirecionando para WhatsApp...",
     "notRedirected": "Se você não for redirecionado automaticamente,",
     "clickHere": "clique aqui",
-    "message": "Olá, preciso de ajuda com AISelfie.org"
+    "message": "Olá, preciso de ajuda com Aiselfie"
   },
   "home": {
     "examples": [
@@ -1289,7 +1289,7 @@
       "professionalPhotoNumber": "Foto Profissional {{number}}"
     },
     "testimonial": {
-      "text": "Trabalhei com 450 profissionais que querem potencializar sua marca pessoal, e um de seus maiores medos é tirar fotos. Com aiselfie.org eles podem obter imagens profissionais sem o desconforto de uma sessão tradicional, sentindo-se seguros e profissionais em cada foto.",
+      "text": "Trabalhei com 450 profissionais que querem potencializar sua marca pessoal, e um de seus maiores medos é tirar fotos. Com Aiselfie eles podem obter imagens profissionais sem o desconforto de uma sessão tradicional, sentindo-se seguros e profissionais em cada foto.",
       "attribution": "- Daniela Mora Solís • Consultora de Marca Pessoal +400 clientes bem-sucedidos | Top 200 criadores de conteúdo em espanhol do LinkedIn 2024 (Favikon) #64 em espanhol | #1 na Costa Rica | Palestrante TEDx"
     },
     "testimonialsTitlePart1": "Vale a pena uma foto",
@@ -1594,7 +1594,7 @@
     "eligible4": "Você solicita um reembolso dentro de 30 dias da compra",
     "howToRequest": "Como Solicitar um Reembolso",
     "howToRequestDesc": "Para solicitar um reembolso, entre em contato com nossa equipe de suporte através de um dos seguintes métodos:",
-    "method1": "Envie-nos um e-mail em support@aiselfi.es",
+    "method1": "Envie-nos um e-mail em support@aiselfie.org",
     "method2": "Use o formulário de suporte em seu painel",
     "method3": "Entre em contato conosco através do WhatsApp (se disponível)",
     "requestDetails": "Por favor, inclua seu número de pedido e uma breve explicação do motivo pelo qual está solicitando um reembolso. Processaremos seu reembolso em 5-7 dias úteis.",

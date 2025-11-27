@@ -259,7 +259,7 @@ function DashboardLayoutContent({
                       alt="Logo"
                     />
                   <span className="font-bold text-lg bg-gradient-to-r from-pink-400 to-orange-500 bg-clip-text text-transparent">
-                    Alselfi.es
+                    Alselfie
                     </span>
                 </div>
               )}
