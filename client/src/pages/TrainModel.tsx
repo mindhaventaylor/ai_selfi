@@ -292,12 +292,12 @@ export default function TrainModel() {
 
   // Bad photos examples (with red X)
   const badPhotos = [
-    "/image.jpg",
-    "/image_1.jpg",
-    "/image_10.jpg",
-    "/image_100.jpg",
-    "/image_101.jpg",
-    "/over100_2.jpg",
+    "/train_model_bad_images/train model bad 1.jpg",
+    "/train_model_bad_images/train model bad 2.jpg",
+    "/train_model_bad_images/train model bad 3.jpg",
+    "/train_model_bad_images/train model bad 4.jpg",
+    "/train_model_bad_images/train model bad 5.jpg",
+    "/train_model_bad_images/train model bad 6.jpg",
   ];
 
   return (

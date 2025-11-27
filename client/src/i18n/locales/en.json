@@ -112,7 +112,7 @@
         "No awkward poses - AI does the work",
         "Instant results, immediate download"
       ],
-      "stats": "Over 25,256 professional photos created"
+      "stats": "Over 25.256 professional photos created"
     }
   },
   "styles": {
@@ -147,7 +147,7 @@
     "title": "Boost your personal brand",
     "subtitle": "Get your professional photos in minutes.",
     "button": "Create my professional photos",
-    "stats": "More than 25,256 professional photos created"
+    "stats": "More than 25.256 professional photos created"
   },
   "pricing": {
     "title": "Your professional photo for 5x less than a studio session",
@@ -364,7 +364,7 @@
     "termsOfService": "Terms of Service",
     "and": "and",
     "privacyPolicy": "Privacy Policy",
-    "brandName": "aiselfie.org",
+    "brandName": "Aiselfie",
     "altText": {
       "professionalPhoto": "Professional photo {{number}}",
       "logo": "AISelfie"
@@ -701,12 +701,12 @@
     "unknownError": "Unknown error occurred"
   },
   "startHere": {
-    "title": "Start Here: Learn how AISelfie.org works",
+    "title": "Start Here: Learn how Aiselfie works",
     "subtitle": "If this is your first time here, I suggest watching the following short video to learn how the app works.",
     "aiselfies": "AISelfies",
     "convertSelfiesToProfessional": "Convert your selfies into professional photos",
     "generateImages": "Generate Images →",
-    "aiselfiIn60Seconds": "AISelfie.org in less than 60'",
+    "aiselfiIn60Seconds": "Aiselfie in less than 60'",
     "explainHowAppWorks": "Explain how the app works in less than 60 seconds",
     "videoPlaceholder": "Video placeholder",
     "videoWillPlayHere": "Video will play here",
@@ -860,7 +860,7 @@
   },
   "afiliados": {
     "title": "Earn 30% Commission for every sale you generate",
-    "subtitle": "Join the AISelfie.org affiliate program and start generating passive income by promoting our AI profile photo creation tool.",
+    "subtitle": "Join the Aiselfie affiliate program and start generating passive income by promoting our AI profile photo creation tool.",
     "badge": "Affiliate Program",
     "registerAsAffiliate": "Register as Affiliate!",
     "howItWorks": "How It Works",
@@ -870,7 +870,7 @@
     "step1Desc": "Register in just a few minutes. No credit card required. Get instant access to your affiliate dashboard and marketing materials.",
     "step2": "Step 2",
     "step2Title": "Share",
-    "step2Subtitle": "Promote AISelfie.org with your unique link",
+    "step2Subtitle": "Promote Aiselfie with your unique link",
     "step2Desc": "Share your unique affiliate link on your blog, social media or with your network.",
     "step3": "Step 3",
     "step3Title": "Earn",
@@ -936,7 +936,7 @@
   },
   "giftCards": {
     "title": "Gift Cards",
-    "subtitle": "Give AISelfie.org to friends and family.",
+    "subtitle": "Give Aiselfie to friends and family.",
     "buyGiftCard": "Buy Gift Card",
     "faqTitle": "Frequently Asked Questions",
     "faq": [
@@ -1052,7 +1052,7 @@
   "supportReviews": {
     "leaveReview": "Leave a Review",
     "weWouldLove": "We would love to know your experience with AISelfies!",
-    "doYouEnjoy": "Do you enjoy using aiselfie.org?",
+    "doYouEnjoy": "Do you enjoy using Aiselfie?",
     "howWouldYouRate": "On a scale of 1 to 5, how would you rate us?",
     "continue": "Continue",
     "whatUsersSay": "What Users Say",
@@ -1065,7 +1065,7 @@
     "readMore": "Read more",
     "seeMore": "See more",
     "showLess": "Show less",
-    "brandName": "aiselfie.org",
+    "brandName": "Aiselfie",
     "reviews": [
       {
         "name": "Sofia Bianchi",
@@ -1275,7 +1275,7 @@
     "redirecting": "Redirecting to WhatsApp...",
     "notRedirected": "If you are not automatically redirected,",
     "clickHere": "click here",
-    "message": "Hello, I need help with AISelfie.org"
+    "message": "Hello, I need help with Aiselfie"
   },
   "home": {
     "examples": [
@@ -1309,7 +1309,7 @@
       "professionalPhotoNumber": "Professional Photo {{number}}"
     },
     "testimonial": {
-      "text": "I've worked with 450 professionals who want to boost their personal brand, and one of their biggest fears is taking photos. With aiselfie.org they can get professional images without the discomfort of a traditional session, feeling confident and professional in every photo.",
+      "text": "I've worked with 450 professionals who want to boost their personal brand, and one of their biggest fears is taking photos. With Aiselfie they can get professional images without the discomfort of a traditional session, feeling confident and professional in every photo.",
       "attribution": "- Daniela Mora Solís • Personal Brand Consultant +400 successful clients | Top 200 Spanish-speaking LinkedIn creators 2024 (Favikon) #64 in Spanish | #1 in Costa Rica | TEDx speaker"
     },
     "testimonialsTitlePart1": "Is a",
@@ -1317,7 +1317,7 @@
     "testimonialsTitlePart2": "photo with",
     "testimonialsTitleAI": "AI",
     "testimonialsTitlePart3": "worth it? See what they say.",
-    "testimonialsSubtitle": "More than 25,256 professional photos with artificial intelligence created... and counting.",
+    "testimonialsSubtitle": "More than 25256 professional photos with artificial intelligence created... and counting.",
     "styles": {
       "badgePopular": "Popular",
       "badgeNew": "New",
@@ -1614,7 +1614,7 @@
     "eligible4": "You request a refund within 30 days of purchase",
     "howToRequest": "How to Request a Refund",
     "howToRequestDesc": "To request a refund, please contact our support team through one of the following methods:",
-    "method1": "Email us at support@aiselfi.es",
+    "method1": "Email us at support@aiselfie.org",
     "method2": "Use the support form in your dashboard",
     "method3": "Contact us through WhatsApp (if available)",
     "requestDetails": "Please include your order number and a brief explanation of why you're requesting a refund. We'll process your refund within 5-7 business days.",
