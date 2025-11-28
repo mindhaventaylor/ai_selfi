@@ -282,12 +282,12 @@ export default function TrainModel() {
 
   // Good photos examples
   const goodPhotos = [
-    "/image.jpg",
-    "/image_1.jpg",
-    "/image_10.jpg",
-    "/image_100.jpg",
-    "/image_101.jpg",
-    "/over100_1.jpg",
+    "/tips_best_results1.jpg",
+    "/tips_best_results2.jpg",
+    "/tips_best_results3.jpg",
+    "/tips_best_results4.jpg",
+    "/tips_best_results5.jpg",
+    "/tips_best_results6.jpg",
   ];
 
   // Bad photos examples (with red X)
