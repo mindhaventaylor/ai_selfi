@@ -26,11 +26,11 @@
       window.__BUILD_TIME__ = new Date().toISOString();
       console.log('[App] Build time:', window.__BUILD_TIME__);
       
-      // Check if app loads within 5 seconds
-      setTimeout(() => {
+      // Check if app loads within 10 seconds (increased from 5s to account for slow networks)
+      const loadingTimeout = setTimeout(() => {
         const root = document.getElementById('root');
         if (root && root.children.length === 0) {
-          console.error('[App] App failed to load - likely cached bundle issue');
+          console.error('[App] App failed to load after 10 seconds - likely cached bundle issue');
           root.innerHTML = `
             <div style="padding: 20px; font-family: sans-serif; text-align: center; max-width: 600px; margin: 50px auto;">
               <h1>Loading Issue Detected</h1>
@@ -46,7 +46,18 @@
             </div>
           `;
         }
-      }, 5000);
+      }, 10000);
+      
+      // Clear timeout if app loads successfully
+      // The main.tsx will clear this when React renders
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          const root = document.getElementById('root');
+          if (root && root.children.length > 0) {
+            clearTimeout(loadingTimeout);
+          }
+        }, 100);
+      });
     </script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- Analytics script will be conditionally injected if env vars are set -->

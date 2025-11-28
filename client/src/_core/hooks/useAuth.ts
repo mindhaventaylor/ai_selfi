@@ -15,6 +15,11 @@ export function useAuth(options?: UseAuthOptions) {
   const meQuery = trpc.auth.me.useQuery(undefined, {
     retry: false,
     refetchOnWindowFocus: false,
+    staleTime: 30 * 1000, // 30 seconds - treat data as fresh for 30s
+    gcTime: 5 * 60 * 1000, // 5 minutes - cache data for 5 minutes
+    // Don't block UI if query fails or times out - allow UI to render
+    // The loading state will resolve even if the query fails
+    throwOnError: false,
   });
 
   const logoutMutation = trpc.auth.logout.useMutation({
@@ -108,6 +113,9 @@ export function useAuth(options?: UseAuthOptions) {
       // Silently fail - localStorage might be full, disabled, or in private mode
       console.warn("[useAuth] Could not write to localStorage:", e);
     }
+    
+    // Loading state - will resolve when query completes (success or failure)
+    // The fetch timeout ensures it won't hang indefinitely
     return {
       user: meQuery.data ?? null,
       loading: meQuery.isLoading || logoutMutation.isPending,
@@ -118,6 +126,7 @@ export function useAuth(options?: UseAuthOptions) {
     meQuery.data,
     meQuery.error,
     meQuery.isLoading,
+    meQuery.isFetching,
     logoutMutation.error,
     logoutMutation.isPending,
   ]);
