@@ -259,7 +259,7 @@ function DashboardLayoutContent({
                       alt="Logo"
                     />
                   <span className="font-bold text-lg bg-gradient-to-r from-pink-400 to-orange-500 bg-clip-text text-transparent">
-                    Alselfi.es
+                    Alselfie
                     </span>
                 </div>
               )}
@@ -394,6 +394,27 @@ function DashboardLayoutContent({
                   aria-label="Instagram"
                 >
                   <Instagram className="h-4 w-4" />
+                </a>
+                <a
+                  href="https://wa.me/18137291689"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="WhatsApp"
+                >
+                  <svg 
+                    className="h-4 w-4" 
+                    style={{ transform: 'scale(1.15)' }}
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="1.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/>
+                    <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/>
+                  </svg>
                 </a>
               </div>
             </div>

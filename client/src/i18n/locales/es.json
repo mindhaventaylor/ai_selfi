@@ -103,7 +103,7 @@
       "cost": "Costo promedio: $150-$500"
     },
     "ai": {
-      "title": "Tu Sesión de Fotos con AIselfie.org",
+      "title": "Tu Sesión de Fotos con Aiselfie",
       "items": [
         "Sube selfies desde tu celular (5 minutos)",
         "Elige entre 100+ poses e ideas profesionales",
@@ -122,7 +122,7 @@
     "cta": "Crea Tus Fotos Ahora"
   },
   "howItWorks": {
-    "title": "Cómo funciona AISelfie.org",
+    "title": "Cómo funciona Aiselfie",
     "steps": [
       {
         "title": "Sube tus Selfies",
@@ -147,7 +147,7 @@
     "title": "Potencia tu marca personal",
     "subtitle": "Consigue tus fotos profesionales en minutos.",
     "button": "Crear mis fotos profesionales",
-    "stats": "Más de 25,256 fotos profesionales creadas"
+    "stats": "Más de 25.256 fotos profesionales creadas"
   },
   "pricing": {
     "title": "Tu foto profesional por 5x menos que una sesión de estudio",
@@ -672,12 +672,12 @@
     "unknownError": "Ocurrió un error desconocido"
   },
   "startHere": {
-    "title": "Empieza aquí: Aprende cómo funciona AISelfie.org",
+    "title": "Empieza aquí: Aprende cómo funciona Aiselfie",
     "subtitle": "Si es tu primera vez aquí, te sugiero ver el siguiente corto video para aprender cómo funciona la app.",
     "aiselfies": "AISelfies",
     "convertSelfiesToProfessional": "Convierte tus selfies en fotos profesionales",
     "generateImages": "Generar Imágenes →",
-    "aiselfiIn60Seconds": "AISelfie.org en menos de 60'",
+    "aiselfiIn60Seconds": "Aiselfie en menos de 60'",
     "explainHowAppWorks": "Explique cómo funciona la app en menos de 60 segundos",
     "videoPlaceholder": "Video placeholder",
     "videoWillPlayHere": "Video will play here",
@@ -831,7 +831,7 @@
   },
   "afiliados": {
     "title": "Gana el 30% de Comisión por cada venta que generes",
-    "subtitle": "Únete al programa de afiliados de AISelfie.org y comienza a generar ingresos pasivos promocionando nuestra herramienta de creación de fotos de perfil con IA.",
+    "subtitle": "Únete al programa de afiliados de Aiselfie y comienza a generar ingresos pasivos promocionando nuestra herramienta de creación de fotos de perfil con IA.",
     "badge": "Programa de Afiliados",
     "registerAsAffiliate": "¡Regístrate como Afiliado!",
     "howItWorks": "Cómo Funciona",
@@ -841,7 +841,7 @@
     "step1Desc": "Regístrate en solo unos minutos. No se requiere tarjeta de crédito. Obtén acceso instantáneo a tu panel de afiliado y materiales de marketing.",
     "step2": "Paso 2",
     "step2Title": "Comparte",
-    "step2Subtitle": "Promociona AISelfie.org con tu enlace único",
+    "step2Subtitle": "Promociona Aiselfie con tu enlace único",
     "step2Desc": "Comparte tu enlace único de afiliado en tu blog, redes sociales o con tu red de contactos.",
     "step3": "Paso 3",
     "step3Title": "Gana",
@@ -907,7 +907,7 @@
   },
   "giftCards": {
     "title": "Gift Cards",
-    "subtitle": "Regala AlSelfi.es a amigos y familia.",
+    "subtitle": "Regala AlSelfie a amigos y familia.",
     "buyGiftCard": "Comprar Gift Card",
     "faqTitle": "Preguntas Frecuentes",
     "faq": [
@@ -1023,7 +1023,7 @@
   "supportReviews": {
     "leaveReview": "Dejar una Reseña",
     "weWouldLove": "¡Nos encantaría conocer tu experiencia con AISelfies!",
-    "doYouEnjoy": "¿Disfrutas usando aiselfie.org?",
+    "doYouEnjoy": "¿Disfrutas usando Aiselfie?",
     "howWouldYouRate": "En una escala del 1 al 5, ¿cómo nos calificarías?",
     "continue": "Continuar",
     "whatUsersSay": "Lo que Dicen los Usuarios",
@@ -1036,7 +1036,7 @@
     "readMore": "Leer mas",
     "seeMore": "Ver más",
     "showLess": "Ver menos",
-    "brandName": "aiselfie.org",
+    "brandName": "Aiselfie",
     "reviews": [
       {
         "name": "Sofia Bianchi",
@@ -1246,7 +1246,7 @@
     "redirecting": "Redirigiendo a WhatsApp...",
     "notRedirected": "Si no eres redirigido automáticamente,",
     "clickHere": "haz clic aquí",
-    "message": "Hola, necesito ayuda con AISelfie.org"
+    "message": "Hola, necesito ayuda con Aiselfie"
   },
   "home": {
     "examples": [
@@ -1280,7 +1280,7 @@
       "professionalPhotoNumber": "Foto Profesional {{number}}"
     },
     "testimonial": {
-      "text": "He trabajado con 450 profesionales que quieren potenciar su marca personal, y uno de sus mayores miedos es tomarse fotos. Con aiselfie.org pueden obtener imágenes profesionales sin la incomodidad de una sesión tradicional, sintiéndose seguros y profesionales en cada foto.",
+      "text": "He trabajado con 450 profesionales que quieren potenciar su marca personal, y uno de sus mayores miedos es tomarse fotos. Con Aiselfie pueden obtener imágenes profesionales sin la incomodidad de una sesión tradicional, sintiéndose seguros y profesionales en cada foto.",
       "attribution": "- Daniela Mora Solís • Consultora de marca personal +400 clientes exitosos | Top 200 creadores hispanohablantes de Linkedin 2024 (Favikon) #64 en español | #1 en Costa Rica | TEDx speaker"
     },
     "testimonialsTitlePart1": "¿Vale la pena una foto",
@@ -1319,7 +1319,7 @@
     "termsOfService": "Términos de Servicio",
     "and": "y",
     "privacyPolicy": "Política de Privacidad",
-    "brandName": "aiselfie.org",
+    "brandName": "Aiselfie",
     "altText": {
       "professionalPhoto": "Foto profesional {{number}}",
       "logo": "AISelfie"
@@ -1593,7 +1593,7 @@
     "eligible4": "Solicitas un reembolso dentro de los 30 días posteriores a la compra",
     "howToRequest": "Cómo Solicitar un Reembolso",
     "howToRequestDesc": "Para solicitar un reembolso, por favor contacta a nuestro equipo de soporte a través de uno de los siguientes métodos:",
-    "method1": "Envíanos un correo a support@aiselfi.es",
+    "method1": "Envíanos un correo a support@aiselfie.org",
     "method2": "Usa el formulario de soporte en tu panel de control",
     "method3": "Contáctanos a través de WhatsApp (si está disponible)",
     "requestDetails": "Por favor incluye tu número de pedido y una breve explicación de por qué estás solicitando un reembolso. Procesaremos tu reembolso dentro de 5-7 días hábiles.",

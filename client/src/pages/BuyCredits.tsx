@@ -105,7 +105,7 @@ export default function BuyCredits() {
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           {/* Starter Pack */}
-          <Card className="bg-card/50 border-border">
+          <Card className="bg-blue-500/10 border-blue-500/20">
             <CardContent className="p-8">
               <div className="space-y-6">
                 {/* Icon */}
@@ -158,7 +158,7 @@ export default function BuyCredits() {
           </Card>
 
           {/* Pro Pack */}
-          <Card className="bg-card/50 border-border relative">
+          <Card className="bg-yellow-500/10 border-yellow-500/20 relative">
             <Badge className="absolute -top-3 right-4 bg-yellow-500 text-yellow-900 border-yellow-500">
               {t("buyCredits.mostPopular")}
             </Badge>
@@ -231,7 +231,7 @@ export default function BuyCredits() {
           </Card>
 
           {/* Premium Pack */}
-          <Card className="bg-card/50 border-border">
+          <Card className="bg-purple-500/10 border-purple-500/20">
             <CardContent className="p-8">
               <div className="space-y-6">
                 {/* Icon */}
