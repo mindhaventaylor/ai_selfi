@@ -170,7 +170,7 @@ function DashboardLayoutContent({
     { icon: Settings, label: t("dashboardLayout.settings"), path: "/dashboard/settings/general" },
   ];
   
-  // Filter out models menu item for page2 variant
+  // Filter out models menu item for page2 variant (but keep Start Here)
   const menuItems = isPage2Variant
     ? allMenuItems.filter(item => item.path !== "/dashboard/models")
     : allMenuItems;

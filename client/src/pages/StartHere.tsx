@@ -1,9 +1,12 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { usePostHogVariant } from "@/hooks/usePostHogVariant";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { safeLocalStorage } from "@/utils/localStorage";
 import {
   Sparkles,
   CreditCard,
@@ -18,6 +21,15 @@ export default function StartHere() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [isPlaying, setIsPlaying] = useState(false);
+  const { user } = useAuth();
+  const { variant: posthogVariant } = usePostHogVariant(user?.id);
+  
+  // Check for page2 variant - same logic as DashboardLayout
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
+  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
+  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
+  const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
 
   // Mock photos for the grid background
   const gridPhotos = [
@@ -32,7 +44,8 @@ export default function StartHere() {
     "/over100_4.jpg",
   ];
 
-  const steps = [
+  // Define all steps
+  const allSteps = [
     {
       id: 1,
       title: t("startHere.step1"),
@@ -62,11 +75,125 @@ export default function StartHere() {
       buttonColor: "bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl",
     },
   ];
+  
+  // Helper function to get step title for the buttons (adjusts numbers for page2)
+  const getStepButtonTitle = (stepId: number, originalTitle: string): string => {
+    if (!isPage2Variant) {
+      return originalTitle;
+    }
+    
+    // For page2 variant, adjust step numbers in titles
+    if (stepId === 3) {
+      // Step 3 becomes Step 2 in page2
+      return originalTitle
+        .replace(/Step\s+3\s*:/gi, "Step 2:")
+        .replace(/Step\s+3\s+/gi, "Step 2 ")
+        .replace(/Passo\s+3\s*:/gi, "Passo 2:")
+        .replace(/Passo\s+3\s+/gi, "Passo 2 ")
+        .replace(/Paso\s+3\s*:/gi, "Paso 2:")
+        .replace(/Paso\s+3\s+/gi, "Paso 2 ");
+    } else if (stepId === 4) {
+      // Step 4 becomes Step 3 in page2
+      return originalTitle
+        .replace(/Step\s+4\s*:/gi, "Step 3:")
+        .replace(/Step\s+4\s+/gi, "Step 3 ")
+        .replace(/Passo\s+4\s*:/gi, "Passo 3:")
+        .replace(/Passo\s+4\s+/gi, "Passo 3 ")
+        .replace(/Paso\s+4\s*:/gi, "Paso 3:")
+        .replace(/Paso\s+4\s+/gi, "Paso 3 ");
+    }
+    
+    return originalTitle;
+  };
+
+  // For page2 variant, remove step 2 and renumber the remaining steps
+  const steps = isPage2Variant
+    ? allSteps
+        .filter(step => step.id !== 2) // Remove step 2
+        .map((step, index) => ({
+          ...step,
+          id: index + 1, // Renumber: 1, 2, 3 (was 1, 3, 4)
+          title: getStepButtonTitle(step.id, step.title), // Adjust title numbers
+        }))
+    : allSteps;
+
+  // Helper function to get step title with correct number for page2 variant
+  const getStepTitle = (stepKey: "step3Title" | "step4Title"): string => {
+    try {
+      // Use the full translation key with namespace
+      const translationKey = `startHere.${stepKey}`;
+      const fullTitle = t(translationKey);
+      
+      // If translation returns the key itself, it means translation is missing
+      if (fullTitle === translationKey || fullTitle === stepKey || !fullTitle) {
+        console.warn(`[StartHere] Translation missing for ${translationKey}, got: ${fullTitle}`);
+        // Return a fallback based on the key
+        if (stepKey === "step3Title") {
+          return isPage2Variant ? "Step 2: Creating Your Photos" : "Step 3: Creating Your Photos";
+        } else {
+          return isPage2Variant ? "Step 3: Gallery - Your Photos" : "Step 4: Gallery - Your Photos";
+        }
+      }
+      
+      // Extract the step number and text from the title
+      // Pattern: "Step 3: Creating Your Photos" or "Step 4: Gallery - Your Photos"
+      const step3Match = fullTitle.match(/^(Step|Passo|Paso)\s+3\s*:\s*(.+)$/i);
+      const step4Match = fullTitle.match(/^(Step|Passo|Paso)\s+4\s*:\s*(.+)$/i);
+      
+      if (stepKey === "step3Title" && step3Match) {
+        const [, prefix, text] = step3Match;
+        const stepNumber = isPage2Variant ? 2 : 3;
+        return `${prefix} ${stepNumber}: ${text}`;
+      } else if (stepKey === "step4Title" && step4Match) {
+        const [, prefix, text] = step4Match;
+        const stepNumber = isPage2Variant ? 3 : 4;
+        return `${prefix} ${stepNumber}: ${text}`;
+      }
+      
+      // Fallback: try simple replacement if regex doesn't match
+      if (isPage2Variant) {
+        if (stepKey === "step3Title") {
+          const replaced = fullTitle.replace(/^(Step|Passo|Paso)\s+3\s*:/i, "$1 2:");
+          return replaced !== fullTitle ? replaced : fullTitle;
+        } else if (stepKey === "step4Title") {
+          const replaced = fullTitle.replace(/^(Step|Passo|Paso)\s+4\s*:/i, "$1 3:");
+          return replaced !== fullTitle ? replaced : fullTitle;
+        }
+      }
+      
+      return fullTitle;
+    } catch (error) {
+      console.error(`[StartHere] Error getting step title for ${stepKey}:`, error);
+      // Return fallback
+      if (stepKey === "step3Title") {
+        return isPage2Variant ? "Step 2: Creating Your Photos" : "Step 3: Creating Your Photos";
+      } else {
+        return isPage2Variant ? "Step 3: Gallery - Your Photos" : "Step 4: Gallery - Your Photos";
+      }
+    }
+  };
 
   const scrollToStep = (stepId: number) => {
-    const element = document.getElementById(`step-${stepId}`);
+    // For page2 variant, the HTML element IDs are already adjusted:
+    // - step-1 stays step-1
+    // - step-3 becomes step-2 (because id={isPage2Variant ? "step-2" : "step-3"})
+    // - step-4 becomes step-3 (because id={isPage2Variant ? "step-3" : "step-4"})
+    // For normal variant, use step IDs as-is: 1->1, 2->2, 3->3, 4->4
+    let actualStepId = stepId;
+    if (isPage2Variant) {
+      // In page2, the displayed step IDs (1, 2, 3) map directly to HTML element IDs
+      // because the elements already have adjusted IDs
+      // stepId 1 -> step-1, stepId 2 -> step-2, stepId 3 -> step-3
+      actualStepId = stepId;
+    } else {
+      // In normal variant, step IDs map directly: 1->1, 2->2, 3->3, 4->4
+      actualStepId = stepId;
+    }
+    const element = document.getElementById(`step-${actualStepId}`);
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      console.warn(`[StartHere] Element with id "step-${actualStepId}" not found. isPage2Variant: ${isPage2Variant}, stepId: ${stepId}`);
     }
   };
 
@@ -124,8 +251,8 @@ export default function StartHere() {
                 </Button>
               </div>
 
-              {/* Video Player Section */}
-              <div className="mt-8">
+              {/* Video Player Section - Commented out for now */}
+              {/* <div className="mt-8">
                 <div className="aspect-video bg-muted rounded-lg relative overflow-hidden flex items-center justify-center">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5" />
                   {!isPlaying ? (
@@ -160,7 +287,6 @@ export default function StartHere() {
                       </div>
                     </div>
                   )}
-                  {/* Video Info */}
                   <div className="absolute bottom-4 left-4 right-4 z-20">
                     <div className="bg-background/80 backdrop-blur-sm rounded-lg px-4 py-2 text-sm max-w-fit mx-auto">
                       {isPlaying ? t("startHere.videoTimePlaying") : t("startHere.videoTime")}
@@ -176,7 +302,7 @@ export default function StartHere() {
                     {t("startHere.learnProcess")}
                   </p>
                 </div>
-              </div>
+              </div> */}
             </div>
           </CardContent>
         </Card>
@@ -265,7 +391,8 @@ export default function StartHere() {
             </CardContent>
           </Card>
 
-        {/* Step 2: Train an AI Model */}
+        {/* Step 2: Train an AI Model - Hidden for page2 variant */}
+        {!isPage2Variant && (
         <Card id="step-2" className="bg-gradient-to-br from-yellow-500/10 via-yellow-400/5 to-yellow-600/10 border-yellow-500/20 mb-6">
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
@@ -336,9 +463,10 @@ export default function StartHere() {
               </div>
             </CardContent>
           </Card>
+        )}
 
-        {/* Step 3: Creating Your Photos */}
-        <Card id="step-3" className="bg-gradient-to-br from-purple-500/10 via-purple-400/5 to-purple-600/10 border-purple-500/20 mb-6">
+        {/* Step 3: Creating Your Photos (becomes Step 2 for page2) */}
+        <Card id={isPage2Variant ? "step-2" : "step-3"} className="bg-gradient-to-br from-purple-500/10 via-purple-400/5 to-purple-600/10 border-purple-500/20 mb-6">
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center">
@@ -346,7 +474,7 @@ export default function StartHere() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold">
-                  {t("startHere.step3Title")}
+                  {getStepTitle("step3Title")}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
                   {t("startHere.step3Subtitle")}
@@ -355,9 +483,16 @@ export default function StartHere() {
             </div>
 
               <div className="space-y-6 text-sm">
-                <p>
-                  {t("startHere.step3Desc")}
-                </p>
+                {!isPage2Variant && (
+                  <p>
+                    {t("startHere.step3Desc")}
+                  </p>
+                )}
+                {isPage2Variant && (
+                  <p>
+                    {t("startHere.step3DescPage2") || "Learn how to create amazing photos with AI. Follow the steps below to generate professional photos in your chosen styles."}
+                  </p>
+                )}
 
                 <div>
                   <h3 className="font-semibold mb-3">{t("startHere.howToCreatePhotos")}</h3>
@@ -421,7 +556,7 @@ export default function StartHere() {
                 </div>
 
                 <Button
-                  className={`mt-6 ${steps[2].buttonColor} text-white rounded-full`}
+                  className={`mt-6 ${isPage2Variant ? steps[1].buttonColor : steps[2].buttonColor} text-white rounded-full`}
                   onClick={() => setLocation("/dashboard/generate")}
                 >
                   {t("startHere.createYourPhotosWithAI")}
@@ -430,8 +565,8 @@ export default function StartHere() {
             </CardContent>
           </Card>
 
-        {/* Step 4: Gallery */}
-        <Card id="step-4" className="bg-gradient-to-br from-green-500/10 via-green-400/5 to-green-600/10 border-green-500/20 mb-6">
+        {/* Step 4: Gallery (becomes Step 3 for page2) */}
+        <Card id={isPage2Variant ? "step-3" : "step-4"} className="bg-gradient-to-br from-green-500/10 via-green-400/5 to-green-600/10 border-green-500/20 mb-6">
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center">
@@ -439,7 +574,7 @@ export default function StartHere() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold">
-                  {t("startHere.step4Title")}
+                  {getStepTitle("step4Title")}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
                   {t("startHere.step4Subtitle")}
@@ -486,7 +621,7 @@ export default function StartHere() {
                 </Alert>
 
                 <Button
-                  className={`mt-6 ${steps[3].buttonColor} text-white rounded-full`}
+                  className={`mt-6 ${isPage2Variant ? steps[2].buttonColor : steps[3].buttonColor} text-white rounded-full`}
                   onClick={() => setLocation("/dashboard/gallery")}
                 >
                   {t("startHere.viewYourGallery")}

@@ -1,5 +1,7 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLocation } from "wouter";
+import { usePostHogVariant } from "@/hooks/usePostHogVariant";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,21 +15,36 @@ import { Check, Box, Star, Zap } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { toast } from "sonner";
-import { detectCurrency, getLocalizedPrice } from "@/utils/currency";
+import { safeLocalStorage } from "@/utils/localStorage";
+import { detectCurrency, getLocalizedPrice, getPage2Credits } from "@/utils/currency";
 
 export default function BuyCredits() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [loadingPackId, setLoadingPackId] = useState<number | null>(null);
   const currency = detectCurrency();
+  const { user } = useAuth();
+  const { variant: posthogVariant } = usePostHogVariant(user?.id);
+  
+  // Check for page2 variant
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
+  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
+  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
+  const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
 
   const createCheckoutMutation = trpc.payment.createCheckoutSession.useMutation();
   const { data: packs } = trpc.payment.listPacks.useQuery();
 
-  // Get localized prices
-  const starterPrice = getLocalizedPrice("starter", currency);
-  const proPrice = getLocalizedPrice("pro", currency);
-  const premiumPrice = getLocalizedPrice("premium", currency);
+  // Get localized prices (with page2 variant support)
+  const starterPrice = getLocalizedPrice("starter", currency, isPage2Variant);
+  const proPrice = getLocalizedPrice("pro", currency, isPage2Variant);
+  const premiumPrice = getLocalizedPrice("premium", currency, isPage2Variant);
+  
+  // Get credits count for page2
+  const starterCredits = isPage2Variant ? getPage2Credits("starter") : 40;
+  const proCredits = isPage2Variant ? getPage2Credits("pro") : 100;
+  const premiumCredits = isPage2Variant ? getPage2Credits("premium") : 150;
 
   const starterFeatures = t("buyCredits.starterFeatures", { returnObjects: true }) as string[];
   const proFeatures = t("buyCredits.proFeatures", { returnObjects: true }) as string[];
@@ -68,8 +85,8 @@ export default function BuyCredits() {
   };
 
   // Map hardcoded packs to database packs by price
-  // Base prices in USD: Starter = $29, Pro = $39, Premium = $49
-  // We need to find packs by their base USD price, regardless of currency
+  // For page1: Starter = $29, Pro = $39, Premium = $49
+  // For page2: Starter = $18, Pro = $25, Premium = $40
   const getPackIdByBasePrice = (basePriceUSD: number): number | null => {
     if (!packs || packs.length === 0) return null;
     // Find pack with matching base USD price (convert to cents for comparison)
@@ -78,9 +95,10 @@ export default function BuyCredits() {
     return pack?.id || null;
   };
 
-  const starterPackId = getPackIdByBasePrice(29);
-  const proPackId = getPackIdByBasePrice(39);
-  const premiumPackId = getPackIdByBasePrice(49);
+  // Use different base prices based on variant
+  const starterPackId = getPackIdByBasePrice(isPage2Variant ? 18 : 29);
+  const proPackId = getPackIdByBasePrice(isPage2Variant ? 25 : 39);
+  const premiumPackId = getPackIdByBasePrice(isPage2Variant ? 40 : 49);
 
   // Debug: log packs
   if (packs && packs.length > 0) {
@@ -118,9 +136,16 @@ export default function BuyCredits() {
                 {/* Plan Info */}
                 <div className="text-center space-y-2">
                   <h2 className="text-2xl font-bold">{t("buyCredits.starterPack")}</h2>
-                  <p className="text-sm text-muted-foreground">{t("buyCredits.starterCredits")}</p>
-                  <div className="text-4xl font-bold text-primary mt-4">
-                    {starterPrice.formatted}
+                  <p className="text-sm text-muted-foreground">
+                    {isPage2Variant ? `${starterCredits} ${t("buyCredits.photos") || "photos"}` : t("buyCredits.starterCredits")}
+                  </p>
+                  <div className={`text-4xl font-bold text-primary mt-4 ${isPage2Variant && starterPrice.oldFormatted ? "flex items-center justify-center gap-2" : ""}`}>
+                    <span>{starterPrice.formatted}</span>
+                    {isPage2Variant && starterPrice.oldFormatted && (
+                      <span className="text-xl text-muted-foreground line-through font-normal">
+                        {starterPrice.oldFormatted}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -174,12 +199,20 @@ export default function BuyCredits() {
                 {/* Plan Info */}
                 <div className="text-center space-y-2">
                   <h2 className="text-2xl font-bold">{t("buyCredits.proPack")}</h2>
-                  <p className="text-sm text-muted-foreground">{t("buyCredits.proCredits")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {isPage2Variant ? `${proCredits} ${t("buyCredits.photos") || "photos"}` : t("buyCredits.proCredits")}
+                  </p>
                   <div className="text-4xl font-bold text-primary mt-4 flex items-center justify-center gap-2">
                     <span>{proPrice.formatted}</span>
-                    <span className="text-xl text-muted-foreground line-through font-normal">
-                      {premiumPrice.formatted}
-                    </span>
+                    {isPage2Variant && proPrice.oldFormatted ? (
+                      <span className="text-xl text-muted-foreground line-through font-normal">
+                        {proPrice.oldFormatted}
+                      </span>
+                    ) : !isPage2Variant && (
+                      <span className="text-xl text-muted-foreground line-through font-normal">
+                        {premiumPrice.formatted}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -244,9 +277,16 @@ export default function BuyCredits() {
                 {/* Plan Info */}
                 <div className="text-center space-y-2">
                   <h2 className="text-2xl font-bold">{t("buyCredits.premiumPack")}</h2>
-                  <p className="text-sm text-muted-foreground">{t("buyCredits.premiumCredits")}</p>
-                  <div className="text-4xl font-bold text-primary mt-4">
-                    {premiumPrice.formatted}
+                  <p className="text-sm text-muted-foreground">
+                    {isPage2Variant ? `${premiumCredits} ${t("buyCredits.photos") || "photos"}` : t("buyCredits.premiumCredits")}
+                  </p>
+                  <div className={`text-4xl font-bold text-primary mt-4 ${isPage2Variant && premiumPrice.oldFormatted ? "flex items-center justify-center gap-2" : ""}`}>
+                    <span>{premiumPrice.formatted}</span>
+                    {isPage2Variant && premiumPrice.oldFormatted && (
+                      <span className="text-xl text-muted-foreground line-through font-normal">
+                        {premiumPrice.oldFormatted}
+                      </span>
+                    )}
                   </div>
                 </div>
 

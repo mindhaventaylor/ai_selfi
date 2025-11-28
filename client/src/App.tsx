@@ -31,6 +31,12 @@ import Blog from "./pages/Blog";
 import BlogPost1 from "./pages/BlogPost1";
 import BlogPost2 from "./pages/BlogPost2";
 import BlogPost3 from "./pages/BlogPost3";
+import BlogPost4 from "./pages/BlogPost4";
+import BlogPost5 from "./pages/BlogPost5";
+import BlogPost6 from "./pages/BlogPost6";
+import BlogPost7 from "./pages/BlogPost7";
+import BlogPost8 from "./pages/BlogPost8";
+import BlogPost9 from "./pages/BlogPost9";
 import Refund from "./pages/Refund";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
@@ -58,6 +64,12 @@ function Router() {
           <Route path={"/blog/how-ai-professional-photos-transform-personal-brand"} component={BlogPost1} />
           <Route path={"/blog/5-reasons-ai-photos-better-than-traditional"} component={BlogPost2} />
           <Route path={"/blog/choose-perfect-professional-photo-style"} component={BlogPost3} />
+          <Route path={"/blog/how-to-use-ai-professional-photos-for-linkedin"} component={BlogPost4} />
+          <Route path={"/blog/ai-headshots-vs-traditional-photography-cost-comparison"} component={BlogPost5} />
+          <Route path={"/blog/best-practices-training-ai-model-professional-photos"} component={BlogPost6} />
+          <Route path={"/blog/why-ai-generated-professional-photos-future-personal-branding"} component={BlogPost7} />
+          <Route path={"/blog/how-to-create-multiple-professional-photo-styles-with-ai"} component={BlogPost8} />
+          <Route path={"/blog/complete-guide-ai-professional-photography-2024"} component={BlogPost9} />
           <Route path={"/dashboard"}>
             <ProtectedRoute>
               <DashboardLayout>
