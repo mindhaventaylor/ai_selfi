@@ -906,7 +906,25 @@ export const appRouter = router({
             .eq('userId', ctx.user.id)
             .order('id', { ascending: true });
           
-          return {
+          if (photosError) {
+            console.error(`[getBatchStatus] Error fetching photos for batch ${input.batchId}:`, photosError);
+          }
+          
+          // Ensure photos are properly formatted
+          const formattedPhotos = (photos || []).map((p: any) => ({
+            id: p.id,
+            url: p.url || null,
+            status: p.status || 'completed',
+          }));
+          
+          console.log(`[getBatchStatus] Batch ${input.batchId} status (REST API):`, {
+            batchStatus: batch.status,
+            totalImagesGenerated: batch.totalImagesGenerated,
+            photosCount: formattedPhotos.length,
+            photos: formattedPhotos.map((p: any) => ({ id: p.id, url: p.url ? p.url.substring(0, 50) + "..." : "NO URL", status: p.status })),
+          });
+          
+          const result = {
             batch: {
               id: batch.id,
               status: batch.status,
@@ -914,12 +932,17 @@ export const appRouter = router({
               createdAt: batch.createdAt,
               completedAt: batch.completedAt,
             },
-            photos: (photos || []).map((p: any) => ({
-              id: p.id,
-              url: p.url,
-              status: p.status,
-            })),
+            photos: formattedPhotos,
           };
+          
+          console.log(`[getBatchStatus] Returning result for batch ${input.batchId} (REST API):`, {
+            batchId: result.batch.id,
+            batchStatus: result.batch.status,
+            photosCount: result.photos.length,
+            photos: result.photos.map((p: any) => ({ id: p.id, hasUrl: !!p.url, status: p.status })),
+          });
+          
+          return result;
         }
         
         // Use direct database connection
@@ -985,7 +1008,21 @@ export const appRouter = router({
           )
           .orderBy(photos.id);
         
-        return {
+        console.log(`[getBatchStatus] Batch ${input.batchId} status (direct DB):`, {
+          batchStatus: batch.status,
+          totalImagesGenerated: batch.totalImagesGenerated,
+          photosCount: batchPhotos.length,
+          photos: batchPhotos.map((p: any) => ({ id: p.id, url: p.url ? p.url.substring(0, 50) + "..." : "NO URL", status: p.status })),
+        });
+        
+        // Ensure photos are properly formatted
+        const formattedPhotos = batchPhotos.map((p: any) => ({
+          id: p.id,
+          url: p.url || null,
+          status: p.status || 'completed',
+        }));
+        
+        const result = {
           batch: {
             id: batch.id,
             status: batch.status,
@@ -993,8 +1030,17 @@ export const appRouter = router({
             createdAt: batch.createdAt,
             completedAt: batch.completedAt,
           },
-          photos: batchPhotos,
+          photos: formattedPhotos,
         };
+        
+        console.log(`[getBatchStatus] Returning result for batch ${input.batchId}:`, {
+          batchId: result.batch.id,
+          batchStatus: result.batch.status,
+          photosCount: result.photos.length,
+          photos: result.photos.map((p: any) => ({ id: p.id, hasUrl: !!p.url, status: p.status })),
+        });
+        
+        return result;
       }),
     getPage2BatchStatus: protectedProcedure
       .input(z.object({ batchId: z.number() }))
@@ -1363,23 +1409,27 @@ export const appRouter = router({
         console.log(`\n${'='.repeat(80)}`);
         console.log(`[Photo Generate] Preparing queue jobs for batch ${batchId}`);
 
-        const jobs = input.exampleImages.map(example => ({
-          batchId,
+        // Create 4 separate jobs per example image (1 image per job) for real progress tracking
+        // Instead of 1 job generating 4 images, we create 4 jobs each generating 1 image
+        const jobs = input.exampleImages.flatMap(example => 
+          Array.from({ length: input.numImagesPerExample }, (_, imageIndex) => ({
+            batchId,
             userId: ctx.user.id,
-          ...(input.modelId ? { modelId: input.modelId } : {}), // Only include if provided
-          exampleImageId: example.id,
-          exampleImageUrl: example.url,
-          exampleImagePrompt: example.prompt,
-          trainingImageUrls: input.trainingImageUrls || [], // Empty array for page2 variant
-          basePrompt: input.basePrompt,
+            ...(input.modelId ? { modelId: input.modelId } : {}), // Only include if provided
+            exampleImageId: example.id,
+            exampleImageUrl: example.url,
+            exampleImagePrompt: example.prompt,
+            trainingImageUrls: input.trainingImageUrls || [], // Empty array for page2 variant
+            basePrompt: input.basePrompt,
             aspectRatio: input.aspectRatio,
-          numImagesPerExample: input.numImagesPerExample,
+            numImagesPerExample: 1, // Each job generates only 1 image for real progress
             glasses: input.glasses,
-          hairColor: input.hairColor ?? null,
-          hairStyle: input.hairStyle ?? null,
+            hairColor: input.hairColor ?? null,
+            hairStyle: input.hairStyle ?? null,
             backgrounds: input.backgrounds,
             styles: input.styles,
-        }));
+          }))
+        );
 
         let insertedJobs: any[] = [];
 
@@ -1420,27 +1470,33 @@ export const appRouter = router({
         
         console.log(`[Photo Generate] 🚀 Triggering API processing at ${apiUrl}...`);
         
-        // In production (Vercel), we need to await the API calls to ensure they complete
-        // In serverless environments, background tasks are killed when the function returns
-        for (const job of insertedJobs) {
-          try {
-            const response = await fetch(apiUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(job),
-            });
-            
-              if (!response.ok) {
-                console.error(`[Photo Generate] API error for job ${job.id}: ${response.status}`);
-              } else {
+        // Process jobs one by one with delay to show progress incrementally
+        // Each job generates one image, so we space them out by 2 seconds
+        for (let i = 0; i < insertedJobs.length; i++) {
+          const job = insertedJobs[i];
+          // Add delay between each job (2 seconds) so images appear one by one
+          setTimeout(() => {
+            console.log(`[Photo Generate] 🚀 Triggering job ${job.id} (${i + 1}/${insertedJobs.length})`);
+            fetch(apiUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(job),
+            })
+            .then(async (response) => {
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error(`[Photo Generate] API error for job ${job.id}: ${response.status} ${errorText}`);
+            } else {
               console.log(`[Photo Generate] ✅ API processing completed for job ${job.id}`);
-              }
-          } catch (error) {
-              console.error(`[Photo Generate] Failed to trigger API for job ${job.id}:`, error);
-          }
+            }
+          })
+          .catch((error) => {
+            console.error(`[Photo Generate] Failed to trigger API for job ${job.id}:`, error);
+          });
+          }, i * 2000); // 2 second delay between each job
         }
         
-        console.log(`[Photo Generate] ✅ Completed API processing for ${insertedJobs.length} job(s)`);
+        console.log(`[Photo Generate] ✅ Triggered ${insertedJobs.length} job(s) for async processing (with 2s delay between each)`);
 
         return { 
           success: true, 
@@ -1666,13 +1722,14 @@ export const appRouter = router({
 
         console.log(`[Photo Generate Page2] ✅ Created batch ${batchId}`);
 
-        // Create queue job
+        // Create 4 separate queue jobs (1 image per job) for real progress tracking
+        // Instead of 1 job generating 4 images, we create 4 jobs each generating 1 image
         const absoluteExampleUrl = exampleImageUrl; // Already absolute URL
 
         if (!db) {
-          // For page2, don't include modelId in the insert (it's optional)
-          const queueInsertData: any = {
-          batchId: batchId,
+          // Create 4 jobs, each generating 1 image
+          const queueJobsData = Array.from({ length: input.numImagesPerExample }, () => ({
+            batchId: batchId,
             userId: ctx.user.id,
             exampleImageId: input.exampleImageId,
             exampleImageUrl: absoluteExampleUrl,
@@ -1680,85 +1737,87 @@ export const appRouter = router({
             trainingImageUrls: uploadedUrls, // User's uploaded images
             basePrompt: basePrompt,
             aspectRatio: input.aspectRatio,
-            numImagesPerExample: input.numImagesPerExample,
+            numImagesPerExample: 1, // Each job generates only 1 image for real progress
             glasses: "no",
             hairColor: input.formData.hairColor || null,
             hairStyle: input.formData.hairStyle || null,
             backgrounds: input.formData.backgrounds,
             styles: input.formData.attire,
             status: "pending",
-          };
+          }));
           
-          const { data: queueData, error: queueError } = await supabaseServer
+          const { data: queueDataArray, error: queueError } = await supabaseServer
             .from('page2_generation_queue')
-            .insert(queueInsertData)
-            .select()
-            .single();
+            .insert(queueJobsData)
+            .select();
 
           if (queueError) {
-            console.error(`[Photo Generate Page2] ❌ Failed to create queue job:`, queueError);
-            throw new Error(`Failed to create queue job: ${queueError.message}`);
+            console.error(`[Photo Generate Page2] ❌ Failed to create queue jobs:`, queueError);
+            throw new Error(`Failed to create queue jobs: ${queueError.message}`);
           }
 
-          const queueJobId = queueData?.id;
-          if (queueJobId) {
-            console.log(`[Photo Generate Page2] ✅ Created queue job ${queueJobId}`);
-            
-            // Trigger API processing - use production domain or VERCEL_URL
-            // In Vercel, we need to use the actual production domain, not the deployment URL
-            let apiUrl: string;
-            if (process.env.VERCEL === "1" || process.env.NODE_ENV === "production") {
-              // In production, use the production domain from constants
-              apiUrl = `https://${PRODUCTION_DOMAIN}/api/photo-generation-page2`;
-            } else if (process.env.PHOTO_API_URL) {
-              apiUrl = process.env.PHOTO_API_URL;
-            } else {
-              apiUrl = "http://localhost:3000/api/photo-generation-page2";
+          const queueJobs = queueDataArray || [];
+          console.log(`[Photo Generate Page2] ✅ Created ${queueJobs.length} queue job(s)`);
+          
+          // Trigger API processing for each job
+          let apiUrl: string;
+          if (process.env.VERCEL === "1" || process.env.NODE_ENV === "production") {
+            apiUrl = `https://${PRODUCTION_DOMAIN}/api/photo-generation-page2`;
+          } else if (process.env.PHOTO_API_URL) {
+            apiUrl = process.env.PHOTO_API_URL;
+          } else {
+            apiUrl = "http://localhost:3000/api/photo-generation-page2";
+          }
+          
+          // Process each job one by one with delay to show progress incrementally
+          for (let i = 0; i < queueJobs.length; i++) {
+            const queueJob = queueJobs[i];
+            if (queueJob?.id) {
+              // Add delay between each job (2 seconds) so images appear one by one
+              setTimeout(() => {
+                console.log(`[Photo Generate Page2] 🚀 Triggering job ${queueJob.id} (${i + 1}/${queueJobs.length}) at ${apiUrl}`);
+                
+                // Fire and forget - don't await to avoid blocking the mutation response
+                fetch(apiUrl, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    id: queueJob.id,
+                    batchId: batchId,
+                    userId: ctx.user.id,
+                    exampleImageId: input.exampleImageId,
+                    exampleImageUrl: absoluteExampleUrl,
+                    exampleImagePrompt: exampleImagePrompt,
+                    trainingImageUrls: uploadedUrls,
+                    basePrompt: basePrompt,
+                    aspectRatio: input.aspectRatio,
+                    numImagesPerExample: 1, // Each job generates only 1 image
+                    glasses: "no",
+                    hairColor: input.formData.hairColor || null,
+                    hairStyle: mapHairStyle(input.formData.hairStyle),
+                    backgrounds: input.formData.backgrounds,
+                    styles: input.formData.attire,
+                  }),
+                })
+                .then(async (response) => {
+                  if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`[Photo Generate Page2] ❌ API error for job ${queueJob.id}: ${response.status} ${errorText}`);
+                  } else {
+                    const result = await response.json();
+                    console.log(`[Photo Generate Page2] ✅ API processing started for job ${queueJob.id}:`, result);
+                  }
+                })
+                .catch((error) => {
+                  console.error(`[Photo Generate Page2] ❌ API call error for job ${queueJob.id}:`, error);
+                });
+              }, i * 2000); // 2 second delay between each job
             }
-            
-            console.log(`[Photo Generate Page2] 🚀 Triggering API processing for job ${queueJobId} at ${apiUrl}`);
-            
-            // Fire and forget - don't await to avoid blocking the mutation response
-            // The API endpoint will process the job asynchronously
-            fetch(apiUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                id: queueJobId,
-                batchId: batchId,
-                userId: ctx.user.id,
-                exampleImageId: input.exampleImageId,
-                exampleImageUrl: absoluteExampleUrl,
-                exampleImagePrompt: exampleImagePrompt,
-                trainingImageUrls: uploadedUrls,
-                basePrompt: basePrompt,
-                aspectRatio: input.aspectRatio,
-                numImagesPerExample: input.numImagesPerExample,
-                glasses: "no",
-                hairColor: input.formData.hairColor || null,
-                hairStyle: mapHairStyle(input.formData.hairStyle),
-                backgrounds: input.formData.backgrounds,
-                styles: input.formData.attire,
-              }),
-            })
-            .then(async (response) => {
-              if (!response.ok) {
-                const errorText = await response.text();
-                console.error(`[Photo Generate Page2] ❌ API error for job ${queueJobId}: ${response.status} ${errorText}`);
-              } else {
-                const result = await response.json();
-                console.log(`[Photo Generate Page2] ✅ API processing started for job ${queueJobId}:`, result);
-              }
-            })
-            .catch((error) => {
-              console.error(`[Photo Generate Page2] ❌ API call error for job ${queueJobId}:`, error);
-              console.error(`[Photo Generate Page2] API URL was: ${apiUrl}`);
-            });
           }
         } else {
           // Use direct database connection
-          // For page2, don't include modelId (it's optional)
-          const queueJobValues: any = {
+          // Create 4 jobs, each generating 1 image
+          const queueJobsValues = Array.from({ length: input.numImagesPerExample }, () => ({
             batchId: batchId,
             userId: ctx.user.id,
             exampleImageId: input.exampleImageId,
@@ -1767,68 +1826,73 @@ export const appRouter = router({
             trainingImageUrls: uploadedUrls,
             basePrompt: basePrompt,
             aspectRatio: input.aspectRatio,
-            numImagesPerExample: input.numImagesPerExample,
+            numImagesPerExample: 1, // Each job generates only 1 image for real progress
             glasses: "no",
             hairColor: input.formData.hairColor || null,
             hairStyle: mapHairStyle(input.formData.hairStyle),
             backgrounds: input.formData.backgrounds,
             styles: input.formData.attire,
             status: "pending",
-          };
+          }));
           
-          const [queueJob] = await db.insert(page2GenerationQueue).values(queueJobValues).returning();
+          const queueJobs = await db.insert(page2GenerationQueue).values(queueJobsValues).returning();
 
-          if (queueJob?.id) {
-            console.log(`[Photo Generate Page2] ✅ Created queue job ${queueJob.id}`);
-            
-            // Trigger API processing - use production domain or VERCEL_URL
-            let apiUrl: string;
-            if (process.env.VERCEL === "1" || process.env.NODE_ENV === "production") {
-              // In production, use the production domain from constants
-              apiUrl = `https://${PRODUCTION_DOMAIN}/api/photo-generation-page2`;
-            } else if (process.env.PHOTO_API_URL) {
-              apiUrl = process.env.PHOTO_API_URL;
-            } else {
-              apiUrl = "http://localhost:3000/api/photo-generation-page2";
+          console.log(`[Photo Generate Page2] ✅ Created ${queueJobs.length} queue job(s)`);
+          
+          // Trigger API processing for each job
+          let apiUrl: string;
+          if (process.env.VERCEL === "1" || process.env.NODE_ENV === "production") {
+            apiUrl = `https://${PRODUCTION_DOMAIN}/api/photo-generation-page2`;
+          } else if (process.env.PHOTO_API_URL) {
+            apiUrl = process.env.PHOTO_API_URL;
+          } else {
+            apiUrl = "http://localhost:3000/api/photo-generation-page2";
+          }
+          
+          // Process each job one by one with delay to show progress incrementally
+          for (let i = 0; i < queueJobs.length; i++) {
+            const queueJob = queueJobs[i];
+            if (queueJob?.id) {
+              // Add delay between each job (2 seconds) so images appear one by one
+              setTimeout(() => {
+                console.log(`[Photo Generate Page2] 🚀 Triggering job ${queueJob.id} (${i + 1}/${queueJobs.length}) at ${apiUrl}`);
+                
+                // Fire and forget - don't await to avoid blocking the mutation response
+                fetch(apiUrl, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    id: queueJob.id,
+                    batchId: batchId,
+                    userId: ctx.user.id,
+                    exampleImageId: input.exampleImageId,
+                    exampleImageUrl: absoluteExampleUrl,
+                    exampleImagePrompt: exampleImagePrompt,
+                    trainingImageUrls: uploadedUrls,
+                    basePrompt: basePrompt,
+                    aspectRatio: input.aspectRatio,
+                    numImagesPerExample: 1, // Each job generates only 1 image
+                    glasses: "no",
+                    hairColor: input.formData.hairColor || null,
+                    hairStyle: mapHairStyle(input.formData.hairStyle),
+                    backgrounds: input.formData.backgrounds,
+                    styles: input.formData.attire,
+                  }),
+                })
+                .then(async (response) => {
+                  if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`[Photo Generate Page2] ❌ API error for job ${queueJob.id}: ${response.status} ${errorText}`);
+                  } else {
+                    const result = await response.json();
+                    console.log(`[Photo Generate Page2] ✅ API processing started for job ${queueJob.id}:`, result);
+                  }
+                })
+                .catch((error) => {
+                  console.error(`[Photo Generate Page2] ❌ API call error for job ${queueJob.id}:`, error);
+                });
+              }, i * 2000); // 2 second delay between each job
             }
-            
-            console.log(`[Photo Generate Page2] 🚀 Triggering API processing for job ${queueJob.id} at ${apiUrl}`);
-            
-            // Fire and forget - don't await to avoid blocking the mutation response
-            fetch(apiUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                id: queueJob.id,
-                batchId: batchId,
-                userId: ctx.user.id,
-                exampleImageId: input.exampleImageId,
-                exampleImageUrl: absoluteExampleUrl,
-                exampleImagePrompt: exampleImagePrompt,
-                trainingImageUrls: uploadedUrls,
-                basePrompt: basePrompt,
-                aspectRatio: input.aspectRatio,
-                numImagesPerExample: input.numImagesPerExample,
-                glasses: "no",
-                hairColor: input.formData.hairColor || null,
-                hairStyle: mapHairStyle(input.formData.hairStyle),
-                backgrounds: input.formData.backgrounds,
-                styles: input.formData.attire,
-              }),
-            })
-            .then(async (response) => {
-              if (!response.ok) {
-                const errorText = await response.text();
-                console.error(`[Photo Generate Page2] ❌ API error for job ${queueJob.id}: ${response.status} ${errorText}`);
-              } else {
-                const result = await response.json();
-                console.log(`[Photo Generate Page2] ✅ API processing started for job ${queueJob.id}:`, result);
-              }
-            })
-            .catch((error) => {
-              console.error(`[Photo Generate Page2] ❌ API call error for job ${queueJob.id}:`, error);
-              console.error(`[Photo Generate Page2] API URL was: ${apiUrl}`);
-            });
           }
         }
 
