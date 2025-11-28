@@ -849,15 +849,15 @@ export default function Home() {
                 {/* Image Grid */}
                 <div className="grid grid-cols-3 gap-2 rounded-2xl overflow-hidden bg-gray-800 p-4">
                   {[
-                    { img: "/over100_1.jpg", label: null },
-                    { img: "/over100_2.jpg", label: "Popular" },
-                    { img: "/over100_3.jpg", label: null },
-                    { img: "/over100_4.jpg", label: "New" },
-                    { img: "/over100_5.jpg", label: null },
-                    { img: "/over100_6.jpg", label: null },
-                    { img: "/over100_7.jpg", label: "Popular" },
-                    { img: "/over100_8.jpg", label: null },
-                    { img: "/over100_9.jpg", label: null },
+                    { img: "/over100_1.jpg", label: null }, // Girl
+                    { img: "/over100_4.jpg", label: "New" }, // Guy
+                    { img: "/over100_2.jpg", label: "Popular" }, // Girl
+                    { img: "/over100_5.jpg", label: null }, // Guy
+                    { img: "/over100_3.jpg", label: null }, // Girl
+                    { img: "/over100_6.jpg", label: null }, // Guy
+                    { img: "/over100_8.jpg", label: null }, // Girl
+                    { img: "/over100_7.jpg", label: "Popular" }, // Guy
+                    { img: "/over100_9.jpg", label: null }, // Girl
                   ].map((item, idx) => {
                     const badgeLabels = t("generateImages.badges", { returnObjects: true }) as { premium: string; new: string; popular: string };
                     return (
