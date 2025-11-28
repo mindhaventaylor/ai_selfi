@@ -7,7 +7,32 @@ import superjson from "superjson";
 import App from "./App";
 import "./index.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Prevent queries from hanging indefinitely
+      staleTime: 30 * 1000, // 30 seconds - data is fresh for 30s
+      gcTime: 5 * 60 * 1000, // 5 minutes - cache data for 5 minutes (formerly cacheTime)
+      retry: (failureCount, error) => {
+        // Don't retry on 4xx errors (client errors)
+        if (error instanceof TRPCClientError) {
+          const status = (error as any).data?.httpStatus;
+          if (status >= 400 && status < 500) {
+            return false;
+          }
+        }
+        // Retry up to 2 times for other errors
+        return failureCount < 2;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      // Add network timeout to prevent hanging
+      networkMode: 'online',
+    },
+    mutations: {
+      retry: false, // Don't retry mutations by default
+    },
+  },
+});
 
 const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!(error instanceof TRPCClientError)) return;
@@ -36,6 +61,19 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+// Fetch wrapper with timeout to prevent hanging requests
+function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit, timeoutMs = 15000): Promise<Response> {
+  return Promise.race([
+    globalThis.fetch(input, {
+      ...(init ?? {}),
+      credentials: "include",
+    }),
+    new Promise<Response>((_, reject) =>
+      setTimeout(() => reject(new Error(`Request timeout after ${timeoutMs}ms`)), timeoutMs)
+    ),
+  ]);
+}
+
 const trpcClient = trpc.createClient({
   links: [
     splitLink({
@@ -45,10 +83,7 @@ const trpcClient = trpc.createClient({
         url: "/api/trpc",
         transformer: superjson,
         fetch(input, init) {
-          return globalThis.fetch(input, {
-            ...(init ?? {}),
-            credentials: "include",
-          });
+          return fetchWithTimeout(input, init, 15000); // 15 second timeout for queries
         },
       }),
       // Don't batch mutations (POST requests)
@@ -56,10 +91,7 @@ const trpcClient = trpc.createClient({
         url: "/api/trpc",
         transformer: superjson,
         fetch(input, init) {
-          return globalThis.fetch(input, {
-            ...(init ?? {}),
-            credentials: "include",
-          });
+          return fetchWithTimeout(input, init, 30000); // 30 second timeout for mutations
         },
       }),
     }),
@@ -79,11 +111,12 @@ if (!rootElement) {
   `;
 } else {
   // Add a timeout to detect if the app is stuck loading
+  // Increased to 10 seconds to match HTML timeout and account for network latency
   const loadingTimeout = setTimeout(() => {
     console.warn("[Main] App seems stuck - checking for errors...");
-    // Check if root is still empty after 5 seconds
+    // Check if root is still empty after 10 seconds
     if (rootElement.children.length === 0) {
-      console.error("[Main] App failed to render after 5 seconds - likely cached bundle issue");
+      console.error("[Main] App failed to render after 10 seconds - likely cached bundle issue");
       rootElement.innerHTML = `
         <div style="padding: 20px; font-family: sans-serif; text-align: center;">
           <h1>Loading Issue Detected</h1>
@@ -99,7 +132,7 @@ if (!rootElement) {
         </div>
       `;
     }
-  }, 5000);
+  }, 10000);
 
   try {
     createRoot(rootElement).render(

@@ -1740,7 +1740,7 @@ export const appRouter = router({
             numImagesPerExample: 1, // Each job generates only 1 image for real progress
             glasses: "no",
             hairColor: input.formData.hairColor || null,
-            hairStyle: input.formData.hairStyle || null,
+            hairStyle: mapHairStyle(input.formData.hairStyle),
             backgrounds: input.formData.backgrounds,
             styles: input.formData.attire,
             status: "pending",
