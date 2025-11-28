@@ -199,13 +199,11 @@ export default function GenerateImages() {
         });
         
         // Poll aggressively to show images as they're generated
-        // Poll if:
-        // 1. Still generating (to see images one by one)
-        // 2. Completed but no photos with URLs yet (images might still be uploading)
-        if (isStillGenerating || (isCompleted && photosWithUrls.length === 0)) {
+        // Poll if still generating (to see images one by one)
+        if (isStillGenerating) {
           return 800; // Poll every 800ms to catch images as they're generated
         }
-        // Stop polling when completed and we have photos
+        // Stop polling when completed (even if no photos yet, to prevent infinite polling)
         return false;
       },
       staleTime: 0, // Always consider data stale to ensure fresh fetches
@@ -227,7 +225,7 @@ export default function GenerateImages() {
     }
   }, [isPage2Variant, currentBatchId, isPage2ForQuery, getPage2BatchStatusQuery.isLoading, getPage2BatchStatusQuery.error, getPage2BatchStatusQuery.data]);
   
-  // Force modal open for page2 when batchId is present in URL
+  // Force modal open when batchId is present in URL (for both page1 and page2)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const batchIdFromUrl = urlParams.get("batchId");
@@ -238,10 +236,11 @@ export default function GenerateImages() {
     const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
     const isPage2 = urlVariant === "page2" || firstVariant === "page2" || cachedVariant === "page2" || isPage2Variant;
     
-    if (isPage2 && batchIdFromUrl) {
+    // Open modal for both page1 and page2 when batchId is in URL
+    if (batchIdFromUrl) {
       const batchIdNum = parseInt(batchIdFromUrl);
       if (!isNaN(batchIdNum)) {
-        console.log("[GenerateImages] Page2: Found batchId in URL, ensuring modal is open:", batchIdNum);
+        console.log(`[GenerateImages] ${isPage2 ? 'Page2' : 'Page1'}: Found batchId in URL, ensuring modal is open:`, batchIdNum);
         if (currentBatchId !== batchIdNum) {
           setCurrentBatchId(batchIdNum);
         }
@@ -313,12 +312,14 @@ export default function GenerateImages() {
       location,
     });
     
-    if (isPage2Variant && batchIdFromUrl) {
+    // Handle batchId for both page1 and page2
+    if (batchIdFromUrl) {
       const batchIdNum = parseInt(batchIdFromUrl);
       if (!isNaN(batchIdNum)) {
-        console.log("[GenerateImages] Page2: Found batchId in URL:", batchIdNum, "currentBatchId:", currentBatchId);
+        const variantType = isPage2Variant ? 'Page2' : 'Page1';
+        console.log(`[GenerateImages] ${variantType}: Found batchId in URL:`, batchIdNum, "currentBatchId:", currentBatchId);
         if (batchIdNum !== currentBatchId) {
-          console.log("[GenerateImages] Page2: Setting batch ID from URL:", batchIdNum);
+          console.log(`[GenerateImages] ${variantType}: Setting batch ID from URL:`, batchIdNum);
           setCurrentBatchId(batchIdNum);
           setIsGenerating(true);
           setShowModal(true); // Open modal immediately
@@ -331,11 +332,11 @@ export default function GenerateImages() {
             clearInterval(progressAnimationRef.current);
             progressAnimationRef.current = null;
           }
-          console.log("[GenerateImages] Page2: Modal opened, showModal set to true, isGenerating set to true");
+          console.log(`[GenerateImages] ${variantType}: Modal opened, showModal set to true, isGenerating set to true`);
         }
         // Don't check showModal/isGenerating here to avoid loops - only set when batchId changes
       } else {
-        console.warn("[GenerateImages] Page2: Invalid batchId in URL:", batchIdFromUrl);
+        console.warn(`[GenerateImages] ${isPage2Variant ? 'Page2' : 'Page1'}: Invalid batchId in URL:`, batchIdFromUrl);
       }
     }
     // Removed the else if block that checked showModal/isGenerating to avoid infinite loops
@@ -361,12 +362,14 @@ export default function GenerateImages() {
       showModal,
     });
     
-    if ((isPage2Variant || isPage2ForBatch) && batchIdFromUrl) {
+    // Handle batchId for both page1 and page2 on initial mount
+    if (batchIdFromUrl) {
       const batchIdNum = parseInt(batchIdFromUrl);
       if (!isNaN(batchIdNum)) {
-        console.log("[GenerateImages] Page2: Initial mount with batchId:", batchIdNum, "currentBatchId:", currentBatchId);
+        const variantType = (isPage2Variant || isPage2ForBatch) ? 'Page2' : 'Page1';
+        console.log(`[GenerateImages] ${variantType}: Initial mount with batchId:`, batchIdNum, "currentBatchId:", currentBatchId);
         if (!currentBatchId || currentBatchId !== batchIdNum) {
-          console.log("[GenerateImages] Page2: Setting up batch from URL on mount");
+          console.log(`[GenerateImages] ${variantType}: Setting up batch from URL on mount`);
           setCurrentBatchId(batchIdNum);
           setIsGenerating(true);
           setShowModal(true); // Open modal immediately
@@ -379,10 +382,10 @@ export default function GenerateImages() {
             clearInterval(progressAnimationRef.current);
             progressAnimationRef.current = null;
           }
-          console.log("[GenerateImages] Page2: Modal opened on mount, showModal:", true, "isGenerating:", true);
+          console.log(`[GenerateImages] ${variantType}: Modal opened on mount, showModal:`, true, "isGenerating:", true);
         } else if (!showModal) {
           // If batchId is already set but modal is closed, open it
-          console.log("[GenerateImages] Page2: BatchId already set but modal closed, opening modal");
+          console.log(`[GenerateImages] ${variantType}: BatchId already set but modal closed, opening modal`);
           setShowModal(true);
           setIsGenerating(true);
         }
@@ -1892,10 +1895,20 @@ export default function GenerateImages() {
           // Allow closing the modal even if generating (user can still see progress in background)
           if (!open) {
             setShowModal(false);
-            // For page2 variant, navigate back to generate page when modal closes
+            // For page2 variant, navigate back to generate page (beginning) when modal closes
             if (isPage2Variant) {
-              console.log("[GenerateImages] Page2: Navigating back to generate page");
-              setLocation("/dashboard/generate");
+              console.log("[GenerateImages] Page2: Navigating back to generate page (beginning)");
+              // Remove batchId from URL and navigate to clean generate page
+              const urlParams = new URLSearchParams(window.location.search);
+              urlParams.delete("batchId");
+              const newUrl = `/dashboard/generate${urlParams.toString() ? `?${urlParams.toString()}` : ''}`;
+              setLocation(newUrl);
+              // Reset state
+              setCurrentBatchId(null);
+              setGeneratedImages([]);
+              setCompletedImages(0);
+              setGenerationProgress(0);
+              setIsGenerating(false);
             }
             // Don't stop generation, just close the modal
             // User can reopen by checking the batch status later
@@ -1945,7 +1958,24 @@ export default function GenerateImages() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => setShowModal(false)}
+                          onClick={() => {
+                            setShowModal(false);
+                            // For page2 variant, navigate back to generate page (beginning) when close button is clicked
+                            if (isPage2Variant) {
+                              console.log("[GenerateImages] Page2: Close button clicked, navigating back to generate page");
+                              // Remove batchId from URL and navigate to clean generate page
+                              const urlParams = new URLSearchParams(window.location.search);
+                              urlParams.delete("batchId");
+                              const newUrl = `/dashboard/generate${urlParams.toString() ? `?${urlParams.toString()}` : ''}`;
+                              setLocation(newUrl);
+                              // Reset state
+                              setCurrentBatchId(null);
+                              setGeneratedImages([]);
+                              setCompletedImages(0);
+                              setGenerationProgress(0);
+                              setIsGenerating(false);
+                            }
+                          }}
                         >
                           {t("generateImages.close")}
                         </Button>
