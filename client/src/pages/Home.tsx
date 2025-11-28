@@ -306,12 +306,27 @@ export default function Home() {
                     // Example 9 (Jorge) has 1 profile + 6 results, others have 1 profile + 1 result
                     const exampleMapping = [1, 2, 9, 3, 4, 5, 6, 7, 8];
                     const exampleNumber = exampleMapping[idx] || (idx + 1);
-                    const isJorge = review.name.includes("Jorge") || exampleNumber === 9;
+                    const isJorge = review.name.includes("Jorge") || (exampleNumber === 9 && !review.name.includes("Andrea"));
+                    const isAndreaMarino = review.name.includes("Andrea Marino");
+                    const isElisa = review.name.includes("Elisa De Luca");
+                    const isMarco = review.name.includes("Marco Ferri");
+                    const isLuca = review.name.includes("Luca Neri");
                     
                     let profileImage: string;
                     let resultImages: string[];
                     
-                    if (isJorge) {
+                    if (isAndreaMarino) {
+                      // Andrea Marino - 1 profile + 6 result images
+                      profileImage = "/andrea_marino_profile.jpg";
+                      resultImages = [
+                        "/andrea_marino1.jpg",
+                        "/andrea_marino2.jpg",
+                        "/andrea_marino3.jpg",
+                        "/andrea_marino4.jpg",
+                        "/andrea_marino5.jpg",
+                        "/andrea_marino6.jpg",
+                      ];
+                    } else if (isJorge) {
                       // Jorge is example 9 - 1 profile + 6 results
                       profileImage = "/9_profile.jpg";
                       resultImages = [
@@ -322,6 +337,18 @@ export default function Home() {
                         "/9_result5.jpg",
                         "/9_result6.jpg",
                       ];
+                    } else if (isElisa) {
+                      // Elisa De Luca - 1 profile + 1 result
+                      profileImage = "/elisa_profile.jpg";
+                      resultImages = ["/elisa_AI_image.jpg"];
+                    } else if (isMarco) {
+                      // Marco Ferri - 1 profile + 1 result
+                      profileImage = "/caterina_profile.jpg";
+                      resultImages = ["/caterina_ai_image.jpg"];
+                    } else if (isLuca) {
+                      // Luca Neri - 1 profile + 1 result
+                      profileImage = "/silvia_profile.jpg";
+                      resultImages = ["/silvia_ai_image.jpg"];
                     } else {
                       // Other examples: 1 profile + 1 result
                       profileImage = `/${exampleNumber}_profile.jpg`;
@@ -432,8 +459,8 @@ export default function Home() {
 
                           {/* Professional Photo(s) */}
                           <div className="w-full px-4 -mt-4">
-                            {isJorge ? (
-                              // Multiple images grid for Jorge (6 results)
+                            {isJorge || isAndreaMarino ? (
+                              // Multiple images grid for Jorge and Andrea Marino (6 results)
                               <div className="grid grid-cols-3 gap-1">
                                 {resultImages.map((imgSrc, imgIdx) => (
                                   <div
@@ -954,10 +981,10 @@ export default function Home() {
               ).map((step, idx) => {
                 // Images for each step
                 const stepImages = [
-                  "/girl_image_sample.jpg", // Step 1: Upload selfies
-                  "/over100_1.jpg", // Step 2: Choose style
-                  "/image.jpg", // Step 3: AI magic
-                  "/image_1.jpg", // Step 4: Download and share
+                  "/howAISelfieWorks1.jpg", // Step 1: Upload selfies
+                  "/howAISelfieWorks2.jpg", // Step 2: Choose style
+                  "/howAISelfieWorks3.jpg", // Step 3: AI magic
+                  "/howAISelfieWorks4.jpg", // Step 4: Download and share
                 ];
                 
                 return (
