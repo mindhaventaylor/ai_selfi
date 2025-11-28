@@ -10,6 +10,8 @@ import { Star, Check, X, Sparkles, ChevronLeft, ChevronRight, ArrowRight, ArrowD
 import { FAQ } from "@/components/FAQ";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
+import { safeLocalStorage } from "@/utils/localStorage";
+import { detectCurrency, getLocalizedPrice } from "@/utils/currency";
 import {
   Carousel,
   CarouselContent,
@@ -50,7 +52,20 @@ export default function Home() {
   // Use the variant hook to handle variant parameter from URL
   // This ensures the variant is saved as the first variant when visiting /?variant=page2
   // The hook will handle saving to localStorage and removing from URL
-  usePostHogVariant(user?.id);
+  const { variant: posthogVariant } = usePostHogVariant(user?.id);
+  
+  // Check for page2 variant
+  const urlParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
+  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
+  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
+  const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
+
+  // Get localized prices (with page2 variant support)
+  const currency = detectCurrency();
+  const starterPrice = getLocalizedPrice("starter", currency, isPage2Variant);
+  const proPrice = getLocalizedPrice("pro", currency, isPage2Variant);
+  const premiumPrice = getLocalizedPrice("premium", currency, isPage2Variant);
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -537,7 +552,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-2xl font-bold mb-6 text-green-400">{t("comparison.ai.title")}</h3>
                 <ul className="space-y-4">
-                  {(t("comparison.ai.items", { returnObjects: true }) as string[]).map(
+                  {((isPage2Variant ? t("comparison.ai.itemsPage2", { returnObjects: true }) : t("comparison.ai.items", { returnObjects: true })) as string[]).map(
                     (item, idx) => (
                       <li key={idx} className="flex gap-3">
                         <span className="text-green-400 flex-shrink-0">•</span>
@@ -1034,9 +1049,18 @@ export default function Home() {
               <AnimatedSection delay={100}>
                 <Card className="p-8 h-full">
                   <h3 className="text-2xl font-bold mb-2">{t("pricing.plans.starter.name")}</h3>
-                  <p className="text-muted-foreground mb-4">{t("pricing.plans.starter.photos")}</p>
-                  <div className="text-5xl font-bold mb-2">
-                    {t("pricing.plans.starter.price")}
+                  <p className="text-muted-foreground mb-4">
+                    {isPage2Variant ? "40 photos" : t("pricing.plans.starter.photos")}
+                  </p>
+                  <div className={`text-5xl font-bold mb-2 ${isPage2Variant && starterPrice.oldFormatted ? "flex items-baseline gap-3" : ""}`}>
+                    <span>
+                      {isPage2Variant ? starterPrice.formatted : t("pricing.plans.starter.price")}
+                    </span>
+                    {isPage2Variant && starterPrice.oldFormatted && (
+                      <span className="text-2xl text-muted-foreground line-through font-normal">
+                        {starterPrice.oldFormatted}
+                      </span>
+                    )}
                     <span className="text-lg text-muted-foreground ml-2">
                       {t("pricing.plans.starter.currency")}
                     </span>
@@ -1057,14 +1081,22 @@ export default function Home() {
                     {t("pricing.plans.pro.badge")}
                   </Badge>
                   <h3 className="text-2xl font-bold mb-2">{t("pricing.plans.pro.name")}</h3>
-                  <p className="text-muted-foreground mb-4">{t("pricing.plans.pro.photos")}</p>
+                  <p className="text-muted-foreground mb-4">
+                    {isPage2Variant ? "60 photos" : t("pricing.plans.pro.photos")}
+                  </p>
                   <div className="flex items-baseline gap-3 mb-2">
                     <span className="text-5xl font-bold text-primary">
-                      {t("pricing.plans.pro.price")}
+                      {isPage2Variant ? proPrice.formatted : t("pricing.plans.pro.price")}
                     </span>
-                    <span className="text-2xl text-muted-foreground line-through">
-                      {t("pricing.plans.pro.oldPrice")}
-                    </span>
+                    {isPage2Variant && proPrice.oldFormatted ? (
+                      <span className="text-2xl text-muted-foreground line-through font-normal">
+                        {proPrice.oldFormatted}
+                      </span>
+                    ) : !isPage2Variant && (
+                      <span className="text-2xl text-muted-foreground line-through">
+                        {t("pricing.plans.pro.oldPrice")}
+                      </span>
+                    )}
                     <span className="text-lg text-muted-foreground">
                       {t("pricing.plans.pro.currency")}
                     </span>

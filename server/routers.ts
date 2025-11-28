@@ -325,9 +325,25 @@ export const appRouter = router({
         if (!pack) throw new Error(getServerString("packNotFound"));
 
         // Get the base URL for success/cancel URLs
-        const baseUrl = process.env.VERCEL_URL 
-          ? `https://${process.env.VERCEL_URL}`
-          : process.env.PHOTO_API_URL?.replace("/api/photo-generation", "") || "http://localhost:3000";
+        // Priority: PRODUCTION_DOMAIN > VERCEL_URL > PHOTO_API_URL > localhost
+        let baseUrl: string;
+        if (PRODUCTION_DOMAIN && process.env.NODE_ENV === "production") {
+          baseUrl = `https://${PRODUCTION_DOMAIN}`;
+        } else if (process.env.VERCEL_URL) {
+          // VERCEL_URL might already include https:// or might not
+          const vercelUrl = process.env.VERCEL_URL;
+          baseUrl = vercelUrl.startsWith("http") ? vercelUrl : `https://${vercelUrl}`;
+        } else if (process.env.PHOTO_API_URL) {
+          baseUrl = process.env.PHOTO_API_URL.replace("/api/photo-generation", "").replace("/api/photo-generation-page2", "");
+        } else {
+          baseUrl = "http://localhost:3000";
+        }
+        
+        console.log(`[Payment] Using base URL: ${baseUrl}`, {
+          productionDomain: PRODUCTION_DOMAIN,
+          vercelUrl: process.env.VERCEL_URL,
+          nodeEnv: process.env.NODE_ENV,
+        });
 
         // Convert price based on currency
         // Base price is in USD, convert to EUR if needed
@@ -1523,11 +1539,14 @@ export const appRouter = router({
           bodyType: z.string().optional(),
           attire: z.array(z.string()).default([]),
           backgrounds: z.array(z.string()).default([]),
+          selectedPrice: z.string().optional(),
         }),
         // Example image to use (default to first one)
         exampleImageId: z.number().default(1),
         aspectRatio: z.enum(["1:1", "9:16", "16:9"]).default("9:16"),
         numImagesPerExample: z.number().default(4),
+        // Selected price plan
+        selectedPrice: z.enum(["basic", "standard", "premium"]).default("standard"),
       }))
       .mutation(async ({ ctx, input }) => {
         // Helper function to map hairStyle values to valid database values
@@ -1596,29 +1615,11 @@ export const appRouter = router({
         const exampleImagePrompt = "Create a professional business portrait with formal attire, corporate setting, confident pose, high-quality studio lighting";
 
         // Build base prompt from form data
+        // Note: We don't include physical attributes (hair, ethnicity, body type, age, gender) 
+        // as they make the AI override the person's actual appearance from the reference photos
         let basePrompt = `Create a photorealistic professional portrait image of the person in the reference photos.`;
         
-        if (input.formData.gender) {
-          basePrompt += ` Gender: ${input.formData.gender}.`;
-        }
-        if (input.formData.age) {
-          basePrompt += ` Age: ${input.formData.age}.`;
-        }
-        if (input.formData.hairColor) {
-          basePrompt += ` Hair color: ${input.formData.hairColor}.`;
-        }
-        if (input.formData.hairLength) {
-          basePrompt += ` Hair length: ${input.formData.hairLength}.`;
-        }
-        if (input.formData.hairStyle) {
-          basePrompt += ` Hair style: ${input.formData.hairStyle}.`;
-        }
-        if (input.formData.ethnicity) {
-          basePrompt += ` Ethnicity: ${input.formData.ethnicity}.`;
-        }
-        if (input.formData.bodyType) {
-          basePrompt += ` Body type: ${input.formData.bodyType}.`;
-        }
+        // Only include styling preferences (attire and backgrounds), not physical attributes
         if (input.formData.attire && input.formData.attire.length > 0) {
           basePrompt += ` Attire: ${input.formData.attire.join(", ")}.`;
         }
@@ -1628,11 +1629,17 @@ export const appRouter = router({
         
         basePrompt += ` High quality, professional photography, natural lighting, sharp focus.`;
 
-        // Calculate total images and credits
-        const totalImages = input.numImagesPerExample;
+        // Calculate total images and credits based on selected price plan
+        // Basic ($17): 4 images, Standard ($25): 8 images, Premium ($40): 12 images
+        const imagesPerPlan: Record<"basic" | "standard" | "premium", number> = {
+          basic: 4,
+          standard: 8,
+          premium: 12,
+        };
+        const totalImages = imagesPerPlan[input.selectedPrice] || input.numImagesPerExample;
         const creditsNeeded = totalImages;
         
-        console.log(`[Photo Generate Page2] Total images to generate: ${totalImages}, Credits needed: ${creditsNeeded}`);
+        console.log(`[Photo Generate Page2] Selected plan: ${input.selectedPrice}, Total images to generate: ${totalImages}, Credits needed: ${creditsNeeded}`);
 
         // Check credits
         const db = await getDb();
@@ -1727,8 +1734,8 @@ export const appRouter = router({
         const absoluteExampleUrl = exampleImageUrl; // Already absolute URL
 
         if (!db) {
-          // Create 4 jobs, each generating 1 image
-          const queueJobsData = Array.from({ length: input.numImagesPerExample }, () => ({
+          // Create jobs based on selected plan, each generating 1 image
+          const queueJobsData = Array.from({ length: totalImages }, () => ({
             batchId: batchId,
             userId: ctx.user.id,
             exampleImageId: input.exampleImageId,
@@ -1816,8 +1823,8 @@ export const appRouter = router({
           }
         } else {
           // Use direct database connection
-          // Create 4 jobs, each generating 1 image
-          const queueJobsValues = Array.from({ length: input.numImagesPerExample }, () => ({
+          // Create jobs based on selected plan, each generating 1 image
+          const queueJobsValues = Array.from({ length: totalImages }, () => ({
             batchId: batchId,
             userId: ctx.user.id,
             exampleImageId: input.exampleImageId,

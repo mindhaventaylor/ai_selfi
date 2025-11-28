@@ -143,6 +143,11 @@ if (typeof window !== 'undefined') {
       i18n.changeLanguage(detectedLang);
       // Save to cookie when auto-detected
       setCookie('i18nextLng', detectedLang, 365);
+      // Update currency based on detected language
+      const baseLang = detectedLang.split("-")[0].toLowerCase();
+      if (baseLang === 'it' || baseLang === 'es') {
+        safeLocalStorage.setItem('preferredCurrency', 'EUR');
+      }
     }).catch(() => {
       // Se falhar, usar idioma do navegador
       const browserLang = (typeof navigator !== 'undefined' ? navigator.language : null) || 'it';
@@ -155,13 +160,35 @@ if (typeof window !== 'undefined') {
       i18n.changeLanguage(detectedLang);
       // Save to cookie when auto-detected
       setCookie('i18nextLng', detectedLang, 365);
+      // Update currency based on detected language
+      const baseLang = detectedLang.split("-")[0].toLowerCase();
+      if (baseLang === 'it' || baseLang === 'es') {
+        safeLocalStorage.setItem('preferredCurrency', 'EUR');
+      }
     });
+  } else {
+    // If language is already set, update currency based on it
+    const baseLang = currentLang.split("-")[0].toLowerCase();
+    if (baseLang === 'it' || baseLang === 'es') {
+      safeLocalStorage.setItem('preferredCurrency', 'EUR');
+    }
   }
   
   // Listen for language changes and sync to cookie
   i18n.on('languageChanged', (lng) => {
     setCookie('i18nextLng', lng, 365);
     safeLocalStorage.setItem('i18nextLng', lng);
+    
+    // Update currency based on language
+    // Italian and Spanish should use EUR
+    const baseLang = lng.split("-")[0].toLowerCase();
+    if (baseLang === 'it' || baseLang === 'es') {
+      safeLocalStorage.setItem('preferredCurrency', 'EUR');
+    } else {
+      // For other languages, detect currency normally
+      // This will be handled by detectCurrency() function
+      safeLocalStorage.removeItem('preferredCurrency');
+    }
   });
 }
 
