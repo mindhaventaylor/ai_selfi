@@ -519,18 +519,38 @@ function HairStyleStep({ value, onChange, onNext, formData }: { value: string; o
   const { t } = useTranslation();
 
   const styles = [
-    { value: "straight", label: t("dashboardV2.straight") },
-    { value: "wavy", label: t("dashboardV2.wavy") },
-    { value: "curly", label: t("dashboardV2.curly") },
-    { value: "dreadlocks", label: t("dashboardV2.dreadlocks") },
+    { value: "straight", label: t("dashboardV2.straight"), imageIndex: 1 },
+    { value: "wavy", label: t("dashboardV2.wavy"), imageIndex: 2 },
+    { value: "curly", label: t("dashboardV2.curly"), imageIndex: 3 },
+    { value: "dreadlocks", label: t("dashboardV2.dreadlocks"), imageIndex: 4 },
   ];
 
-  // Filter example images based on selected gender, attire (styles), and backgrounds
+  // Get gender from formData, default to "man"
   const gender = formData.gender === "man" || formData.gender === "woman" ? formData.gender : "man";
-  const selectedStyles = formData.attire || [];
-  const selectedBackgrounds = formData.backgrounds || [];
-  const filteredImages = filterExampleImages(exampleImages, gender, selectedStyles, selectedBackgrounds);
-  const displayImages = filteredImages.length > 0 ? filteredImages.slice(0, 6) : exampleImages.slice(0, 6);
+  
+  // Function to get the hair type image path based on gender and image index
+  const getHairTypeImage = (gender: string, imageIndex: number): string => {
+    const genderPrefix = gender === "woman" ? "woman" : "man";
+    let imageNumber: number | string;
+    
+    if (gender === "woman") {
+      // Reverse the order for women: 1->4, 2->3, 3->2, 4->1
+      const reversedIndex = 5 - imageIndex; // This reverses: 1->4, 2->3, 3->2, 4->1
+      imageNumber = reversedIndex === 1 ? "" : reversedIndex;
+    } else {
+      // For men: 1->1 (straight), 2->4 (wavy uses dreadlocks), 3->2 (curly uses wavy), 4->3 (dreadlocks uses curly)
+      const manMapping: Record<number, number> = {
+        1: 1, // straight → man_hair_type.jpg
+        2: 4, // wavy → man_hair_type4.jpg (was dreadlocks)
+        3: 2, // curly → man_hair_type2.jpg (was wavy)
+        4: 3, // dreadlocks → man_hair_type3.jpg (was curly)
+      };
+      const mappedIndex = manMapping[imageIndex] || imageIndex;
+      imageNumber = mappedIndex === 1 ? "" : mappedIndex;
+    }
+    
+    return `/${genderPrefix}_hair_type${imageNumber}.jpg`;
+  };
 
   return (
     <div className="space-y-6">
@@ -542,10 +562,8 @@ function HairStyleStep({ value, onChange, onNext, formData }: { value: string; o
       </div>
 
       <div className="grid grid-cols-4 gap-4 mt-8">
-        {styles.map((style, index) => {
-          // Get an example image for this button (cycle through available images)
-          const imageIndex = index % displayImages.length;
-          const exampleImage = displayImages[imageIndex];
+        {styles.map((style) => {
+          const imageUrl = getHairTypeImage(gender, style.imageIndex);
           
           return (
             <button
@@ -561,7 +579,7 @@ function HairStyleStep({ value, onChange, onNext, formData }: { value: string; o
                 {/* Example image inside button */}
                 <div className="w-full aspect-[3/4] relative">
                   <img
-                    src={exampleImage.url}
+                    src={imageUrl}
                     alt={t("dashboardV2.exampleForAlt", { label: style.label })}
                     className="w-full h-full object-cover"
                     loading="lazy"
