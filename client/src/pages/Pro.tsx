@@ -106,21 +106,24 @@ export default function Pro() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => {
             const IconComponent = feature.icon;
+            // Extract color from button color and apply matching background
+            // Default to muted for coming soon features
+            let cardBgClass = "bg-muted/10 border-border";
+            if (feature.buttonColor.includes("purple")) {
+              cardBgClass = "bg-purple-500/10 border-purple-500/20";
+            } else if (feature.buttonColor.includes("yellow")) {
+              cardBgClass = "bg-yellow-500/10 border-yellow-500/20";
+            } else if (feature.buttonColor.includes("orange")) {
+              cardBgClass = "bg-orange-500/10 border-orange-500/20";
+            } else if (feature.buttonColor.includes("muted")) {
+              cardBgClass = "bg-muted/10 border-border";
+            }
             return (
               <Card
                 key={feature.id}
-                className="bg-card/50 border-border overflow-hidden relative group cursor-pointer hover:border-primary/50 transition-all"
+                className={`${cardBgClass} overflow-hidden relative group cursor-pointer hover:border-primary/50 transition-all`}
                 onClick={() => handleFeatureClick(feature)}
               >
-                {/* Blurred Background Image */}
-                <div
-                  className="absolute inset-0 opacity-20 blur-2xl scale-110"
-                  style={{
-                    background: placeholderImages[index],
-                  }}
-                />
-                <div className="absolute inset-0 bg-background/60" />
-
                 <CardContent className="p-6 relative z-10">
                   <div className="space-y-4">
                     {/* Coming Soon Badge */}

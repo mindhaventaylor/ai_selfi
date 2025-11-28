@@ -901,7 +901,7 @@ export default function Home() {
                   <Button
                     asChild
                     size="lg"
-                    className="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                   >
                     <a href="/login">
                       {t("styles.cta")} <ArrowRight className="ml-2 w-5 h-5 inline" />
@@ -1108,11 +1108,11 @@ export default function Home() {
               {/* Arrow Icon - Vertical on mobile, horizontal on desktop */}
               {/* Mobile: Vertical arrow between sections */}
               <div className="flex justify-center my-6 md:hidden">
-                <ArrowDown className="w-16 h-16 text-pink-500" strokeWidth={3} />
+                <ArrowDown className="w-16 h-16 text-primary" strokeWidth={3} />
               </div>
               {/* Desktop: Horizontal arrow between columns */}
               <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 hidden md:block">
-                <ArrowRight className="w-20 h-20 md:w-24 md:h-24 text-pink-500" strokeWidth={3} />
+                <ArrowRight className="w-20 h-20 md:w-24 md:h-24 text-primary" strokeWidth={3} />
               </div>
 
               {/* Left Side - Upload Selfies */}
@@ -1188,7 +1188,7 @@ export default function Home() {
                 <Button
                   asChild
                   size="lg"
-                  className="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
                   <a href="/login">
                     {t("ctaSection.button")}
