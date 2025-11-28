@@ -4,6 +4,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePostHogVariant } from "@/hooks/usePostHogVariant";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -91,6 +92,7 @@ export default function GenerateImages() {
   const lastBatchStatusRef = useRef<string | null>(null); // Track last batch status to avoid unnecessary updates
   const progressAnimationRef = useRef<NodeJS.Timeout | null>(null); // Track progress animation interval
   const targetProgressRef = useRef<number>(0); // Track target progress for smooth animation
+  const totalImagesToGenerateRef = useRef<number>(4); // Default to 4, will be updated when generation starts
 
   // Check for variant - prioritize URL param, then first variant (permanent), then cached, then PostHog
   // This ensures we detect page2 even when navigating with batchId
@@ -121,8 +123,45 @@ export default function GenerateImages() {
   const getBatchStatusQuery = trpc.photo.getBatchStatus.useQuery(
     currentBatchId ? { batchId: currentBatchId } : { batchId: 0 },
     { 
-      enabled: !!currentBatchId && !isPage2Variant && isGenerating,
-      refetchInterval: isGenerating && !isPage2Variant ? 2000 : false, // Poll every 2 seconds while generating
+      enabled: !!currentBatchId && !isPage2Variant, // Always enabled when we have a batchId
+      // Debug query status
+      onSuccess: (data) => {
+        console.log("[GenerateImages] ✅ getBatchStatusQuery onSuccess:", {
+          batchId: data?.batch?.id,
+          batchStatus: data?.batch?.status,
+          photosCount: data?.photos?.length || 0,
+          enabled: !!currentBatchId && !isPage2Variant,
+          currentBatchId,
+          isPage2Variant,
+        });
+      },
+      onError: (error) => {
+        console.error("[GenerateImages] ❌ getBatchStatusQuery onError:", error);
+      },
+      refetchInterval: (query) => {
+        const data = query.state.data;
+        const isStillGenerating = data?.batch?.status === "generating" || data?.batch?.status === "pending";
+        const isCompleted = data?.batch?.status === "completed";
+        const photosWithUrls = data?.photos?.filter((p: any) => p.url) || [];
+        const hasImages = photosWithUrls.length > 0;
+        
+        // Stop polling if:
+        // 1. Completed and we have images
+        // 2. Completed and we've been polling for a while (to prevent infinite polling)
+        if (isCompleted && hasImages) {
+          return false;
+        }
+        
+        // Poll only if still generating
+        if (isStillGenerating) {
+          return 2000; // Poll every 2s (less aggressive)
+        }
+        
+        // Stop polling otherwise
+        return false;
+      },
+      staleTime: 0, // Always consider data stale to ensure fresh fetches
+      cacheTime: 0, // Don't cache to see updates immediately
     }
   );
   // Check if we have batchId in URL and variant is page2 (for query enablement)
@@ -143,7 +182,34 @@ export default function GenerateImages() {
     { batchId: currentBatchId! },
     { 
       enabled: shouldEnablePage2Query,
-      refetchInterval: shouldEnablePage2Query ? 2000 : false, // Poll every 2 seconds while generating
+      refetchInterval: (query) => {
+        // With Realtime, we can reduce polling frequency
+        // Keep polling as fallback if generating OR if batch is completed but we haven't seen images yet
+        const data = query.state.data;
+        const isStillGenerating = data?.batch?.status === "generating" || data?.batch?.status === "pending";
+        const isCompleted = data?.batch?.status === "completed";
+        const photosWithUrls = data?.photos?.filter((p: any) => p.url) || [];
+        
+        console.log(`[GenerateImages] Page2 refetch interval check:`, {
+          isStillGenerating,
+          isCompleted,
+          photosCount: data?.photos?.length,
+          photosWithUrls: photosWithUrls.length,
+          batchStatus: data?.batch?.status,
+        });
+        
+        // Poll aggressively to show images as they're generated
+        // Poll if:
+        // 1. Still generating (to see images one by one)
+        // 2. Completed but no photos with URLs yet (images might still be uploading)
+        if (isStillGenerating || (isCompleted && photosWithUrls.length === 0)) {
+          return 800; // Poll every 800ms to catch images as they're generated
+        }
+        // Stop polling when completed and we have photos
+        return false;
+      },
+      staleTime: 0, // Always consider data stale to ensure fresh fetches
+      cacheTime: 0, // Don't cache to see updates immediately
     }
   );
   
@@ -359,23 +425,524 @@ export default function GenerateImages() {
     }
   }, [currentBatchId]);
 
+  // Realtime subscription for photos - listen for INSERTs when a new photo is added
+  useEffect(() => {
+    if (!currentBatchId) {
+      console.log(`[GenerateImages] ⚠️ No currentBatchId, skipping Realtime subscription`);
+      return;
+    }
+
+    console.log(`[GenerateImages] 🔴 Setting up Realtime subscription for batch ${currentBatchId}`, {
+      isPage2Variant,
+      filter: isPage2Variant 
+        ? `page2GenerationBatchId=eq.${currentBatchId}`
+        : `generationBatchId=eq.${currentBatchId}`,
+    });
+
+    // Create subscription for INSERTs and UPDATEs on photos table
+    // Filter by generationBatchId (page1) or page2GenerationBatchId (page2)
+    const channel = supabase
+      .channel(`photos-batch-${currentBatchId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'photos',
+          filter: isPage2Variant 
+            ? `page2GenerationBatchId=eq.${currentBatchId}`
+            : `generationBatchId=eq.${currentBatchId}`,
+        },
+        (payload) => {
+          console.log(`[GenerateImages] 🟢 Realtime INSERT received:`, {
+            photoId: payload.new.id,
+            url: payload.new.url ? payload.new.url.substring(0, 50) + "..." : "NO URL",
+            status: payload.new.status,
+            batchId: isPage2Variant ? payload.new.page2GenerationBatchId : payload.new.generationBatchId,
+          });
+
+          // Add photo immediately when it's inserted (backend inserts with URL and status="completed")
+          if (payload.new.url) {
+            const newPhoto = {
+              id: payload.new.id,
+              url: payload.new.url,
+              status: payload.new.status || 'completed',
+            };
+
+            console.log(`[GenerateImages] 🎯 Processing INSERT event for photo ${newPhoto.id}`, {
+              photoId: newPhoto.id,
+              hasUrl: !!newPhoto.url,
+              status: newPhoto.status,
+              currentImagesCount: generatedImages.length,
+            });
+
+            // Update generatedImages state immediately - use functional update to ensure we have latest state
+            setGeneratedImages((prevImages) => {
+              // Check if this photo already exists (avoid duplicates)
+              const exists = prevImages.some((img) => img.id === newPhoto.id);
+              if (exists) {
+                console.log(`[GenerateImages] ⚠️ Photo ${newPhoto.id} already exists in state, skipping`);
+                return prevImages;
+              }
+
+              console.log(`[GenerateImages] ✅ Adding new photo to state from INSERT:`, {
+                photoId: newPhoto.id,
+                url: newPhoto.url.substring(0, 50) + "...",
+                status: newPhoto.status,
+                previousCount: prevImages.length,
+                newCount: prevImages.length + 1,
+                allPhotoIds: [...prevImages.map(img => img.id), newPhoto.id],
+              });
+
+              // Add new photo and sort by ID to maintain order
+              const updated = [...prevImages, newPhoto].sort((a, b) => a.id - b.id);
+              
+              // Update completed images count immediately (use the new count)
+              const newCount = updated.length;
+              setCompletedImages(newCount);
+              console.log(`[GenerateImages] 📊 Completed images count updated from INSERT: ${prevImages.length} -> ${newCount}`);
+              
+              // Update progress immediately when new image arrives
+              const expectedTotal = isPage2Variant ? 4 : totalImagesToGenerateRef.current;
+              if (newCount > 0 && newCount < expectedTotal) {
+                const progress = 2 + (newCount / expectedTotal) * 98;
+                targetProgressRef.current = Math.min(100, Math.round(progress));
+                console.log(`[GenerateImages] 📊 Progress updated from INSERT: ${newCount}/${expectedTotal} = ${targetProgressRef.current}%`);
+              }
+              
+              return updated;
+            });
+          } else {
+            console.log(`[GenerateImages] ⏳ Photo ${payload.new.id} inserted but not ready yet (no URL)`);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'photos',
+          filter: isPage2Variant 
+            ? `page2GenerationBatchId=eq.${currentBatchId}`
+            : `generationBatchId=eq.${currentBatchId}`,
+        },
+        (payload) => {
+          console.log(`[GenerateImages] 🔵 Realtime UPDATE received:`, {
+            photoId: payload.new.id,
+            url: payload.new.url ? payload.new.url.substring(0, 50) + "..." : "NO URL",
+            status: payload.new.status,
+            oldStatus: payload.old.status,
+            batchId: isPage2Variant ? payload.new.page2GenerationBatchId : payload.new.generationBatchId,
+          });
+
+          // If photo was updated with URL or status changed to completed, add/update it
+          if (payload.new.url) {
+            const updatedPhoto = {
+              id: payload.new.id,
+              url: payload.new.url,
+              status: payload.new.status,
+            };
+
+            // Update generatedImages state
+            setGeneratedImages((prevImages) => {
+              const existingIndex = prevImages.findIndex((img) => img.id === updatedPhoto.id);
+              
+              if (existingIndex >= 0) {
+                // Photo already exists, update it
+                console.log(`[GenerateImages] ✅ Updating existing photo in state:`, {
+                  photoId: updatedPhoto.id,
+                  oldUrl: prevImages[existingIndex].url ? "HAS URL" : "NO URL",
+                  newUrl: updatedPhoto.url ? "HAS URL" : "NO URL",
+                });
+                const updated = [...prevImages];
+                updated[existingIndex] = updatedPhoto;
+                return updated;
+              } else {
+                // New photo, add it
+                console.log(`[GenerateImages] ✅ Adding new photo from UPDATE to state:`, {
+                  photoId: updatedPhoto.id,
+                  totalImages: prevImages.length + 1,
+                });
+                const updated = [...prevImages, updatedPhoto].sort((a, b) => a.id - b.id);
+                return updated;
+              }
+            });
+
+            // Update progress based on new photo count
+            setCompletedImages((prev) => {
+              const newCount = generatedImages.length + (generatedImages.some(img => img.id === updatedPhoto.id) ? 0 : 1);
+              if (newCount !== prev) {
+                console.log(`[GenerateImages] 📊 Completed images updated from UPDATE: ${prev} -> ${newCount}`);
+                return newCount;
+              }
+              return prev;
+            });
+
+            // Refetch batch status to get updated totalImagesGenerated
+            if (isPage2Variant) {
+              getPage2BatchStatusQuery.refetch();
+            } else {
+              getBatchStatusQuery.refetch();
+            }
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log(`[GenerateImages] 📡 Realtime subscription status:`, status);
+      });
+
+    // Cleanup subscription when batchId changes or component unmounts
+    return () => {
+      console.log(`[GenerateImages] 🔴 Cleaning up Realtime subscription for batch ${currentBatchId}`);
+      supabase.removeChannel(channel);
+    };
+  }, [currentBatchId, isPage2Variant, getBatchStatusQuery, getPage2BatchStatusQuery]);
+
   // Update progress from polling - use page2 query if page2 variant, otherwise use regular query
   const batchStatusData = isPage2Variant 
     ? getPage2BatchStatusQuery.data 
     : getBatchStatusQuery.data;
+  
+  // CRITICAL: Force update images whenever batchStatusData changes and has photos
+  // This ensures images appear immediately when query returns data
+  // Use a ref to track the last processed photos to avoid unnecessary updates
+  const lastProcessedPhotosRef = useRef<number[]>([]);
+  
+  useEffect(() => {
+    if (!currentBatchId) {
+      return;
+    }
+    
+    // Check both batchStatusData and the raw query data
+    const data = batchStatusData || (isPage2Variant ? getPage2BatchStatusQuery.data : getBatchStatusQuery.data);
+    
+    console.log("[GenerateImages] 🔍 Force update check:", {
+      hasBatchStatusData: !!batchStatusData,
+      hasData: !!data,
+      hasPhotos: !!data?.photos,
+      photosLength: data?.photos?.length || 0,
+      currentBatchId,
+      isPage2Variant,
+    });
+    
+    if (!data || !data.photos) {
+      console.log("[GenerateImages] ⚠️ No data or photos available");
+      return;
+    }
+    
+    const photosWithUrls = (data.photos || []).filter((p: any) => p && p.url);
+    
+    console.log("[GenerateImages] 🔍 Photos check:", {
+      totalPhotos: data.photos.length,
+      photosWithUrls: photosWithUrls.length,
+      photos: photosWithUrls.map((p: any) => ({ id: p.id, url: p.url?.substring(0, 50) + "..." })),
+    });
+    
+    if (photosWithUrls.length > 0) {
+      const imagesToSet = photosWithUrls
+        .map((p: { id: number; url: string; status: string }) => ({ id: p.id, url: p.url, status: p.status }))
+        .sort((a, b) => a.id - b.id);
+      
+      const currentPhotoIds = imagesToSet.map(img => img.id).sort((a, b) => a - b);
+      const lastPhotoIds = lastProcessedPhotosRef.current.sort((a, b) => a - b);
+      const hasNewPhotos = currentPhotoIds.length !== lastPhotoIds.length || 
+        currentPhotoIds.some((id: number) => !lastPhotoIds.includes(id));
+      
+      if (hasNewPhotos || generatedImages.length === 0) {
+        console.log("[GenerateImages] 🔥 FORCE UPDATE: Setting images immediately:", {
+          imagesCount: imagesToSet.length,
+          images: imagesToSet.map(img => ({ id: img.id, url: img.url?.substring(0, 50) + "..." })),
+          previousCount: generatedImages.length,
+          hasNewPhotos,
+          photoIds: currentPhotoIds,
+          lastPhotoIds: lastProcessedPhotosRef.current,
+        });
+        
+        // ALWAYS update when we have new photos or state is empty
+        setGeneratedImages(imagesToSet);
+        setCompletedImages(imagesToSet.length);
+        lastProcessedPhotosRef.current = currentPhotoIds;
+        
+        // Update progress based on number of images
+        const expectedTotal = isPage2Variant ? 4 : totalImagesToGenerateRef.current;
+        if (imagesToSet.length > 0 && imagesToSet.length < expectedTotal) {
+          const progress = 2 + (imagesToSet.length / expectedTotal) * 98;
+          targetProgressRef.current = Math.min(100, Math.round(progress));
+        }
+        
+        if (data.batch?.status === "completed") {
+          setGenerationProgress(100);
+          setIsGenerating(false);
+        }
+      } else {
+        console.log("[GenerateImages] ⏭️ Skipping update - no new photos", {
+          currentPhotoIds,
+          lastPhotoIds,
+        });
+      }
+    } else {
+      console.log("[GenerateImages] ⚠️ No photos with URLs found");
+    }
+  }, [batchStatusData, getBatchStatusQuery.data, getPage2BatchStatusQuery.data, currentBatchId, isPage2Variant, generatedImages.length]);
+  
+  // Debug: Log query data whenever it changes
+  useEffect(() => {
+    console.log("[GenerateImages] 🔍 Debug query data:", {
+      hasBatchStatusData: !!batchStatusData,
+      batchStatusData: batchStatusData ? {
+        hasBatch: !!batchStatusData.batch,
+        hasPhotos: !!batchStatusData.photos,
+        photosType: Array.isArray(batchStatusData.photos) ? 'array' : typeof batchStatusData.photos,
+        photosLength: batchStatusData.photos?.length || 0,
+        batchId: batchStatusData.batch?.id,
+        batchStatus: batchStatusData.batch?.status,
+      } : null,
+      getBatchStatusQueryData: getBatchStatusQuery.data ? {
+        hasBatch: !!getBatchStatusQuery.data.batch,
+        hasPhotos: !!getBatchStatusQuery.data.photos,
+        photosLength: getBatchStatusQuery.data.photos?.length || 0,
+      } : null,
+      currentBatchId,
+      isPage2Variant,
+    });
+    
+    if (batchStatusData) {
+      console.log("[GenerateImages] 📥 Query data received:", {
+        batchId: batchStatusData.batch?.id,
+        batchStatus: batchStatusData.batch?.status,
+        totalImagesGenerated: batchStatusData.batch?.totalImagesGenerated,
+        photosCount: batchStatusData.photos?.length || 0,
+        photosWithUrls: batchStatusData.photos?.filter((p: any) => p.url).length || 0,
+        photos: batchStatusData.photos?.map((p: any) => ({ 
+          id: p.id, 
+          url: p.url ? p.url.substring(0, 50) + "..." : "NO URL", 
+          status: p.status 
+        })) || [],
+        isPage2Variant,
+        currentBatchId,
+        rawPhotos: batchStatusData.photos,
+      });
+    } else if (currentBatchId) {
+      console.log("[GenerateImages] ⚠️ No batchStatusData but currentBatchId exists:", {
+        currentBatchId,
+        isPage2Variant,
+        getBatchStatusQueryIsLoading: getBatchStatusQuery.isLoading,
+        getPage2BatchStatusQueryIsLoading: getPage2BatchStatusQuery.isLoading,
+        getBatchStatusQueryError: getBatchStatusQuery.error,
+        getPage2BatchStatusQueryError: getPage2BatchStatusQuery.error,
+        getBatchStatusQueryData: getBatchStatusQuery.data,
+        getPage2BatchStatusQueryData: getPage2BatchStatusQuery.data,
+      });
+    }
+  }, [batchStatusData, currentBatchId, isPage2Variant, getBatchStatusQuery.isLoading, getPage2BatchStatusQuery.isLoading, getBatchStatusQuery.error, getPage2BatchStatusQuery.error, getBatchStatusQuery.data, getPage2BatchStatusQuery.data]);
+  
+  // Remove fallback polling - rely on refetchInterval and Realtime only
+
+  // Update progress when generatedImages changes (via Realtime)
+  useEffect(() => {
+    // Only update progress if we have a batch and are generating
+    if (!currentBatchId) {
+      return;
+    }
+
+    const expectedTotal = isPage2Variant ? 4 : totalImagesToGenerateRef.current;
+    const currentImagesCount = generatedImages.length;
+
+    console.log(`[GenerateImages] 📊 Progress useEffect triggered:`, {
+      currentImagesCount,
+      expectedTotal,
+      currentBatchId,
+      isGenerating,
+      isPage2Variant,
+    });
+
+    if (currentImagesCount === 0) {
+      // Just started - show minimal progress
+      targetProgressRef.current = 2;
+      setGenerationProgress(2);
+      setCompletedImages(0);
+      return;
+    }
+
+    if (currentImagesCount >= expectedTotal) {
+      // All images generated
+      targetProgressRef.current = 100;
+      setGenerationProgress(100);
+      setCompletedImages(expectedTotal);
+      // Clear animation interval if exists
+      if (progressAnimationRef.current) {
+        clearInterval(progressAnimationRef.current);
+        progressAnimationRef.current = null;
+      }
+      return;
+    }
+
+    // Calculate progress based on actual images received via Realtime
+    // Each image adds (98 / expectedTotal)% to the progress
+    // Reserve 2% for start, 98% for images
+    const imageProgress = (currentImagesCount / expectedTotal) * 98;
+    const targetProgress = 2 + imageProgress;
+    
+    const newTargetProgress = Math.min(100, Math.max(0, Math.round(targetProgress)));
+    targetProgressRef.current = newTargetProgress;
+    setCompletedImages(currentImagesCount);
+
+    console.log(`[GenerateImages] 📊 Progress calculated from Realtime:`, {
+      currentImagesCount,
+      expectedTotal,
+      imageProgress,
+      targetProgress: newTargetProgress,
+      currentProgress: generationProgress,
+      generatedImages: generatedImages.map(img => ({ id: img.id, url: img.url?.substring(0, 50) + "..." })),
+    });
+
+    // Update progress immediately when a new image arrives (don't wait for animation)
+    // This ensures users see progress update right away
+    setGenerationProgress((prev) => {
+      // If we have a new image, jump progress significantly to show immediate feedback
+      if (newTargetProgress > prev) {
+        // Jump to at least 70% of the way to target for immediate visual feedback
+        const jumpProgress = prev + (newTargetProgress - prev) * 0.7;
+        console.log(`[GenerateImages] 📈 Jumping progress: ${prev}% -> ${jumpProgress}% (target: ${newTargetProgress}%)`);
+        return Math.min(newTargetProgress, jumpProgress);
+      }
+      return prev;
+    });
+
+    // Smooth progress animation - increment gradually towards target
+    if (progressAnimationRef.current) {
+      clearInterval(progressAnimationRef.current);
+      progressAnimationRef.current = null;
+    }
+
+    // Start animation to smoothly reach target
+    progressAnimationRef.current = setInterval(() => {
+      setGenerationProgress((prev) => {
+        const target = targetProgressRef.current;
+        if (prev >= target) {
+          // Reached target, clear interval
+          if (progressAnimationRef.current) {
+            clearInterval(progressAnimationRef.current);
+            progressAnimationRef.current = null;
+          }
+          return target;
+        }
+        // Increment by 0.8% every 200ms for faster, smoother animation
+        return Math.min(target, prev + 0.8);
+      });
+    }, 200);
+  }, [generatedImages.length, currentBatchId, isPage2Variant]);
   
   // Update progress from polling
   useEffect(() => {
     if (batchStatusData && currentBatchId) {
       const { batch, photos } = batchStatusData;
       
-      // Create a unique key for this batch status to avoid unnecessary updates
-      const statusKey = `${batch.id}-${batch.status}-${batch.totalImagesGenerated}-${photos.length}`;
+      // Log every time this effect runs to debug
+      const photosWithUrls = photos.filter((p: any) => p.url);
+      console.log("[GenerateImages] 🔄 useEffect triggered with batchStatusData:", {
+        batchId: batch.id,
+        batchStatus: batch.status,
+        totalImagesGenerated: batch.totalImagesGenerated,
+        photosCount: photos.length,
+        photosWithUrls: photosWithUrls.length,
+        photos: photos.map((p: any) => ({ 
+          id: p.id, 
+          url: p.url ? p.url.substring(0, 50) + "..." : "NO URL", 
+          status: p.status 
+        })),
+        currentBatchId,
+        isPage2Variant,
+        generatedImagesCount: generatedImages.length,
+        showModal,
+        isGenerating,
+      });
       
-      // Skip if this is the same status we already processed
-      if (lastBatchStatusRef.current === statusKey) {
+      // ALWAYS update images if we have photos - this is the main update mechanism
+      if (photosWithUrls.length > 0) {
+        const imagesToSet = photosWithUrls
+          .map((p: { id: number; url: string; status: string }) => ({ id: p.id, url: p.url, status: p.status }))
+          .sort((a, b) => a.id - b.id);
+        
+        // Check if we need to update by comparing with current state
+        setGeneratedImages((prevImages) => {
+          const prevIds = new Set(prevImages.map(img => img.id));
+          const newIds = new Set(imagesToSet.map(img => img.id));
+          const areDifferent = prevIds.size !== newIds.size || 
+            Array.from(newIds).some(id => !prevIds.has(id));
+          
+          if (areDifferent || prevImages.length === 0) {
+            console.log("[GenerateImages] 🔄 Updating images from batchStatusData:", {
+              queryCount: imagesToSet.length,
+              stateCount: prevImages.length,
+              areDifferent,
+              queryIds: Array.from(newIds),
+              stateIds: Array.from(prevIds),
+              images: imagesToSet.map(img => ({ id: img.id, url: img.url?.substring(0, 50) + "..." })),
+            });
+            setCompletedImages(imagesToSet.length);
+            lastProcessedPhotosRef.current = Array.from(newIds);
+            return imagesToSet;
+          }
+          return prevImages;
+        });
+      }
+      
+      // Create a unique key for this batch status to avoid unnecessary updates
+      // Include photos.length to detect when new photos are added
+      const statusKey = `${batch.id}-${batch.status}-${batch.totalImagesGenerated}-${photos.length}`;
+      const previousKey = lastBatchStatusRef.current;
+      
+      // Get current photos count from state to detect new photos
+      const currentPhotosInState = generatedImages.length;
+      const newPhotosCount = photos.filter((p: any) => p.url).length;
+      
+      // Skip if this is the same status we already processed AND no new photos were added
+      // BUT: Always process if:
+      // 1. Status is "completed" (to ensure images are shown) - CRITICAL
+      // 2. New photos were added (photos.length increased)
+      // 3. Photos with URLs increased (newPhotosCount > currentPhotosInState)
+      const hasNewPhotos = newPhotosCount > currentPhotosInState || photos.length > currentPhotosInState;
+      const isCompleted = batch.status === "completed";
+      
+      // CRITICAL: Always process "completed" status, even if statusKey is the same
+      // This ensures images are shown when batch completes
+      if (previousKey === statusKey && !isCompleted && !hasNewPhotos) {
+        console.log("[GenerateImages] Skipping duplicate status update:", {
+          statusKey,
+          currentPhotosInState,
+          newPhotosCount,
+          photosLength: photos.length,
+          batchStatus: batch.status,
+        });
         return;
       }
+      
+      // If status is "completed", force processing even if statusKey is the same
+      // This is critical because when batch completes, statusKey might not change
+      // if photos.length and totalImagesGenerated are already at final values
+      if (isCompleted && previousKey === statusKey) {
+        console.log("[GenerateImages] ⚠️ Batch completed but statusKey unchanged - forcing update anyway", {
+          statusKey,
+          photosCount: photos.length,
+          photosWithUrls: newPhotosCount,
+          generatedImagesCount: generatedImages.length,
+          previousKey,
+        });
+        // Don't return - continue processing to update images
+      }
+      
+      console.log("[GenerateImages] Status changed:", {
+        previous: previousKey,
+        current: statusKey,
+        photosCount: photos.length,
+        photosWithUrls: newPhotosCount,
+        currentPhotosInState,
+        hasNewPhotos,
+        batchTotalImages: batch.totalImagesGenerated,
+        batchStatus: batch.status,
+      });
       
       lastBatchStatusRef.current = statusKey;
       
@@ -390,6 +957,14 @@ export default function GenerateImages() {
       // Update progress - don't force modal open if user closed it
       // Only open modal automatically when generation completes or fails (so user sees results)
       if (batch.status === "completed") {
+        console.log("[GenerateImages] ✅ Processing completed batch:", {
+          batchId: batch.id,
+          totalImagesGenerated: batch.totalImagesGenerated,
+          photosCount: photos.length,
+          photosWithUrls: photos.filter((p: any) => p.url).length,
+          currentGeneratedImagesCount: generatedImages.length,
+        });
+        
         setIsGenerating(false);
         // Clear progress animation and set to 100%
         if (progressAnimationRef.current) {
@@ -399,53 +974,115 @@ export default function GenerateImages() {
         setGenerationProgress(100);
         targetProgressRef.current = 100;
         setCompletedImages(batch.totalImagesGenerated);
+        
+        // Get all photos with URLs - ensure we have all images
         const completedImages = photos
           .filter((p: { id: number; url: string; status: string }) => p.url) // Only include photos with URLs
           .map((p: { id: number; url: string; status: string }) => ({ id: p.id, url: p.url, status: p.status }));
-        setGeneratedImages(completedImages);
         
-        console.log("[GenerateImages] Completed images:", {
+        console.log("[GenerateImages] 🎉 Generation completed:", {
+          batchStatus: batch.status,
           totalPhotos: photos.length,
           photosWithUrls: completedImages.length,
-          images: completedImages,
+          batchTotalImagesGenerated: batch.totalImagesGenerated,
+          images: completedImages.map(img => ({ id: img.id, url: img.url?.substring(0, 50) + "..." })),
+          previousGeneratedImagesCount: generatedImages.length,
         });
-        console.log("[GenerateImages] Generation completed:", batch.totalImagesGenerated, "images");
-        // Open modal when completed so user can see results
-        setShowModal((prev) => prev ? prev : true);
+        
+        // ALWAYS update images list when completed - force update
+        // This is critical - ensure images are set even if count is the same
+        // Use functional update to ensure we get the latest state
+        setGeneratedImages((prevImages) => {
+          // If we have completed images, always set them (even if count is same)
+          if (completedImages.length > 0) {
+            // Check if arrays are different
+            const prevIds = new Set(prevImages.map(img => img.id));
+            const newIds = new Set(completedImages.map(img => img.id));
+            const areDifferent = prevIds.size !== newIds.size || 
+              Array.from(newIds).some(id => !prevIds.has(id));
+            
+            if (areDifferent || prevImages.length === 0) {
+              console.log("[GenerateImages] 📸 Setting generated images from completed batch:", {
+                count: completedImages.length,
+                prevCount: prevImages.length,
+                images: completedImages.map(img => ({ id: img.id, url: img.url?.substring(0, 50) + "..." })),
+              });
+              return completedImages.sort((a, b) => a.id - b.id);
+            }
+            
+            // Arrays are the same, but ensure we return the correct array
+            console.log("[GenerateImages] 📸 Images already set, keeping current state");
+            return prevImages;
+          } else {
+            console.warn("[GenerateImages] ⚠️ Batch completed but no images with URLs found!", {
+              photos: photos.map((p: any) => ({ id: p.id, url: p.url ? "HAS URL" : "NO URL", status: p.status })),
+            });
+            return prevImages;
+          }
+        });
+        
+        // Force modal open to show results
+        console.log("[GenerateImages] Opening modal to show completed images");
+        setShowModal(true);
       } else if (batch.status === "failed") {
         setIsGenerating(false);
         setErrorMessage(t("generateImages.generationFailed"));
         console.log("[GenerateImages] Generation failed");
         // Open modal when failed so user can see error
         setShowModal((prev) => prev ? prev : true);
-      } else if (batch.status === "generating") {
+      } else if (batch.status === "generating" || batch.status === "pending") {
         // Don't force modal open if user closed it - allow them to close it
         // Only update progress (modal can be closed by user)
         setIsGenerating(true);
         
+        // Ensure modal is open when generating (user can still close it manually)
+        if (!showModal) {
+          console.log("[GenerateImages] Opening modal for generation in progress");
+          setShowModal(true);
+        }
+        
         // Use photos.length as primary source since photos are created one by one
-        // Only use batch.totalImagesGenerated if photos array is empty (fallback)
+        // Photos are saved to database immediately as they're generated, so photos.length reflects real-time progress
         const currentPhotosCount = photos.length > 0 ? photos.length : (batch.totalImagesGenerated || 0);
+        
+        console.log("[GenerateImages] 🔄 Generation in progress:", {
+          batchStatus: batch.status,
+          photosCount: photos.length,
+          photosWithUrls: photos.filter((p: any) => p.url).length,
+          photos: photos.map((p: any) => ({ 
+            id: p.id, 
+            url: p.url ? p.url.substring(0, 50) + "..." : "NO URL",
+            status: p.status 
+          })),
+          currentPhotosCount,
+          batchTotalImagesGenerated: batch.totalImagesGenerated,
+          showModal,
+          isGenerating,
+          generatedImagesCount: generatedImages.length,
+        });
         const expectedTotal = isPage2Variant 
           ? 4 // Page2 always generates 4 images
-          : totalImagesToGenerate;
+          : totalImagesToGenerateRef.current;
         
         // Update completed images count immediately (show images as they're created)
         setCompletedImages(currentPhotosCount);
         
-        // Calculate target progress based on actual images completed
-        // Progress = (completed images / total images) * 100
+        // Calculate target progress based on ACTUAL images completed
+        // Progress should only increase as images are actually generated
         let targetProgress = 0;
         if (currentPhotosCount === 0) {
-          // Just started - show 2% to indicate processing has begun
+          // Just started - show minimal progress (2%) to indicate processing has begun
+          // Don't go higher until we actually have images
           targetProgress = 2;
         } else if (currentPhotosCount >= expectedTotal) {
           // All images generated - show 100%
           targetProgress = 100;
         } else {
-          // Calculate progress: each completed image adds (98 / expectedTotal)%
-          // This gives us 2% to 100% range (2% start + 98% for images)
+          // Calculate progress based on actual images generated
+          // Each image adds (98 / expectedTotal)% to the progress
+          // Reserve 2% for start, 98% for images
           // Example: 4 images = 2% + (1/4 * 98%) = 26.5% for first image
+          // Example: 4 images = 2% + (2/4 * 98%) = 51% for second image
           const imageProgress = (currentPhotosCount / expectedTotal) * 98;
           targetProgress = 2 + imageProgress;
         }
@@ -459,42 +1096,85 @@ export default function GenerateImages() {
           clearInterval(progressAnimationRef.current);
         }
         
-        // Animate progress smoothly towards target
-        progressAnimationRef.current = setInterval(() => {
-          setGenerationProgress((prev) => {
-            const target = targetProgressRef.current;
-            if (prev >= target) {
-              // Reached target, clear interval
-              if (progressAnimationRef.current) {
-                clearInterval(progressAnimationRef.current);
-                progressAnimationRef.current = null;
+        // Animate progress smoothly towards target - based on actual images
+        // Only animate if we have a target higher than current progress
+        if (targetProgressRef.current > generationProgress) {
+          progressAnimationRef.current = setInterval(() => {
+            setGenerationProgress((prev) => {
+              const target = targetProgressRef.current;
+              if (prev >= target) {
+                // Reached target, clear interval
+                if (progressAnimationRef.current) {
+                  clearInterval(progressAnimationRef.current);
+                  progressAnimationRef.current = null;
+                }
+                return prev;
               }
-              return prev;
-            }
-            // Increment by 2% per interval (smooth animation)
-            const increment = Math.min(2, target - prev);
-            return Math.min(100, prev + increment);
-          });
-        }, 200); // Update every 200ms for smooth animation
+              // Increment by 0.3% per interval for slower, more gradual progress
+              // This makes the progress bar rise slowly as images are being created
+              const increment = Math.min(0.3, target - prev);
+              return Math.min(100, prev + increment);
+            });
+          }, 400); // Update every 400ms for smoother, slower animation
+        } else {
+          // If target is not higher, just set it directly (shouldn't happen, but safety check)
+          setGenerationProgress(targetProgressRef.current);
+        }
         
         // Update generated images list immediately as they're created - show one by one
         // Filter out photos without URLs and only add new ones
-        const newImages = photos
+        const photosWithUrls = photos
           .filter((p: { id: number; url: string; status: string }) => p.url) // Only include photos with URLs
           .map((p: { id: number; url: string; status: string }) => ({ id: p.id, url: p.url, status: p.status }));
         
-        // Only update if we have new images (avoid unnecessary re-renders)
+        console.log("[GenerateImages] 🔄 Processing images during generation:", {
+          photosWithUrlsCount: photosWithUrls.length,
+          currentGeneratedImagesCount: generatedImages.length,
+          photosWithUrls: photosWithUrls.map(img => ({ id: img.id, url: img.url?.substring(0, 50) + "..." })),
+          currentImages: generatedImages.map(img => ({ id: img.id, url: img.url?.substring(0, 50) + "..." })),
+        });
+        
+        // CRITICAL: Update images list incrementally as they arrive
+        // This ensures images appear one by one, not all at once at the end
         setGeneratedImages((prevImages) => {
-          // If we have more images than before, update
-          if (newImages.length > prevImages.length) {
-            return newImages;
+          // Always update if query has more images than state
+          if (photosWithUrls.length > prevImages.length) {
+            console.log(`[GenerateImages] ✨ Updating images list (query has more than state):`, {
+              queryCount: photosWithUrls.length,
+              stateCount: prevImages.length,
+              queryIds: photosWithUrls.map(img => img.id),
+              stateIds: prevImages.map(img => img.id),
+            });
+            
+            // Update completed images count immediately
+            setCompletedImages(photosWithUrls.length);
+            
+            // Return all photos from query, sorted by ID
+            return photosWithUrls.sort((a, b) => a.id - b.id);
           }
-          // If same count but different IDs, update (in case of replacement)
-          const prevIds = new Set(prevImages.map(img => img.id));
-          const newIds = new Set(newImages.map(img => img.id));
-          if (prevIds.size !== newIds.size || Array.from(prevIds).some(id => !newIds.has(id))) {
-            return newImages;
+          
+          // Find new photos that aren't in the current state (for incremental updates)
+          const newPhotos = photosWithUrls.filter(
+            (photo) => !prevImages.some((existing) => existing.id === photo.id)
+          );
+          
+          if (newPhotos.length > 0) {
+            console.log(`[GenerateImages] ✨ Adding ${newPhotos.length} new image(s) during generation:`, {
+              newPhotos: newPhotos.map(img => ({ id: img.id, url: img.url?.substring(0, 50) + "..." })),
+              previousCount: prevImages.length,
+              newCount: prevImages.length + newPhotos.length,
+            });
+            
+            // Add new photos and sort by ID
+            const updated = [...prevImages, ...newPhotos].sort((a, b) => a.id - b.id);
+            
+            // Update completed images count immediately
+            setCompletedImages(updated.length);
+            
+            return updated;
           }
+          
+          // No new images - keep current state
           return prevImages;
         });
         
@@ -502,11 +1182,10 @@ export default function GenerateImages() {
           isPage2Variant,
           batchTotalImagesGenerated: batch.totalImagesGenerated,
           photosArrayLength: photos.length,
-          currentPhotosCount,
-          photosWithUrls: newImages.length,
+          photosWithUrls: photosWithUrls.length,
           expectedTotal,
           targetProgress: targetProgressRef.current,
-          images: newImages,
+          generatedImagesCount: generatedImages.length,
         });
       }
     } else if (currentBatchId && !batchStatusData) {
@@ -543,6 +1222,11 @@ export default function GenerateImages() {
   // For page2 variant, default to 4 images (1 example image * 4 variations)
   const imageCount = isPage2Variant ? 1 : (selectedImage !== null ? 1 : 0);
   const totalImagesToGenerate = imageCount * 4; // 4 images per selected image
+  
+  // Update ref when totalImagesToGenerate changes (for use in useEffects)
+  useEffect(() => {
+    totalImagesToGenerateRef.current = totalImagesToGenerate;
+  }, [totalImagesToGenerate]);
 
   // Calculate derived values (not hooks, so safe to call after useEffect)
   const creditsNeeded = totalImagesToGenerate; // 1 credit per generated image
@@ -695,8 +1379,13 @@ export default function GenerateImages() {
       });
 
       if (result.batchId) {
-        setCurrentBatchId(result.batchId);
         console.log("[GenerateImages] Generation started, batch ID:", result.batchId);
+        setCurrentBatchId(result.batchId);
+        // Force query to refetch immediately after setting batchId
+        setTimeout(() => {
+          console.log("[GenerateImages] Forcing query refetch after batchId set");
+          getBatchStatusQuery.refetch();
+        }, 100);
       } else {
         throw new Error(t("generateImages.failedToStartGeneration"));
       }
@@ -829,9 +1518,13 @@ export default function GenerateImages() {
       // Set batch ID for polling
       if (result.batchId) {
         console.log(`[GenerateImages] Setting batch ID to ${result.batchId}`);
+        console.log("[GenerateImages] Page2 generation started, batch ID:", result.batchId);
         setCurrentBatchId(result.batchId);
-        // Force a small delay to ensure state is updated before query starts
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Force query to refetch immediately after setting batchId
+        setTimeout(() => {
+          console.log("[GenerateImages] Forcing Page2 query refetch after batchId set");
+          getPage2BatchStatusQuery.refetch();
+        }, 100);
       } else {
         // Fallback if no batch ID (shouldn't happen)
         setIsGenerating(false);
@@ -1300,9 +1993,36 @@ export default function GenerateImages() {
 
           {/* Images Grid - Scrollable */}
           <div className="px-6 pb-6 flex-1 overflow-y-auto">
+            {/* Debug: Log current state */}
+            {(() => {
+              const imagesCount = generatedImages.length;
+              console.log("[GenerateImages] 🖼️ Rendering images grid:", {
+                generatedImagesCount: imagesCount,
+                isGenerating,
+                showModal,
+                images: generatedImages.map(img => ({ id: img.id, url: img.url?.substring(0, 50) + "..." })),
+                rawGeneratedImages: generatedImages,
+              });
+              
+              if (imagesCount === 0) {
+                console.warn("[GenerateImages] ⚠️ WARNING: generatedImages is EMPTY! No images to render!");
+              } else {
+                console.log(`[GenerateImages] ✅ Will render ${imagesCount} image(s)`);
+              }
+              
+              return null;
+            })()}
             <div className="grid grid-cols-2 gap-4">
               {/* Show generated images - appear one by one with smooth animation */}
-              {generatedImages.map((image, index) => (
+              {/* Always show images, even during generation */}
+              {generatedImages.length > 0 ? (
+                generatedImages.map((image, index) => {
+                  console.log(`[GenerateImages] 🖼️ Rendering image ${index + 1}/${generatedImages.length}:`, {
+                    id: image.id,
+                    hasUrl: !!image.url,
+                    url: image.url?.substring(0, 50) + "...",
+                  });
+                  return (
                 <div
                   key={`generated-${image.id || index}`}
                   className="relative group aspect-square rounded-lg overflow-hidden border-2 border-border hover:border-primary hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 cursor-pointer"
@@ -1317,8 +2037,12 @@ export default function GenerateImages() {
                     src={image.url}
                     alt={t("generateImages.generatedImageAlt", { number: index + 1 })}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    onLoad={() => {
+                      console.log(`[GenerateImages] ✅ Image ${image.id} loaded successfully`);
+                    }}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
+                      console.error(`[GenerateImages] ❌ Image ${image.id} failed to load:`, image.url);
                       target.src = `https://picsum.photos/400/400?random=${index}`;
                     }}
                   />
@@ -1333,10 +2057,12 @@ export default function GenerateImages() {
                     <Download className="w-4 h-4 text-foreground" />
                   </div>
                 </div>
-              ))}
+                  );
+                })
+              ) : null}
               
               {/* Show loading placeholders for remaining images */}
-              {Array.from({ length: totalImagesToGenerate - generatedImages.length }).map((_, index) => (
+              {Array.from({ length: Math.max(0, totalImagesToGenerate - generatedImages.length) }).map((_, index) => (
                 <div
                   key={`loading-${index}`}
                   className="relative aspect-square rounded-lg overflow-hidden border-2 border-dashed border-primary/30 bg-primary/5"
