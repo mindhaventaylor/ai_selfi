@@ -300,6 +300,22 @@ export default function GenerateImages() {
   }, [variant, urlVariant, cachedVariant, isPage2Variant, page2Data]);
 
   // If we have a batchId, use it for polling - check immediately on mount and when location changes
+  // Also poll window.location.search to catch URL changes from child components
+  const [urlSearch, setUrlSearch] = useState(window.location.search);
+  
+  // Poll for URL changes (workaround for setLocation from child components)
+  useEffect(() => {
+    const checkUrl = () => {
+      if (window.location.search !== urlSearch) {
+        console.log("[GenerateImages] URL search changed:", window.location.search);
+        setUrlSearch(window.location.search);
+      }
+    };
+    
+    const interval = setInterval(checkUrl, 100);
+    return () => clearInterval(interval);
+  }, [urlSearch]);
+  
   useEffect(() => {
     // Parse URL params from current location
     const urlParamsForBatch = new URLSearchParams(window.location.search);
@@ -310,6 +326,7 @@ export default function GenerateImages() {
       batchIdFromUrl,
       currentBatchId,
       location,
+      urlSearch,
     });
     
     // Handle batchId for both page1 and page2
@@ -340,7 +357,7 @@ export default function GenerateImages() {
       }
     }
     // Removed the else if block that checked showModal/isGenerating to avoid infinite loops
-  }, [isPage2Variant, location, currentBatchId]);
+  }, [isPage2Variant, location, currentBatchId, urlSearch]);
   
   // Also check on initial mount for page2 with batchId
   // This ensures the modal opens even if the variant detection hasn't completed yet
@@ -1306,38 +1323,13 @@ export default function GenerateImages() {
       return;
     }
 
-    // Build base prompt from form data
-    let basePrompt = `Create a photorealistic professional portrait image of the person in the reference photos.`;
-    
-    if (data.formData.gender) {
-      basePrompt += ` Gender: ${data.formData.gender}.`;
-    }
-    if (data.formData.age) {
-      basePrompt += ` Age: ${data.formData.age}.`;
-    }
-    if (data.formData.hairColor) {
-      basePrompt += ` Hair color: ${data.formData.hairColor}.`;
-    }
-    if (data.formData.hairLength) {
-      basePrompt += ` Hair length: ${data.formData.hairLength}.`;
-    }
-    if (data.formData.hairStyle) {
-      basePrompt += ` Hair style: ${data.formData.hairStyle}.`;
-    }
-    if (data.formData.ethnicity) {
-      basePrompt += ` Ethnicity: ${data.formData.ethnicity}.`;
-    }
-    if (data.formData.bodyType) {
-      basePrompt += ` Body type: ${data.formData.bodyType}.`;
-    }
-    if (data.formData.attire && data.formData.attire.length > 0) {
-      basePrompt += ` Attire: ${data.formData.attire.join(", ")}.`;
-    }
-    if (data.formData.backgrounds && data.formData.backgrounds.length > 0) {
-      basePrompt += ` Background: ${data.formData.backgrounds.join(", ")}.`;
-    }
-    
-    basePrompt += ` High quality, professional photography, natural lighting, sharp focus.`;
+    // Build base prompt using the exampleImage prompt with wrapper format
+    const exampleImagePrompt = exampleImage.prompt || "A professional portrait in a studio setting with soft, even lighting.";
+    const basePrompt = `Create a professional headshot for this person, following the guidance below. The photograph and the person should look real, like it was taken from a premium photograph session:
+
+${exampleImagePrompt}
+
+Output should be a vertical rectangle. Entire head should be visible`;
 
     // Reset state
     setIsGenerating(true);
@@ -1453,24 +1445,14 @@ export default function GenerateImages() {
       return;
     }
     
-    // Build base prompt from user options
-    let basePrompt = `Create a photorealistic professional portrait image of the person in the reference photos.`;
-    if (selectedBackgrounds.length > 0) {
-      basePrompt += ` Use a ${selectedBackgrounds.join(", ")} background.`;
-    }
-    if (selectedStyles.length > 0) {
-      basePrompt += ` Style: ${selectedStyles.join(", ")}.`;
-    }
-    if (glasses === "yes") {
-      basePrompt += ` Include glasses.`;
-    }
-    if (hairColor && hairColor !== "default") {
-      basePrompt += ` Hair color: ${hairColor}.`;
-    }
-    if (hairStyle && hairStyle !== "no-preference") {
-      basePrompt += ` Hair style: ${hairStyle}.`;
-    }
-    basePrompt += ` High quality, professional photography, natural lighting, sharp focus.`;
+    // Build base prompt: For page1, use only the exampleImage prompt + gender
+    // Don't include user attributes (hair, glasses, backgrounds, styles) as they override the person's appearance
+    const genderText = gender === "man" ? "male" : "female";
+    const basePrompt = `Create a professional headshot for this person, following the guidance below. The photograph and the person should look real, like it was taken from a premium photograph session:
+
+${selectedExampleImage.prompt}
+
+Output should be a vertical rectangle. Entire head should be visible`;
     
     // Reset state
     setIsGenerating(true);
@@ -1500,6 +1482,8 @@ export default function GenerateImages() {
       }
 
       // Call the API with new structure
+      // For page1: Only send gender (embedded in basePrompt) and exampleImage prompt
+      // Don't send user attributes (hair, glasses, backgrounds, styles) as they're not used
       const result = await generateMutation.mutateAsync({
         modelId: isPage2Variant ? undefined : parseInt(modelId), // Optional for page2
         trainingImageUrls: referenceImageUrls, // Empty for page2, contains model images for page1
@@ -1511,11 +1495,9 @@ export default function GenerateImages() {
         basePrompt,
         aspectRatio,
         numImagesPerExample: 4,
-        glasses: glasses as "yes" | "no",
-        hairColor: hairColor !== "default" ? hairColor : undefined,
-        hairStyle: hairStyle !== "no-preference" ? hairStyle : undefined,
-        backgrounds: selectedBackgrounds,
-        styles: selectedStyles,
+        glasses: "no", // Not used for page1, but required by schema
+        backgrounds: [], // Not used for page1
+        styles: [], // Not used for page1
       });
 
       // Set batch ID for polling

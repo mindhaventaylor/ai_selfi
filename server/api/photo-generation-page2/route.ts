@@ -273,17 +273,17 @@ async function updatePage2BatchStatus(
 
 async function generateImagesWithGemini(
   trainingImageUrls: string[],
-  exampleImageUrls: string[],
+  _exampleImageUrls: string[], // Not used - we only send user's images
   basePrompt: string,
   aspectRatio: "1:1" | "9:16" | "16:9",
   numImages: number,
-  glasses: string,
-  hairColor?: string | null,
-  hairStyle?: string | null,
-  backgrounds?: string[],
-  styles?: string[]
+  _glasses: string, // Not used - prompt already includes style info
+  _hairColor?: string | null, // Not used
+  _hairStyle?: string | null, // Not used
+  _backgrounds?: string[], // Not used
+  _styles?: string[] // Not used
 ): Promise<Buffer[]> {
-  // Download training images
+  // Download user's training images (the only images sent to Nano Banana)
   const trainingImages: Buffer[] = [];
   for (const url of trainingImageUrls) {
     try {
@@ -297,51 +297,26 @@ async function generateImagesWithGemini(
     }
   }
 
-  // Download example images
-  const exampleImages: Buffer[] = [];
-  for (const url of exampleImageUrls) {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`Failed to download: ${url}`);
-      const arrayBuffer = await response.arrayBuffer();
-      exampleImages.push(Buffer.from(arrayBuffer));
-    } catch (error) {
-      console.error(`[photo-generation-page2] Failed to download example image ${url}:`, error);
-      throw error;
-    }
-  }
+  // NOTE: Example images are NOT sent to Nano Banana for page2 variant
+  // Only the user's uploaded images are sent as reference
+  console.log(`[photo-generation-page2] Sending ${trainingImages.length} user images to Nano Banana (no example images)`);
 
-  // Build prompt
-  let prompt = basePrompt;
-  if (hairColor && hairColor !== "default") {
-    prompt += ` Hair color: ${hairColor}.`;
-  }
-  if (hairStyle && hairStyle !== "no-preference") {
-    prompt += ` Hair style: ${hairStyle}.`;
-  }
-  if (glasses === "yes") {
-    prompt += ` Include glasses.`;
-  }
-  if (backgrounds && backgrounds.length > 0) {
-    prompt += ` Background: ${backgrounds.join(", ")}.`;
-  }
-  if (styles && styles.length > 0) {
-    prompt += ` Style: ${styles.join(", ")}.`;
-  }
+  // Use the basePrompt directly - it already contains the selected prompt from exampleImages + gender
+  const prompt = basePrompt;
 
   // Generate images
   const generatedImages: Buffer[] = [];
   
   for (let i = 0; i < numImages; i++) {
     try {
-      // Prepare parts for Gemini API
+      // Prepare parts for Gemini API - only user's images, no example images
       const parts: any[] = [
         {
           text: prompt,
         },
       ];
 
-      // Add training images
+      // Add only user's training images (not example images)
       for (const img of trainingImages) {
         parts.push({
           inlineData: {
@@ -351,15 +326,7 @@ async function generateImagesWithGemini(
         });
       }
 
-      // Add example images
-      for (const img of exampleImages) {
-        parts.push({
-          inlineData: {
-            mimeType: "image/png",
-            data: img.toString("base64"),
-          },
-        });
-      }
+      // NOTE: Example images are intentionally NOT added here for page2 variant
 
       const response = await fetch(geminiUrl, {
         method: "POST",

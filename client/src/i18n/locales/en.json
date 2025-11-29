@@ -69,7 +69,7 @@
         "date": "Aug 28, 2025"
       },
       {
-        "name": "Stefano Bruno",
+        "name": "Giulia Bruno",
         "title": "Business Consultant",
         "review": "Really impressive results! I created superior quality professional photos for my profile. The system is easy to use and results arrive quickly. The photos are so realistic that many asked me who the photographer was. Top service!",
         "date": "Sep 12, 2025"
@@ -534,13 +534,11 @@
     "title": "Credits",
     "subtitle": "Buy credits to create your AI photos.",
     "starterFeatures": [
-      "Create 1 AI Model",
       "40 photos",
       "Choose Styles and Outfits",
       "Images in 2K Resolution"
     ],
     "proFeatures": [
-      "Create 1 AI Model",
       "100 photos",
       "Images in High Resolution 4K",
       "Choose Styles and Outfits",
@@ -554,7 +552,6 @@
       "and more"
     ],
     "premiumFeatures": [
-      "Create 2 AI Models",
       "150 photos",
       "Images in High Resolution 4K",
       "Choose Styles and Outfits",
@@ -642,6 +639,7 @@
       "title": "Payment Successful!",
       "message": "Your payment has been processed successfully. Credits have been added to your account.",
       "goToDashboard": "Go to Dashboard",
+      "continueCreating": "Continue Creating Your Photos",
       "buyMore": "Buy More Credits",
       "sessionIdLabel": "Session ID:"
     },
@@ -923,7 +921,6 @@
     "creditsPerPerson": "40 credits per person",
     "perPerson": "per person",
     "features": [
-      "Create 1 AI Model",
       "40 credits",
       "40 photos",
       "Choose 10 Styles and Outfits",

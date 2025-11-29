@@ -3,11 +3,12 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function PaymentSuccess() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
+  const [hasPage2FormData, setHasPage2FormData] = useState(false);
   
   const sessionId = useMemo(() => {
     if (typeof window === "undefined") return null;
@@ -19,7 +20,29 @@ export default function PaymentSuccess() {
     // The webhook should have already processed the payment
     // But we can show a success message
     console.log("Payment successful, session ID:", sessionId);
+    
+    // Check if user has saved form data from DashboardV2 flow
+    const savedData = localStorage.getItem("dashboardV2_formData");
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        if (parsed.resumeStep === "upload") {
+          setHasPage2FormData(true);
+        }
+      } catch (e) {
+        console.error("Failed to parse saved form data:", e);
+      }
+    }
   }, [sessionId]);
+
+  const handleContinue = () => {
+    if (hasPage2FormData) {
+      // User came from DashboardV2 flow, redirect back to continue
+      setLocation("/dashboard?variant=page2");
+    } else {
+      setLocation("/dashboard");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
@@ -49,18 +72,20 @@ export default function PaymentSuccess() {
 
           <div className="flex flex-col gap-3 pt-4">
             <Button
-              onClick={() => setLocation("/dashboard")}
+              onClick={handleContinue}
               className="w-full"
             >
-              {t("payment.success.goToDashboard")}
+              {hasPage2FormData ? t("payment.success.continueCreating") || t("payment.success.goToDashboard") : t("payment.success.goToDashboard")}
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => setLocation("/dashboard/credits/buy")}
-              className="w-full"
-            >
-              {t("payment.success.buyMore")}
-            </Button>
+            {!hasPage2FormData && (
+              <Button
+                variant="outline"
+                onClick={() => setLocation("/dashboard/credits/buy")}
+                className="w-full"
+              >
+                {t("payment.success.buyMore")}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

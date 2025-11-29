@@ -69,7 +69,7 @@
         "date": "Ago 28, 2025"
       },
       {
-        "name": "Stefano Bruno",
+        "name": "Giulia Bruno",
         "title": "Consultor de Negocios",
         "review": "¡Resultados realmente impresionantes! Creé fotos profesionales de calidad superior para mi perfil. El sistema es fácil de usar y los resultados llegan rápidamente. Las fotos son tan realistas que muchos me preguntaron quién era el fotógrafo. ¡Servicio de primera!",
         "date": "Sep 12, 2025"
@@ -505,13 +505,11 @@
     "title": "Créditos",
     "subtitle": "Compra créditos para crear tus fotos con IA.",
     "starterFeatures": [
-      "Crea 1 Modelo IA",
       "40 fotos",
       "Elige Estilos y Outfits",
       "Imágenes en Resolución 2K"
     ],
     "proFeatures": [
-      "Crea 1 Modelo IA",
       "100 fotos",
       "Imágenes en Alta Resolución 4K",
       "Elige Estilos y Outfits",
@@ -525,7 +523,6 @@
       "y más"
     ],
     "premiumFeatures": [
-      "Crea 2 Modelos IA",
       "150 fotos",
       "Imágenes en Alta Resolución 4K",
       "Elige Estilos y Outfits",
@@ -612,6 +609,7 @@
       "title": "¡Pago Realizado!",
       "message": "Tu pago ha sido procesado con éxito. Los créditos han sido añadidos a tu cuenta.",
       "goToDashboard": "Ir al Dashboard",
+      "continueCreating": "Continuar Creando Tus Fotos",
       "buyMore": "Comprar Más Créditos",
       "sessionIdLabel": "ID de Sesión:"
     },
@@ -892,7 +890,6 @@
     "creditsPerPerson": "40 créditos por persona",
     "perPerson": "por persona",
     "features": [
-      "Crea 1 Modelo IA",
       "40 créditos",
       "40 fotos",
       "Elige 10 Estilos y Atuendos",
