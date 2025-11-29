@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/accordion";
 import { Check, Box, Star, Zap } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { safeLocalStorage } from "@/utils/localStorage";
 import { detectCurrency, getLocalizedPrice, getPage2Credits } from "@/utils/currency";
@@ -25,10 +25,12 @@ export default function BuyCredits() {
   const currency = detectCurrency();
   const { user } = useAuth();
   const { variant: posthogVariant } = usePostHogVariant(user?.id);
+  const autoBuyRef = useRef<boolean>(false);
   
   // Check for page2 variant
   const urlParams = new URLSearchParams(window.location.search);
   const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
+  const planParam = urlParams.get("plan") as "basic" | "standard" | "premium" | null;
   const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
   const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
   const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
@@ -91,24 +93,171 @@ export default function BuyCredits() {
   // For page1: Starter = $29, Pro = $39, Premium = $49
   // For page2: Starter = $18, Pro = $25, Premium = $40
   const getPackIdByBasePrice = (basePriceUSD: number): number | null => {
-    if (!packs || packs.length === 0) return null;
+    if (!packs || packs.length === 0) {
+      console.warn("[BuyCredits] No packs available for price matching:", basePriceUSD);
+      return null;
+    }
+    
     // Find pack with matching base USD price (convert to cents for comparison)
     // Packs in database should have base USD prices
-    const pack = packs.find(p => Math.round(parseFloat(p.price.toString()) * 100) === basePriceUSD * 100);
+    // Use a small tolerance (1 cent) to handle floating point precision issues
+    const targetCents = Math.round(basePriceUSD * 100);
+    
+    // Log all packs for debugging
+    console.log(`[BuyCredits] Searching for pack with price $${basePriceUSD} (${targetCents} cents). Available packs:`, 
+      packs.map(p => {
+        const packPrice = parseFloat(p.price.toString());
+        const packCents = Math.round(packPrice * 100);
+        return { 
+          id: p.id, 
+          price: packPrice, 
+          priceCents: packCents,
+          name: p.name,
+          credits: p.credits,
+          diff: Math.abs(packCents - targetCents)
+        };
+      })
+    );
+    
+    const pack = packs.find(p => {
+      const packPrice = parseFloat(p.price.toString());
+      const packCents = Math.round(packPrice * 100);
+      const match = Math.abs(packCents - targetCents) <= 1; // Allow 1 cent tolerance
+      
+      if (match) {
+        console.log(`[BuyCredits] Found pack match: price=$${packPrice}, id=${p.id}, target=$${basePriceUSD}`);
+      }
+      
+      return match;
+    });
+    
+    if (!pack) {
+      console.warn(`[BuyCredits] No pack found for price $${basePriceUSD} (${targetCents} cents). Available packs:`, 
+        packs.map(p => ({ 
+          id: p.id, 
+          price: parseFloat(p.price.toString()), 
+          priceCents: Math.round(parseFloat(p.price.toString()) * 100),
+          name: p.name,
+          credits: p.credits
+        }))
+      );
+    }
+    
     return pack?.id || null;
   };
 
   // Use different base prices based on variant
-  const starterPackId = getPackIdByBasePrice(isPage2Variant ? 18 : 29);
-  const proPackId = getPackIdByBasePrice(isPage2Variant ? 25 : 39);
-  const premiumPackId = getPackIdByBasePrice(isPage2Variant ? 40 : 49);
+  let starterPackId = getPackIdByBasePrice(isPage2Variant ? 18 : 29);
+  let proPackId = getPackIdByBasePrice(isPage2Variant ? 25 : 39);
+  let premiumPackId = getPackIdByBasePrice(isPage2Variant ? 40 : 49);
 
-  // Debug: log packs
+  // Fallback: If packs not found by price, try to map by order (cheapest = starter, middle = pro, most expensive = premium)
+  if (packs && packs.length > 0 && (!starterPackId || !proPackId || !premiumPackId)) {
+    console.warn("[BuyCredits] Some packs not found by price, trying fallback mapping by order");
+    const sortedPacks = [...packs].sort((a, b) => {
+      const priceA = parseFloat(a.price.toString());
+      const priceB = parseFloat(b.price.toString());
+      return priceA - priceB;
+    });
+    
+    console.log("[BuyCredits] Sorted packs by price:", sortedPacks.map(p => ({
+      id: p.id,
+      name: p.name,
+      price: parseFloat(p.price.toString()),
+      credits: p.credits
+    })));
+    
+    // Map: first pack = starter, second = pro, third = premium
+    if (!starterPackId && sortedPacks.length >= 1) {
+      starterPackId = sortedPacks[0].id;
+      console.log(`[BuyCredits] Fallback: Mapped starter to pack ID ${starterPackId} (price: $${parseFloat(sortedPacks[0].price.toString())})`);
+    }
+    if (!proPackId && sortedPacks.length >= 2) {
+      proPackId = sortedPacks[1].id;
+      console.log(`[BuyCredits] Fallback: Mapped pro to pack ID ${proPackId} (price: $${parseFloat(sortedPacks[1].price.toString())})`);
+    }
+    if (!premiumPackId && sortedPacks.length >= 3) {
+      premiumPackId = sortedPacks[2].id;
+      console.log(`[BuyCredits] Fallback: Mapped premium to pack ID ${premiumPackId} (price: $${parseFloat(sortedPacks[2].price.toString())})`);
+    }
+    // If only 2 packs, use second as premium too
+    if (!premiumPackId && sortedPacks.length === 2) {
+      premiumPackId = sortedPacks[1].id;
+      console.log(`[BuyCredits] Fallback: Only 2 packs, mapped premium to pack ID ${premiumPackId} (price: $${parseFloat(sortedPacks[1].price.toString())})`);
+    }
+  }
+
+  // Map plan parameter to packId
+  const getPackIdByPlan = (plan: "basic" | "standard" | "premium"): number | null => {
+    if (plan === "basic") return starterPackId;
+    if (plan === "standard") return proPackId;
+    if (plan === "premium") return premiumPackId;
+    return null;
+  };
+
+  // Auto-buy when plan parameter is present and packs are loaded
+  useEffect(() => {
+    if (planParam && !isLoadingPacks && packs && packs.length > 0 && !autoBuyRef.current) {
+      const targetPackId = getPackIdByPlan(planParam);
+      console.log("[BuyCredits] Auto-buy triggered for plan:", planParam, "packId:", targetPackId);
+      
+      if (targetPackId) {
+        autoBuyRef.current = true;
+        // Small delay to ensure UI is ready
+        const timer = setTimeout(async () => {
+          try {
+            setLoadingPackId(targetPackId);
+            console.log("[BuyCredits] Auto-creating checkout session for pack:", targetPackId, "currency:", currency);
+            
+            const result = await createCheckoutMutation.mutateAsync({ 
+              packId: targetPackId,
+              currency: currency,
+            });
+            console.log("[BuyCredits] Auto-checkout session created:", result);
+            
+            if (result?.url) {
+              // Redirect to Stripe Checkout
+              window.location.href = result.url;
+            } else {
+              console.error("[BuyCredits] No URL in auto-checkout result:", result);
+              toast.error(t("buyCredits.checkoutFailed"));
+              setLoadingPackId(null);
+              autoBuyRef.current = false; // Reset to allow retry
+            }
+          } catch (error: any) {
+            console.error("[BuyCredits] Auto-checkout error:", error);
+            toast.error(error?.message || t("buyCredits.checkoutStartFailed"));
+            setLoadingPackId(null);
+            autoBuyRef.current = false; // Reset to allow retry
+          }
+        }, 500);
+        
+        return () => clearTimeout(timer);
+      } else {
+        console.warn("[BuyCredits] Could not find pack for plan:", planParam);
+        toast.error(t("buyCredits.packNotFound"));
+      }
+    }
+  }, [planParam, isLoadingPacks, packs, starterPackId, proPackId, premiumPackId, currency, createCheckoutMutation, t]);
+
+  // Debug: log packs with detailed information
   if (packs && packs.length > 0) {
-    console.log("[BuyCredits] Available packs:", packs);
+    console.log("[BuyCredits] ===== PACKS DEBUG INFO =====");
+    console.log("[BuyCredits] Variant:", isPage2Variant ? "page2" : "page1");
+    console.log("[BuyCredits] Plan param:", planParam);
+    console.log("[BuyCredits] Available packs:", packs.map(p => ({
+      id: p.id,
+      name: p.name,
+      price: parseFloat(p.price.toString()),
+      priceCents: Math.round(parseFloat(p.price.toString()) * 100),
+      credits: p.credits
+    })));
+    console.log("[BuyCredits] Expected prices for page2: $18 (1800 cents), $25 (2500 cents), $40 (4000 cents)");
+    console.log("[BuyCredits] Expected prices for page1: $29 (2900 cents), $39 (3900 cents), $49 (4900 cents)");
     console.log("[BuyCredits] Pack IDs - Starter:", starterPackId, "Pro:", proPackId, "Premium:", premiumPackId);
-  } else {
-    console.warn("[BuyCredits] No packs found in database");
+    console.log("[BuyCredits] ============================");
+  } else if (!isLoadingPacks) {
+    console.warn("[BuyCredits] No packs found in database after loading completed");
   }
 
   return (
