@@ -34,7 +34,10 @@ export default function BuyCredits() {
   const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
 
   const createCheckoutMutation = trpc.payment.createCheckoutSession.useMutation();
-  const { data: packs } = trpc.payment.listPacks.useQuery();
+  const { data: packs, isLoading: isLoadingPacks, error: packsError } = trpc.payment.listPacks.useQuery();
+  
+  // Debug: log packs loading state
+  console.log("[BuyCredits] Packs loading:", isLoadingPacks, "Error:", packsError, "Packs:", packs);
 
   // Get localized prices (with page2 variant support)
   const starterPrice = getLocalizedPrice("starter", currency, isPage2Variant);
@@ -166,7 +169,7 @@ export default function BuyCredits() {
                   onClick={() => handleBuyClick(starterPackId)}
                   disabled={!starterPackId || loadingPackId === starterPackId}
                 >
-                  {loadingPackId === starterPackId ? t("buyCredits.loading") : t("buyCredits.buy")}
+                  {isLoadingPacks ? t("buyCredits.loading") : loadingPackId !== null && loadingPackId === starterPackId ? t("buyCredits.loading") : t("buyCredits.buy")}
                 </Button>
 
                 {/* Payment Terms */}
@@ -247,7 +250,7 @@ export default function BuyCredits() {
                   onClick={() => handleBuyClick(proPackId)}
                   disabled={!proPackId || loadingPackId === proPackId}
                 >
-                  {loadingPackId === proPackId ? t("buyCredits.loading") : t("buyCredits.buy")}
+                  {isLoadingPacks ? t("buyCredits.loading") : loadingPackId !== null && loadingPackId === proPackId ? t("buyCredits.loading") : t("buyCredits.buy")}
                 </Button>
 
                 {/* Payment Terms */}
@@ -321,7 +324,7 @@ export default function BuyCredits() {
                   onClick={() => handleBuyClick(premiumPackId)}
                   disabled={!premiumPackId || loadingPackId === premiumPackId}
                 >
-                  {loadingPackId === premiumPackId ? t("buyCredits.loading") : t("buyCredits.buy")}
+                  {isLoadingPacks ? t("buyCredits.loading") : loadingPackId !== null && loadingPackId === premiumPackId ? t("buyCredits.loading") : t("buyCredits.buy")}
                 </Button>
 
                 {/* Payment Terms */}

@@ -307,7 +307,24 @@ export const appRouter = router({
   payment: router({
     listPacks: publicProcedure.query(async () => {
       const db = await getDb();
-      if (!db) return [];
+      
+      // REST API fallback when direct DB connection is not available
+      if (!db) {
+        console.log("[Payment] Using REST API fallback for listPacks");
+        const { data, error } = await supabaseServer
+          .from('credit_packs')
+          .select('*')
+          .order('price', { ascending: true });
+        
+        if (error) {
+          console.error("[Payment] REST API error fetching packs:", error);
+          return [];
+        }
+        
+        console.log("[Payment] REST API returned packs:", data);
+        return data || [];
+      }
+      
       return db.select().from(creditPacks).orderBy(creditPacks.price);
     }),
     createCheckoutSession: protectedProcedure
@@ -317,10 +334,27 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
-        if (!db) throw new Error(getServerString("databaseNotAvailable"));
         
-        const packResult = await db.select().from(creditPacks).where(eq(creditPacks.id, input.packId)).limit(1);
-        const pack = packResult[0];
+        let pack: { id: number; name: string; description: string | null; price: number | string; credits: number; stripePriceId: string | null; createdAt: string } | null = null;
+        
+        // REST API fallback when direct DB connection is not available
+        if (!db) {
+          console.log("[Payment] Using REST API fallback for createCheckoutSession");
+          const { data, error } = await supabaseServer
+            .from('credit_packs')
+            .select('*')
+            .eq('id', input.packId)
+            .single();
+          
+          if (error || !data) {
+            console.error("[Payment] REST API error fetching pack:", error);
+            throw new Error(getServerString("packNotFound"));
+          }
+          pack = data;
+        } else {
+          const packResult = await db.select().from(creditPacks).where(eq(creditPacks.id, input.packId)).limit(1);
+          pack = packResult[0] || null;
+        }
 
         if (!pack) throw new Error(getServerString("packNotFound"));
 
@@ -385,13 +419,31 @@ export const appRouter = router({
         });
 
         // Create pending transaction
-        await db.insert(transactions).values({
-          userId: ctx.user.id,
-          packId: pack.id,
-          amount: pack.price.toString(),
-          status: "pending",
-          stripePaymentId: session.id,
-        });
+        if (db) {
+          await db.insert(transactions).values({
+            userId: ctx.user.id,
+            packId: pack.id,
+            amount: pack.price.toString(),
+            status: "pending",
+            stripePaymentId: session.id,
+          });
+        } else {
+          // REST API fallback for transaction creation
+          const { error: insertError } = await supabaseServer
+            .from('transactions')
+            .insert({
+              userId: ctx.user.id,
+              packId: pack.id,
+              amount: pack.price.toString(),
+              status: "pending",
+              stripePaymentId: session.id,
+            });
+          
+          if (insertError) {
+            console.error("[Payment] REST API error creating transaction:", insertError);
+            // Don't throw - the Stripe session is already created, just log the error
+          }
+        }
 
         return { 
           sessionId: session.id,
