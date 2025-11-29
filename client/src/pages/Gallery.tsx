@@ -126,10 +126,14 @@ export default function Gallery() {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <h1 className="text-3xl md:text-4xl font-bold">{t("gallery.title")}</h1>
-            {hasImages && (
+        <div className="flex flex-col gap-4 mb-6">
+          {/* Title row */}
+          <h1 className="text-3xl md:text-4xl font-bold">{t("gallery.title")}</h1>
+          
+          {/* Controls row - stacks on mobile, inline on desktop */}
+          {hasImages && (
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              {/* Sort dropdown */}
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">{t("gallery.sortBy")}</span>
                 <Select value={sortBy} onValueChange={(value: "newest" | "favourites") => setSortBy(value)}>
@@ -142,38 +146,40 @@ export default function Gallery() {
                   </SelectContent>
                 </Select>
               </div>
-            )}
-          </div>
-
-          {hasImages && (
-            <div className="flex items-center gap-3">
-              <Button
-                variant={isSelectMode ? "default" : "outline"}
-                onClick={handleSelectClick}
-                className="rounded-full"
-              >
-                {isSelectMode ? t("gallery.cancel") : t("gallery.select")}
-              </Button>
-              {isSelectMode && selectedImages.size > 0 && (
+              
+              {/* Action buttons */}
+              <div className="flex items-center gap-2 flex-wrap">
                 <Button
-                  variant="destructive"
-                  onClick={handleDeleteSelected}
+                  variant={isSelectMode ? "default" : "outline"}
+                  onClick={handleSelectClick}
                   className="rounded-full"
-                  disabled={deletePhotoMutation.isPending || deleteManyMutation.isPending}
+                  size="sm"
                 >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  {t("gallery.delete")} ({selectedImages.size})
+                  {isSelectMode ? t("gallery.cancel") : t("gallery.select")}
                 </Button>
-              )}
-              <Button
-                variant="outline"
-                onClick={handleDownloadAll}
-                className="rounded-full"
-                disabled={selectedImages.size === 0 && !isSelectMode}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                {t("gallery.download")} ({selectedImages.size})
-              </Button>
+                {isSelectMode && selectedImages.size > 0 && (
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteSelected}
+                    className="rounded-full"
+                    size="sm"
+                    disabled={deletePhotoMutation.isPending || deleteManyMutation.isPending}
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    {t("gallery.delete")} ({selectedImages.size})
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={handleDownloadAll}
+                  className="rounded-full"
+                  size="sm"
+                  disabled={selectedImages.size === 0 && !isSelectMode}
+                >
+                  <Download className="w-4 h-4 mr-1" />
+                  {t("gallery.download")} ({selectedImages.size})
+                </Button>
+              </div>
             </div>
           )}
         </div>
