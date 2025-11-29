@@ -38,8 +38,19 @@ export default function BuyCredits() {
   const createCheckoutMutation = trpc.payment.createCheckoutSession.useMutation();
   const { data: packs, isLoading: isLoadingPacks, error: packsError } = trpc.payment.listPacks.useQuery();
   
-  // Debug: log packs loading state
-  console.log("[BuyCredits] Packs loading:", isLoadingPacks, "Error:", packsError, "Packs:", packs);
+  // Debug: log packs loading state with more details
+  console.log("🔍 [BuyCredits] Packs loading state:", {
+    isLoading: isLoadingPacks,
+    error: packsError,
+    packsCount: packs?.length || 0,
+    packs: packs ? packs.map(p => ({
+      id: p.id,
+      name: p.name,
+      price: parseFloat(p.price.toString()),
+      priceCents: Math.round(parseFloat(p.price.toString()) * 100),
+      credits: p.credits
+    })) : null
+  });
 
   // Get localized prices (with page2 variant support)
   const starterPrice = getLocalizedPrice("starter", currency, isPage2Variant);
@@ -103,21 +114,24 @@ export default function BuyCredits() {
     // Use a small tolerance (1 cent) to handle floating point precision issues
     const targetCents = Math.round(basePriceUSD * 100);
     
-    // Log all packs for debugging
-    console.log(`[BuyCredits] Searching for pack with price $${basePriceUSD} (${targetCents} cents). Available packs:`, 
-      packs.map(p => {
-        const packPrice = parseFloat(p.price.toString());
-        const packCents = Math.round(packPrice * 100);
-        return { 
-          id: p.id, 
-          price: packPrice, 
-          priceCents: packCents,
-          name: p.name,
-          credits: p.credits,
-          diff: Math.abs(packCents - targetCents)
-        };
-      })
-    );
+    // Log all packs for debugging (only log once per search to avoid spam)
+    if (basePriceUSD === (isPage2Variant ? 18 : 29)) {
+      console.log(`🔍 [BuyCredits] Searching for pack with price $${basePriceUSD} (${targetCents} cents). Available packs:`, 
+        packs.map(p => {
+          const packPrice = parseFloat(p.price.toString());
+          const packCents = Math.round(packPrice * 100);
+          return { 
+            id: p.id, 
+            price: packPrice, 
+            priceCents: packCents,
+            name: p.name,
+            credits: p.credits,
+            diff: Math.abs(packCents - targetCents),
+            match: Math.abs(packCents - targetCents) <= 1
+          };
+        })
+      );
+    }
     
     const pack = packs.find(p => {
       const packPrice = parseFloat(p.price.toString());
@@ -150,14 +164,36 @@ export default function BuyCredits() {
   let starterPackId = getPackIdByBasePrice(isPage2Variant ? 18 : 29);
   let proPackId = getPackIdByBasePrice(isPage2Variant ? 25 : 39);
   let premiumPackId = getPackIdByBasePrice(isPage2Variant ? 40 : 49);
+  
+  // Log initial pack IDs before fallback
+  console.log("[BuyCredits] 🔍 Initial pack IDs (before fallback):", {
+    variant: isPage2Variant ? "page2" : "page1",
+    starterPackId,
+    proPackId,
+    premiumPackId,
+    packsCount: packs?.length || 0
+  });
 
   // Fallback: If packs not found by price, try to map by order (cheapest = starter, middle = pro, most expensive = premium)
   // This is CRITICAL for page2 variant when packs don't have exact prices
+  // ALWAYS use fallback for page2 variant if we have packs but prices don't match
   if (packs && packs.length > 0) {
     const needsFallback = !starterPackId || !proPackId || !premiumPackId;
     
-    if (needsFallback) {
-      console.warn("[BuyCredits] ⚠️ Some packs not found by price, using FALLBACK mapping by order");
+    // For page2 variant, ALWAYS use fallback mapping regardless of price match
+    // This ensures it works in production even if prices don't match exactly
+    const shouldUseFallback = isPage2Variant ? true : needsFallback;
+    
+    console.log("[BuyCredits] 🔍 Fallback check:", {
+      needsFallback,
+      isPage2Variant,
+      packsCount: packs.length,
+      shouldUseFallback,
+      reason: isPage2Variant ? "FORCED for page2 variant" : (needsFallback ? "packs not found by price" : "not needed")
+    });
+    
+    if (shouldUseFallback) {
+      console.warn("[BuyCredits] ⚠️ Using FALLBACK mapping by order (prices don't match or page2 variant)");
       const sortedPacks = [...packs].sort((a, b) => {
         const priceA = parseFloat(a.price.toString());
         const priceB = parseFloat(b.price.toString());
@@ -172,23 +208,46 @@ export default function BuyCredits() {
         credits: p.credits
       })));
       
-      // Map: first pack = starter, second = pro, third = premium
-      if (!starterPackId && sortedPacks.length >= 1) {
-        starterPackId = sortedPacks[0].id;
-        console.log(`[BuyCredits] ✅ Fallback: Mapped STARTER to pack ID ${starterPackId} (price: $${parseFloat(sortedPacks[0].price.toString())})`);
-      }
-      if (!proPackId && sortedPacks.length >= 2) {
-        proPackId = sortedPacks[1].id;
-        console.log(`[BuyCredits] ✅ Fallback: Mapped PRO to pack ID ${proPackId} (price: $${parseFloat(sortedPacks[1].price.toString())})`);
-      }
-      if (!premiumPackId && sortedPacks.length >= 3) {
-        premiumPackId = sortedPacks[2].id;
-        console.log(`[BuyCredits] ✅ Fallback: Mapped PREMIUM to pack ID ${premiumPackId} (price: $${parseFloat(sortedPacks[2].price.toString())})`);
-      }
-      // If only 2 packs, use second as premium too
-      if (!premiumPackId && sortedPacks.length === 2) {
-        premiumPackId = sortedPacks[1].id;
-        console.log(`[BuyCredits] ✅ Fallback: Only 2 packs, mapped PREMIUM to pack ID ${premiumPackId} (price: $${parseFloat(sortedPacks[1].price.toString())})`);
+      // For page2 variant with 2 packs: map cheapest to starter, most expensive to pro and premium
+      // For page1 variant: map by order (cheapest = starter, middle = pro, most expensive = premium)
+      if (isPage2Variant) {
+        // Page2: Map packs to starter, pro, premium based on order
+        if (sortedPacks.length >= 1) {
+          starterPackId = sortedPacks[0].id;
+          console.log(`[BuyCredits] ✅ Fallback (page2): Mapped STARTER to pack ID ${starterPackId} (price: $${parseFloat(sortedPacks[0].price.toString())})`);
+        }
+        if (sortedPacks.length >= 2) {
+          proPackId = sortedPacks[1].id;
+          console.log(`[BuyCredits] ✅ Fallback (page2): Mapped PRO to pack ID ${proPackId} (price: $${parseFloat(sortedPacks[1].price.toString())})`);
+          // If only 2 packs, also use second as premium
+          if (sortedPacks.length === 2) {
+            premiumPackId = sortedPacks[1].id;
+            console.log(`[BuyCredits] ✅ Fallback (page2): Only 2 packs, mapped PREMIUM to pack ID ${premiumPackId} (price: $${parseFloat(sortedPacks[1].price.toString())})`);
+          }
+        }
+        if (sortedPacks.length >= 3) {
+          premiumPackId = sortedPacks[2].id;
+          console.log(`[BuyCredits] ✅ Fallback (page2): Mapped PREMIUM to pack ID ${premiumPackId} (price: $${parseFloat(sortedPacks[2].price.toString())})`);
+        }
+      } else {
+        // Page1: Map by order only if not found by price
+        if (!starterPackId && sortedPacks.length >= 1) {
+          starterPackId = sortedPacks[0].id;
+          console.log(`[BuyCredits] ✅ Fallback (page1): Mapped STARTER to pack ID ${starterPackId} (price: $${parseFloat(sortedPacks[0].price.toString())})`);
+        }
+        if (!proPackId && sortedPacks.length >= 2) {
+          proPackId = sortedPacks[1].id;
+          console.log(`[BuyCredits] ✅ Fallback (page1): Mapped PRO to pack ID ${proPackId} (price: $${parseFloat(sortedPacks[1].price.toString())})`);
+        }
+        if (!premiumPackId && sortedPacks.length >= 3) {
+          premiumPackId = sortedPacks[2].id;
+          console.log(`[BuyCredits] ✅ Fallback (page1): Mapped PREMIUM to pack ID ${premiumPackId} (price: $${parseFloat(sortedPacks[2].price.toString())})`);
+        }
+        // If only 2 packs, use second as premium too
+        if (!premiumPackId && sortedPacks.length === 2) {
+          premiumPackId = sortedPacks[1].id;
+          console.log(`[BuyCredits] ✅ Fallback (page1): Only 2 packs, mapped PREMIUM to pack ID ${premiumPackId} (price: $${parseFloat(sortedPacks[1].price.toString())})`);
+        }
       }
     } else {
       console.log("[BuyCredits] ✅ All packs found by price match");
@@ -249,24 +308,33 @@ export default function BuyCredits() {
   }, [planParam, isLoadingPacks, packs, starterPackId, proPackId, premiumPackId, currency, createCheckoutMutation, t]);
 
   // Debug: log packs with detailed information (AFTER fallback mapping)
-  if (packs && packs.length > 0) {
-    console.log("[BuyCredits] ===== PACKS DEBUG INFO =====");
-    console.log("[BuyCredits] Variant:", isPage2Variant ? "page2" : "page1");
-    console.log("[BuyCredits] Plan param:", planParam);
-    console.log("[BuyCredits] Available packs:", packs.map(p => ({
-      id: p.id,
-      name: p.name,
-      price: parseFloat(p.price.toString()),
-      priceCents: Math.round(parseFloat(p.price.toString()) * 100),
-      credits: p.credits
-    })));
-    console.log("[BuyCredits] Expected prices for page2: $18 (1800 cents), $25 (2500 cents), $40 (4000 cents)");
-    console.log("[BuyCredits] Expected prices for page1: $29 (2900 cents), $39 (3900 cents), $49 (4900 cents)");
-    console.log("[BuyCredits] Pack IDs AFTER FALLBACK - Starter:", starterPackId, "Pro:", proPackId, "Premium:", premiumPackId);
-    console.log("[BuyCredits] ============================");
-  } else if (!isLoadingPacks) {
-    console.warn("[BuyCredits] No packs found in database after loading completed");
-  }
+  useEffect(() => {
+    if (packs && packs.length > 0) {
+      console.log("📦 [BuyCredits] ===== FINAL PACKS MAPPING =====");
+      console.log("📦 [BuyCredits] Variant:", isPage2Variant ? "page2" : "page1");
+      console.log("📦 [BuyCredits] Plan param from URL:", planParam);
+      console.log("📦 [BuyCredits] Available packs from DB:", packs.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: parseFloat(p.price.toString()),
+        priceCents: Math.round(parseFloat(p.price.toString()) * 100),
+        credits: p.credits
+      })));
+      console.log("📦 [BuyCredits] Expected prices for page2: $18 (1800 cents), $25 (2500 cents), $40 (4000 cents)");
+      console.log("📦 [BuyCredits] Expected prices for page1: $29 (2900 cents), $39 (3900 cents), $49 (4900 cents)");
+      console.log("📦 [BuyCredits] FINAL Pack IDs - Starter:", starterPackId, "Pro:", proPackId, "Premium:", premiumPackId);
+      console.log("📦 [BuyCredits] Buttons will be:", {
+        starter: starterPackId ? "ENABLED" : "DISABLED",
+        pro: proPackId ? "ENABLED" : "DISABLED",
+        premium: premiumPackId ? "ENABLED" : "DISABLED"
+      });
+      console.log("📦 [BuyCredits] User credits:", user?.credits ?? 0, "(should NOT affect purchase ability)");
+      console.log("📦 [BuyCredits] Environment:", typeof window !== "undefined" ? window.location.hostname : "unknown");
+      console.log("📦 [BuyCredits] ============================");
+    } else if (!isLoadingPacks) {
+      console.warn("⚠️ [BuyCredits] No packs found in database after loading completed");
+    }
+  }, [packs, isPage2Variant, planParam, starterPackId, proPackId, premiumPackId, isLoadingPacks]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -319,12 +387,13 @@ export default function BuyCredits() {
                   ))}
                 </div>
 
-                {/* Buy Button */}
+                {/* Buy Button - No credit check, anyone can buy */}
                 <Button
                   className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
                   onClick={() => handleBuyClick(starterPackId)}
-                  disabled={!starterPackId || loadingPackId === starterPackId}
+                  disabled={isLoadingPacks || !starterPackId || loadingPackId === starterPackId}
+                  title={!starterPackId ? (t("buyCredits.packNotFound") || "Pack not available. Please try again later.") : undefined}
                 >
                   {isLoadingPacks ? t("buyCredits.loading") : loadingPackId !== null && loadingPackId === starterPackId ? t("buyCredits.loading") : t("buyCredits.buy")}
                 </Button>
@@ -400,12 +469,13 @@ export default function BuyCredits() {
                   </div>
                 </div>
 
-                {/* Buy Button */}
+                {/* Buy Button - No credit check, anyone can buy */}
                 <Button
                   className="w-full bg-yellow-500 hover:bg-yellow-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
                   onClick={() => handleBuyClick(proPackId)}
-                  disabled={!proPackId || loadingPackId === proPackId}
+                  disabled={isLoadingPacks || !proPackId || loadingPackId === proPackId}
+                  title={!proPackId ? (t("buyCredits.packNotFound") || "Pack not available. Please try again later.") : undefined}
                 >
                   {isLoadingPacks ? t("buyCredits.loading") : loadingPackId !== null && loadingPackId === proPackId ? t("buyCredits.loading") : t("buyCredits.buy")}
                 </Button>
@@ -474,12 +544,13 @@ export default function BuyCredits() {
                   </div>
                 </div>
 
-                {/* Buy Button */}
+                {/* Buy Button - No credit check, anyone can buy */}
                 <Button
                   className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
                   onClick={() => handleBuyClick(premiumPackId)}
-                  disabled={!premiumPackId || loadingPackId === premiumPackId}
+                  disabled={isLoadingPacks || !premiumPackId || loadingPackId === premiumPackId}
+                  title={!premiumPackId ? (t("buyCredits.packNotFound") || "Pack not available. Please try again later.") : undefined}
                 >
                   {isLoadingPacks ? t("buyCredits.loading") : loadingPackId !== null && loadingPackId === premiumPackId ? t("buyCredits.loading") : t("buyCredits.buy")}
                 </Button>
