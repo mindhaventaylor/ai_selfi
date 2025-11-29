@@ -152,38 +152,46 @@ export default function BuyCredits() {
   let premiumPackId = getPackIdByBasePrice(isPage2Variant ? 40 : 49);
 
   // Fallback: If packs not found by price, try to map by order (cheapest = starter, middle = pro, most expensive = premium)
-  if (packs && packs.length > 0 && (!starterPackId || !proPackId || !premiumPackId)) {
-    console.warn("[BuyCredits] Some packs not found by price, trying fallback mapping by order");
-    const sortedPacks = [...packs].sort((a, b) => {
-      const priceA = parseFloat(a.price.toString());
-      const priceB = parseFloat(b.price.toString());
-      return priceA - priceB;
-    });
+  // This is CRITICAL for page2 variant when packs don't have exact prices
+  if (packs && packs.length > 0) {
+    const needsFallback = !starterPackId || !proPackId || !premiumPackId;
     
-    console.log("[BuyCredits] Sorted packs by price:", sortedPacks.map(p => ({
-      id: p.id,
-      name: p.name,
-      price: parseFloat(p.price.toString()),
-      credits: p.credits
-    })));
-    
-    // Map: first pack = starter, second = pro, third = premium
-    if (!starterPackId && sortedPacks.length >= 1) {
-      starterPackId = sortedPacks[0].id;
-      console.log(`[BuyCredits] Fallback: Mapped starter to pack ID ${starterPackId} (price: $${parseFloat(sortedPacks[0].price.toString())})`);
-    }
-    if (!proPackId && sortedPacks.length >= 2) {
-      proPackId = sortedPacks[1].id;
-      console.log(`[BuyCredits] Fallback: Mapped pro to pack ID ${proPackId} (price: $${parseFloat(sortedPacks[1].price.toString())})`);
-    }
-    if (!premiumPackId && sortedPacks.length >= 3) {
-      premiumPackId = sortedPacks[2].id;
-      console.log(`[BuyCredits] Fallback: Mapped premium to pack ID ${premiumPackId} (price: $${parseFloat(sortedPacks[2].price.toString())})`);
-    }
-    // If only 2 packs, use second as premium too
-    if (!premiumPackId && sortedPacks.length === 2) {
-      premiumPackId = sortedPacks[1].id;
-      console.log(`[BuyCredits] Fallback: Only 2 packs, mapped premium to pack ID ${premiumPackId} (price: $${parseFloat(sortedPacks[1].price.toString())})`);
+    if (needsFallback) {
+      console.warn("[BuyCredits] ⚠️ Some packs not found by price, using FALLBACK mapping by order");
+      const sortedPacks = [...packs].sort((a, b) => {
+        const priceA = parseFloat(a.price.toString());
+        const priceB = parseFloat(b.price.toString());
+        return priceA - priceB;
+      });
+      
+      console.log("[BuyCredits] 📦 Sorted packs by price:", sortedPacks.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: parseFloat(p.price.toString()),
+        priceCents: Math.round(parseFloat(p.price.toString()) * 100),
+        credits: p.credits
+      })));
+      
+      // Map: first pack = starter, second = pro, third = premium
+      if (!starterPackId && sortedPacks.length >= 1) {
+        starterPackId = sortedPacks[0].id;
+        console.log(`[BuyCredits] ✅ Fallback: Mapped STARTER to pack ID ${starterPackId} (price: $${parseFloat(sortedPacks[0].price.toString())})`);
+      }
+      if (!proPackId && sortedPacks.length >= 2) {
+        proPackId = sortedPacks[1].id;
+        console.log(`[BuyCredits] ✅ Fallback: Mapped PRO to pack ID ${proPackId} (price: $${parseFloat(sortedPacks[1].price.toString())})`);
+      }
+      if (!premiumPackId && sortedPacks.length >= 3) {
+        premiumPackId = sortedPacks[2].id;
+        console.log(`[BuyCredits] ✅ Fallback: Mapped PREMIUM to pack ID ${premiumPackId} (price: $${parseFloat(sortedPacks[2].price.toString())})`);
+      }
+      // If only 2 packs, use second as premium too
+      if (!premiumPackId && sortedPacks.length === 2) {
+        premiumPackId = sortedPacks[1].id;
+        console.log(`[BuyCredits] ✅ Fallback: Only 2 packs, mapped PREMIUM to pack ID ${premiumPackId} (price: $${parseFloat(sortedPacks[1].price.toString())})`);
+      }
+    } else {
+      console.log("[BuyCredits] ✅ All packs found by price match");
     }
   }
 
@@ -240,7 +248,7 @@ export default function BuyCredits() {
     }
   }, [planParam, isLoadingPacks, packs, starterPackId, proPackId, premiumPackId, currency, createCheckoutMutation, t]);
 
-  // Debug: log packs with detailed information
+  // Debug: log packs with detailed information (AFTER fallback mapping)
   if (packs && packs.length > 0) {
     console.log("[BuyCredits] ===== PACKS DEBUG INFO =====");
     console.log("[BuyCredits] Variant:", isPage2Variant ? "page2" : "page1");
@@ -254,7 +262,7 @@ export default function BuyCredits() {
     })));
     console.log("[BuyCredits] Expected prices for page2: $18 (1800 cents), $25 (2500 cents), $40 (4000 cents)");
     console.log("[BuyCredits] Expected prices for page1: $29 (2900 cents), $39 (3900 cents), $49 (4900 cents)");
-    console.log("[BuyCredits] Pack IDs - Starter:", starterPackId, "Pro:", proPackId, "Premium:", premiumPackId);
+    console.log("[BuyCredits] Pack IDs AFTER FALLBACK - Starter:", starterPackId, "Pro:", proPackId, "Premium:", premiumPackId);
     console.log("[BuyCredits] ============================");
   } else if (!isLoadingPacks) {
     console.warn("[BuyCredits] No packs found in database after loading completed");
