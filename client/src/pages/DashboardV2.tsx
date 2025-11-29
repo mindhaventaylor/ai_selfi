@@ -77,7 +77,16 @@ export default function DashboardV2() {
   const handleNext = () => {
     const nextIndex = currentStepIndex + 1;
     if (nextIndex < steps.length) {
-      setCurrentStep(steps[nextIndex].key);
+      const nextStep = steps[nextIndex].key;
+      
+      // Skip pricing step if user has credits
+      if (nextStep === "pricing" && (user?.credits ?? 0) > 0) {
+        // User has credits, skip to upload
+        setCurrentStep("upload");
+        return;
+      }
+      
+      setCurrentStep(nextStep);
     } else {
       // Navigate to upload/generate page with variant=page2 to maintain the flow
       setLocation("/dashboard/generate?variant=page2");
@@ -93,6 +102,39 @@ export default function DashboardV2() {
 
   // Initialize mutations at component level (hooks must be at top level)
   const generateFromPage2Mutation = trpc.photo.generateFromPage2.useMutation();
+
+  // Check for saved form data (e.g., after returning from purchase)
+  useEffect(() => {
+    const savedData = localStorage.getItem("dashboardV2_formData");
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        // Restore form data
+        setFormData({
+          gender: parsed.gender || "",
+          age: parsed.age || "",
+          hairColor: parsed.hairColor || "",
+          hairLength: parsed.hairLength || "",
+          hairStyle: parsed.hairStyle || "",
+          ethnicity: parsed.ethnicity || "",
+          bodyType: parsed.bodyType || "",
+          attire: parsed.attire || [],
+          backgrounds: parsed.backgrounds || [],
+          selectedPrice: parsed.selectedPrice || "",
+        });
+        
+        // If user now has credits and was supposed to go to upload, go there
+        if (parsed.resumeStep === "upload" && (user?.credits ?? 0) > 0) {
+          setCurrentStep("upload");
+          // Clear the saved data
+          localStorage.removeItem("dashboardV2_formData");
+        }
+      } catch (e) {
+        console.error("Failed to parse saved form data:", e);
+        localStorage.removeItem("dashboardV2_formData");
+      }
+    }
+  }, [user?.credits]);
 
   const updateFormData = (key: keyof typeof formData, value: any) => {
     setFormData(prev => ({ ...prev, [key]: value }));
@@ -238,6 +280,7 @@ export default function DashboardV2() {
                 value={formData.selectedPrice}
                 onChange={(value) => updateFormData("selectedPrice", value)}
                 onNext={handleNext}
+                formData={formData}
               />
             )}
 
@@ -266,8 +309,8 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
 
-  // Get a mix of example images for display (6 images)
-  const displayImages = exampleImages.slice(0, 6);
+  // Get a mix of example images for display (3 images - top row only)
+  const displayImages = exampleImages.slice(0, 3);
 
   return (
     <div className="text-center space-y-6">
@@ -922,10 +965,11 @@ function BackgroundStep({ value, onChange, onNext, formData }: { value: string[]
   );
 }
 
-// Pricing Step
-function PricingStep({ value, onChange, onNext }: { value: string; onChange: (value: "basic" | "standard" | "premium") => void; onNext: () => void }) {
+// Pricing Step - Only shown when user has no credits
+function PricingStep({ value, onChange, onNext, formData }: { value: string; onChange: (value: "basic" | "standard" | "premium") => void; onNext: () => void; formData: any }) {
   const { t, currentLanguage } = useTranslation();
-  const [currency, setCurrency] = React.useState<Currency>(detectCurrency());
+  const [, setLocation] = useLocation();
+  const [currency, setCurrency] = useState<Currency>(detectCurrency());
   
   // Update currency when language changes
   useEffect(() => {
@@ -973,6 +1017,21 @@ function PricingStep({ value, onChange, onNext }: { value: string; onChange: (va
       ],
     },
   ];
+
+  const handlePurchase = () => {
+    if (!value) return;
+    
+    // Save form data to localStorage so we can resume after purchase
+    const dataToSave = {
+      ...formData,
+      selectedPrice: value,
+      resumeStep: "upload", // After purchase, go to upload step
+    };
+    localStorage.setItem("dashboardV2_formData", JSON.stringify(dataToSave));
+    
+    // Redirect to purchase page with the selected plan
+    setLocation(`/dashboard/credits/buy?plan=${value}&variant=page2`);
+  };
 
   return (
     <div className="space-y-6">
@@ -1045,7 +1104,7 @@ function PricingStep({ value, onChange, onNext }: { value: string; onChange: (va
 
       <Button
         size="lg"
-        onClick={onNext}
+        onClick={handlePurchase}
         disabled={!value}
         className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
       >
@@ -1215,10 +1274,17 @@ function UploadStep({
 
       // Call new page2 generation API
       const selectedPrice = formData.selectedPrice || "standard"; // Default to standard if not selected
+      
+      // Ensure gender is valid (required by the API)
+      const gender = formData.gender === "man" || formData.gender === "woman" ? formData.gender : "man";
+      
       const result = await generateFromPage2Mutation.mutateAsync({
         userImages,
-        formData,
-        exampleImageId: 1, // Use first example image
+        formData: {
+          ...formData,
+          gender, // Ensure gender is "man" | "woman" (required)
+        },
+        exampleImageId: 1, // Ignored - server now selects randomly based on filters
         aspectRatio: "9:16",
         numImagesPerExample: 4, // This will be overridden by selectedPrice on the server
         selectedPrice: selectedPrice as "basic" | "standard" | "premium",

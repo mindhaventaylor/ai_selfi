@@ -12,6 +12,7 @@ import { getServerString } from "./_core/strings.js";
 import { ENV } from "./_core/env.js";
 import { stripe, CREDIT_PACKS } from "./_core/stripe.js";
 import { trainModelLogic, type TrainModelRequest } from "./api/train-model/route.js";
+import { exampleImages, filterExampleImages, getRandomPromptFromFiltered } from "../shared/exampleImages.js";
 
 // Helper function to get API URL (local or production)
 function getApiUrl(): string {
@@ -1582,18 +1583,18 @@ export const appRouter = router({
         })).min(1).max(10),
         // Form data from DashboardV2
         formData: z.object({
-          gender: z.string().optional(),
+          gender: z.enum(["man", "woman"]), // Required for filtering prompts
           age: z.string().optional(),
           hairColor: z.string().optional(),
           hairLength: z.string().optional(),
           hairStyle: z.string().optional(),
           ethnicity: z.string().optional(),
           bodyType: z.string().optional(),
-          attire: z.array(z.string()).default([]),
-          backgrounds: z.array(z.string()).default([]),
+          attire: z.array(z.string()).default([]), // Used as styles for filtering
+          backgrounds: z.array(z.string()).default([]), // Used for filtering
           selectedPrice: z.string().optional(),
         }),
-        // Example image to use (default to first one)
+        // Example image to use (default to first one) - now ignored, we select randomly
         exampleImageId: z.number().default(1),
         aspectRatio: z.enum(["1:1", "9:16", "16:9"]).default("9:16"),
         numImagesPerExample: z.number().default(4),
@@ -1625,7 +1626,25 @@ export const appRouter = router({
         };
         
         console.log(`[Photo Generate Page2] Starting generation for user ${ctx.user.id}`);
-        console.log(`[Photo Generate Page2] User images: ${input.userImages.length}, Example image ID: ${input.exampleImageId}`);
+        console.log(`[Photo Generate Page2] User images: ${input.userImages.length}, Gender: ${input.formData.gender}`);
+        console.log(`[Photo Generate Page2] Filters - Attire/Styles: ${input.formData.attire.join(", ") || "none"}, Backgrounds: ${input.formData.backgrounds.join(", ") || "none"}`);
+        
+        // Filter example images based on user selections and pick a random prompt
+        const randomResult = getRandomPromptFromFiltered(
+          input.formData.gender,
+          input.formData.attire, // attire is used as styles for filtering
+          input.formData.backgrounds
+        );
+        
+        if (!randomResult) {
+          // Fallback: if no matching images, use a default prompt with gender
+          console.log(`[Photo Generate Page2] ⚠️ No matching example images found, using default prompt`);
+        }
+        
+        const selectedExampleImage = randomResult?.exampleImage;
+        const selectedPrompt = randomResult?.prompt || "A professional portrait in a studio setting with soft, even lighting.";
+        
+        console.log(`[Photo Generate Page2] Selected example image: ${selectedExampleImage?.id || "default"} - ${selectedExampleImage?.filename || "none"}`);
         
         // First, upload user images to storage
         const uploadedUrls: string[] = [];
@@ -1662,30 +1681,28 @@ export const appRouter = router({
 
         console.log(`[Photo Generate Page2] ✅ Uploaded ${uploadedUrls.length} user images`);
 
-        // Get example image URL - use the first example image
-        const exampleImageUrl = "https://gxwtcdplfkjfidwyrunk.supabase.co/storage/v1/object/public/example-images/image.webp";
-        const exampleImagePrompt = "Create a professional business portrait with formal attire, corporate setting, confident pose, high-quality studio lighting";
+        // Get example image URL from the selected example image (or use a default)
+        const exampleImageUrl = selectedExampleImage?.url 
+          ? (selectedExampleImage.url.startsWith('http') 
+              ? selectedExampleImage.url 
+              : `https://${PRODUCTION_DOMAIN}${selectedExampleImage.url}`)
+          : "https://gxwtcdplfkjfidwyrunk.supabase.co/storage/v1/object/public/example-images/image.webp";
+        const exampleImagePrompt = selectedPrompt;
 
-        // Build base prompt from form data
-        // Note: We don't include physical attributes (hair, ethnicity, body type, age, gender) 
-        // as they make the AI override the person's actual appearance from the reference photos
-        let basePrompt = `Create a photorealistic professional portrait image of the person in the reference photos.`;
-        
-        // Only include styling preferences (attire and backgrounds), not physical attributes
-        if (input.formData.attire && input.formData.attire.length > 0) {
-          basePrompt += ` Attire: ${input.formData.attire.join(", ")}.`;
-        }
-        if (input.formData.backgrounds && input.formData.backgrounds.length > 0) {
-          basePrompt += ` Background: ${input.formData.backgrounds.join(", ")}.`;
-        }
-        
-        basePrompt += ` High quality, professional photography, natural lighting, sharp focus.`;
+        // Build base prompt: use only gender + selected prompt from exampleImages
+        // Don't include user attributes (hair, ethnicity, body type, age) as they override the person's appearance
+        const genderText = input.formData.gender === "man" ? "male" : "female";
+        const basePrompt = `Create a professional headshot for this person, following the guidance below. The photograph and the person should look real, like it was taken from a premium photograph session:
+
+${selectedPrompt}
+
+Output should be a vertical rectangle. Entire head should be visible`;
 
         // Calculate total images and credits based on selected price plan
-        // Basic ($17): 4 images, Standard ($25): 8 images, Premium ($40): 12 images
+        // Basic ($17): 4 images, Standard ($25): 4 images, Premium ($40): 12 images
         const imagesPerPlan: Record<"basic" | "standard" | "premium", number> = {
           basic: 4,
-          standard: 8,
+          standard: 4,
           premium: 12,
         };
         const totalImages = imagesPerPlan[input.selectedPrice] || input.numImagesPerExample;
