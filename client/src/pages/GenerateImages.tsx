@@ -28,6 +28,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { 
   Sparkles, 
   CreditCard, 
@@ -65,6 +71,7 @@ export default function GenerateImages() {
   const [glasses, setGlasses] = useState<string>("no");
   const [hairColor, setHairColor] = useState<string>("default");
   const [hairStyle, setHairStyle] = useState<string>("no-preference");
+  const [isParametersSheetOpen, setIsParametersSheetOpen] = useState(false);
   
   // Generation modal state
   // Check for batchId in URL immediately (synchronously) to avoid rendering DashboardV2 when we have a batchId
@@ -1274,7 +1281,12 @@ export default function GenerateImages() {
   );
 
   const toggleImage = (id: number) => {
-    setSelectedImage((prev) => (prev === id ? null : id));
+    const newValue = selectedImage === id ? null : id;
+    setSelectedImage(newValue);
+    // Open parameters sheet on mobile when an image is selected
+    if (newValue !== null && window.innerWidth < 1024) {
+      setIsParametersSheetOpen(true);
+    }
   };
 
   const toggleBackground = (bg: string) => {
@@ -1675,9 +1687,18 @@ Output should be a vertical rectangle. Entire head should be visible`;
             </div>
           </div>
 
-          {/* Parameters Sidebar - Fixed to the right */}
-          <div className="w-full lg:w-[380px] shrink-0 flex-shrink-0">
-            <Card className="bg-card/50 border-border lg:sticky lg:top-20 w-full">
+          {/* Floating Parameters Button - Mobile only */}
+          <Button
+            className="lg:hidden fixed right-4 bottom-6 z-40 h-14 w-14 rounded-full bg-purple-500 hover:bg-purple-600 shadow-lg hover:shadow-xl transition-all"
+            size="icon"
+            onClick={() => setIsParametersSheetOpen(true)}
+          >
+            <Sparkles className="h-6 w-6 text-white" />
+          </Button>
+
+          {/* Parameters Sidebar - Hidden on mobile, shown on desktop */}
+          <div className="hidden lg:block w-[380px] shrink-0 flex-shrink-0">
+            <Card className="bg-card/50 border-border sticky top-20 w-full">
               <CardContent className="p-0">
                 <Collapsible defaultOpen>
                   <CollapsibleTrigger className="w-full px-6 py-4 flex items-center justify-between hover:bg-accent/50 transition-colors border-b border-border">
@@ -1865,6 +1886,193 @@ Output should be a vertical rectangle. Entire head should be visible`;
               </CardContent>
             </Card>
           </div>
+
+          {/* Mobile Parameters Sheet - Slides from right when image is selected */}
+          <Sheet open={isParametersSheetOpen} onOpenChange={setIsParametersSheetOpen}>
+            <SheetContent side="right" className="w-[85vw] sm:w-[400px] overflow-y-auto px-3">
+              <SheetHeader className="pb-4 border-b border-border">
+                <SheetTitle className="flex items-center gap-3">
+                  <Sparkles className="h-5 w-5 text-purple-400" />
+                  {t("generateImages.parameters")}
+                </SheetTitle>
+              </SheetHeader>
+              
+              <div className="py-6 space-y-6">
+                {/* Model ID - Hidden for page2 variant */}
+                {!isPage2Variant && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <label className="text-sm font-medium">{t("generateImages.model")}</label>
+                  </div>
+                  <Select value={modelId} onValueChange={setModelId}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t("generateImages.selectModel")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {isLoadingModels ? (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                          {t("generateImages.loadingModels")}
+                        </div>
+                      ) : modelsData && modelsData.length > 0 ? (
+                        modelsData.map((model) => (
+                          <SelectItem 
+                            key={model.id} 
+                            value={model.id.toString()}
+                            disabled={model.status !== "ready"}
+                          >
+                            {model.name} {model.gender ? `(${model.gender})` : ""} 
+                            {model.status === "training" && ` - ${t("generateImages.training")}`}
+                            {model.status === "failed" && ` - ${t("generateImages.failed")}`}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                          {t("generateImages.noModelsAvailable")}
+                        </div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    {!modelId && modelsData && modelsData.length === 0 && t("generateImages.firstNeedToTrain")}
+                    {!modelId && modelsData && modelsData.length > 0 && t("generateImages.selectModelToGenerate")}
+                    {modelId && modelsData?.find((m) => m.id.toString() === modelId)?.status === "training" && t("generateImages.modelStillTraining")}
+                    {modelId && modelsData?.find((m) => m.id.toString() === modelId)?.status === "failed" && t("generateImages.modelFailed")}
+                  </p>
+                </div>
+                )}
+
+                {/* Image Dimensions */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                    <label className="text-sm font-medium">{t("generateImages.imageDimensions")}</label>
+                  </div>
+                  <div className="flex gap-2">
+                    {(["1:1", "9:16", "16:9"] as const).map((ratio) => (
+                      <Button
+                        key={ratio}
+                        variant={aspectRatio === ratio ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setAspectRatio(ratio)}
+                        className={
+                          aspectRatio === ratio
+                            ? "bg-purple-500 hover:bg-purple-600 border-purple-500 flex-1"
+                            : "flex-1"
+                        }
+                      >
+                        {ratio}
+                      </Button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    {t("generateImages.aspectRatio")}
+                  </p>
+                </div>
+
+                {/* Glasses */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Glasses className="h-4 w-4 text-muted-foreground" />
+                    <label className="text-sm font-medium">{t("generateImages.doYouWearGlasses")}</label>
+                  </div>
+                  <Select value={glasses} onValueChange={setGlasses}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="no">{t("generateImages.no")}</SelectItem>
+                      <SelectItem value="yes">{t("generateImages.yes")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    {t("generateImages.addGlassesToImages")}
+                  </p>
+                </div>
+
+                {/* Hair Color */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Palette className="h-4 w-4 text-muted-foreground" />
+                    <label className="text-sm font-medium">
+                      {t("generateImages.hairColor")}
+                    </label>
+                  </div>
+                  <Select value={hairColor} onValueChange={setHairColor}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="default">{t("generateImages.default")}</SelectItem>
+                      <SelectItem value="black">{t("generateImages.black")}</SelectItem>
+                      <SelectItem value="brown">{t("generateImages.brown")}</SelectItem>
+                      <SelectItem value="blonde">{t("generateImages.blonde")}</SelectItem>
+                      <SelectItem value="red">{t("generateImages.red")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    {t("generateImages.chooseHairColor")}
+                  </p>
+                </div>
+
+                {/* Hair Style */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Scissors className="h-4 w-4 text-muted-foreground" />
+                    <label className="text-sm font-medium">
+                      {t("generateImages.hairStyle")}
+                    </label>
+                  </div>
+                  <Select value={hairStyle} onValueChange={setHairStyle}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="no-preference">{t("generateImages.noPreference")}</SelectItem>
+                      <SelectItem value="short">{t("generateImages.short")}</SelectItem>
+                      <SelectItem value="medium">{t("generateImages.medium")}</SelectItem>
+                      <SelectItem value="long">{t("generateImages.long")}</SelectItem>
+                      <SelectItem value="curly">{t("generateImages.curly")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    {t("generateImages.selectHairStyle")}
+                  </p>
+                </div>
+
+                {/* Generate Button */}
+                <div className="pt-4 border-t border-border">
+                  <Button
+                    className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    size="lg"
+                    disabled={!canGenerate}
+                    onClick={() => {
+                      setIsParametersSheetOpen(false);
+                      handleGenerate();
+                    }}
+                  >
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    {t("generateImages.generate")} {totalImagesToGenerate} {t("generateImages.images")}
+                  </Button>
+                  
+                  {/* Credits Usage */}
+                  <div className="mt-3 flex items-center justify-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg px-4 py-2">
+                    <Sparkles className="h-4 w-4" />
+                    <span>
+                      {imageCount === 0 
+                        ? t("generateImages.selectImagesToGenerate")
+                        : !hasEnoughCredits
+                        ? `${t("generateImages.notEnoughCredits")} (${t("generateImages.needCredits")} ${creditsNeeded}, ${t("generateImages.haveCredits")} ${userCredits})`
+                        : !isPage2Variant && modelId === ""
+                        ? t("generateImages.selectModelFirst")
+                        : `${t("generateImages.willUseCredits")} ${creditsNeeded} ${creditsNeeded === 1 ? t("generateImages.credit") : t("generateImages.credits")}`
+                      }
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
       )}
