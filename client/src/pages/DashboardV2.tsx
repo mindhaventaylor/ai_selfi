@@ -156,23 +156,23 @@ export default function DashboardV2() {
     <div className="min-h-screen bg-background">
       {/* Header with Progress */}
       <div className="border-b border-border bg-card/50 sticky top-0 z-50 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2 shrink-0">
               <Sparkles className="h-5 w-5 text-primary" />
-              <span className="font-semibold text-lg">{t("dashboardV2.appName")}</span>
+              <span className="font-semibold text-base sm:text-lg whitespace-nowrap">{t("dashboardV2.appName")}</span>
             </div>
-            <div className="flex-1 max-w-md mx-4">
+            <div className="flex-1 min-w-0 mx-2 sm:mx-4">
               <Progress value={progress} className="h-2" />
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs sm:text-sm text-muted-foreground shrink-0 whitespace-nowrap">
               {currentStepIndex + 1} / {steps.length}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Back Button */}
         {currentStepIndex > 0 && (
           <Button
@@ -194,7 +194,7 @@ export default function DashboardV2() {
 
         {/* Step Content */}
         <Card className="mb-8">
-          <CardContent className="p-8 md:p-12">
+          <CardContent className="p-4 sm:p-6 md:p-8 lg:p-12">
             {currentStep === "welcome" && (
               <WelcomeStep onNext={handleNext} />
             )}
@@ -314,7 +314,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 
   return (
     <div className="text-center space-y-6">
-      <h1 className="text-4xl md:text-5xl font-bold">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold break-words">
         {t("dashboardV2.welcomeTitle")}
       </h1>
       <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -322,7 +322,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
       </p>
       
       {/* Example Images Grid */}
-      <div className="grid grid-cols-3 gap-4 mt-8 max-w-2xl mx-auto">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 mt-8 max-w-2xl mx-auto">
         {displayImages.map((img) => (
           <div key={img.id} className="aspect-[3/4] rounded-lg overflow-hidden border border-border hover:border-primary/50 transition-colors">
             <img
@@ -361,7 +361,7 @@ function GenderStep({ value, onChange, onNext }: { value: string; onChange: (val
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourGender")}</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold break-words">{t("dashboardV2.whatIsYourGender")}</h2>
         <p className="text-muted-foreground">
           {t("dashboardV2.genderDescription", { name: user?.name ? `, ${user.name}` : "" })}
         </p>
@@ -416,7 +416,7 @@ function AgeStep({ value, onChange, onNext }: { value: string; onChange: (value:
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.howOldAreYou")}</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold break-words">{t("dashboardV2.howOldAreYou")}</h2>
         <p className="text-muted-foreground">
           {t("dashboardV2.ageDescription")}
         </p>
@@ -476,13 +476,13 @@ function HairColorStep({ value, onChange, onNext }: { value: string; onChange: (
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourHairColor")}</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold break-words">{t("dashboardV2.whatIsYourHairColor")}</h2>
         <p className="text-muted-foreground">
           {t("dashboardV2.hairColorDescription")}
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mt-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mt-8">
         {colors.map((color) => (
           <button
             key={color.value}
@@ -531,18 +531,18 @@ function HairLengthStep({ value, onChange, onNext }: { value: string; onChange: 
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourHairLength")}</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold break-words">{t("dashboardV2.whatIsYourHairLength")}</h2>
         <p className="text-muted-foreground">
           {t("dashboardV2.hairLengthDescription")}
         </p>
       </div>
 
-      <div className="grid grid-cols-5 gap-4 mt-8">
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-4 mt-8">
         {lengths.map((length) => (
           <button
             key={length.value}
             onClick={() => onChange(length.value)}
-            className={`p-4 rounded-lg border-2 transition-all ${
+            className={`p-2 sm:p-4 rounded-lg border-2 transition-all ${
               value === length.value
                 ? "border-primary bg-primary/10"
                 : "border-border hover:border-primary/50"
@@ -611,13 +611,13 @@ function HairStyleStep({ value, onChange, onNext, formData }: { value: string; o
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourHairType")}</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold break-words">{t("dashboardV2.whatIsYourHairType")}</h2>
         <p className="text-muted-foreground">
           {t("dashboardV2.hairTypeDescription")}
         </p>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 mt-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mt-8">
         {styles.map((style) => {
           const imageUrl = getHairTypeImage(gender, style.imageIndex);
           
@@ -692,7 +692,7 @@ function EthnicityStep({ value, onChange, onNext, formData }: { value: string; o
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourEthnicity")}</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold break-words">{t("dashboardV2.whatIsYourEthnicity")}</h2>
         <p className="text-muted-foreground">
           {t("dashboardV2.ethnicityDescription")}
         </p>
@@ -749,18 +749,18 @@ function BodyTypeStep({ value, onChange, onNext }: { value: string; onChange: (v
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.whatIsYourBodyType")}</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold break-words">{t("dashboardV2.whatIsYourBodyType")}</h2>
         <p className="text-muted-foreground">
           {t("dashboardV2.bodyTypeDescription")}
         </p>
       </div>
 
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mt-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-4 mt-8">
         {bodyTypes.map((type) => (
           <button
             key={type.value}
             onClick={() => onChange(type.value)}
-            className={`p-4 rounded-lg border-2 transition-all ${
+            className={`p-2 sm:p-4 rounded-lg border-2 transition-all ${
               value === type.value
                 ? "border-primary bg-primary/10"
                 : "border-border hover:border-primary/50"
@@ -811,7 +811,7 @@ function AttireStep({ value, onChange, onNext, formData }: { value: string[]; on
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.selectYourAttire")}</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold break-words">{t("dashboardV2.selectYourAttire")}</h2>
         <p className="text-muted-foreground">
           {t("dashboardV2.attireDescription")}
         </p>
@@ -904,7 +904,7 @@ function BackgroundStep({ value, onChange, onNext, formData }: { value: string[]
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.selectYourBackgrounds")}</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold break-words">{t("dashboardV2.selectYourBackgrounds")}</h2>
         <p className="text-muted-foreground">
           {t("dashboardV2.backgroundDescription")}
         </p>
@@ -1036,7 +1036,7 @@ function PricingStep({ value, onChange, onNext, formData }: { value: string; onC
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.pricing.title")}</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold break-words">{t("dashboardV2.pricing.title")}</h2>
         <p className="text-muted-foreground">
           {t("dashboardV2.pricing.description")}
         </p>
@@ -1049,7 +1049,7 @@ function PricingStep({ value, onChange, onNext, formData }: { value: string; onC
             <button
               key={plan.id}
               onClick={() => onChange(plan.id)}
-              className={`relative p-6 rounded-lg border-2 transition-all text-left ${
+              className={`relative p-4 sm:p-6 rounded-lg border-2 transition-all text-left ${
                 isSelected
                   ? "border-primary bg-primary/10"
                   : "border-border hover:border-primary/50"
@@ -1063,13 +1063,13 @@ function PricingStep({ value, onChange, onNext, formData }: { value: string; onC
                 </div>
               )}
               
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <div className="text-primary">{plan.icon}</div>
-                  <h3 className="text-xl font-bold">{plan.name}</h3>
+              <div className="flex items-center justify-between mb-4 gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="text-primary shrink-0">{plan.icon}</div>
+                  <h3 className="text-lg sm:text-xl font-bold break-words">{plan.name}</h3>
                 </div>
                 {isSelected && (
-                  <Check className="h-6 w-6 text-primary" />
+                  <Check className="h-6 w-6 text-primary shrink-0" />
                 )}
               </div>
 
@@ -1079,7 +1079,7 @@ function PricingStep({ value, onChange, onNext, formData }: { value: string; onC
                     {plan.price.oldFormatted}
                   </div>
                 )}
-                <div className="text-3xl font-bold text-primary">
+                <div className="text-2xl sm:text-3xl font-bold text-primary break-words">
                   {plan.price.formatted}
                 </div>
                 {plan.price.oldFormatted && (
@@ -1249,6 +1249,16 @@ function UploadStep({
       return;
     }
 
+    // Check if user has credits - if not, redirect to pricing step
+    if ((user?.credits ?? 0) <= 0) {
+      toast.error(t("dashboardV2.insufficientCredits") || "Insufficient credits", {
+        description: t("dashboardV2.pleaseBuyCredits") || "Please purchase credits to continue",
+      });
+      // Navigate to pricing step
+      setLocation("/dashboard?step=pricing&variant=page2");
+      return;
+    }
+
     // Generate images directly using new page2 API
     try {
       const loadingToast = toast.loading(t("dashboardV2.generatingImages"));
@@ -1340,7 +1350,7 @@ function UploadStep({
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold">{t("dashboardV2.uploadPhotos")}</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold break-words">{t("dashboardV2.uploadPhotos")}</h2>
         <p className="text-muted-foreground">
           {t("dashboardV2.uploadDescription")}
         </p>
