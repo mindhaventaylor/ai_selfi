@@ -1530,7 +1530,9 @@
     "invalidFileTypeDesc": "The file \"{{fileName}}\" is not a valid format. Please use PNG, JPG, HEIC, or WEBP.",
     "fileTooLargeDesc": "The file \"{{fileName}}\" is too large (maximum 120MB)",
     "fileSizeUnit": "MB",
-    "of": "of"
+    "of": "of",
+    "insufficientCredits": "Insufficient credits",
+    "pleaseBuyCredits": "Please purchase credits to continue"
   },
   "generateImages": {
     "title": "Choose your Images",

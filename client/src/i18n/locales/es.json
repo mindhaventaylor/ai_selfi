@@ -1487,7 +1487,9 @@
     "invalidFileTypeDesc": "El archivo \"{{fileName}}\" no es un formato válido. Por favor, usa PNG, JPG, HEIC o WEBP.",
     "fileTooLargeDesc": "El archivo \"{{fileName}}\" es demasiado grande (máximo 120MB)",
     "fileSizeUnit": "MB",
-    "of": "de"
+    "of": "de",
+    "insufficientCredits": "Créditos insuficientes",
+    "pleaseBuyCredits": "Por favor, compra créditos para continuar"
   },
   "generateImages": {
     "title": "Elige tus Imágenes",

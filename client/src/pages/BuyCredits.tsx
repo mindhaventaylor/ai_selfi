@@ -184,22 +184,48 @@ export default function BuyCredits() {
       return;
     }
 
-    // Helper function to find pack by price (defined inside useEffect to avoid closure issues)
-    const findPackByPrice = (basePriceUSD: number): number | null => {
+    // Helper function to find pack by price AND credits (defined inside useEffect to avoid closure issues)
+    const findPackByPriceAndCredits = (basePriceUSD: number, expectedCredits: number): number | null => {
       if (!packs || packs.length === 0) return null;
       const targetCents = Math.round(basePriceUSD * 100);
-      const pack = packs.find(p => {
+      
+      // First try exact match (price AND credits)
+      let pack = packs.find(p => {
+        const packPrice = parseFloat(p.price.toString());
+        const packCents = Math.round(packPrice * 100);
+        const priceMatch = Math.abs(packCents - targetCents) <= 1; // Allow 1 cent tolerance
+        const creditsMatch = p.credits === expectedCredits;
+        return priceMatch && creditsMatch;
+      });
+      
+      if (pack) {
+        console.log(`[BuyCredits] ✅ Found exact match (price + credits): pack ID ${pack.id}, price $${pack.price}, credits ${pack.credits}`);
+        return pack.id;
+      }
+      
+      // If no exact match, try price only (fallback)
+      pack = packs.find(p => {
         const packPrice = parseFloat(p.price.toString());
         const packCents = Math.round(packPrice * 100);
         return Math.abs(packCents - targetCents) <= 1; // Allow 1 cent tolerance
       });
+      
+      if (pack) {
+        console.log(`[BuyCredits] ⚠️ Found price match but credits don't match: pack ID ${pack.id}, price $${pack.price}, credits ${pack.credits} (expected ${expectedCredits})`);
+      }
+      
       return pack?.id || null;
     };
 
-    // Try to find packs by price first
-    let mappedStarter = findPackByPrice(isPage2Variant ? 18 : 29);
-    let mappedPro = findPackByPrice(isPage2Variant ? 25 : 39);
-    let mappedPremium = findPackByPrice(isPage2Variant ? 40 : 49);
+    // Expected credits for each plan
+    const expectedStarterCredits = isPage2Variant ? 40 : 40;
+    const expectedProCredits = isPage2Variant ? 60 : 100;
+    const expectedPremiumCredits = isPage2Variant ? 100 : 150;
+
+    // Try to find packs by price AND credits first
+    let mappedStarter = findPackByPriceAndCredits(isPage2Variant ? 18 : 29, expectedStarterCredits);
+    let mappedPro = findPackByPriceAndCredits(isPage2Variant ? 25 : 39, expectedProCredits);
+    let mappedPremium = findPackByPriceAndCredits(isPage2Variant ? 40 : 49, expectedPremiumCredits);
     
     console.log("[BuyCredits] 🔍 Initial pack IDs (before fallback):", {
       variant: isPage2Variant ? "page2" : "page1",
@@ -238,43 +264,111 @@ export default function BuyCredits() {
       })));
       
       if (isPage2Variant) {
-        // Page2: ALWAYS map packs to starter, pro, premium based on order
+        // Page2: ALWAYS map packs to starter, pro, premium based on order AND credits when possible
         console.log("[BuyCredits] 🔄 FORCING fallback mapping for page2 variant");
-        if (sortedPacks.length >= 1) {
-          mappedStarter = sortedPacks[0].id;
-          console.log(`[BuyCredits] ✅ Fallback (page2): Mapped STARTER to pack ID ${mappedStarter} (price: $${parseFloat(sortedPacks[0].price.toString())})`);
-        }
-        if (sortedPacks.length >= 2) {
-          mappedPro = sortedPacks[1].id;
-          console.log(`[BuyCredits] ✅ Fallback (page2): Mapped PRO to pack ID ${mappedPro} (price: $${parseFloat(sortedPacks[1].price.toString())})`);
-          // If only 2 packs, also use second as premium
-          if (sortedPacks.length === 2) {
-            mappedPremium = sortedPacks[1].id;
-            console.log(`[BuyCredits] ✅ Fallback (page2): Only 2 packs, mapped PREMIUM to pack ID ${mappedPremium} (price: $${parseFloat(sortedPacks[1].price.toString())})`);
+        
+        // Try to match by credits first, then by order
+        const matchByCredits = (expectedCredits: number, planName: string): number | null => {
+          const match = sortedPacks.find(p => p.credits === expectedCredits);
+          if (match) {
+            console.log(`[BuyCredits] ✅ Fallback (page2): Matched ${planName} by credits: pack ID ${match.id}, price $${match.price}, credits ${match.credits}`);
+            return match.id;
+          }
+          return null;
+        };
+        
+        // Try to match starter by credits (40) - ONLY exact match or use order
+        if (!mappedStarter) {
+          const creditsMatch = matchByCredits(expectedStarterCredits, "STARTER");
+          mappedStarter = creditsMatch;
+          if (!mappedStarter && sortedPacks.length >= 1) {
+            // Use first pack by order if no exact match
+            mappedStarter = sortedPacks[0].id;
+            console.log(`[BuyCredits] ⚠️ Fallback (page2): No exact credits match for STARTER (expected ${expectedStarterCredits}), using first pack by order: pack ID ${mappedStarter} (price: $${sortedPacks[0].price}, credits: ${sortedPacks[0].credits})`);
           }
         }
-        if (sortedPacks.length >= 3) {
-          mappedPremium = sortedPacks[2].id;
-          console.log(`[BuyCredits] ✅ Fallback (page2): Mapped PREMIUM to pack ID ${mappedPremium} (price: $${parseFloat(sortedPacks[2].price.toString())})`);
+        
+        // Try to match pro by credits (60) - ONLY exact match or use order
+        if (!mappedPro) {
+          const creditsMatch = matchByCredits(expectedProCredits, "PRO");
+          mappedPro = creditsMatch;
+          if (!mappedPro) {
+            // Use second pack by order if no exact match, excluding already mapped packs
+            const availablePacks = sortedPacks.filter(p => p.id !== mappedStarter);
+            if (availablePacks.length >= 1) {
+              mappedPro = availablePacks[0].id;
+              console.log(`[BuyCredits] ⚠️ Fallback (page2): No exact credits match for PRO (expected ${expectedProCredits}), using next available pack by order: pack ID ${mappedPro} (price: $${availablePacks[0].price}, credits: ${availablePacks[0].credits})`);
+            } else if (sortedPacks.length >= 2) {
+              mappedPro = sortedPacks[1].id;
+              console.log(`[BuyCredits] ⚠️ Fallback (page2): Using second pack for PRO: pack ID ${mappedPro} (price: $${sortedPacks[1].price}, credits: ${sortedPacks[1].credits})`);
+            }
+          }
+          // If only 2 packs, also use second as premium
+          if (sortedPacks.length === 2 && !mappedPremium) {
+            mappedPremium = sortedPacks[1].id;
+            console.log(`[BuyCredits] ⚠️ Fallback (page2): Only 2 packs, mapped PREMIUM to pack ID ${mappedPremium} (price: $${sortedPacks[1].price}, credits: ${sortedPacks[1].credits})`);
+          }
+        }
+        
+        // Try to match premium by credits (100) - ONLY exact match or use order
+        if (!mappedPremium && sortedPacks.length >= 2) {
+          const creditsMatch = matchByCredits(expectedPremiumCredits, "PREMIUM");
+          mappedPremium = creditsMatch;
+          if (!mappedPremium) {
+            // Use third pack by order if no exact match, excluding already mapped packs
+            const availablePacks = sortedPacks.filter(p => p.id !== mappedStarter && p.id !== mappedPro);
+            if (availablePacks.length >= 1) {
+              mappedPremium = availablePacks[0].id;
+              console.log(`[BuyCredits] ⚠️ Fallback (page2): No exact credits match for PREMIUM (expected ${expectedPremiumCredits}), using next available pack by order: pack ID ${mappedPremium} (price: $${availablePacks[0].price}, credits: ${availablePacks[0].credits})`);
+            } else if (sortedPacks.length >= 3) {
+              // Fallback to third pack if available
+              mappedPremium = sortedPacks[2].id;
+              console.log(`[BuyCredits] ⚠️ Fallback (page2): Using third pack for PREMIUM: pack ID ${mappedPremium} (price: $${sortedPacks[2].price}, credits: ${sortedPacks[2].credits})`);
+            }
+          }
         }
       } else {
-        // Page1: Map by order only if not found by price
+        // Page1: Map by credits first (EXACT match only), then by order if not found by price
+        const matchByCredits = (expectedCredits: number, planName: string): number | null => {
+          const match = sortedPacks.find(p => p.credits === expectedCredits);
+          if (match) {
+            console.log(`[BuyCredits] ✅ Fallback (page1): Matched ${planName} by credits: pack ID ${match.id}, price $${match.price}, credits ${match.credits}`);
+            return match.id;
+          }
+          return null;
+        };
+        
+        // STARTER: Try exact match first, then use first pack by order
         if (!mappedStarter && sortedPacks.length >= 1) {
-          mappedStarter = sortedPacks[0].id;
-          console.log(`[BuyCredits] ✅ Fallback (page1): Mapped STARTER to pack ID ${mappedStarter} (price: $${parseFloat(sortedPacks[0].price.toString())})`);
+          const creditsMatch = matchByCredits(expectedStarterCredits, "STARTER");
+          mappedStarter = creditsMatch || sortedPacks[0].id;
+          if (!creditsMatch) {
+            console.log(`[BuyCredits] ⚠️ Fallback (page1): No exact credits match for STARTER (expected ${expectedStarterCredits}), using first pack by order: pack ID ${mappedStarter} (price: $${sortedPacks[0].price}, credits: ${sortedPacks[0].credits})`);
+          }
         }
+        
+        // PRO: Try exact match first, then use second pack by order
         if (!mappedPro && sortedPacks.length >= 2) {
-          mappedPro = sortedPacks[1].id;
-          console.log(`[BuyCredits] ✅ Fallback (page1): Mapped PRO to pack ID ${mappedPro} (price: $${parseFloat(sortedPacks[1].price.toString())})`);
+          const creditsMatch = matchByCredits(expectedProCredits, "PRO");
+          mappedPro = creditsMatch || sortedPacks[1].id;
+          if (!creditsMatch) {
+            console.log(`[BuyCredits] ⚠️ Fallback (page1): No exact credits match for PRO (expected ${expectedProCredits}), using second pack by order: pack ID ${mappedPro} (price: $${sortedPacks[1].price}, credits: ${sortedPacks[1].credits})`);
+          }
         }
-        if (!mappedPremium && sortedPacks.length >= 3) {
-          mappedPremium = sortedPacks[2].id;
-          console.log(`[BuyCredits] ✅ Fallback (page1): Mapped PREMIUM to pack ID ${mappedPremium} (price: $${parseFloat(sortedPacks[2].price.toString())})`);
-        }
-        // If only 2 packs, use second as premium too
-        if (!mappedPremium && sortedPacks.length === 2) {
-          mappedPremium = sortedPacks[1].id;
-          console.log(`[BuyCredits] ✅ Fallback (page1): Only 2 packs, mapped PREMIUM to pack ID ${mappedPremium} (price: $${parseFloat(sortedPacks[1].price.toString())})`);
+        
+        // PREMIUM: Try exact match first, then use third pack by order
+        if (!mappedPremium) {
+          const creditsMatch = matchByCredits(expectedPremiumCredits, "PREMIUM");
+          if (creditsMatch) {
+            mappedPremium = creditsMatch;
+          } else if (sortedPacks.length >= 3) {
+            mappedPremium = sortedPacks[2].id;
+            console.log(`[BuyCredits] ⚠️ Fallback (page1): No exact credits match for PREMIUM (expected ${expectedPremiumCredits}), using third pack by order: pack ID ${mappedPremium} (price: $${sortedPacks[2].price}, credits: ${sortedPacks[2].credits})`);
+          } else if (sortedPacks.length === 2) {
+            // If only 2 packs, use second as premium too
+            mappedPremium = sortedPacks[1].id;
+            console.log(`[BuyCredits] ⚠️ Fallback (page1): Only 2 packs, no exact match for PREMIUM (expected ${expectedPremiumCredits}), using second pack: pack ID ${mappedPremium} (price: $${sortedPacks[1].price}, credits: ${sortedPacks[1].credits})`);
+          }
         }
       }
     } else {
@@ -648,4 +742,5 @@ export default function BuyCredits() {
     </div>
   );
 }
+
 

@@ -1486,7 +1486,9 @@
     "invalidFileTypeDesc": "Il file \"{{fileName}}\" non è un formato valido. Usa PNG, JPG, HEIC o WEBP.",
     "fileTooLargeDesc": "Il file \"{{fileName}}\" è troppo grande (massimo 120MB)",
     "fileSizeUnit": "MB",
-    "of": "di"
+    "of": "di",
+    "insufficientCredits": "Crediti insufficienti",
+    "pleaseBuyCredits": "Per favore, acquista crediti per continuare"
   },
   "errorBoundary": {
     "title": "Si è verificato un errore imprevisto.",

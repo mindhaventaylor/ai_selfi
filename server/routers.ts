@@ -1877,11 +1877,53 @@ Output should be a vertical rectangle. Entire head should be visible`;
                 })
                 .then(async (response) => {
                   if (!response.ok) {
-                    const errorText = await response.text();
+                    const errorText = await response.text().catch(() => "");
                     console.error(`[Photo Generate Page2] ❌ API error for job ${queueJob.id}: ${response.status} ${errorText}`);
+                    
+                    // Update queue job status to failed
+                    try {
+                      await db.update(page2GenerationQueue)
+                        .set({ status: "failed" })
+                        .where(eq(page2GenerationQueue.id, queueJob.id));
+                    } catch (updateError) {
+                      console.error(`[Photo Generate Page2] ❌ Failed to update job ${queueJob.id} status to failed:`, updateError);
+                    }
                   } else {
-                    const result = await response.json();
-                    console.log(`[Photo Generate Page2] ✅ API processing started for job ${queueJob.id}:`, result);
+                    // Safely parse JSON response
+                    try {
+                      const responseText = await response.text();
+                      let result;
+                      try {
+                        result = JSON.parse(responseText);
+                        console.log(`[Photo Generate Page2] ✅ API processing started for job ${queueJob.id}:`, result);
+                      } catch (parseError) {
+                        // Response is not valid JSON - log the actual response
+                        console.error(`[Photo Generate Page2] ⚠️ API returned non-JSON response for job ${queueJob.id}:`, {
+                          status: response.status,
+                          statusText: response.statusText,
+                          contentType: response.headers.get("content-type"),
+                          responsePreview: responseText.substring(0, 200),
+                        });
+                        // Try to update job status to failed
+                        try {
+                          await db.update(page2GenerationQueue)
+                            .set({ status: "failed" })
+                            .where(eq(page2GenerationQueue.id, queueJob.id));
+                        } catch (updateError) {
+                          console.error(`[Photo Generate Page2] ❌ Failed to update job ${queueJob.id} status to failed:`, updateError);
+                        }
+                      }
+                    } catch (textError) {
+                      console.error(`[Photo Generate Page2] ❌ Failed to read response for job ${queueJob.id}:`, textError);
+                      // Try to update job status to failed
+                      try {
+                        await db.update(page2GenerationQueue)
+                          .set({ status: "failed" })
+                          .where(eq(page2GenerationQueue.id, queueJob.id));
+                      } catch (updateError) {
+                        console.error(`[Photo Generate Page2] ❌ Failed to update job ${queueJob.id} status to failed:`, updateError);
+                      }
+                    }
                   }
                 })
                 .catch((error) => {
@@ -1957,11 +1999,53 @@ Output should be a vertical rectangle. Entire head should be visible`;
                 })
                 .then(async (response) => {
                   if (!response.ok) {
-                    const errorText = await response.text();
+                    const errorText = await response.text().catch(() => "");
                     console.error(`[Photo Generate Page2] ❌ API error for job ${queueJob.id}: ${response.status} ${errorText}`);
+                    
+                    // Update queue job status to failed
+                    try {
+                      await db.update(page2GenerationQueue)
+                        .set({ status: "failed" })
+                        .where(eq(page2GenerationQueue.id, queueJob.id));
+                    } catch (updateError) {
+                      console.error(`[Photo Generate Page2] ❌ Failed to update job ${queueJob.id} status to failed:`, updateError);
+                    }
                   } else {
-                    const result = await response.json();
-                    console.log(`[Photo Generate Page2] ✅ API processing started for job ${queueJob.id}:`, result);
+                    // Safely parse JSON response
+                    try {
+                      const responseText = await response.text();
+                      let result;
+                      try {
+                        result = JSON.parse(responseText);
+                        console.log(`[Photo Generate Page2] ✅ API processing started for job ${queueJob.id}:`, result);
+                      } catch (parseError) {
+                        // Response is not valid JSON - log the actual response
+                        console.error(`[Photo Generate Page2] ⚠️ API returned non-JSON response for job ${queueJob.id}:`, {
+                          status: response.status,
+                          statusText: response.statusText,
+                          contentType: response.headers.get("content-type"),
+                          responsePreview: responseText.substring(0, 200),
+                        });
+                        // Try to update job status to failed
+                        try {
+                          await db.update(page2GenerationQueue)
+                            .set({ status: "failed" })
+                            .where(eq(page2GenerationQueue.id, queueJob.id));
+                        } catch (updateError) {
+                          console.error(`[Photo Generate Page2] ❌ Failed to update job ${queueJob.id} status to failed:`, updateError);
+                        }
+                      }
+                    } catch (textError) {
+                      console.error(`[Photo Generate Page2] ❌ Failed to read response for job ${queueJob.id}:`, textError);
+                      // Try to update job status to failed
+                      try {
+                        await db.update(page2GenerationQueue)
+                          .set({ status: "failed" })
+                          .where(eq(page2GenerationQueue.id, queueJob.id));
+                      } catch (updateError) {
+                        console.error(`[Photo Generate Page2] ❌ Failed to update job ${queueJob.id} status to failed:`, updateError);
+                      }
+                    }
                   }
                 })
                 .catch((error) => {
