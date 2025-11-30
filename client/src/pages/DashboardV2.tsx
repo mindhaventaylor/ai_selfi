@@ -9,6 +9,7 @@ import { exampleImages, filterExampleImages } from "@/data/exampleImages";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { detectCurrency, getPage2Price, type Currency } from "@/utils/currency";
+import { safeLocalStorage } from "@/utils/localStorage";
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -79,10 +80,24 @@ export default function DashboardV2() {
     if (nextIndex < steps.length) {
       const nextStep = steps[nextIndex].key;
       
-      // Skip pricing step if user has credits
-      if (nextStep === "pricing" && (user?.credits ?? 0) > 0) {
-        // User has credits, skip to upload
-        setCurrentStep("upload");
+      // After background step, check if user has credits
+      // If no credits, force them to pricing step before upload
+      if (currentStep === "background" && nextStep === "pricing") {
+        const hasCredits = (user?.credits ?? 0) > 0;
+        if (!hasCredits) {
+          // No credits - go to pricing step
+          setCurrentStep("pricing");
+          return;
+        } else {
+          // Has credits - skip pricing and go directly to upload
+          setCurrentStep("upload");
+          return;
+        }
+      }
+      
+      // If trying to go to upload but no credits, redirect to pricing
+      if (nextStep === "upload" && (user?.credits ?? 0) <= 0) {
+        setCurrentStep("pricing");
         return;
       }
       
@@ -102,6 +117,23 @@ export default function DashboardV2() {
 
   // Initialize mutations at component level (hooks must be at top level)
   const generateFromPage2Mutation = trpc.photo.generateFromPage2.useMutation();
+  const createCheckoutMutation = trpc.payment.createCheckoutSession.useMutation();
+  const { data: packs, isLoading: isLoadingPacks } = trpc.payment.listPacks.useQuery();
+
+  // Check for step parameter in URL (e.g., after payment redirect)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const stepParam = urlParams.get("step");
+    const validSteps = ["welcome", "gender", "age", "hairColor", "hairLength", "hairStyle", "ethnicity", "bodyType", "attire", "background", "pricing", "upload"];
+    if (stepParam && validSteps.includes(stepParam)) {
+      console.log("[DashboardV2] Step parameter found in URL:", stepParam);
+      setCurrentStep(stepParam as Step);
+      // Remove step parameter from URL to keep it clean
+      urlParams.delete("step");
+      const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : "");
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, []);
 
   // Check for saved form data (e.g., after returning from purchase)
   useEffect(() => {
@@ -128,6 +160,7 @@ export default function DashboardV2() {
           setCurrentStep("upload");
           // Clear the saved data
           localStorage.removeItem("dashboardV2_formData");
+          console.log("[DashboardV2] Resumed to upload step after payment");
         }
       } catch (e) {
         console.error("Failed to parse saved form data:", e);
@@ -281,6 +314,9 @@ export default function DashboardV2() {
                 onChange={(value) => updateFormData("selectedPrice", value)}
                 onNext={handleNext}
                 formData={formData}
+                createCheckoutMutation={createCheckoutMutation}
+                packs={packs}
+                isLoadingPacks={isLoadingPacks}
               />
             )}
 
@@ -966,10 +1002,27 @@ function BackgroundStep({ value, onChange, onNext, formData }: { value: string[]
 }
 
 // Pricing Step - Only shown when user has no credits
-function PricingStep({ value, onChange, onNext, formData }: { value: string; onChange: (value: "basic" | "standard" | "premium") => void; onNext: () => void; formData: any }) {
+function PricingStep({ 
+  value, 
+  onChange, 
+  onNext, 
+  formData,
+  createCheckoutMutation,
+  packs,
+  isLoadingPacks,
+}: { 
+  value: string; 
+  onChange: (value: "basic" | "standard" | "premium") => void; 
+  onNext: () => void; 
+  formData: any;
+  createCheckoutMutation: ReturnType<typeof trpc.payment.createCheckoutSession.useMutation>;
+  packs: any[] | undefined;
+  isLoadingPacks: boolean;
+}) {
   const { t, currentLanguage } = useTranslation();
   const [, setLocation] = useLocation();
   const [currency, setCurrency] = useState<Currency>(detectCurrency());
+  const [isProcessing, setIsProcessing] = useState(false);
   
   // Update currency when language changes
   useEffect(() => {
@@ -1018,19 +1071,85 @@ function PricingStep({ value, onChange, onNext, formData }: { value: string; onC
     },
   ];
 
-  const handlePurchase = () => {
-    if (!value) return;
+  // Map plan to pack ID (same logic as BuyCredits for page2 variant)
+  const getPackIdByPlan = (plan: "basic" | "standard" | "premium"): number | null => {
+    if (!packs || packs.length === 0) return null;
     
-    // Save form data to localStorage so we can resume after purchase
-    const dataToSave = {
-      ...formData,
-      selectedPrice: value,
-      resumeStep: "upload", // After purchase, go to upload step
-    };
-    localStorage.setItem("dashboardV2_formData", JSON.stringify(dataToSave));
+    // For page2 variant, always use fallback mapping by price order
+    const sortedPacks = [...packs].sort((a, b) => {
+      const priceA = parseFloat(a.price.toString());
+      const priceB = parseFloat(b.price.toString());
+      return priceA - priceB;
+    });
     
-    // Redirect to purchase page with the selected plan
-    setLocation(`/dashboard/credits/buy?plan=${value}&variant=page2`);
+    // Map: basic = first pack, standard = second pack, premium = third pack
+    if (plan === "basic" && sortedPacks.length >= 1) {
+      return sortedPacks[0].id;
+    }
+    if (plan === "standard" && sortedPacks.length >= 2) {
+      return sortedPacks[1].id;
+    }
+    if (plan === "premium") {
+      if (sortedPacks.length >= 3) {
+        return sortedPacks[2].id;
+      } else if (sortedPacks.length >= 2) {
+        // If only 2 packs, use second as premium
+        return sortedPacks[1].id;
+      }
+    }
+    
+    return null;
+  };
+
+  const handlePurchase = async () => {
+    if (!value || isProcessing || isLoadingPacks) return;
+    
+    const plan = value as "basic" | "standard" | "premium";
+    const packId = getPackIdByPlan(plan);
+    
+    if (!packId) {
+      toast.error(t("buyCredits.packNotFound") || "Pack not found", {
+        description: t("generateImages.pleaseTryAgain") || "Please try again",
+      });
+      return;
+    }
+    
+    setIsProcessing(true);
+    
+    try {
+      // Save form data to localStorage so we can resume after purchase
+      // User will continue to upload step after payment (not generate, since files aren't uploaded yet)
+      const dataToSave = {
+        ...formData,
+        selectedPrice: plan,
+        resumeStep: "upload", // After payment, go to upload step
+      };
+      localStorage.setItem("dashboardV2_formData", JSON.stringify(dataToSave));
+      console.log("[DashboardV2] Saved form data for resume after payment, will continue to upload step");
+      
+      // Directly create checkout session and redirect to Stripe
+      console.log("[DashboardV2] Creating checkout session for plan:", plan, "packId:", packId, "currency:", currency);
+      
+      const result = await createCheckoutMutation.mutateAsync({ 
+        packId,
+        currency: currency,
+      });
+      
+      console.log("[DashboardV2] Checkout session created:", result);
+      
+      if (result?.url) {
+        // Redirect directly to Stripe Checkout
+        window.location.href = result.url;
+      } else {
+        console.error("[DashboardV2] No URL in checkout result:", result);
+        toast.error(t("buyCredits.checkoutFailed") || "Failed to create checkout session");
+        setIsProcessing(false);
+      }
+    } catch (error: any) {
+      console.error("[DashboardV2] Checkout error:", error);
+      toast.error(error?.message || t("buyCredits.checkoutStartFailed") || "Failed to start checkout");
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -1105,10 +1224,12 @@ function PricingStep({ value, onChange, onNext, formData }: { value: string; onC
       <Button
         size="lg"
         onClick={handlePurchase}
-        disabled={!value}
+        disabled={!value || isProcessing || isLoadingPacks}
         className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
       >
-        {t("dashboardV2.continue")}
+        {isProcessing || isLoadingPacks 
+          ? (t("buyCredits.loading") || "Loading...") 
+          : t("dashboardV2.continue")}
       </Button>
     </div>
   );
@@ -1249,7 +1370,8 @@ function UploadStep({
       return;
     }
 
-    // Check if user has credits - if not, redirect to pricing step
+    // Credit check should have happened at pricing step, but double-check here
+    // If somehow user reached upload without credits, redirect to pricing
     if ((user?.credits ?? 0) <= 0) {
       toast.error(t("dashboardV2.insufficientCredits") || "Insufficient credits", {
         description: t("dashboardV2.pleaseBuyCredits") || "Please purchase credits to continue",

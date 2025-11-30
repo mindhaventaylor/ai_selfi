@@ -190,14 +190,13 @@ export default function TrainModel() {
     }
 
     // Check credits only when actually uploading (not when selecting files)
+    // For page1 flow: Redirect directly to buy credits page if no credits
     if (!hasTrainingCredits) {
-      toast.warning(t("trainModel.needTrainingCredits"), {
-        description: t("trainModel.needTrainingCreditsDesc"),
-        action: {
-          label: t("trainModel.buyCredits"),
-          onClick: () => setLocation("/dashboard/credits/buy"),
-        },
+      toast.error(t("trainModel.needTrainingCredits") || "Insufficient credits", {
+        description: t("trainModel.needTrainingCreditsDesc") || "Please purchase credits to upload images",
       });
+      // Redirect directly to buy credits page
+      setLocation("/dashboard/credits/buy");
       return;
     }
 

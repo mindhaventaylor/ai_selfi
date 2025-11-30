@@ -641,7 +641,9 @@
       "goToDashboard": "Go to Dashboard",
       "continueCreating": "Continue Creating Your Photos",
       "buyMore": "Buy More Credits",
-      "sessionIdLabel": "Session ID:"
+      "sessionIdLabel": "Session ID:",
+      "startingGeneration": "Starting image generation...",
+      "generationStartingMessage": "Please wait while we prepare your images..."
     },
     "cancel": {
       "title": "Payment Cancelled",
