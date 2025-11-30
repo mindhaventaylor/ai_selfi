@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { exampleImages, filterExampleImages } from "@/data/exampleImages";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
-import { detectCurrency, getPage2Price, type Currency } from "@/utils/currency";
+import { detectCurrency, getPage2Price, PAGE2_PRICES, type Currency } from "@/utils/currency";
 import { safeLocalStorage } from "@/utils/localStorage";
 import { 
   ArrowLeft, 
@@ -1071,34 +1071,148 @@ function PricingStep({
     },
   ];
 
-  // Map plan to pack ID (same logic as BuyCredits for page2 variant)
+  // Map plan to pack ID by matching the expected price (in USD cents)
   const getPackIdByPlan = (plan: "basic" | "standard" | "premium"): number | null => {
     if (!packs || packs.length === 0) return null;
     
-    // For page2 variant, always use fallback mapping by price order
-    const sortedPacks = [...packs].sort((a, b) => {
+    // Get the price object that's actually displayed in the UI
+    const displayedPrice = plan === "basic" ? basicPrice : plan === "standard" ? standardPrice : premiumPrice;
+    
+    // Use the displayed price amount (what user sees and will pay)
+    // This accounts for currency conversion if needed
+    const expectedPriceCents = displayedPrice.amount; // Already in cents, already converted to user's currency
+    
+    // Also get the old price (price before discount) - packs in database might have this price
+    const oldPriceCents = displayedPrice.oldAmount || null; // Old price in user's currency
+    
+    // Also get the USD base price for logging
+    const basePriceCentsUSD = PAGE2_PRICES[plan];
+    const oldBasePriceCentsUSD = plan === "basic" ? 2900 : plan === "standard" ? 3900 : 4900; // PAGE2_OLD_PRICES
+    
+    // Convert expected price to user's currency if needed
+    const currency = detectCurrency();
+    const exchangeRate = currency === "EUR" ? 0.92 : 1.0; // Same as in currency.ts
+    const expectedPriceInCurrencyUSD = Math.round(basePriceCentsUSD * exchangeRate);
+    const oldPriceInCurrencyUSD = Math.round(oldBasePriceCentsUSD * exchangeRate);
+    
+    console.log(`[DashboardV2] Mapping plan "${plan}" to pack.`);
+    console.log(`[DashboardV2] - Displayed price (current/discounted): ${displayedPrice.formatted} (${expectedPriceCents} cents in ${currency})`);
+    if (oldPriceCents) {
+      console.log(`[DashboardV2] - Old price (before discount): ${displayedPrice.oldFormatted} (${oldPriceCents} cents in ${currency})`);
+    }
+    console.log(`[DashboardV2] - Base price USD: $${basePriceCentsUSD / 100} (${basePriceCentsUSD} cents)`);
+    console.log(`[DashboardV2] - Old base price USD: $${oldBasePriceCentsUSD / 100} (${oldBasePriceCentsUSD} cents)`);
+    console.log(`[DashboardV2] Available packs:`, packs.map(p => ({
+      id: p.id,
+      name: p.name,
+      price: `$${p.price}`,
+      priceCents: Math.round(parseFloat(p.price.toString()) * 100),
+    })));
+    
+    // First, try to find exact match using the displayed price (what user will actually pay)
+    // This ensures we match the pack with the price the user sees in the UI
+    let matchedPack = packs.find(p => {
+      const packPrice = parseFloat(p.price.toString());
+      const packPriceCents = Math.round(packPrice * 100);
+      const difference = Math.abs(packPriceCents - expectedPriceCents);
+      const isMatch = difference <= 1; // Allow 1 cent tolerance
+      
+      if (isMatch) {
+        console.log(`[DashboardV2] ✅ Found exact pack match for "${plan}" using current price: pack ID ${p.id}, price $${packPrice} (${packPriceCents} cents), difference: ${difference}`);
+      }
+      
+      return isMatch;
+    });
+    
+    // If not found with current price, try old price (packs in database might have the old price)
+    if (!matchedPack && oldPriceCents) {
+      matchedPack = packs.find(p => {
+        const packPrice = parseFloat(p.price.toString());
+        const packPriceCents = Math.round(packPrice * 100);
+        const difference = Math.abs(packPriceCents - oldPriceCents);
+        const isMatch = difference <= 1; // Allow 1 cent tolerance
+        
+        if (isMatch) {
+          console.log(`[DashboardV2] ✅ Found exact pack match for "${plan}" using old price: pack ID ${p.id}, price $${packPrice} (${packPriceCents} cents), difference: ${difference}`);
+        }
+        
+        return isMatch;
+      });
+    }
+    
+    if (matchedPack) {
+      return matchedPack.id;
+    }
+    
+    // Fallback: Find pack closest to expected price (not just first in order)
+    console.warn(`[DashboardV2] ⚠️ No exact pack match found for "${plan}" (expected ${expectedPriceCents} cents in ${currency} = ${displayedPrice.formatted}). Finding closest match...`);
+    
+    // Calculate distance from expected price for each pack (using both current and old price)
+    const packsWithDistance = packs.map(p => {
+      const packPrice = parseFloat(p.price.toString());
+      const packPriceCents = Math.round(packPrice * 100);
+      // Calculate distance from both current and old price, use the smaller distance
+      const distanceFromCurrent = Math.abs(packPriceCents - expectedPriceCents);
+      const distanceFromOld = oldPriceCents ? Math.abs(packPriceCents - oldPriceCents) : Infinity;
+      const distance = Math.min(distanceFromCurrent, distanceFromOld);
+      return { pack: p, distance, priceCents: packPriceCents, distanceFromCurrent, distanceFromOld };
+    });
+    
+    // Sort by distance (closest first)
+    packsWithDistance.sort((a, b) => a.distance - b.distance);
+    
+    console.log(`[DashboardV2] 📦 Packs sorted by distance from expected price:`, packsWithDistance.map(({ pack, distance, priceCents }) => ({
+      id: pack.id,
+      name: pack.name,
+      price: `$${pack.price}`,
+      priceCents,
+      distance,
+    })));
+    
+    // Find the best match based on expected position (basic = cheapest, standard = middle, premium = most expensive)
+    const sortedByPrice = [...packs].sort((a, b) => {
       const priceA = parseFloat(a.price.toString());
       const priceB = parseFloat(b.price.toString());
       return priceA - priceB;
     });
     
-    // Map: basic = first pack, standard = second pack, premium = third pack
-    if (plan === "basic" && sortedPacks.length >= 1) {
-      return sortedPacks[0].id;
-    }
-    if (plan === "standard" && sortedPacks.length >= 2) {
-      return sortedPacks[1].id;
-    }
-    if (plan === "premium") {
-      if (sortedPacks.length >= 3) {
-        return sortedPacks[2].id;
-      } else if (sortedPacks.length >= 2) {
-        // If only 2 packs, use second as premium
-        return sortedPacks[1].id;
+    // For page2, always use order-based mapping as fallback (same as BuyCredits)
+    // But prefer packs that are closest to expected price within reasonable range
+    let selectedPack;
+    
+    // Always prefer the closest pack to expected price (within reasonable range)
+    const closestToExpected = packsWithDistance[0];
+    const MAX_ACCEPTABLE_DISTANCE = 500; // $5 = 500 cents
+    
+    if (closestToExpected && closestToExpected.distance <= MAX_ACCEPTABLE_DISTANCE) {
+      // Found a pack reasonably close to expected price - use it
+      selectedPack = closestToExpected.pack;
+      console.log(`[DashboardV2] ✅ Using closest match for "${plan}": pack ID ${selectedPack.id}, price $${selectedPack.price} (distance: ${closestToExpected.distance} cents from expected ${expectedPriceInCurrency} cents)`);
+    } else {
+      // No pack close enough - use order-based mapping as last resort
+      console.error(`[DashboardV2] ❌ No pack found close to expected price for "${plan}" (expected ${expectedPriceCents} cents = ${displayedPrice.formatted}, closest is ${closestToExpected?.distance || 'N/A'} cents away). Using order-based mapping as fallback.`);
+      
+      if (plan === "basic" && sortedByPrice.length >= 1) {
+        selectedPack = sortedByPrice[0];
+        console.log(`[DashboardV2] ⚠️ Fallback: Using cheapest pack for "${plan}": pack ID ${selectedPack.id}, price $${selectedPack.price} (expected ${displayedPrice.formatted})`);
+      } else if (plan === "standard" && sortedByPrice.length >= 2) {
+        selectedPack = sortedByPrice[1];
+        console.log(`[DashboardV2] ⚠️ Fallback: Using second cheapest pack for "${plan}": pack ID ${selectedPack.id}, price $${selectedPack.price} (expected ${displayedPrice.formatted})`);
+      } else if (plan === "premium") {
+        if (sortedByPrice.length >= 3) {
+          selectedPack = sortedByPrice[2];
+          console.log(`[DashboardV2] ⚠️ Fallback: Using most expensive pack for "${plan}": pack ID ${selectedPack.id}, price $${selectedPack.price} (expected ${displayedPrice.formatted})`);
+        } else if (sortedByPrice.length >= 2) {
+          selectedPack = sortedByPrice[1];
+          console.log(`[DashboardV2] ⚠️ Fallback: Using second pack for "${plan}": pack ID ${selectedPack.id}, price $${selectedPack.price} (expected ${displayedPrice.formatted})`);
+        } else {
+          selectedPack = sortedByPrice[0];
+          console.log(`[DashboardV2] ⚠️ Fallback: Only one pack available for "${plan}": pack ID ${selectedPack.id}, price $${selectedPack.price} (expected ${displayedPrice.formatted})`);
+        }
       }
     }
     
-    return null;
+    return selectedPack?.id || null;
   };
 
   const handlePurchase = async () => {
