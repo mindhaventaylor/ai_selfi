@@ -360,11 +360,17 @@ export const appRouter = router({
         if (!pack) throw new Error(getServerString("packNotFound"));
 
         // Get the base URL for success/cancel URLs
-        // Priority: PRODUCTION_DOMAIN > VERCEL_URL > PHOTO_API_URL > localhost
+        // Always use PRODUCTION_DOMAIN for Stripe redirects to ensure users are redirected
+        // to the production domain, not preview deployments
+        // Priority: PRODUCTION_DOMAIN (always for Stripe) > VERCEL_ENV=production check > VERCEL_URL > PHOTO_API_URL > localhost
         let baseUrl: string;
-        if (PRODUCTION_DOMAIN && process.env.NODE_ENV === "production") {
+        
+        // Always prefer PRODUCTION_DOMAIN for payment redirects to ensure consistency
+        // This ensures that even in preview deployments, Stripe redirects to production
+        if (PRODUCTION_DOMAIN) {
           baseUrl = `https://${PRODUCTION_DOMAIN}`;
-        } else if (process.env.VERCEL_URL) {
+        } else if (process.env.VERCEL_ENV === "production" && process.env.VERCEL_URL) {
+          // Only use VERCEL_URL if we're in a production deployment (not preview)
           // VERCEL_URL might already include https:// or might not
           const vercelUrl = process.env.VERCEL_URL;
           baseUrl = vercelUrl.startsWith("http") ? vercelUrl : `https://${vercelUrl}`;
@@ -377,6 +383,7 @@ export const appRouter = router({
         console.log(`[Payment] Using base URL: ${baseUrl}`, {
           productionDomain: PRODUCTION_DOMAIN,
           vercelUrl: process.env.VERCEL_URL,
+          vercelEnv: process.env.VERCEL_ENV,
           nodeEnv: process.env.NODE_ENV,
         });
 
