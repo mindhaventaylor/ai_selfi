@@ -20,6 +20,11 @@ export function useAuth(options?: UseAuthOptions) {
     // Don't block UI if query fails or times out - allow UI to render
     // The loading state will resolve even if the query fails
     throwOnError: false,
+    // Add timeout to prevent query from hanging indefinitely in production
+    networkMode: 'online',
+    // Ensure query doesn't block rendering - resolve loading state quickly even on slow networks
+    refetchOnMount: true,
+    refetchOnReconnect: false,
   });
 
   const logoutMutation = trpc.auth.logout.useMutation({

@@ -35,27 +35,39 @@
       window.__BUILD_TIME__ = new Date().toISOString();
       console.log('[App] Build time:', window.__BUILD_TIME__);
       
-      // Check if app loads within 10 seconds (increased from 5s to account for slow networks)
+      // Check if app loads - use longer timeout in production (30s) vs development (15s)
+      // In production, API calls during login can take longer
+      const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+      const timeoutDuration = isProduction ? 30000 : 15000; // 30s in prod, 15s in dev
+      
       const loadingTimeout = setTimeout(() => {
         const root = document.getElementById('root');
         if (root && root.children.length === 0) {
-          console.error('[App] App failed to load after 10 seconds - likely cached bundle issue');
+          console.error('[App] App failed to load after ' + timeoutDuration + 'ms - likely cached bundle issue or API timeout');
           root.innerHTML = `
             <div style="padding: 20px; font-family: sans-serif; text-align: center; max-width: 600px; margin: 50px auto;">
               <h1>Loading Issue Detected</h1>
-              <p>The app seems to be stuck. This is often caused by cached files.</p>
-              <p style="margin-top: 20px;">
+              <p>The app seems to be stuck. This is often caused by cached files or a slow connection.</p>
+              <p style="margin-top: 20px; margin-bottom: 10px;">
                 <button onclick="window.location.reload(true)" style="padding: 12px 24px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; font-size: 16px;">
                   Hard Reload (Clear Cache)
+                </button>
+              </p>
+              <p style="margin-top: 10px;">
+                <button onclick="localStorage.clear(); sessionStorage.clear(); window.location.reload(true)" style="padding: 10px 20px; cursor: pointer; background: #dc3545; color: white; border: none; border-radius: 4px; font-size: 14px;">
+                  Clear All Data & Reload
                 </button>
               </p>
               <p style="margin-top: 15px; font-size: 14px; color: #666;">
                 Keyboard shortcut: <strong>Ctrl+Shift+R</strong> (Windows/Linux) or <strong>Cmd+Shift+R</strong> (Mac)
               </p>
+              <p style="margin-top: 10px; font-size: 12px; color: #999;">
+                If the problem persists, try opening in an incognito/private window.
+              </p>
             </div>
           `;
         }
-      }, 10000);
+      }, timeoutDuration);
       
       // Clear timeout if app loads successfully
       // The main.tsx will clear this when React renders
@@ -66,6 +78,11 @@
             clearTimeout(loadingTimeout);
           }
         }, 100);
+      });
+      
+      // Also listen for the app rendered callback from main.tsx
+      window.addEventListener('app-rendered', () => {
+        clearTimeout(loadingTimeout);
       });
     </script>
     <script type="module" src="/src/main.tsx"></script>

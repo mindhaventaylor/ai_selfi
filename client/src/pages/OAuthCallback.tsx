@@ -16,6 +16,11 @@ export default function OAuthCallback() {
     // Prevent multiple executions
     if (hasProcessed.current) return;
     hasProcessed.current = true;
+    
+    // Signal that OAuthCallback is rendering (prevents loading timeout)
+    if (typeof window !== "undefined" && (window as any).__APP_RENDERED_CALLBACK__) {
+      (window as any).__APP_RENDERED_CALLBACK__();
+    }
 
     const handleCallback = async () => {
       try {
@@ -40,12 +45,20 @@ export default function OAuthCallback() {
           return;
         }
 
-        // Wait for Supabase to process the callback
-        const { data, error: sessionError } = await supabase.auth.getSession();
+        // Wait for Supabase to process the callback (with timeout)
+        const sessionPromise = supabase.auth.getSession();
+        const sessionTimeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Session retrieval timeout after 10 seconds")), 10000)
+        );
+        
+        const { data, error: sessionError } = await Promise.race([
+          sessionPromise,
+          sessionTimeout
+        ]) as any;
         
         if (sessionError) {
           console.error("Session error:", sessionError);
-          setError(sessionError.message);
+          setError(sessionError.message || "Failed to retrieve session");
           return;
         }
 
@@ -53,27 +66,47 @@ export default function OAuthCallback() {
           // Sync session with server and set cookie
           try {
             console.log("[OAuth] Attempting to sync session...");
-            const result = await syncSessionMutation.mutateAsync({ 
+            
+            // Add timeout wrapper for sync session mutation
+            const syncPromise = syncSessionMutation.mutateAsync({ 
               accessToken: data.session.access_token 
             });
+            
+            const syncTimeout = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error("Sync session timeout after 20 seconds")), 20000)
+            );
+            
+            const result = await Promise.race([syncPromise, syncTimeout]) as any;
             console.log("[OAuth] Sync result:", result);
             
             // Wait a bit for cookie to be set
             await new Promise(resolve => setTimeout(resolve, 300));
             
-            // Refresh user data and wait for it to complete
-            await utils.auth.me.invalidate();
-            
-            // Fetch user data to ensure it's available before redirecting
-            const userData = await utils.auth.me.fetch();
-            console.log("[OAuth] User data fetched:", userData);
-            
-            if (!userData) {
-              throw new Error(t("oauthCallback.failedToFetchUserData"));
+            // Refresh user data and wait for it to complete (with timeout)
+            try {
+              await utils.auth.me.invalidate();
+              
+              // Fetch user data to ensure it's available before redirecting (with timeout)
+              const fetchPromise = utils.auth.me.fetch();
+              const fetchTimeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("Fetch user data timeout after 15 seconds")), 15000)
+              );
+              
+              const userData = await Promise.race([fetchPromise, fetchTimeout]) as any;
+              console.log("[OAuth] User data fetched:", userData);
+              
+              if (!userData) {
+                console.warn("[OAuth] No user data received, but proceeding with redirect");
+                // Don't throw - proceed anyway as session is valid
+              }
+              
+              // Redirect to dashboard
+              setLocation("/dashboard");
+            } catch (fetchError: any) {
+              console.warn("[OAuth] Error fetching user data, but session is valid. Redirecting anyway:", fetchError);
+              // Even if fetch fails, we have a valid session, so redirect
+              setLocation("/dashboard");
             }
-            
-            // Redirect to dashboard
-            setLocation("/dashboard");
           } catch (syncError: any) {
             console.error("Sync error details:", {
               message: syncError?.message,

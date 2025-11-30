@@ -62,16 +62,29 @@ queryClient.getMutationCache().subscribe(event => {
 });
 
 // Fetch wrapper with timeout to prevent hanging requests
+// In production, use longer timeout for auth queries during login
 function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit, timeoutMs = 15000): Promise<Response> {
-  return Promise.race([
-    globalThis.fetch(input, {
-      ...(init ?? {}),
-      credentials: "include",
-    }),
-    new Promise<Response>((_, reject) =>
-      setTimeout(() => reject(new Error(`Request timeout after ${timeoutMs}ms`)), timeoutMs)
-    ),
-  ]);
+  const isAuthQuery = typeof input === 'string' && input.includes('/auth.me');
+  const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
+  
+  // Use longer timeout for auth queries in production (login can be slower)
+  const effectiveTimeout = isAuthQuery && isProduction ? Math.max(timeoutMs, 20000) : timeoutMs;
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), effectiveTimeout);
+  
+  return globalThis.fetch(input, {
+    ...(init ?? {}),
+    credentials: "include",
+    signal: controller.signal,
+  }).finally(() => {
+    clearTimeout(timeoutId);
+  }).catch((error) => {
+    if (error.name === 'AbortError') {
+      throw new Error(`Request timeout after ${effectiveTimeout}ms`);
+    }
+    throw error;
+  });
 }
 
 const trpcClient = trpc.createClient({
@@ -111,28 +124,73 @@ if (!rootElement) {
   `;
 } else {
   // Add a timeout to detect if the app is stuck loading
-  // Increased to 10 seconds to match HTML timeout and account for network latency
-  const loadingTimeout = setTimeout(() => {
+  // Increased timeout for production - accounts for slow networks and API calls during login
+  // Use longer timeout in production (30s) vs development (15s)
+  const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
+  const timeoutDuration = isProduction ? 30000 : 15000; // 30s in prod, 15s in dev
+  
+  let appRendered = false;
+  let loadingTimeout: NodeJS.Timeout | null = null;
+  
+  // Function to clear timeout when app actually renders
+  const markAppAsRendered = () => {
+    if (loadingTimeout) {
+      clearTimeout(loadingTimeout);
+      loadingTimeout = null;
+    }
+    appRendered = true;
+    console.log("[Main] App rendered successfully");
+    
+    // Also dispatch event for HTML timeout handler
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event('app-rendered'));
+    }
+  };
+  
+  // Set up global marker so App component can signal when it's rendered
+  (window as any).__APP_RENDERED_CALLBACK__ = markAppAsRendered;
+  
+  loadingTimeout = setTimeout(() => {
+    if (appRendered) {
+      // App already rendered, just clear timeout
+      if (loadingTimeout) clearTimeout(loadingTimeout);
+      return;
+    }
+    
     console.warn("[Main] App seems stuck - checking for errors...");
-    // Check if root is still empty after 10 seconds
-    if (rootElement.children.length === 0) {
-      console.error("[Main] App failed to render after 10 seconds - likely cached bundle issue");
+    // Check if React has mounted at all (any children means React rendered)
+    const hasReactMounted = rootElement.children.length > 0;
+    const hasSubstantialContent = rootElement.innerHTML.trim().length > 100;
+    
+    if (!hasReactMounted) {
+      console.error(`[Main] App failed to render after ${timeoutDuration}ms - likely cached bundle issue or API timeout`);
       rootElement.innerHTML = `
-        <div style="padding: 20px; font-family: sans-serif; text-align: center;">
+        <div style="padding: 20px; font-family: sans-serif; text-align: center; max-width: 600px; margin: 50px auto;">
           <h1>Loading Issue Detected</h1>
-          <p>The app seems to be stuck loading. This might be due to cached files.</p>
-          <p style="margin-top: 20px;">
-            <button onclick="window.location.reload(true)" style="padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px;">
+          <p>The app seems to be stuck loading. This might be due to cached files or a slow connection.</p>
+          <p style="margin-top: 20px; margin-bottom: 10px;">
+            <button onclick="window.location.reload(true)" style="padding: 12px 24px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; font-size: 16px;">
               Hard Reload (Clear Cache)
             </button>
           </p>
-          <p style="margin-top: 10px; font-size: 12px; color: #666;">
-            Or try: Ctrl+Shift+R (Windows/Linux) or Cmd+Shift+R (Mac)
+          <p style="margin-top: 10px;">
+            <button onclick="localStorage.clear(); sessionStorage.clear(); window.location.reload(true)" style="padding: 10px 20px; cursor: pointer; background: #dc3545; color: white; border: none; border-radius: 4px; font-size: 14px;">
+              Clear All Data & Reload
+            </button>
+          </p>
+          <p style="margin-top: 15px; font-size: 12px; color: #666;">
+            Keyboard shortcut: <strong>Ctrl+Shift+R</strong> (Windows/Linux) or <strong>Cmd+Shift+R</strong> (Mac)
+          </p>
+          <p style="margin-top: 10px; font-size: 11px; color: #999;">
+            If the problem persists, try opening in an incognito/private window.
           </p>
         </div>
       `;
+    } else {
+      // App has some content, just taking time to fully render
+      console.log("[Main] App has content but may still be loading - extending timeout check");
     }
-  }, 10000);
+  }, timeoutDuration);
 
   try {
     createRoot(rootElement).render(
@@ -143,9 +201,28 @@ if (!rootElement) {
   </trpc.Provider>
 );
     
-    // Clear timeout if app renders successfully
-    clearTimeout(loadingTimeout);
-    console.log("[Main] App rendered successfully");
+    // Check periodically if app has rendered (React might take time to hydrate)
+    // React renders immediately, but content may load asynchronously
+    // We consider the app "rendered" once React has mounted, even if showing loading state
+    let checkCount = 0;
+    const maxChecks = 10; // Check for up to 5 seconds (10 * 500ms) before giving up on quick render
+    const checkInterval = setInterval(() => {
+      checkCount++;
+      // Consider app rendered if React has mounted (has any children, even loading spinner)
+      const hasReactMounted = rootElement.children.length > 0;
+      
+      if (hasReactMounted && !appRendered) {
+        markAppAsRendered();
+        clearInterval(checkInterval);
+      } else if (checkCount >= maxChecks) {
+        // Stop checking after max attempts - the App component callback will handle it
+        clearInterval(checkInterval);
+        // But if React mounted, mark as rendered anyway
+        if (hasReactMounted && !appRendered) {
+          markAppAsRendered();
+        }
+      }
+    }, 500); // Check every 500ms
   } catch (error: any) {
     clearTimeout(loadingTimeout);
     console.error("[Main] Failed to render React app:", error);
