@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -90,6 +91,16 @@ export default function ViewModels() {
   };
 
   const handleUseModel = (modelId: number) => {
+    // Check if user has credits - redirect to buy credits page if no credits
+    if ((user?.credits ?? 0) <= 0) {
+      toast.error(t("generateImages.notEnoughCredits") || "Insufficient credits", {
+        description: t("buyCredits.subtitle") || "Please purchase credits to generate images",
+      });
+      // Redirect directly to buy credits page
+      setLocation("/dashboard/credits/buy");
+      return;
+    }
+    
     // Navigate to generate page with model selected
     setLocation(`/dashboard/generate?modelId=${modelId}`);
   };

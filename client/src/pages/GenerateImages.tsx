@@ -698,7 +698,17 @@ export default function GenerateImages() {
           targetProgressRef.current = Math.min(100, Math.round(progress));
         }
         
+        // Clean up saved data when generation completes
         if (data.batch?.status === "completed") {
+          // Clear saved generation intent and form data after successful generation
+          try {
+            localStorage.removeItem("dashboardV2_generationIntent");
+            localStorage.removeItem("dashboardV2_formData");
+            console.log("[GenerateImages] ✅ Cleared saved generation data after completion");
+          } catch (e) {
+            console.warn("[GenerateImages] Failed to clear saved data:", e);
+          }
+          
           setGenerationProgress(100);
           setIsGenerating(false);
         }
@@ -984,6 +994,15 @@ export default function GenerateImages() {
       // Update progress - don't force modal open if user closed it
       // Only open modal automatically when generation completes or fails (so user sees results)
       if (batch.status === "completed") {
+        // Clean up saved generation data after successful completion
+        try {
+          localStorage.removeItem("dashboardV2_generationIntent");
+          localStorage.removeItem("dashboardV2_formData");
+          console.log("[GenerateImages] ✅ Cleared saved generation data after batch completion");
+        } catch (e) {
+          console.warn("[GenerateImages] Failed to clear saved data:", e);
+        }
+        
         console.log("[GenerateImages] ✅ Processing completed batch:", {
           batchId: batch.id,
           totalImagesGenerated: batch.totalImagesGenerated,
@@ -1263,9 +1282,11 @@ export default function GenerateImages() {
   const isModelReady = selectedModelStatus === "ready";
   
   // For page2 variant, model is optional; for page1, model is required
+  // For page1: Don't check credits in canGenerate - let button redirect if no credits
+  // For page2: Keep credit check as it has its own flow
   const canGenerate = isPage2Variant
     ? imageCount > 0 && hasEnoughCredits
-    : imageCount > 0 && hasEnoughCredits && modelId !== "" && isModelReady;
+    : imageCount > 0 && modelId !== "" && isModelReady; // Removed hasEnoughCredits check for page1
   
   // Define helper functions and constants (not hooks, safe to call after hooks)
   const backgrounds = ["office", "studio", "city", "nature", "interior"];
@@ -1411,6 +1432,19 @@ Output should be a vertical rectangle. Entire head should be visible`;
 
   const handleGenerate = async () => {
     if (!canGenerate) return;
+    
+    // For page1 flow: Check credits before generating
+    if (!isPage2Variant) {
+      // Check if user has credits - redirect to buy credits page if no credits
+      if ((user?.credits ?? 0) <= 0) {
+        toast.error(t("generateImages.notEnoughCredits") || "Insufficient credits", {
+          description: t("buyCredits.subtitle") || "Please purchase credits to generate images",
+        });
+        // Redirect directly to buy credits page
+        setLocation("/dashboard/credits/buy");
+        return;
+      }
+    }
     
     // Build reference image URLs:
     // For page2 variant: Only use example images (no model required)
@@ -1858,7 +1892,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                         <Button
                           className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                           size="lg"
-                          disabled={!canGenerate}
+                          disabled={!canGenerate || (isPage2Variant && !hasEnoughCredits)}
                           onClick={handleGenerate}
                         >
                           <Sparkles className="w-5 h-5 mr-2" />
@@ -2045,7 +2079,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                   <Button
                     className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     size="lg"
-                    disabled={!canGenerate}
+                    disabled={!canGenerate || (isPage2Variant && !hasEnoughCredits)}
                     onClick={() => {
                       setIsParametersSheetOpen(false);
                       handleGenerate();

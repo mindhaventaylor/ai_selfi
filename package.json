@@ -19,7 +19,8 @@
     "queue:listener": "tsx scripts/queue-listener.ts",
     "dev:full": "bash scripts/dev-with-listener.sh",
     "test:trigger": "tsx scripts/test-trigger.ts",
-    "test:connection": "tsx scripts/test-connection-formats.ts"
+    "test:connection": "tsx scripts/test-connection-formats.ts",
+    "clean:cache": "rm -rf node_modules/.vite .vite dist client/node_modules/.vite client/.vite && find . -name '*.tsbuildinfo' -type f -delete && find . -name '.eslintcache' -type f -delete && find . -name '.cache' -type d -exec rm -rf {} + 2>/dev/null || true && echo '✅ All caches cleared successfully'"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",
