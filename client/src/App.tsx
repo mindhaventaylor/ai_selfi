@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation } from "wouter";
+import { useEffect } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -48,6 +49,13 @@ import "./i18n/config";
 function Router() {
   const [location] = useLocation();
   const isDashboard = location.startsWith("/dashboard");
+  
+  // Signal to main.tsx that the app has rendered
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).__APP_RENDERED_CALLBACK__) {
+      (window as any).__APP_RENDERED_CALLBACK__();
+    }
+  }, []);
 
   return (
     <>
