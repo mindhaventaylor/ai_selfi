@@ -37,13 +37,6 @@ export default function Dashboard() {
   
   // Use forced variant from URL if present, then cached, then PostHog variant
   const variant = forcedVariant || cachedVariant || posthogVariant;
-
-  // Debug log
-    forcedVariant,
-    cachedVariant,
-    posthogVariant,
-    finalVariant: variant,
-  });
   
   // Save variant to cache if detected from URL
   // Use useRef to track if we've already saved to avoid infinite loops

@@ -354,7 +354,18 @@ export const appRouter = router({
           pack = data;
         } else {
           const packResult = await db.select().from(creditPacks).where(eq(creditPacks.id, input.packId)).limit(1);
-          pack = packResult[0] || null;
+          const dbPack = packResult[0];
+          if (dbPack) {
+            pack = {
+              id: dbPack.id,
+              name: dbPack.name,
+              description: dbPack.description,
+              price: dbPack.price,
+              credits: dbPack.credits,
+              stripePriceId: dbPack.stripePriceId,
+              createdAt: dbPack.createdAt instanceof Date ? dbPack.createdAt.toISOString() : String(dbPack.createdAt),
+            };
+          }
         }
 
         if (!pack) throw new Error(getServerString("packNotFound"));
@@ -1779,7 +1790,7 @@ export const appRouter = router({
           console.log(`[Photo Generate Page2] ✅ Uploaded ${uploadedUrls.length} user images`);
         } else {
           throw new Error("No images provided. Please provide either userImageUrls or userImages.");
-        }
+        }                                                                                                    
 
         // Get example image URL from the selected example image (or use a default)
         const exampleImageUrl = selectedExampleImage?.url 
