@@ -1566,14 +1566,16 @@ export const appRouter = router({
         // Call API directly for each job
         // Determine API URL: use production domain in production, otherwise localhost
         let apiUrl: string;
-        if (process.env.VERCEL === "1" || process.env.NODE_ENV === "production") {
-          // In production, use the production domain from constants
+        // Always use production URL if we're on Vercel (check multiple indicators)
+        const isVercel = process.env.VERCEL === "1" || process.env.VERCEL_URL || process.env.VERCEL_ENV;
+        if (isVercel || process.env.NODE_ENV === "production") {
+          // In production/Vercel, always use the production domain
           apiUrl = `https://${PRODUCTION_DOMAIN}/api/photo-generation`;
         } else if (process.env.PHOTO_API_URL) {
           apiUrl = process.env.PHOTO_API_URL;
-          } else {
-            // Development: use localhost
-            apiUrl = `http://localhost:${process.env.PORT || 3000}/api/photo-generation`;
+        } else {
+          // Development: use localhost
+          apiUrl = `http://localhost:${process.env.PORT || 3000}/api/photo-generation`;
         }
         
         console.log(`[Photo Generate] 🚀 Triggering API processing at ${apiUrl}...`);
@@ -2010,7 +2012,10 @@ Output should be a vertical rectangle. Entire head should be visible`;
           
           // Trigger API processing for each job
           let apiUrl: string;
-          if (process.env.VERCEL === "1" || process.env.NODE_ENV === "production") {
+          // Always use production URL if we're on Vercel (check multiple indicators)
+          const isVercel = process.env.VERCEL === "1" || process.env.VERCEL_URL || process.env.VERCEL_ENV;
+          if (isVercel || process.env.NODE_ENV === "production") {
+            // In production/Vercel, always use the production domain
             apiUrl = `https://${PRODUCTION_DOMAIN}/api/photo-generation-page2`;
           } else if (process.env.PHOTO_API_URL) {
             apiUrl = process.env.PHOTO_API_URL;
@@ -2135,7 +2140,10 @@ Output should be a vertical rectangle. Entire head should be visible`;
           
           // Trigger API processing for each job
           let apiUrl: string;
-          if (process.env.VERCEL === "1" || process.env.NODE_ENV === "production") {
+          // Always use production URL if we're on Vercel (check multiple indicators)
+          const isVercel = process.env.VERCEL === "1" || process.env.VERCEL_URL || process.env.VERCEL_ENV;
+          if (isVercel || process.env.NODE_ENV === "production") {
+            // In production/Vercel, always use the production domain
             apiUrl = `https://${PRODUCTION_DOMAIN}/api/photo-generation-page2`;
           } else if (process.env.PHOTO_API_URL) {
             apiUrl = process.env.PHOTO_API_URL;
