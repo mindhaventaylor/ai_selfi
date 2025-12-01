@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/carousel";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Linkedin } from "lucide-react";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const { ref, isVisible } = useScrollAnimation();
@@ -110,10 +111,11 @@ export default function Home() {
               opacity: heroImageOpacity,
             }}
           >
-            <img
+            <OptimizedImage
               src="/image.jpg"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
+              priority
             />
           </div>
 
@@ -129,10 +131,11 @@ export default function Home() {
               opacity: heroImageOpacity,
             }}
           >
-            <img
+            <OptimizedImage
               src="/image_1.jpg"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
+              priority
             />
           </div>
 
@@ -147,7 +150,7 @@ export default function Home() {
               opacity: heroImageOpacity,
             }}
           >
-            <img
+            <OptimizedImage
               src="/image_100.jpg"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
@@ -166,10 +169,11 @@ export default function Home() {
               opacity: heroImageOpacity,
             }}
           >
-            <img
+            <OptimizedImage
               src="/image_10.jpg"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
+              priority
             />
           </div>
 
@@ -185,7 +189,7 @@ export default function Home() {
               opacity: heroImageOpacity,
             }}
           >
-            <img
+            <OptimizedImage
               src="/image_101_last.jpg"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
@@ -204,7 +208,7 @@ export default function Home() {
               opacity: heroImageOpacity,
             }}
           >
-            <img
+            <OptimizedImage
               src="/image_101.jpg"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
@@ -224,7 +228,7 @@ export default function Home() {
                       key={idx}
                       className="w-8 h-8 rounded-full border-2 border-background overflow-hidden"
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <OptimizedImage src={img} alt="" className="w-full h-full object-cover" />
                     </div>
                   )
                 )}
@@ -270,7 +274,7 @@ export default function Home() {
                   transform: `rotate(${idx % 2 === 0 ? "-3deg" : "3deg"})`,
                 }}
               >
-                <img src={img} alt={t("home.altText.aiProfessionalPhoto")} className="w-full h-full object-cover" />
+                <OptimizedImage src={img} alt={t("home.altText.aiProfessionalPhoto")} className="w-full h-full object-cover" />
               </div>
             ))}
           </div>
@@ -482,7 +486,7 @@ export default function Home() {
                                     key={imgIdx}
                                     className="aspect-square overflow-hidden bg-gray-100 rounded-[24px]"
                                   >
-                                    <img
+                                    <OptimizedImage
                                       src={imgSrc}
                                       alt={t("home.altText.reviewPhoto", { name: review.name, number: imgIdx + 1 })}
                                       className="w-full h-full object-cover rounded-[24px]"
@@ -493,7 +497,7 @@ export default function Home() {
                             ) : (
                               // Single image for others
                               <div className="aspect-[4/5] overflow-hidden bg-gray-100 rounded-[24px]">
-                                <img
+                                <OptimizedImage
                                   src={resultImages[0]}
                                   alt={t("home.altText.reviewProfessionalPhoto", { name: review.name })}
                                   className="w-full h-full object-cover rounded-[24px]"
@@ -773,7 +777,7 @@ export default function Home() {
                                 key={imgIdx}
                                 className="aspect-square overflow-hidden bg-gray-100 rounded-[20px]"
                               >
-                                <img
+                                <OptimizedImage
                                   src={imgSrc}
                                   alt={t("home.altText.reviewPhoto", { name: review.name, number: imgIdx + 1 })}
                                   className="w-full h-full object-cover rounded-[20px]"
@@ -784,7 +788,7 @@ export default function Home() {
                         ) : (
                           // Single image for others
                           <div className="aspect-[4/5] overflow-hidden bg-gray-100 rounded-[20px]">
-                            <img
+                            <OptimizedImage
                               src={resultImages[0]}
                               alt={t("home.altText.reviewProfessionalPhoto", { name: review.name })}
                               className="w-full h-full object-cover rounded-[20px]"
@@ -827,7 +831,7 @@ export default function Home() {
               {/* Profile Picture - overlapping the card */}
               <div className="relative z-20 flex-shrink-0 -mr-6 md:-mr-8">
                 <div className="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-gray-900">
-                  <img
+                  <OptimizedImage
                     src="/image_101.jpg"
                     alt={t("home.altText.danielaMora")}
                     className="w-full h-full object-cover"
@@ -904,7 +908,7 @@ export default function Home() {
                     const badgeLabels = t("generateImages.badges", { returnObjects: true }) as { premium: string; new: string; popular: string };
                     return (
                       <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-gray-700">
-                        <img
+                        <OptimizedImage
                           src={item.img}
                           alt={t("home.altText.styleNumber", { number: idx + 1 })}
                           className="w-full h-full object-cover"
@@ -1007,7 +1011,7 @@ export default function Home() {
                     <Card className="p-6 text-center h-full">
                       {/* Step Image */}
                       <div className="w-32 h-32 md:w-40 md:h-40 mx-auto mb-4 rounded-lg overflow-hidden shadow-lg">
-                        <img
+                        <OptimizedImage
                           src={stepImages[idx] || stepImages[0]}
                           alt={step.title}
                           className="w-full h-full object-cover"
@@ -1190,7 +1194,7 @@ export default function Home() {
                       key={idx}
                       className="aspect-square rounded-lg overflow-hidden bg-gray-800"
                     >
-                      <img
+                      <OptimizedImage
                         src={img}
                         alt={t("home.altText.selfieNumber", { number: idx + 1 })}
                         className="w-full h-full object-cover"
@@ -1204,7 +1208,7 @@ export default function Home() {
               <div className="relative">
                 {/* Large Generated Image */}
                 <div className="relative rounded-2xl overflow-hidden bg-gray-800">
-                  <img
+                  <OptimizedImage
                     src="/girl_image_result.jpg"
                     alt={t("home.altText.aiGeneratedPhoto")}
                     className="w-full h-full object-cover aspect-[3/4]"
@@ -1269,7 +1273,7 @@ export default function Home() {
                         key={idx}
                         className="w-10 h-10 rounded-full border-2 border-purple-800 overflow-hidden bg-gray-700"
                       >
-                        <img
+                        <OptimizedImage
                           src={img}
                           alt={t("home.altText.userNumber", { number: idx + 1 })}
                           className="w-full h-full object-cover"
@@ -1293,7 +1297,7 @@ export default function Home() {
                     zIndex: 1,
                   }}
                 >
-                  <img
+                  <OptimizedImage
                     src="/similar_human2.jpeg"
                     alt={t("home.altText.professionalPhotoNumber", { number: 1 })}
                     className="w-full h-full object-cover"
@@ -1307,7 +1311,7 @@ export default function Home() {
                     zIndex: 2,
                   }}
                 >
-                  <img
+                  <OptimizedImage
                     src="/image_1.jpg"
                     alt={t("home.altText.professionalPhotoNumber", { number: 2 })}
                     className="w-full h-full object-cover"
@@ -1322,7 +1326,7 @@ export default function Home() {
                     zIndex: 3,
                   }}
                 >
-                  <img
+                  <OptimizedImage
                     src="/image_10.jpg"
                     alt={t("home.altText.professionalPhotoNumber", { number: 3 })}
                     className="w-full h-full object-cover"
