@@ -674,6 +674,8 @@ function HairStyleStep({ value, onChange, onNext, formData }: { value: string; o
                     alt={t("dashboardV2.exampleForAlt", { label: style.label })}
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    decoding="async"
+                    fetchPriority="auto"
                   />
                   {value === style.value && (
                     <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">

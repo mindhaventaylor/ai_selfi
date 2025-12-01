@@ -217,6 +217,9 @@ export default function ViewModels() {
                         <img
                           src={model.previewImageUrl}
                           alt={model.name}
+                          loading="lazy"
+                          decoding="async"
+                          fetchPriority="auto"
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;

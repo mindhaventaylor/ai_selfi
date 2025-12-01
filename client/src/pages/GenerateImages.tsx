@@ -2287,6 +2287,22 @@ Output should be a vertical rectangle. Entire head should be visible`;
                     hasUrl: !!image.url,
                     url: image.url?.substring(0, 50) + "...",
                   });
+                  
+                  // Preload first 2 images for faster display
+                  if (index < 2 && typeof window !== "undefined") {
+                    const existingPreload = document.head.querySelector(`link[href="${image.url}"]`);
+                    if (!existingPreload) {
+                      const link = document.createElement("link");
+                      link.rel = "preload";
+                      link.as = "image";
+                      link.href = image.url;
+                      if (index === 0) {
+                        link.setAttribute("fetchpriority", "high");
+                      }
+                      document.head.appendChild(link);
+                    }
+                  }
+                  
                   return (
                 <div
                   key={`generated-${image.id || index}`}
@@ -2302,14 +2318,30 @@ Output should be a vertical rectangle. Entire head should be visible`;
                     src={image.url}
                     alt={t("generateImages.generatedImageAlt", { number: index + 1 })}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    onLoad={() => {
+                    loading={index < 2 ? "eager" : "lazy"}
+                    decoding="async"
+                    fetchPriority={index === 0 ? "high" : index === 1 ? "high" : "auto"}
+                    onLoad={(e) => {
                       console.log(`[GenerateImages] ✅ Image ${image.id} loaded successfully`);
+                      // Remove any loading state
+                      const target = e.target as HTMLImageElement;
+                      target.style.opacity = "1";
                     }}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       console.error(`[GenerateImages] ❌ Image ${image.id} failed to load:`, image.url);
-                      target.src = `https://picsum.photos/400/400?random=${index}`;
+                      // Retry once with a slight delay
+                      const retryCount = parseInt(target.dataset.retryCount || "0");
+                      if (retryCount < 1) {
+                        target.dataset.retryCount = "1";
+                        setTimeout(() => {
+                          target.src = image.url + (image.url.includes("?") ? "&" : "?") + `retry=${Date.now()}`;
+                        }, 1000);
+                      } else {
+                        target.src = `https://picsum.photos/400/400?random=${index}`;
+                      }
                     }}
+                    style={{ opacity: 0, transition: "opacity 0.3s ease-in-out" }}
                   />
                   {/* Download Overlay */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
