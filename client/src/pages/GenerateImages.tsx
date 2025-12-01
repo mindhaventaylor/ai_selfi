@@ -311,17 +311,23 @@ export default function GenerateImages() {
   const [urlSearch, setUrlSearch] = useState(window.location.search);
   
   // Poll for URL changes (workaround for setLocation from child components)
+  // Use a ref to track the last URL to prevent infinite loops
+  const lastUrlSearchRef = useRef<string>(window.location.search);
   useEffect(() => {
     const checkUrl = () => {
-      if (window.location.search !== urlSearch) {
-        console.log("[GenerateImages] URL search changed:", window.location.search);
-        setUrlSearch(window.location.search);
+      const currentSearch = window.location.search;
+      // Only update if URL actually changed (prevent infinite loops)
+      if (currentSearch !== lastUrlSearchRef.current) {
+        console.log("[GenerateImages] URL search changed:", currentSearch);
+        lastUrlSearchRef.current = currentSearch;
+        setUrlSearch(currentSearch);
       }
     };
     
-    const interval = setInterval(checkUrl, 100);
+    // Poll less frequently (500ms instead of 100ms) to reduce CPU usage
+    const interval = setInterval(checkUrl, 500);
     return () => clearInterval(interval);
-  }, [urlSearch]);
+  }, []); // Remove urlSearch from dependencies to prevent infinite loops
   
   useEffect(() => {
     // Parse URL params from current location
@@ -596,9 +602,12 @@ export default function GenerateImages() {
               }
             });
 
-            // Update progress based on new photo count
+            // Update progress based on new photo count - calculate from updated images state
             setCompletedImages((prev) => {
-              const newCount = generatedImages.length + (generatedImages.some(img => img.id === updatedPhoto.id) ? 0 : 1);
+              // Calculate new count from the updated images (after the setGeneratedImages above)
+              // We need to check if the photo was newly added
+              const wasNewPhoto = !generatedImages.some(img => img.id === updatedPhoto.id);
+              const newCount = wasNewPhoto ? prev + 1 : prev;
               if (newCount !== prev) {
                 console.log(`[GenerateImages] 📊 Completed images updated from UPDATE: ${prev} -> ${newCount}`);
                 return newCount;
@@ -622,9 +631,11 @@ export default function GenerateImages() {
     // Cleanup subscription when batchId changes or component unmounts
     return () => {
       console.log(`[GenerateImages] 🔴 Cleaning up Realtime subscription for batch ${currentBatchId}`);
+      // Unsubscribe from the channel first, then remove it
+      channel.unsubscribe();
       supabase.removeChannel(channel);
     };
-  }, [currentBatchId, isPage2Variant, getBatchStatusQuery, getPage2BatchStatusQuery]);
+  }, [currentBatchId, isPage2Variant]); // Remove query refs from dependencies to prevent unnecessary re-subscriptions
 
   // Update progress from polling - use page2 query if page2 variant, otherwise use regular query
   const batchStatusData = isPage2Variant 
