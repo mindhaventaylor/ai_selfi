@@ -39,7 +39,6 @@ export default function Dashboard() {
   const variant = forcedVariant || cachedVariant || posthogVariant;
 
   // Debug log
-  console.log(`[Dashboard] Variant detection:`, {
     forcedVariant,
     cachedVariant,
     posthogVariant,
@@ -53,7 +52,6 @@ export default function Dashboard() {
     if (forcedVariant && forcedVariant !== savedVariantRef.current) {
       safeLocalStorage.setItem("aiselfi_dashboard_variant", forcedVariant);
       savedVariantRef.current = forcedVariant;
-      console.log(`[Dashboard] Saved variant ${forcedVariant} to cache`);
     }
   }, [forcedVariant]);
 
@@ -71,11 +69,9 @@ export default function Dashboard() {
 
   // Show DashboardV2 if variant is page2
   if (variant === "page2") {
-    console.log("[Dashboard] Rendering DashboardV2 (page2 variant)");
     return <DashboardV2 />;
   }
   
-  console.log("[Dashboard] Rendering Dashboard (page1 variant)");
 
   // Check for page2 variant for content filtering
   const urlParams = new URLSearchParams(window.location.search);

@@ -66,8 +66,6 @@ export default function OAuthCallback() {
         if (data.session) {
           // Sync session with server and set cookie
           try {
-            console.log("[OAuth] Attempting to sync session...");
-            
             // Add timeout wrapper for sync session mutation
             const syncPromise = syncSessionMutation.mutateAsync({ 
               accessToken: data.session.access_token 
@@ -77,8 +75,7 @@ export default function OAuthCallback() {
               setTimeout(() => reject(new Error("Sync session timeout after 20 seconds")), 20000)
             );
             
-            const result = await Promise.race([syncPromise, syncTimeout]) as any;
-            console.log("[OAuth] Sync result:", result);
+            await Promise.race([syncPromise, syncTimeout]);
             
             // Wait a bit for cookie to be set
             await new Promise(resolve => setTimeout(resolve, 300));
@@ -94,7 +91,6 @@ export default function OAuthCallback() {
               );
               
               const userData = await Promise.race([fetchPromise, fetchTimeout]) as any;
-              console.log("[OAuth] User data fetched:", userData);
               
               if (!userData) {
                 console.warn("[OAuth] No user data received, but proceeding with redirect");

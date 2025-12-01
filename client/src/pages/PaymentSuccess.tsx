@@ -17,7 +17,6 @@ export default function PaymentSuccess() {
   const generateFromPage2Mutation = trpc.photo.generateFromPage2.useMutation();
   
   // Debug: Log component render
-  console.log("[PaymentSuccess] Component rendered");
   
   const sessionId = useMemo(() => {
     if (typeof window === "undefined") return null;
@@ -28,24 +27,20 @@ export default function PaymentSuccess() {
   useEffect(() => {
     // The webhook should have already processed the payment
     // But we can show a success message
-    console.log("[PaymentSuccess] Payment successful, session ID:", sessionId);
     
     let redirectTimer: NodeJS.Timeout | null = null;
     
     // Check if user has saved form data from DashboardV2 flow
     const savedData = localStorage.getItem("dashboardV2_formData");
-    console.log("[PaymentSuccess] Checking saved form data:", savedData ? "found" : "not found");
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        console.log("[PaymentSuccess] Parsed form data:", parsed);
         if (parsed.resumeStep === "upload") {
           setHasPage2FormData(true);
           
           // Auto-redirect to upload step after a brief delay to ensure credits are updated
           // Wait a bit for webhook to process credits, then redirect
           redirectTimer = setTimeout(() => {
-            console.log("[PaymentSuccess] Auto-redirecting to upload step...");
             setLocation("/dashboard?step=upload&variant=page2");
           }, 2000); // Wait 2s to ensure credits are updated
         }
@@ -57,15 +52,12 @@ export default function PaymentSuccess() {
     // Check for generation intent (from upload step when credits were insufficient)
     // Only auto-generate if we have saved user images (files were uploaded)
     const generationIntent = localStorage.getItem("dashboardV2_generationIntent");
-    console.log("[PaymentSuccess] Checking generation intent:", generationIntent ? "found" : "not found");
-    console.log("[PaymentSuccess] hasProcessedGeneration:", hasProcessedGeneration.current);
     
     if (generationIntent && !hasProcessedGeneration.current) {
       hasProcessedGeneration.current = true;
       
       try {
         const intent = JSON.parse(generationIntent);
-        console.log("[PaymentSuccess] Parsed generation intent:", {
           resumeStep: intent.resumeStep,
           hasUserImages: !!intent.userImages,
           userImagesLength: intent.userImages?.length || 0,
@@ -75,7 +67,6 @@ export default function PaymentSuccess() {
         
         // Only auto-generate if we have userImages (user uploaded files before payment)
         if (intent.resumeStep === "generate" && intent.userImages && intent.userImages.length > 0 && intent.formData) {
-          console.log("[PaymentSuccess] ✅ Found generation intent with uploaded files, auto-resuming generation...");
           setIsGenerating(true);
           
           // Auto-start generation after a brief delay to ensure credits are updated
@@ -98,12 +89,10 @@ export default function PaymentSuccess() {
                 selectedPrice: (intent.selectedPrice || "standard") as "basic" | "standard" | "premium",
               });
 
-              console.log("[PaymentSuccess] Generation started successfully, batchId:", result.batchId);
               
               // Clear ALL saved data after successful generation
               localStorage.removeItem("dashboardV2_generationIntent");
               localStorage.removeItem("dashboardV2_formData");
-              console.log("[PaymentSuccess] Cleared all saved generation data");
               
               // Redirect to generate page with batchId
               if (result.batchId) {
@@ -130,7 +119,6 @@ export default function PaymentSuccess() {
             }
           }, 1500); // Wait 1.5s to ensure webhook has processed credits
         } else {
-          console.log("[PaymentSuccess] ⚠️ Generation intent found but conditions not met:", {
             resumeStep: intent.resumeStep,
             hasUserImages: !!intent.userImages,
             userImagesLength: intent.userImages?.length || 0,
@@ -142,7 +130,6 @@ export default function PaymentSuccess() {
         console.error("[PaymentSuccess] Failed to parse generation intent:", e);
       }
     } else {
-      console.log("[PaymentSuccess] ⚠️ No generation intent found or already processed - showing success message only");
     }
     
     // Cleanup function - clear redirect timer if component unmounts
@@ -165,7 +152,6 @@ export default function PaymentSuccess() {
       try {
         const intent = JSON.parse(generationIntent);
         if (intent.resumeStep === "generate" && intent.userImages && intent.userImages.length > 0) {
-          console.log("[PaymentSuccess] Generation intent exists, waiting for auto-generation...");
           return; // Don't redirect, let the auto-generation happen
         }
       } catch (e) {

@@ -1,6 +1,3 @@
-// Log when module starts loading
-console.log("[Main] Module loading started at", new Date().toISOString());
-
 import { trpc } from "@/lib/trpc";
 import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -9,9 +6,6 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import "./index.css";
-
-// Log when imports are complete
-console.log("[Main] All imports loaded successfully");
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -147,7 +141,6 @@ if (!rootElement) {
       loadingTimeout = null;
     }
     appRendered = true;
-    console.log("[Main] App rendered successfully");
     
     // Also dispatch event for HTML timeout handler
     if (typeof window !== "undefined") {
@@ -179,7 +172,6 @@ if (!rootElement) {
     
     // If React mounted but callback wasn't called, mark as rendered and return
     if (hasReactMounted || hasSubstantialContent || (hasAnyContent && hasReactMarkers)) {
-      console.log("[Main] React is mounted but wasn't marked as rendered - marking now");
       markAppAsRendered();
       return;
     }
@@ -210,9 +202,6 @@ if (!rootElement) {
       `;
   }, timeoutDuration);
 
-  // Log when we're about to render
-  console.log("[Main] Starting React render...");
-  
   try {
     createRoot(rootElement).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
@@ -222,22 +211,12 @@ if (!rootElement) {
   </trpc.Provider>
 );
     
-    console.log("[Main] React createRoot called successfully");
-    
     // Immediately check if React mounted (it should be synchronous)
     setTimeout(() => {
       const hasMounted = rootElement.children.length > 0;
       const hasContent = rootElement.innerHTML.trim().length > 50;
-      console.log("[Main] Initial render check (100ms after createRoot):", {
-        hasMounted,
-        hasContent,
-        childrenCount: rootElement.children.length,
-        innerHTMLLength: rootElement.innerHTML.trim().length,
-        innerHTMLPreview: rootElement.innerHTML.trim().substring(0, 100)
-      });
       
       if (hasMounted || hasContent) {
-        console.log("[Main] React mounted immediately - marking as rendered");
         markAppAsRendered();
       }
     }, 100);
@@ -262,10 +241,7 @@ if (!rootElement) {
         clearInterval(checkInterval);
         // Final check - if React mounted at all, mark as rendered (even without callback)
         if ((hasReactMounted || hasContent) && !appRendered) {
-          console.log("[Main] React mounted but callback not called - marking as rendered anyway");
           markAppAsRendered();
-        } else if (!appRendered) {
-          console.warn("[Main] App still not rendered after all checks - timeout will show error message");
         }
       }
     }, 500); // Check every 500ms
