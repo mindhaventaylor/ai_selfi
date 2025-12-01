@@ -247,9 +247,20 @@ export default function Gallery() {
                       alt={t("gallery.photoAlt", { number: photo.id })}
                       className="w-full h-full object-cover"
                       loading="lazy"
+                      decoding="async"
+                      fetchPriority="auto"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = `https://picsum.photos/400/600?random=${photo.id}`;
+                        // Retry once with a slight delay
+                        const retryCount = parseInt(target.dataset.retryCount || "0");
+                        if (retryCount < 1) {
+                          target.dataset.retryCount = "1";
+                          setTimeout(() => {
+                            target.src = photo.url + (photo.url.includes("?") ? "&" : "?") + `retry=${Date.now()}`;
+                          }, 1000);
+                        } else {
+                          target.src = `https://picsum.photos/400/600?random=${photo.id}`;
+                        }
                       }}
                     />
                   ) : (
