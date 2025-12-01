@@ -1693,6 +1693,46 @@ export const appRouter = router({
       ))
       .mutation(async ({ ctx, input }) => {
         // Helper function to map hairStyle values to valid database values
+        const mapHairColor = (hairColor: string | undefined | null): string | null => {
+          // Handle null, undefined, or empty string
+          if (!hairColor || typeof hairColor !== 'string' || hairColor.trim() === "") {
+            return null;
+          }
+          
+          const normalizedValue = hairColor.toLowerCase().trim();
+          
+          // Map DashboardV2 values to database values
+          const hairColorMap: Record<string, string> = {
+            "brown": "brown",
+            "black": "black",
+            "blonde": "blonde",
+            "red": "red",
+            "gray": "default", // Map gray to default
+            "auburn": "red", // Map auburn to red
+            "white": "default", // Map white to default
+            "other": "default", // Map other to default
+            "bald": "default", // Map bald to default
+            "default": "default",
+          };
+          
+          const mappedValue = hairColorMap[normalizedValue];
+          
+          // Only return valid values per database constraint: 'default', 'black', 'brown', 'blonde', 'red'
+          // Return null for any invalid or unmapped values
+          const validHairColors = ["default", "black", "brown", "blonde", "red"];
+          if (mappedValue && validHairColors.includes(mappedValue)) {
+            return mappedValue;
+          }
+          
+          // If not mapped but matches a valid value directly, return it
+          if (validHairColors.includes(normalizedValue)) {
+            return normalizedValue;
+          }
+          
+          // Return null for any invalid value
+          return null;
+        };
+        
         const mapHairStyle = (hairStyle: string | undefined | null): string | null => {
           if (!hairStyle) return null;
           
@@ -1856,18 +1896,29 @@ Output should be a vertical rectangle. Entire head should be visible`;
         
         if (!db) {
           // For page2, don't include modelId in the insert (it's optional)
+          const mappedHairColor = mapHairColor(input.formData.hairColor);
+          const mappedHairStyle = mapHairStyle(input.formData.hairStyle);
+          
           const insertData: any = {
             userId: ctx.user.id,
             totalImagesGenerated: 0,
             creditsUsed: creditsNeeded,
             aspectRatio: input.aspectRatio,
             glasses: "no",
-            hairColor: input.formData.hairColor || null,
-            hairStyle: mapHairStyle(input.formData.hairStyle),
             backgrounds: input.formData.backgrounds,
             styles: input.formData.attire,
             status: "generating",
           };
+          
+          // Only include hairColor if it's not null (to avoid constraint violations)
+          if (mappedHairColor !== null) {
+            insertData.hairColor = mappedHairColor;
+          }
+          
+          // Only include hairStyle if it's not null
+          if (mappedHairStyle !== null) {
+            insertData.hairStyle = mappedHairStyle;
+          }
           
           const { data: batchData, error: batchError } = await supabaseServer
             .from('page2_generation_batches')
@@ -1882,18 +1933,29 @@ Output should be a vertical rectangle. Entire head should be visible`;
           batchId = batchData?.id;
         } else {
           // For page2, modelId is optional - use undefined instead of null
+          const mappedHairColor = mapHairColor(input.formData.hairColor);
+          const mappedHairStyle = mapHairStyle(input.formData.hairStyle);
+          
           const batchValues: any = {
             userId: ctx.user.id,
             totalImagesGenerated: 0,
             creditsUsed: creditsNeeded,
             aspectRatio: input.aspectRatio,
             glasses: "no",
-            hairColor: input.formData.hairColor || null,
-            hairStyle: mapHairStyle(input.formData.hairStyle),
             backgrounds: input.formData.backgrounds,
             styles: input.formData.attire,
             status: "generating",
           };
+          
+          // Only include hairColor if it's not null (to avoid constraint violations)
+          if (mappedHairColor !== null) {
+            batchValues.hairColor = mappedHairColor;
+          }
+          
+          // Only include hairStyle if it's not null
+          if (mappedHairStyle !== null) {
+            batchValues.hairStyle = mappedHairStyle;
+          }
           
           // Only include modelId if it's not null/undefined (for page2, it's undefined)
           // Don't include modelId at all for page2 variant
@@ -1926,7 +1988,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
             aspectRatio: input.aspectRatio,
             numImagesPerExample: 1, // Each job generates only 1 image for real progress
             glasses: "no",
-            hairColor: input.formData.hairColor || null,
+            hairColor: mapHairColor(input.formData.hairColor),
             hairStyle: mapHairStyle(input.formData.hairStyle),
             backgrounds: input.formData.backgrounds,
             styles: input.formData.attire,
@@ -1980,7 +2042,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                     aspectRatio: input.aspectRatio,
                     numImagesPerExample: 1, // Each job generates only 1 image
                     glasses: "no",
-                    hairColor: input.formData.hairColor || null,
+                    hairColor: mapHairColor(input.formData.hairColor),
                     hairStyle: mapHairStyle(input.formData.hairStyle),
                     backgrounds: input.formData.backgrounds,
                     styles: input.formData.attire,
@@ -2060,7 +2122,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
             aspectRatio: input.aspectRatio,
             numImagesPerExample: 1, // Each job generates only 1 image for real progress
             glasses: "no",
-            hairColor: input.formData.hairColor || null,
+            hairColor: mapHairColor(input.formData.hairColor),
             hairStyle: mapHairStyle(input.formData.hairStyle),
             backgrounds: input.formData.backgrounds,
             styles: input.formData.attire,
@@ -2105,7 +2167,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                     aspectRatio: input.aspectRatio,
                     numImagesPerExample: 1, // Each job generates only 1 image
                     glasses: "no",
-                    hairColor: input.formData.hairColor || null,
+                    hairColor: mapHairColor(input.formData.hairColor),
                     hairStyle: mapHairStyle(input.formData.hairStyle),
                     backgrounds: input.formData.backgrounds,
                     styles: input.formData.attire,
