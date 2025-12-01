@@ -606,6 +606,12 @@ export const appRouter = router({
           .where(eq(modelTrainingImages.modelId, input.modelId))
           .orderBy(modelTrainingImages.imageOrder);
         
+        // Ensure trainingImages is an array before calling map
+        if (!Array.isArray(trainingImages)) {
+          console.error("[Model] Training images query did not return an array:", typeof trainingImages, trainingImages);
+          return [];
+        }
+        
         return trainingImages.map(img => img.imageUrl);
     }),
     create: protectedProcedure
@@ -653,7 +659,7 @@ export const appRouter = router({
           if (modelError) throw new Error(`${getServerString("failedToCreateModel")}: ${modelError.message}`);
 
           // Insert training images via REST API
-          if (modelData && input.trainingImageUrls.length > 0) {
+          if (modelData && Array.isArray(input.trainingImageUrls) && input.trainingImageUrls.length > 0) {
             const trainingImagesData = input.trainingImageUrls.map((url, index) => ({
               modelId: modelData.id,
               imageUrl: url,
@@ -766,7 +772,7 @@ export const appRouter = router({
         console.log(`[Model Create] Model ${model?.id} created with preview: ${input.trainingImageUrls[0]}`);
 
         // Insert training images
-        if (model && input.trainingImageUrls.length > 0) {
+        if (model && Array.isArray(input.trainingImageUrls) && input.trainingImageUrls.length > 0) {
           await db.insert(modelTrainingImages).values(
             input.trainingImageUrls.map((url, index) => ({
               modelId: model.id,
@@ -987,7 +993,9 @@ export const appRouter = router({
           }
           
           // Ensure photos are properly formatted
-          const formattedPhotos = (photos || []).map((p: any) => ({
+          // Double-check that photos is actually an array
+          const safePhotos = Array.isArray(photos) ? photos : [];
+          const formattedPhotos = safePhotos.map((p: any) => ({
             id: p.id,
             url: p.url || null,
             status: p.status || 'completed',
@@ -1011,11 +1019,13 @@ export const appRouter = router({
             photos: formattedPhotos,
           };
           
+          // Ensure result.photos is an array before logging
+          const safeResultPhotos = Array.isArray(result.photos) ? result.photos : [];
           console.log(`[getBatchStatus] Returning result for batch ${input.batchId} (REST API):`, {
             batchId: result.batch.id,
             batchStatus: result.batch.status,
-            photosCount: result.photos.length,
-            photos: result.photos.map((p: any) => ({ id: p.id, hasUrl: !!p.url, status: p.status })),
+            photosCount: safeResultPhotos.length,
+            photos: safeResultPhotos.map((p: any) => ({ id: p.id, hasUrl: !!p.url, status: p.status })),
           });
           
           return result;
@@ -1084,15 +1094,18 @@ export const appRouter = router({
           )
           .orderBy(photos.id);
         
+        // Ensure batchPhotos is an array before calling map
+        const safeBatchPhotos = Array.isArray(batchPhotos) ? batchPhotos : [];
+        
         console.log(`[getBatchStatus] Batch ${input.batchId} status (direct DB):`, {
           batchStatus: batch.status,
           totalImagesGenerated: batch.totalImagesGenerated,
-          photosCount: batchPhotos.length,
-          photos: batchPhotos.map((p: any) => ({ id: p.id, url: p.url ? p.url.substring(0, 50) + "..." : "NO URL", status: p.status })),
+          photosCount: safeBatchPhotos.length,
+          photos: safeBatchPhotos.map((p: any) => ({ id: p.id, url: p.url ? p.url.substring(0, 50) + "..." : "NO URL", status: p.status })),
         });
         
         // Ensure photos are properly formatted
-        const formattedPhotos = batchPhotos.map((p: any) => ({
+        const formattedPhotos = safeBatchPhotos.map((p: any) => ({
           id: p.id,
           url: p.url || null,
           status: p.status || 'completed',
@@ -1109,11 +1122,13 @@ export const appRouter = router({
           photos: formattedPhotos,
         };
         
+        // Ensure result.photos is an array before logging
+        const safeResultPhotos = Array.isArray(result.photos) ? result.photos : [];
         console.log(`[getBatchStatus] Returning result for batch ${input.batchId}:`, {
           batchId: result.batch.id,
           batchStatus: result.batch.status,
-          photosCount: result.photos.length,
-          photos: result.photos.map((p: any) => ({ id: p.id, hasUrl: !!p.url, status: p.status })),
+          photosCount: safeResultPhotos.length,
+          photos: safeResultPhotos.map((p: any) => ({ id: p.id, hasUrl: !!p.url, status: p.status })),
         });
         
         return result;
@@ -1174,6 +1189,9 @@ export const appRouter = router({
             .eq('page2GenerationBatchId', input.batchId)
             .order('id', { ascending: true });
           
+          // Ensure photos is an array before calling map
+          const safePhotos = Array.isArray(photos) ? photos : [];
+          
           return {
             batch: {
               id: batch.id,
@@ -1182,7 +1200,7 @@ export const appRouter = router({
               createdAt: batch.createdAt,
               completedAt: batch.completedAt,
             },
-            photos: (photos || []).map((p: any) => ({
+            photos: safePhotos.map((p: any) => ({
               id: p.id,
               url: p.url,
               status: p.status,
@@ -1257,6 +1275,9 @@ export const appRouter = router({
           )
           .orderBy(photos.id);
         
+        // Ensure batchPhotos is an array before returning
+        const safeBatchPhotos = Array.isArray(batchPhotos) ? batchPhotos : [];
+        
         return {
           batch: {
             id: batch.id,
@@ -1265,7 +1286,7 @@ export const appRouter = router({
             createdAt: batch.createdAt,
             completedAt: batch.completedAt,
           },
-          photos: batchPhotos,
+          photos: safeBatchPhotos,
         };
       }),
     list: protectedProcedure
@@ -1637,19 +1658,28 @@ export const appRouter = router({
         console.log(`[Photo Generate Page2] Filters - Attire/Styles: ${input.formData.attire.join(", ") || "none"}, Backgrounds: ${input.formData.backgrounds.join(", ") || "none"}`);
         
         // Filter example images based on user selections and pick a random prompt
-        const randomResult = getRandomPromptFromFiltered(
+        let randomResult = getRandomPromptFromFiltered(
           input.formData.gender,
           input.formData.attire, // attire is used as styles for filtering
           input.formData.backgrounds
         );
         
+        // If no matching images found, try filtering with just gender (no style/background filters)
         if (!randomResult) {
-          // Fallback: if no matching images, use a default prompt with gender
-          console.log(`[Photo Generate Page2] ⚠️ No matching example images found, using default prompt`);
+          console.log(`[Photo Generate Page2] ⚠️ No matching example images found with filters, trying with gender only`);
+          randomResult = getRandomPromptFromFiltered(
+            input.formData.gender,
+            [], // No style filters
+            []  // No background filters
+          );
         }
         
+        // Final fallback: use a gender-appropriate default prompt
         const selectedExampleImage = randomResult?.exampleImage;
-        const selectedPrompt = randomResult?.prompt || "A professional portrait in a studio setting with soft, even lighting.";
+        const defaultPrompt = input.formData.gender === "woman" 
+          ? "A professional headshot of a woman in a studio setting with soft, even lighting. The photograph should look real, like it was taken from a premium photograph session."
+          : "A professional headshot of a man in a studio setting with soft, even lighting. The photograph should look real, like it was taken from a premium photograph session.";
+        const selectedPrompt = randomResult?.prompt || defaultPrompt;
         
         console.log(`[Photo Generate Page2] Selected example image: ${selectedExampleImage?.id || "default"} - ${selectedExampleImage?.filename || "none"}`);
         
@@ -1887,11 +1917,12 @@ Output should be a vertical rectangle. Entire head should be visible`;
                     const errorText = await response.text().catch(() => "");
                     console.error(`[Photo Generate Page2] ❌ API error for job ${queueJob.id}: ${response.status} ${errorText}`);
                     
-                    // Update queue job status to failed
+                    // Update queue job status to failed using REST API
                     try {
-                      await db.update(page2GenerationQueue)
-                        .set({ status: "failed" })
-                        .where(eq(page2GenerationQueue.id, queueJob.id));
+                      await supabaseServer
+                        .from('page2_generation_queue')
+                        .update({ status: "failed" })
+                        .eq('id', queueJob.id);
                     } catch (updateError) {
                       console.error(`[Photo Generate Page2] ❌ Failed to update job ${queueJob.id} status to failed:`, updateError);
                     }
@@ -1911,22 +1942,24 @@ Output should be a vertical rectangle. Entire head should be visible`;
                           contentType: response.headers.get("content-type"),
                           responsePreview: responseText.substring(0, 200),
                         });
-                        // Try to update job status to failed
+                        // Try to update job status to failed using REST API
                         try {
-                          await db.update(page2GenerationQueue)
-                            .set({ status: "failed" })
-                            .where(eq(page2GenerationQueue.id, queueJob.id));
+                          await supabaseServer
+                            .from('page2_generation_queue')
+                            .update({ status: "failed" })
+                            .eq('id', queueJob.id);
                         } catch (updateError) {
                           console.error(`[Photo Generate Page2] ❌ Failed to update job ${queueJob.id} status to failed:`, updateError);
                         }
                       }
                     } catch (textError) {
                       console.error(`[Photo Generate Page2] ❌ Failed to read response for job ${queueJob.id}:`, textError);
-                      // Try to update job status to failed
+                      // Try to update job status to failed using REST API
                       try {
-                        await db.update(page2GenerationQueue)
-                          .set({ status: "failed" })
-                          .where(eq(page2GenerationQueue.id, queueJob.id));
+                        await supabaseServer
+                          .from('page2_generation_queue')
+                          .update({ status: "failed" })
+                          .eq('id', queueJob.id);
                       } catch (updateError) {
                         console.error(`[Photo Generate Page2] ❌ Failed to update job ${queueJob.id} status to failed:`, updateError);
                       }
@@ -2009,11 +2042,12 @@ Output should be a vertical rectangle. Entire head should be visible`;
                     const errorText = await response.text().catch(() => "");
                     console.error(`[Photo Generate Page2] ❌ API error for job ${queueJob.id}: ${response.status} ${errorText}`);
                     
-                    // Update queue job status to failed
+                    // Update queue job status to failed using REST API
                     try {
-                      await db.update(page2GenerationQueue)
-                        .set({ status: "failed" })
-                        .where(eq(page2GenerationQueue.id, queueJob.id));
+                      await supabaseServer
+                        .from('page2_generation_queue')
+                        .update({ status: "failed" })
+                        .eq('id', queueJob.id);
                     } catch (updateError) {
                       console.error(`[Photo Generate Page2] ❌ Failed to update job ${queueJob.id} status to failed:`, updateError);
                     }
@@ -2033,11 +2067,12 @@ Output should be a vertical rectangle. Entire head should be visible`;
                           contentType: response.headers.get("content-type"),
                           responsePreview: responseText.substring(0, 200),
                         });
-                        // Try to update job status to failed
+                        // Try to update job status to failed using REST API
                         try {
-                          await db.update(page2GenerationQueue)
-                            .set({ status: "failed" })
-                            .where(eq(page2GenerationQueue.id, queueJob.id));
+                          await supabaseServer
+                            .from('page2_generation_queue')
+                            .update({ status: "failed" })
+                            .eq('id', queueJob.id);
                         } catch (updateError) {
                           console.error(`[Photo Generate Page2] ❌ Failed to update job ${queueJob.id} status to failed:`, updateError);
                         }
@@ -2104,6 +2139,12 @@ Output should be a vertical rectangle. Entire head should be visible`;
         }).returning();
 
         // Create photo records
+        // Ensure imageUrls is an array before calling map
+        if (!Array.isArray(input.imageUrls)) {
+          console.error("[Photo Generate Manual] imageUrls is not an array:", typeof input.imageUrls, input.imageUrls);
+          throw new Error("imageUrls must be an array");
+        }
+        
         const photoRecords = input.imageUrls.map((url, index) => ({
           userId: ctx.user.id,
           modelId: input.modelId,

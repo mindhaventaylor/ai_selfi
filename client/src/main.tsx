@@ -1,3 +1,6 @@
+// Log when module starts loading
+console.log("[Main] Module loading started at", new Date().toISOString());
+
 import { trpc } from "@/lib/trpc";
 import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -6,6 +9,9 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import "./index.css";
+
+// Log when imports are complete
+console.log("[Main] All imports loaded successfully");
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -65,7 +71,8 @@ queryClient.getMutationCache().subscribe(event => {
 // In production, use longer timeout for auth queries during login
 function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit, timeoutMs = 15000): Promise<Response> {
   const isAuthQuery = typeof input === 'string' && input.includes('/auth.me');
-  const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
+  // Use import.meta.env.PROD instead of process.env (Vite provides this)
+  const isProduction = import.meta.env.PROD;
   
   // Use longer timeout for auth queries in production (login can be slower)
   const effectiveTimeout = isAuthQuery && isProduction ? Math.max(timeoutMs, 20000) : timeoutMs;
@@ -126,7 +133,8 @@ if (!rootElement) {
   // Add a timeout to detect if the app is stuck loading
   // Increased timeout for production - accounts for slow networks and API calls during login
   // Use longer timeout in production (30s) vs development (15s)
-  const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
+  // Use import.meta.env.PROD instead of process.env (Vite provides this)
+  const isProduction = import.meta.env.PROD || window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
   const timeoutDuration = isProduction ? 30000 : 15000; // 30s in prod, 15s in dev
   
   let appRendered = false;
@@ -151,20 +159,34 @@ if (!rootElement) {
   (window as any).__APP_RENDERED_CALLBACK__ = markAppAsRendered;
   
   loadingTimeout = setTimeout(() => {
+    // Final check - if app was marked as rendered, don't show error
     if (appRendered) {
-      // App already rendered, just clear timeout
       if (loadingTimeout) clearTimeout(loadingTimeout);
       return;
     }
     
-    console.warn("[Main] App seems stuck - checking for errors...");
-    // Check if React has mounted at all (any children means React rendered)
+    console.warn("[Main] Timeout reached - checking if React actually rendered...");
+    
+    // Final check if React has mounted (sometimes the callback doesn't fire but React is there)
     const hasReactMounted = rootElement.children.length > 0;
     const hasSubstantialContent = rootElement.innerHTML.trim().length > 100;
+    const hasAnyContent = rootElement.innerHTML.trim().length > 0;
     
-    if (!hasReactMounted) {
-      console.error(`[Main] App failed to render after ${timeoutDuration}ms - likely cached bundle issue or API timeout`);
-      rootElement.innerHTML = `
+    // Check for React-specific markers (React adds data-reactroot or other attributes)
+    const hasReactMarkers = rootElement.innerHTML.includes('data-react') || 
+                           rootElement.innerHTML.includes('__react') ||
+                           rootElement.innerHTML.includes('react-');
+    
+    // If React mounted but callback wasn't called, mark as rendered and return
+    if (hasReactMounted || hasSubstantialContent || (hasAnyContent && hasReactMarkers)) {
+      console.log("[Main] React is mounted but wasn't marked as rendered - marking now");
+      markAppAsRendered();
+      return;
+    }
+    
+    // Only show error if React truly hasn't mounted after all checks
+    console.error(`[Main] App failed to render after ${timeoutDuration}ms - React has not mounted`);
+    rootElement.innerHTML = `
         <div style="padding: 20px; font-family: sans-serif; text-align: center; max-width: 600px; margin: 50px auto;">
           <h1>Loading Issue Detected</h1>
           <p>The app seems to be stuck loading. This might be due to cached files or a slow connection.</p>
@@ -186,12 +208,11 @@ if (!rootElement) {
           </p>
         </div>
       `;
-    } else {
-      // App has some content, just taking time to fully render
-      console.log("[Main] App has content but may still be loading - extending timeout check");
-    }
   }, timeoutDuration);
 
+  // Log when we're about to render
+  console.log("[Main] Starting React render...");
+  
   try {
     createRoot(rootElement).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
@@ -201,32 +222,62 @@ if (!rootElement) {
   </trpc.Provider>
 );
     
+    console.log("[Main] React createRoot called successfully");
+    
+    // Immediately check if React mounted (it should be synchronous)
+    setTimeout(() => {
+      const hasMounted = rootElement.children.length > 0;
+      const hasContent = rootElement.innerHTML.trim().length > 50;
+      console.log("[Main] Initial render check (100ms after createRoot):", {
+        hasMounted,
+        hasContent,
+        childrenCount: rootElement.children.length,
+        innerHTMLLength: rootElement.innerHTML.trim().length,
+        innerHTMLPreview: rootElement.innerHTML.trim().substring(0, 100)
+      });
+      
+      if (hasMounted || hasContent) {
+        console.log("[Main] React mounted immediately - marking as rendered");
+        markAppAsRendered();
+      }
+    }, 100);
+    
     // Check periodically if app has rendered (React might take time to hydrate)
     // React renders immediately, but content may load asynchronously
     // We consider the app "rendered" once React has mounted, even if showing loading state
     let checkCount = 0;
-    const maxChecks = 10; // Check for up to 5 seconds (10 * 500ms) before giving up on quick render
+    const maxChecks = 60; // Check for up to 30 seconds (60 * 500ms) - matches timeout duration
     const checkInterval = setInterval(() => {
       checkCount++;
       // Consider app rendered if React has mounted (has any children, even loading spinner)
       const hasReactMounted = rootElement.children.length > 0;
+      const hasContent = rootElement.innerHTML.trim().length > 50; // At least some HTML content
       
-      if (hasReactMounted && !appRendered) {
+      // If React has mounted OR if callback was called, mark as rendered
+      if ((hasReactMounted || hasContent) && !appRendered) {
         markAppAsRendered();
         clearInterval(checkInterval);
       } else if (checkCount >= maxChecks) {
-        // Stop checking after max attempts - the App component callback will handle it
+        // Stop checking after max attempts
         clearInterval(checkInterval);
-        // But if React mounted, mark as rendered anyway
-        if (hasReactMounted && !appRendered) {
+        // Final check - if React mounted at all, mark as rendered (even without callback)
+        if ((hasReactMounted || hasContent) && !appRendered) {
+          console.log("[Main] React mounted but callback not called - marking as rendered anyway");
           markAppAsRendered();
+        } else if (!appRendered) {
+          console.warn("[Main] App still not rendered after all checks - timeout will show error message");
         }
       }
     }, 500); // Check every 500ms
   } catch (error: any) {
     clearTimeout(loadingTimeout);
-    console.error("[Main] Failed to render React app:", error);
+    console.error("[Main] ❌ CRITICAL: Failed to render React app");
+    console.error("[Main] Error type:", error?.constructor?.name);
+    console.error("[Main] Error message:", error?.message);
     console.error("[Main] Error stack:", error?.stack);
+    console.error("[Main] Full error object:", error);
+    
+    // Show detailed error to user
     rootElement.innerHTML = `
       <div style="padding: 20px; font-family: sans-serif; text-align: center;">
         <h1>Application Error</h1>
