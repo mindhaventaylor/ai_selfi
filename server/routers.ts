@@ -1659,14 +1659,10 @@ export const appRouter = router({
       }),
     generateFromPage2: protectedProcedure
       .input(z.object({
-        // User's uploaded image URLs (from uploadPage2Images mutation) - preferred
-        userImageUrls: z.array(z.string().url()).min(1).max(10).optional(),
-        // User's uploaded images (base64) - backward compatible fallback
-        userImages: z.array(z.object({
-          data: z.string(), // base64 encoded image
-          fileName: z.string(),
-          contentType: z.string(),
-        })).min(1).max(10).optional(),
+        // User's uploaded image URLs (from uploadPage2Images mutation) - REQUIRED
+        // NOTE: We no longer accept base64 images directly to avoid 413 Content Too Large errors
+        // Always use uploadPage2Images mutation first, then pass the returned URLs here
+        userImageUrls: z.array(z.string().url()).min(1).max(10),
         // Form data from DashboardV2
         formData: z.object({
           gender: z.enum(["man", "woman"]), // Required for filtering prompts
@@ -1686,13 +1682,7 @@ export const appRouter = router({
         numImagesPerExample: z.number().default(4),
         // Selected price plan
         selectedPrice: z.enum(["basic", "standard", "premium"]).default("standard"),
-      }).refine(
-        (data) => (data.userImageUrls && data.userImageUrls.length > 0) || (data.userImages && data.userImages.length > 0),
-        {
-          message: "Either userImageUrls or userImages must be provided",
-          path: ["userImageUrls"], // This will show the error on userImageUrls field
-        }
-      ))
+      }))
       .mutation(async ({ ctx, input }) => {
         // Helper function to map hairStyle values to valid database values
         const mapHairColor = (hairColor: string | undefined | null): string | null => {
@@ -1758,7 +1748,7 @@ export const appRouter = router({
         };
         
         console.log(`[Photo Generate Page2] Starting generation for user ${ctx.user.id}`);
-        const imageCount = input.userImageUrls?.length || input.userImages?.length || 0;
+        const imageCount = input.userImageUrls.length;
         console.log(`[Photo Generate Page2] User images: ${imageCount}, Gender: ${input.formData.gender}`);
         console.log(`[Photo Generate Page2] Filters - Attire/Styles: ${input.formData.attire.join(", ") || "none"}, Backgrounds: ${input.formData.backgrounds.join(", ") || "none"}`);
         
@@ -1788,50 +1778,15 @@ export const appRouter = router({
         
         console.log(`[Photo Generate Page2] Selected example image: ${selectedExampleImage?.id || "default"} - ${selectedExampleImage?.filename || "none"}`);
         
-        // Handle image URLs or base64 images (backward compatible)
+        // Handle image URLs only (base64 images are no longer supported to avoid 413 errors)
         let uploadedUrls: string[] = [];
         
         if (input.userImageUrls && input.userImageUrls.length > 0) {
-          // Use provided URLs directly (new approach)
+          // Use provided URLs directly (required approach)
           uploadedUrls = input.userImageUrls;
           console.log(`[Photo Generate Page2] Using ${uploadedUrls.length} provided image URLs`);
-        } else if (input.userImages && input.userImages.length > 0) {
-          // Upload base64 images (backward compatible - old approach)
-          console.log(`[Photo Generate Page2] Uploading ${input.userImages.length} base64 images...`);
-          const baseTimestamp = Date.now();
-          
-          for (let i = 0; i < input.userImages.length; i++) {
-            const image = input.userImages[i];
-            const imageBuffer = Buffer.from(image.data, "base64");
-            const fileName = `page2/${ctx.user.id}/${baseTimestamp}-${i}-${image.fileName}`;
-            
-            // Upload using service role (bypasses RLS)
-            const { data: uploadData, error: uploadError } = await supabaseServer.storage
-              .from("model-training-images")
-              .upload(fileName, imageBuffer, {
-                contentType: image.contentType,
-                upsert: false,
-              });
-
-            if (uploadError) {
-              throw new Error(`Failed to upload user image ${i + 1}: ${uploadError.message}`);
-            }
-
-            // Get signed URL for private bucket
-            const { data: signedUrlData, error: signedUrlError } = await supabaseServer.storage
-              .from("model-training-images")
-              .createSignedUrl(fileName, 3600 * 24 * 365); // 1 year expiry
-
-            if (signedUrlError || !signedUrlData) {
-              throw new Error(`Failed to create signed URL for image ${i + 1}: ${signedUrlError?.message || 'Unknown error'}`);
-            }
-
-            uploadedUrls.push(signedUrlData.signedUrl);
-          }
-          
-          console.log(`[Photo Generate Page2] ✅ Uploaded ${uploadedUrls.length} user images`);
         } else {
-          throw new Error("No images provided. Please provide either userImageUrls or userImages.");
+          throw new Error("userImageUrls is required. Please use uploadPage2Images mutation first to upload images and get URLs, then pass userImageUrls to this mutation.");
         }                                                                                                    
 
         // Get example image URL from the selected example image (or use a default)
