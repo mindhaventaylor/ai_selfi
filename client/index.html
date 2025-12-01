@@ -33,17 +33,38 @@
     <script>
       // Add build timestamp to help detect cached bundles
       window.__BUILD_TIME__ = new Date().toISOString();
-      console.log('[App] Build time:', window.__BUILD_TIME__);
+      console.log('[HTML] Build time:', window.__BUILD_TIME__);
+      console.log('[HTML] Script loading started');
+      
+      // Track if main.tsx loaded successfully
+      let mainScriptLoaded = false;
+      let mainScriptError = null;
       
       // Check if app loads - use longer timeout in production (30s) vs development (15s)
       // In production, API calls during login can take longer
       const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
       const timeoutDuration = isProduction ? 30000 : 15000; // 30s in prod, 15s in dev
       
+      // Monitor for script errors
+      window.addEventListener('error', function(event) {
+        if (event.filename && event.filename.includes('main.tsx')) {
+          console.error('[HTML] Error loading main.tsx:', event.message, event.filename, event.lineno);
+          mainScriptError = event.message;
+        }
+      }, true);
+      
       const loadingTimeout = setTimeout(() => {
         const root = document.getElementById('root');
-        if (root && root.children.length === 0) {
-          console.error('[App] App failed to load after ' + timeoutDuration + 'ms - likely cached bundle issue or API timeout');
+        const hasContent = root && (root.children.length > 0 || root.innerHTML.trim().length > 50);
+        
+        console.error('[HTML] Timeout reached after ' + timeoutDuration + 'ms');
+        console.error('[HTML] Root exists:', !!root);
+        console.error('[HTML] Has content:', hasContent);
+        console.error('[HTML] Main script loaded:', mainScriptLoaded);
+        console.error('[HTML] Main script error:', mainScriptError);
+        
+        if (root && !hasContent) {
+          console.error('[HTML] App failed to load - showing error message');
           root.innerHTML = `
             <div style="padding: 20px; font-family: sans-serif; text-align: center; max-width: 600px; margin: 50px auto;">
               <h1>Loading Issue Detected</h1>
@@ -64,8 +85,12 @@
               <p style="margin-top: 10px; font-size: 12px; color: #999;">
                 If the problem persists, try opening in an incognito/private window.
               </p>
+              ${mainScriptError ? `<p style="margin-top: 10px; font-size: 11px; color: #dc3545;"><strong>Error:</strong> ${mainScriptError}</p>` : ''}
+              ${!mainScriptLoaded ? `<p style="margin-top: 10px; font-size: 11px; color: #ff9800;">Main script may not have loaded. Check browser console for details.</p>` : ''}
             </div>
           `;
+        } else {
+          console.log('[HTML] App has content - not showing error');
         }
       }, timeoutDuration);
       
@@ -86,6 +111,20 @@
       });
     </script>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Mark main script as loaded when it executes
+      window.addEventListener('DOMContentLoaded', () => {
+        // Give main.tsx a moment to execute
+        setTimeout(() => {
+          if (window.__APP_RENDERED_CALLBACK__) {
+            console.log('[HTML] main.tsx loaded successfully - callback available');
+            mainScriptLoaded = true;
+          } else {
+            console.warn('[HTML] main.tsx may not have loaded - callback not available yet');
+          }
+        }, 500);
+      });
+    </script>
     <!-- Analytics script will be conditionally injected if env vars are set -->
   </body>
 

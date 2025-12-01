@@ -310,23 +310,28 @@ async function generateImagesWithGemini(
   for (let i = 0; i < numImages; i++) {
     try {
       // Prepare parts for Gemini API - only user's images, no example images
-      const parts: any[] = [
-        {
-          text: prompt,
-        },
-      ];
+      // IMPORTANT: Images should come FIRST, then text prompt
+      const parts: any[] = [];
 
-      // Add only user's training images (not example images)
+      // Add only user's training images FIRST (not example images)
       for (const img of trainingImages) {
         parts.push({
-          inlineData: {
-            mimeType: "image/png",
+          inline_data: {
+            mime_type: "image/png",
             data: img.toString("base64"),
           },
         });
       }
 
+      // Add text prompt AFTER images
+      parts.push({
+        text: prompt,
+      });
+
       // NOTE: Example images are intentionally NOT added here for page2 variant
+
+      // Determine aspect ratio value
+      const aspectRatioValue = aspectRatio === "1:1" ? "1:1" : aspectRatio === "16:9" ? "16:9" : "9:16";
 
       const response = await fetch(geminiUrl, {
         method: "POST",
@@ -346,6 +351,9 @@ async function generateImagesWithGemini(
             topP: 0.95,
             maxOutputTokens: 8192,
             responseModalities: ["IMAGE"],
+            imageConfig: {
+              aspectRatio: aspectRatioValue,
+            },
           },
         }),
       });
@@ -367,12 +375,15 @@ async function generateImagesWithGemini(
         throw new Error("Gemini response missing content parts");
       }
 
-      const imagePart = candidate.content.parts.find((part: any) => part.inlineData);
-      if (!imagePart || !imagePart.inlineData) {
+      const imagePart = candidate.content.parts.find((part: any) => part.inlineData || part.inline_data);
+      if (!imagePart || (!imagePart.inlineData && !imagePart.inline_data)) {
         throw new Error("Gemini response missing image data");
       }
 
-      const imageData = imagePart.inlineData.data;
+      const imageData = (imagePart.inlineData || imagePart.inline_data)?.data;
+      if (!imageData) {
+        throw new Error("Gemini response missing image data value");
+      }
       const imageBuffer = Buffer.from(imageData, "base64");
       generatedImages.push(imageBuffer);
 

@@ -28,7 +28,8 @@ export default function OAuthCallback() {
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const isProduction = window.location.hostname.includes('aiselfie.org');
         
-        if (!isLocalhost && process.env.NODE_ENV === 'development') {
+        // Use import.meta.env.DEV instead of process.env (Vite provides this)
+        if (!isLocalhost && import.meta.env.DEV) {
           console.warn("[OAuth] Warning: OAuth callback received on non-localhost domain:", window.location.hostname);
           console.warn("[OAuth] This usually means Supabase redirect URL is not configured for localhost");
           console.warn("[OAuth] Please add http://localhost:3000/oauth/callback to Supabase allowed redirect URLs");
