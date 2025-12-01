@@ -15,8 +15,7 @@ export default function PaymentSuccess() {
   const hasProcessedGeneration = useRef(false);
   
   const generateFromPage2Mutation = trpc.photo.generateFromPage2.useMutation();
-  
-  // Debug: Log component render
+  const uploadPage2ImagesMutation = trpc.photo.uploadPage2Images.useMutation();
   
   const sessionId = useMemo(() => {
     if (typeof window === "undefined") return null;
@@ -58,12 +57,6 @@ export default function PaymentSuccess() {
       
       try {
         const intent = JSON.parse(generationIntent);
-          resumeStep: intent.resumeStep,
-          hasUserImages: !!intent.userImages,
-          userImagesLength: intent.userImages?.length || 0,
-          hasFormData: !!intent.formData,
-          selectedPrice: intent.selectedPrice,
-        });
         
         // Only auto-generate if we have userImages (user uploaded files before payment)
         if (intent.resumeStep === "generate" && intent.userImages && intent.userImages.length > 0 && intent.formData) {
@@ -77,8 +70,18 @@ export default function PaymentSuccess() {
                 ? intent.formData.gender 
                 : "man";
               
+              // Step 1: Upload images first to get URLs (avoids 413 Content Too Large error)
+              const uploadResult = await uploadPage2ImagesMutation.mutateAsync({
+                images: intent.userImages,
+              });
+
+              if (!uploadResult.urls || uploadResult.urls.length === 0) {
+                throw new Error("Failed to upload images");
+              }
+
+              // Step 2: Generate with URLs instead of base64 data
               const result = await generateFromPage2Mutation.mutateAsync({
-                userImages: intent.userImages,
+                userImageUrls: uploadResult.urls, // Use URLs instead of base64 data
                 formData: {
                   ...intent.formData,
                   gender, // Ensure gender is "man" | "woman" (required)
@@ -118,18 +121,10 @@ export default function PaymentSuccess() {
               }, 3000);
             }
           }, 1500); // Wait 1.5s to ensure webhook has processed credits
-        } else {
-            resumeStep: intent.resumeStep,
-            hasUserImages: !!intent.userImages,
-            userImagesLength: intent.userImages?.length || 0,
-            hasFormData: !!intent.formData,
-            willNotAutoGenerate: true,
-          });
         }
       } catch (e) {
         console.error("[PaymentSuccess] Failed to parse generation intent:", e);
       }
-    } else {
     }
     
     // Cleanup function - clear redirect timer if component unmounts

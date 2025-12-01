@@ -105,31 +105,10 @@ export default function BuyCredits() {
     // Use a small tolerance (1 cent) to handle floating point precision issues
     const targetCents = Math.round(basePriceUSD * 100);
     
-    // Log all packs for debugging (only log once per search to avoid spam)
-    if (basePriceUSD === (isPage2Variant ? 18 : 29)) {
-        packs.map(p => {
-          const packPrice = parseFloat(p.price.toString());
-          const packCents = Math.round(packPrice * 100);
-          return { 
-            id: p.id, 
-            price: packPrice, 
-            priceCents: packCents,
-            name: p.name,
-            credits: p.credits,
-            diff: Math.abs(packCents - targetCents),
-            match: Math.abs(packCents - targetCents) <= 1
-          };
-        })
-      );
-    }
-    
     const pack = packs.find(p => {
       const packPrice = parseFloat(p.price.toString());
       const packCents = Math.round(packPrice * 100);
       const match = Math.abs(packCents - targetCents) <= 1; // Allow 1 cent tolerance
-      
-      if (match) {
-      }
       
       return match;
     });
@@ -182,9 +161,6 @@ export default function BuyCredits() {
         return Math.abs(packCents - targetCents) <= 1; // Allow 1 cent tolerance
       });
       
-      if (pack) {
-      }
-      
       return pack?.id || null;
     };
 
@@ -198,23 +174,9 @@ export default function BuyCredits() {
     let mappedPro = findPackByPriceAndCredits(isPage2Variant ? 25 : 39, expectedProCredits);
     let mappedPremium = findPackByPriceAndCredits(isPage2Variant ? 40 : 49, expectedPremiumCredits);
     
-      variant: isPage2Variant ? "page2" : "page1",
-      mappedStarter,
-      mappedPro,
-      mappedPremium,
-      packsCount: packs.length
-    });
-    
     const needsFallback = !mappedStarter || !mappedPro || !mappedPremium;
     // For page2 variant, ALWAYS use fallback mapping regardless of price match
     const shouldUseFallback = isPage2Variant ? true : needsFallback;
-    
-      needsFallback,
-      isPage2Variant,
-      packsCount: packs.length,
-      shouldUseFallback,
-      reason: isPage2Variant ? "FORCED for page2 variant" : (needsFallback ? "packs not found by price" : "not needed")
-    });
     
     if (shouldUseFallback) {
       console.warn("[BuyCredits] ⚠️ Using FALLBACK mapping by order (prices don't match or page2 variant)");
@@ -223,13 +185,6 @@ export default function BuyCredits() {
         const priceB = parseFloat(b.price.toString());
         return priceA - priceB;
       });
-      
-        id: p.id,
-        name: p.name,
-        price: parseFloat(p.price.toString()),
-        priceCents: Math.round(parseFloat(p.price.toString()) * 100),
-        credits: p.credits
-      })));
       
       if (isPage2Variant) {
         // Page2: ALWAYS map packs to starter, pro, premium based on order AND credits when possible
@@ -335,12 +290,6 @@ export default function BuyCredits() {
       pro: mappedPro,
       premium: mappedPremium
     });
-    
-      starter: mappedStarter,
-      pro: mappedPro,
-      premium: mappedPremium,
-      variant: isPage2Variant ? "page2" : "page1"
-    });
   }, [packs, isPage2Variant]);
 
   // Use mapped pack IDs from state
@@ -400,19 +349,10 @@ export default function BuyCredits() {
 
   // Debug: log packs with detailed information (AFTER fallback mapping)
   useEffect(() => {
-    if (packs && packs.length > 0) {
-        id: p.id,
-        name: p.name,
-        price: parseFloat(p.price.toString()),
-        priceCents: Math.round(parseFloat(p.price.toString()) * 100),
-        credits: p.credits
-      })));
-        starter: starterPackId ? "ENABLED" : "DISABLED",
-        pro: proPackId ? "ENABLED" : "DISABLED",
-        premium: premiumPackId ? "ENABLED" : "DISABLED"
-      });
-    } else if (!isLoadingPacks) {
-      console.warn("⚠️ [BuyCredits] No packs found in database after loading completed");
+    if (!packs || packs.length === 0) {
+      if (!isLoadingPacks) {
+        console.warn("⚠️ [BuyCredits] No packs found in database after loading completed");
+      }
     }
   }, [packs, isPage2Variant, planParam, starterPackId, proPackId, premiumPackId, isLoadingPacks]);
 
