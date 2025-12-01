@@ -117,6 +117,7 @@ export default function DashboardV2() {
 
   // Initialize mutations at component level (hooks must be at top level)
   const generateFromPage2Mutation = trpc.photo.generateFromPage2.useMutation();
+  const uploadPage2ImagesMutation = trpc.photo.uploadPage2Images.useMutation();
   const createCheckoutMutation = trpc.payment.createCheckoutSession.useMutation();
   const { data: packs, isLoading: isLoadingPacks } = trpc.payment.listPacks.useQuery();
 
@@ -1460,7 +1461,7 @@ function UploadStep({
     try {
       const loadingToast = toast.loading(t("dashboardV2.generatingImages"));
       
-      // Convert files to base64
+      // Step 1: Upload images first to get URLs (avoids 413 Content Too Large error)
       const userImages = await Promise.all(
         uploadedFiles.map(async (file) => {
           return new Promise<{ data: string; fileName: string; contentType: string }>((resolve, reject) => {
@@ -1479,14 +1480,23 @@ function UploadStep({
         })
       );
 
-      // Call new page2 generation API
+      // Upload images to Supabase Storage and get URLs
+      const uploadResult = await uploadPage2ImagesMutation.mutateAsync({
+        images: userImages,
+      });
+
+      if (!uploadResult.urls || uploadResult.urls.length === 0) {
+        throw new Error(t("dashboardV2.imageUploadFailed"));
+      }
+
+      // Step 2: Call generation API with URLs instead of base64 data
       const selectedPrice = formData.selectedPrice || "standard"; // Default to standard if not selected
       
       // Ensure gender is valid (required by the API)
       const gender = formData.gender === "man" || formData.gender === "woman" ? formData.gender : "man";
       
       const result = await generateFromPage2Mutation.mutateAsync({
-        userImages,
+        userImageUrls: uploadResult.urls, // Use URLs instead of base64 data
         formData: {
           ...formData,
           gender, // Ensure gender is "man" | "woman" (required)
