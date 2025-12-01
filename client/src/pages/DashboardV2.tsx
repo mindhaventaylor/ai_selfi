@@ -330,6 +330,7 @@ export default function DashboardV2() {
                 user={user}
                 formData={formData}
                 generateFromPage2Mutation={generateFromPage2Mutation}
+                uploadPage2ImagesMutation={uploadPage2ImagesMutation}
               />
             )}
           </CardContent>
@@ -1322,6 +1323,7 @@ function UploadStep({
   user,
   formData,
   generateFromPage2Mutation,
+  uploadPage2ImagesMutation,
 }: { 
   onNext: () => void;
   uploadedFiles: UploadedFile[];
@@ -1332,6 +1334,7 @@ function UploadStep({
   user: any;
   formData: any;
   generateFromPage2Mutation: ReturnType<typeof trpc.photo.generateFromPage2.useMutation>;
+  uploadPage2ImagesMutation: ReturnType<typeof trpc.photo.uploadPage2Images.useMutation>;
 }) {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
