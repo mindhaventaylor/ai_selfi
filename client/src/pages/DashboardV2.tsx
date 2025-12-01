@@ -126,7 +126,6 @@ export default function DashboardV2() {
     const stepParam = urlParams.get("step");
     const validSteps = ["welcome", "gender", "age", "hairColor", "hairLength", "hairStyle", "ethnicity", "bodyType", "attire", "background", "pricing", "upload"];
     if (stepParam && validSteps.includes(stepParam)) {
-      console.log("[DashboardV2] Step parameter found in URL:", stepParam);
       setCurrentStep(stepParam as Step);
       // Remove step parameter from URL to keep it clean
       urlParams.delete("step");
@@ -160,7 +159,6 @@ export default function DashboardV2() {
           setCurrentStep("upload");
           // Clear the saved data
           localStorage.removeItem("dashboardV2_formData");
-          console.log("[DashboardV2] Resumed to upload step after payment");
         }
       } catch (e) {
         console.error("Failed to parse saved form data:", e);
@@ -1095,19 +1093,7 @@ function PricingStep({
     const expectedPriceInCurrencyUSD = Math.round(basePriceCentsUSD * exchangeRate);
     const oldPriceInCurrencyUSD = Math.round(oldBasePriceCentsUSD * exchangeRate);
     
-    console.log(`[DashboardV2] Mapping plan "${plan}" to pack.`);
-    console.log(`[DashboardV2] - Displayed price (current/discounted): ${displayedPrice.formatted} (${expectedPriceCents} cents in ${currency})`);
-    if (oldPriceCents) {
-      console.log(`[DashboardV2] - Old price (before discount): ${displayedPrice.oldFormatted} (${oldPriceCents} cents in ${currency})`);
-    }
-    console.log(`[DashboardV2] - Base price USD: $${basePriceCentsUSD / 100} (${basePriceCentsUSD} cents)`);
-    console.log(`[DashboardV2] - Old base price USD: $${oldBasePriceCentsUSD / 100} (${oldBasePriceCentsUSD} cents)`);
-    console.log(`[DashboardV2] Available packs:`, packs.map(p => ({
-      id: p.id,
-      name: p.name,
-      price: `$${p.price}`,
-      priceCents: Math.round(parseFloat(p.price.toString()) * 100),
-    })));
+    // Removed console.log for production
     
     // First, try to find exact match using the displayed price (what user will actually pay)
     // This ensures we match the pack with the price the user sees in the UI
@@ -1116,10 +1102,6 @@ function PricingStep({
       const packPriceCents = Math.round(packPrice * 100);
       const difference = Math.abs(packPriceCents - expectedPriceCents);
       const isMatch = difference <= 1; // Allow 1 cent tolerance
-      
-      if (isMatch) {
-        console.log(`[DashboardV2] ✅ Found exact pack match for "${plan}" using current price: pack ID ${p.id}, price $${packPrice} (${packPriceCents} cents), difference: ${difference}`);
-      }
       
       return isMatch;
     });
@@ -1131,10 +1113,6 @@ function PricingStep({
         const packPriceCents = Math.round(packPrice * 100);
         const difference = Math.abs(packPriceCents - oldPriceCents);
         const isMatch = difference <= 1; // Allow 1 cent tolerance
-        
-        if (isMatch) {
-          console.log(`[DashboardV2] ✅ Found exact pack match for "${plan}" using old price: pack ID ${p.id}, price $${packPrice} (${packPriceCents} cents), difference: ${difference}`);
-        }
         
         return isMatch;
       });
@@ -1161,14 +1139,6 @@ function PricingStep({
     // Sort by distance (closest first)
     packsWithDistance.sort((a, b) => a.distance - b.distance);
     
-    console.log(`[DashboardV2] 📦 Packs sorted by distance from expected price:`, packsWithDistance.map(({ pack, distance, priceCents }) => ({
-      id: pack.id,
-      name: pack.name,
-      price: `$${pack.price}`,
-      priceCents,
-      distance,
-    })));
-    
     // Find the best match based on expected position (basic = cheapest, standard = middle, premium = most expensive)
     const sortedByPrice = [...packs].sort((a, b) => {
       const priceA = parseFloat(a.price.toString());
@@ -1187,27 +1157,21 @@ function PricingStep({
     if (closestToExpected && closestToExpected.distance <= MAX_ACCEPTABLE_DISTANCE) {
       // Found a pack reasonably close to expected price - use it
       selectedPack = closestToExpected.pack;
-      console.log(`[DashboardV2] ✅ Using closest match for "${plan}": pack ID ${selectedPack.id}, price $${selectedPack.price} (distance: ${closestToExpected.distance} cents from expected ${expectedPriceInCurrency} cents)`);
     } else {
       // No pack close enough - use order-based mapping as last resort
       console.error(`[DashboardV2] ❌ No pack found close to expected price for "${plan}" (expected ${expectedPriceCents} cents = ${displayedPrice.formatted}, closest is ${closestToExpected?.distance || 'N/A'} cents away). Using order-based mapping as fallback.`);
       
       if (plan === "basic" && sortedByPrice.length >= 1) {
         selectedPack = sortedByPrice[0];
-        console.log(`[DashboardV2] ⚠️ Fallback: Using cheapest pack for "${plan}": pack ID ${selectedPack.id}, price $${selectedPack.price} (expected ${displayedPrice.formatted})`);
       } else if (plan === "standard" && sortedByPrice.length >= 2) {
         selectedPack = sortedByPrice[1];
-        console.log(`[DashboardV2] ⚠️ Fallback: Using second cheapest pack for "${plan}": pack ID ${selectedPack.id}, price $${selectedPack.price} (expected ${displayedPrice.formatted})`);
       } else if (plan === "premium") {
         if (sortedByPrice.length >= 3) {
           selectedPack = sortedByPrice[2];
-          console.log(`[DashboardV2] ⚠️ Fallback: Using most expensive pack for "${plan}": pack ID ${selectedPack.id}, price $${selectedPack.price} (expected ${displayedPrice.formatted})`);
         } else if (sortedByPrice.length >= 2) {
           selectedPack = sortedByPrice[1];
-          console.log(`[DashboardV2] ⚠️ Fallback: Using second pack for "${plan}": pack ID ${selectedPack.id}, price $${selectedPack.price} (expected ${displayedPrice.formatted})`);
         } else {
           selectedPack = sortedByPrice[0];
-          console.log(`[DashboardV2] ⚠️ Fallback: Only one pack available for "${plan}": pack ID ${selectedPack.id}, price $${selectedPack.price} (expected ${displayedPrice.formatted})`);
         }
       }
     }
@@ -1239,17 +1203,14 @@ function PricingStep({
         resumeStep: "upload", // After payment, go to upload step
       };
       localStorage.setItem("dashboardV2_formData", JSON.stringify(dataToSave));
-      console.log("[DashboardV2] Saved form data for resume after payment, will continue to upload step");
       
       // Directly create checkout session and redirect to Stripe
-      console.log("[DashboardV2] Creating checkout session for plan:", plan, "packId:", packId, "currency:", currency);
       
       const result = await createCheckoutMutation.mutateAsync({ 
         packId,
         currency: currency,
       });
       
-      console.log("[DashboardV2] Checkout session created:", result);
       
       if (result?.url) {
         // Redirect directly to Stripe Checkout
@@ -1538,10 +1499,8 @@ function UploadStep({
 
       toast.dismiss(loadingToast);
       
-      console.log("[DashboardV2] Generation result:", result);
       
       if (result.batchId) {
-        console.log("[DashboardV2] Redirecting to generate page with batchId:", result.batchId);
         
         // Show success toast briefly
         toast.success(t("dashboardV2.generationStarted"), {
@@ -1550,7 +1509,6 @@ function UploadStep({
         
         // Navigate immediately - use window.location as fallback if setLocation doesn't work
         const redirectUrl = `/dashboard/generate?variant=page2&batchId=${result.batchId}`;
-        console.log("[DashboardV2] Navigating to:", redirectUrl);
         
         try {
           setLocation(redirectUrl);

@@ -27,7 +27,6 @@ export default function SupportReviews() {
 
   const handleSubmit = () => {
     // TODO: Connect to Supabase later
-    console.log("Rating submitted:", rating);
     // Reset form after submission
     setRating(0);
   };

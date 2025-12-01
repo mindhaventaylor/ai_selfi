@@ -33,8 +33,6 @@
     <script>
       // Add build timestamp to help detect cached bundles
       window.__BUILD_TIME__ = new Date().toISOString();
-      console.log('[HTML] Build time:', window.__BUILD_TIME__);
-      console.log('[HTML] Script loading started');
       
       // Track if main.tsx loaded successfully
       let mainScriptLoaded = false;
@@ -89,8 +87,6 @@
               ${!mainScriptLoaded ? `<p style="margin-top: 10px; font-size: 11px; color: #ff9800;">Main script may not have loaded. Check browser console for details.</p>` : ''}
             </div>
           `;
-        } else {
-          console.log('[HTML] App has content - not showing error');
         }
       }, timeoutDuration);
       
@@ -117,7 +113,6 @@
         // Give main.tsx a moment to execute
         setTimeout(() => {
           if (window.__APP_RENDERED_CALLBACK__) {
-            console.log('[HTML] main.tsx loaded successfully - callback available');
             mainScriptLoaded = true;
           } else {
             console.warn('[HTML] main.tsx may not have loaded - callback not available yet');
