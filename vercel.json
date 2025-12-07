@@ -30,8 +30,8 @@
       "handle": "filesystem"
     },
     {
-      "src": "/(.*)",
-      "dest": "/api/index"
+      "src": "/((?!api/).*)",
+      "dest": "/index.html"
     }
   ]
 }
