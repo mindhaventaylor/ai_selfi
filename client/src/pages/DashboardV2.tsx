@@ -141,7 +141,7 @@ export default function DashboardV2() {
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        // Restore form data
+        // Restore form data - ensure arrays are actually arrays
         setFormData({
           gender: parsed.gender || "",
           age: parsed.age || "",
@@ -150,8 +150,8 @@ export default function DashboardV2() {
           hairStyle: parsed.hairStyle || "",
           ethnicity: parsed.ethnicity || "",
           bodyType: parsed.bodyType || "",
-          attire: parsed.attire || [],
-          backgrounds: parsed.backgrounds || [],
+          attire: Array.isArray(parsed.attire) ? parsed.attire : [],
+          backgrounds: Array.isArray(parsed.backgrounds) ? parsed.backgrounds : [],
           selectedPrice: parsed.selectedPrice || "",
         });
         
@@ -930,7 +930,7 @@ function BackgroundStep({ value, onChange, onNext, formData }: { value: string[]
     "professional": "professional",
     "business-casual": "casual"
   };
-  const selectedStyles = (formData.attire || []).map((attire: string) => attireToStyleMap[attire] || attire).filter(Boolean);
+  const selectedStyles = (Array.isArray(formData.attire) ? formData.attire : []).map((attire: string) => attireToStyleMap[attire] || attire).filter(Boolean);
   
   // Get images for each background - filter by background value
   const getImagesForBackground = (bgValue: string) => {
