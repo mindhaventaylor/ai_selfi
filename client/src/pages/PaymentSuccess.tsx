@@ -23,6 +23,21 @@ export default function PaymentSuccess() {
     return params.get("session_id");
   }, []);
 
+  // Track Reddit conversion on payment success
+  useEffect(() => {
+    if (sessionId && typeof window !== "undefined" && (window as any).rdt) {
+      try {
+        // Track purchase conversion with unique session ID as conversion ID
+        (window as any).rdt('track', 'Purchase', {
+          conversionId: sessionId
+        });
+        console.log('[Reddit Pixel] Purchase conversion tracked:', sessionId);
+      } catch (error) {
+        console.error('[Reddit Pixel] Error tracking conversion:', error);
+      }
+    }
+  }, [sessionId]);
+
   useEffect(() => {
     // The webhook should have already processed the payment
     // But we can show a success message
