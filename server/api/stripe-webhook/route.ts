@@ -4,6 +4,7 @@ import { getDb } from "../../db.js";
 import { supabaseServer } from "../../_core/lib/supabase.js";
 import { eq } from "drizzle-orm";
 import { transactions, users, creditPacks } from "../../../drizzle/schema.js";
+import { sendRedditPurchaseConversion } from "../../_core/redditConversion.js";
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
 
@@ -87,7 +88,7 @@ router.post("/", async (req, res) => {
         // Get user and update credits via REST API
         const { data: user, error: userError } = await supabaseServer
           .from('users')
-          .select('id, credits')
+          .select('id, credits, email')
           .eq('id', userId)
           .single();
 
@@ -109,6 +110,18 @@ router.post("/", async (req, res) => {
           }
           
           console.log(`[Stripe Webhook] Added ${credits} credits to user ${userId} via REST API`);
+
+          // Send Reddit conversion event
+          const amountTotal = session.amount_total ? session.amount_total / 100 : undefined; // Convert from cents
+          const currency = session.currency?.toUpperCase() || session.metadata?.currency?.toUpperCase();
+          
+          await sendRedditPurchaseConversion({
+            conversionId: session.id,
+            userEmail: user.email || undefined,
+            userId: userId,
+            currency: currency,
+            value: amountTotal,
+          });
         }
       } else {
         // Use direct database connection
@@ -136,6 +149,18 @@ router.post("/", async (req, res) => {
             .where(eq(users.id, userId));
           
           console.log(`[Stripe Webhook] Added ${credits} credits to user ${userId}`);
+
+          // Send Reddit conversion event
+          const amountTotal = session.amount_total ? session.amount_total / 100 : undefined; // Convert from cents
+          const currency = session.currency?.toUpperCase() || session.metadata?.currency?.toUpperCase();
+          
+          await sendRedditPurchaseConversion({
+            conversionId: session.id,
+            userEmail: user.email || undefined,
+            userId: userId,
+            currency: currency,
+            value: amountTotal,
+          });
         } else {
           console.error(`[Stripe Webhook] User ${userId} not found`);
           return res.status(404).json({ error: `User ${userId} not found` });

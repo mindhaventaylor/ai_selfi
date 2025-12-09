@@ -15,6 +15,7 @@ export const ENV = {
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY ?? "",
   stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
+  redditConversionAccessToken: process.env.REDDIT_CONVERSION_ACCESS_TOKEN ?? "",
   get supabaseProjectRef() {
     return getSupabaseProjectRef();
   },
