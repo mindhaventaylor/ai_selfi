@@ -75,16 +75,16 @@ const detectLanguageFromIP = async (): Promise<string> => {
       'CH': 'it',
     };
     
-    return countryToLanguage[data.countryCode] || 'it';
+    return countryToLanguage[data.countryCode] || 'en';
   } catch (error) {
     console.error('Error detecting language from IP:', error);
     // Fallback: usar idioma do navegador
-    const browserLang = (typeof navigator !== 'undefined' ? navigator.language : null) || 'it';
+    const browserLang = (typeof navigator !== 'undefined' ? navigator.language : null) || 'en';
     if (browserLang.startsWith('it')) return 'it';
     if (browserLang.startsWith('en')) return 'en';
     if (browserLang.startsWith('es')) return 'es';
     if (browserLang.startsWith('pt')) return 'pt-BR';
-    return 'it';
+    return 'en';
   }
 };
 
@@ -108,9 +108,9 @@ i18n
         const storageLang = safeLocalStorage.getItem('i18nextLng');
         if (storageLang) return storageLang;
       }
-      return 'it';
+      return 'en';
     })(),
-    fallbackLng: ['it', 'en', 'es', 'pt-BR'],
+    fallbackLng: ['en', 'it', 'es', 'pt-BR'],
     detection: {
       order: ['cookie', 'localStorage', 'navigator'],
       caches: ['cookie', 'localStorage'],
@@ -150,8 +150,8 @@ if (typeof window !== 'undefined') {
       }
     }).catch(() => {
       // Se falhar, usar idioma do navegador
-      const browserLang = (typeof navigator !== 'undefined' ? navigator.language : null) || 'it';
-      let detectedLang = 'it';
+      const browserLang = (typeof navigator !== 'undefined' ? navigator.language : null) || 'en';
+      let detectedLang = 'en';
       if (browserLang.startsWith('it')) detectedLang = 'it';
       else if (browserLang.startsWith('en')) detectedLang = 'en';
       else if (browserLang.startsWith('es')) detectedLang = 'es';
