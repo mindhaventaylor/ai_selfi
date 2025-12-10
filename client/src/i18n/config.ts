@@ -41,41 +41,59 @@ const safeLocalStorage = {
 
 // Função para detectar idioma por IP
 const detectLanguageFromIP = async (): Promise<string> => {
+  const countryToLanguage: Record<string, string> = {
+    'BR': 'pt-BR',
+    'PT': 'pt-BR',
+    'ES': 'es',
+    'MX': 'es',
+    'AR': 'es',
+    'CO': 'es',
+    'CL': 'es',
+    'PE': 'es',
+    'VE': 'es',
+    'EC': 'es',
+    'GT': 'es',
+    'CU': 'es',
+    'BO': 'es',
+    'DO': 'es',
+    'HN': 'es',
+    'PY': 'es',
+    'SV': 'es',
+    'NI': 'es',
+    'CR': 'es',
+    'PA': 'es',
+    'UY': 'es',
+    'IT': 'it',
+    'SM': 'it',
+    'VA': 'it',
+    'CH': 'it',
+  };
+
   try {
-    // Usar API sem CORS: ipapi.co com jsonp ou alternativa
-    const response = await fetch('https://freeipapi.com/api/json');
-    const data = await response.json();
+    // Tentar primeira API: freeipapi.com
+    try {
+      const response = await fetch('https://freeipapi.com/api/json', { signal: AbortSignal.timeout(2000) });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.countryCode) {
+           return countryToLanguage[data.countryCode] || 'en';
+        }
+      }
+    } catch (e) {
+      console.warn('Primary IP API failed, trying backup...', e);
+    }
+
+    // Tentar backup API: ipwho.is
+    const response = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(2000) });
+    if (response.ok) {
+      const data = await response.json();
+      if (data.country_code) {
+        return countryToLanguage[data.country_code] || 'en';
+      }
+    }
+
+    throw new Error('All IP APIs failed');
     
-    // Mapear código do país para idioma
-    const countryToLanguage: Record<string, string> = {
-      'BR': 'pt-BR',
-      'PT': 'pt-BR',
-      'ES': 'es',
-      'MX': 'es',
-      'AR': 'es',
-      'CO': 'es',
-      'CL': 'es',
-      'PE': 'es',
-      'VE': 'es',
-      'EC': 'es',
-      'GT': 'es',
-      'CU': 'es',
-      'BO': 'es',
-      'DO': 'es',
-      'HN': 'es',
-      'PY': 'es',
-      'SV': 'es',
-      'NI': 'es',
-      'CR': 'es',
-      'PA': 'es',
-      'UY': 'es',
-      'IT': 'it',
-      'SM': 'it',
-      'VA': 'it',
-      'CH': 'it',
-    };
-    
-    return countryToLanguage[data.countryCode] || 'en';
   } catch (error) {
     console.error('Error detecting language from IP:', error);
     // Fallback: usar idioma do navegador
@@ -107,6 +125,12 @@ i18n
         if (cookieLang) return cookieLang;
         const storageLang = safeLocalStorage.getItem('i18nextLng');
         if (storageLang) return storageLang;
+        
+        // Try browser language as initial best guess to avoid flash of wrong language
+        const browserLang = navigator.language;
+        if (browserLang.startsWith('it')) return 'it';
+        if (browserLang.startsWith('es')) return 'es';
+        if (browserLang.startsWith('pt')) return 'pt-BR';
       }
       return 'en';
     })(),
