@@ -562,14 +562,16 @@ export default function Home() {
                   {t("comparison.traditional.title")}
                 </h3>
                 <ul className="space-y-4">
-                  {(t("comparison.traditional.items", { returnObjects: true }) as string[]).map(
-                    (item, idx) => (
+                  {(() => {
+                    const items = t("comparison.traditional.items", { returnObjects: true });
+                    const itemsArray = Array.isArray(items) ? items : (typeof items === 'string' ? [items] : []);
+                    return itemsArray.map((item, idx) => (
                       <li key={idx} className="flex gap-3 text-muted-foreground">
                         <span className="text-red-400 flex-shrink-0">•</span>
                         <span>{item}</span>
                       </li>
-                    )
-                  )}
+                    ));
+                  })()}
                 </ul>
                 <p className="mt-8 text-xl font-bold text-red-400">
                   {t("comparison.traditional.cost")}
@@ -583,14 +585,18 @@ export default function Home() {
                 </div>
                 <h3 className="text-2xl font-bold mb-6 text-green-400">{t("comparison.ai.title")}</h3>
                 <ul className="space-y-4">
-                  {((isPage2Variant ? t("comparison.ai.itemsPage2", { returnObjects: true }) : t("comparison.ai.items", { returnObjects: true })) as string[]).map(
-                    (item, idx) => (
+                  {(() => {
+                    const items = isPage2Variant 
+                      ? t("comparison.ai.itemsPage2", { returnObjects: true })
+                      : t("comparison.ai.items", { returnObjects: true });
+                    const itemsArray = Array.isArray(items) ? items : (typeof items === 'string' ? [items] : []);
+                    return itemsArray.map((item, idx) => (
                       <li key={idx} className="flex gap-3">
                         <span className="text-green-400 flex-shrink-0">•</span>
                         <span>{item}</span>
                       </li>
-                    )
-                  )}
+                    ));
+                  })()}
                 </ul>
                 <p className="mt-8 text-xl font-bold text-green-400">{t("comparison.ai.stats")}</p>
               </div>
@@ -1148,14 +1154,18 @@ export default function Home() {
                   {t("pricing.features.title")}
                 </h3>
                 <ul className="grid md:grid-cols-2 gap-4">
-                  {(t("pricing.features.items", { returnObjects: true }) as string[]).map(
-                    (item, idx) => (
-                      <li key={idx} className="flex gap-3">
-                        <Check className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                        <span>{item}</span>
-                      </li>
-                    )
-                  )}
+                  {(() => {
+                    const items = t("pricing.features.items", { returnObjects: true });
+                    const itemsArray = Array.isArray(items) ? items : (typeof items === 'string' ? [items] : []);
+                    return itemsArray.map(
+                      (item, idx) => (
+                        <li key={idx} className="flex gap-3">
+                          <Check className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                          <span>{item}</span>
+                        </li>
+                      )
+                    );
+                  })()}
                 </ul>
               </div>
             </AnimatedSection>
