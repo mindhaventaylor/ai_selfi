@@ -14,7 +14,7 @@ export default function Blog() {
       title: t("blog.posts.post1.title"),
       excerpt: t("blog.posts.post1.excerpt"),
       date: t("blog.posts.post1.date"),
-      image: "/image.jpg",
+      image: "/image.webp",
       slug: "/blog/how-ai-professional-photos-transform-personal-brand",
     },
     {
@@ -22,7 +22,7 @@ export default function Blog() {
       title: t("blog.posts.post2.title"),
       excerpt: t("blog.posts.post2.excerpt"),
       date: t("blog.posts.post2.date"),
-      image: "/image_1.jpg",
+      image: "/image_1.webp",
       slug: "/blog/5-reasons-ai-photos-better-than-traditional",
     },
     {
@@ -30,7 +30,7 @@ export default function Blog() {
       title: t("blog.posts.post3.title"),
       excerpt: t("blog.posts.post3.excerpt"),
       date: t("blog.posts.post3.date"),
-      image: "/image_10.jpg",
+      image: "/image_10.webp",
       slug: "/blog/choose-perfect-professional-photo-style",
     },
     {
@@ -38,7 +38,7 @@ export default function Blog() {
       title: t("blog.posts.post4.title"),
       excerpt: t("blog.posts.post4.excerpt"),
       date: t("blog.posts.post4.date"),
-      image: "/image_100.jpg",
+      image: "/image_100.webp",
       slug: "/blog/how-to-use-ai-professional-photos-for-linkedin",
     },
     {
@@ -46,7 +46,7 @@ export default function Blog() {
       title: t("blog.posts.post5.title"),
       excerpt: t("blog.posts.post5.excerpt"),
       date: t("blog.posts.post5.date"),
-      image: "/image_101.jpg",
+      image: "/image_101.webp",
       slug: "/blog/ai-headshots-vs-traditional-photography-cost-comparison",
     },
     {
@@ -54,7 +54,7 @@ export default function Blog() {
       title: t("blog.posts.post6.title"),
       excerpt: t("blog.posts.post6.excerpt"),
       date: t("blog.posts.post6.date"),
-      image: "/over100_1.jpg",
+      image: "/over100_1.webp",
       slug: "/blog/best-practices-training-ai-model-professional-photos",
     },
     {
@@ -62,7 +62,7 @@ export default function Blog() {
       title: t("blog.posts.post7.title"),
       excerpt: t("blog.posts.post7.excerpt"),
       date: t("blog.posts.post7.date"),
-      image: "/over100_2.jpg",
+      image: "/over100_2.webp",
       slug: "/blog/why-ai-generated-professional-photos-future-personal-branding",
     },
     {
@@ -70,7 +70,7 @@ export default function Blog() {
       title: t("blog.posts.post8.title"),
       excerpt: t("blog.posts.post8.excerpt"),
       date: t("blog.posts.post8.date"),
-      image: "/over100_3.jpg",
+      image: "/over100_3.webp",
       slug: "/blog/how-to-create-multiple-professional-photo-styles-with-ai",
     },
     {
@@ -78,7 +78,7 @@ export default function Blog() {
       title: t("blog.posts.post9.title"),
       excerpt: t("blog.posts.post9.excerpt"),
       date: t("blog.posts.post9.date"),
-      image: "/over100_4.jpg",
+      image: "/over100_4.webp",
       slug: "/blog/complete-guide-ai-professional-photography-2024",
     },
   ];

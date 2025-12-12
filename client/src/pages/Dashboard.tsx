@@ -75,15 +75,15 @@ export default function Dashboard() {
 
   // Mock photos for the grid background
   const gridPhotos = [
-    "/image.jpg",
-    "/image_1.jpg",
-    "/image_10.jpg",
-    "/image_100.jpg",
-    "/image_101.jpg",
-    "/over100_1.jpg",
-    "/over100_2.jpg",
-    "/over100_3.jpg",
-    "/over100_4.jpg",
+    "/image.webp",
+    "/image_1.webp",
+    "/image_10.webp",
+    "/image_100.webp",
+    "/image_101.webp",
+    "/over100_1.webp",
+    "/over100_2.webp",
+    "/over100_3.webp",
+    "/over100_4.webp",
   ];
 
   // Define all steps

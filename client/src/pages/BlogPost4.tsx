@@ -30,7 +30,7 @@ export default function BlogPost4() {
 
           <div className="mb-8">
             <img
-              src="/image_100.jpg"
+              src="/image_100.webp"
               alt={t("blogPost4.altText")}
               className="w-full rounded-lg shadow-lg"
             />

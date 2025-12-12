@@ -10,10 +10,10 @@ import { Check } from "lucide-react";
 // Images for carousel - matching the 4 testimonials
 // Sofia Bianchi (example 1), Marco Rossi (example 2), Chiara Romano (example 4), Valentina Marchetti (example 6)
 const carouselImages = [
-  "/reviews/1_result.jpg",
-  "/reviews/2_result.jpg",
-  "/reviews/4_result.jpg",
-  "/reviews/6_result.jpg",
+  "/reviews/1_result.webp",
+  "/reviews/2_result.webp",
+  "/reviews/4_result.webp",
+  "/reviews/6_result.webp",
 ];
 
 export default function Login() {
