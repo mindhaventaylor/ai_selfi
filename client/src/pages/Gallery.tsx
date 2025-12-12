@@ -71,25 +71,46 @@ export default function Gallery() {
     }
   };
 
-  const handleDownloadAll = () => {
+  const handleDownloadAll = async () => {
     if (selectedImages.size === 0) return;
     
     // Download each selected image
-    selectedImages.forEach((photoId) => {
+    const photoIds = Array.from(selectedImages);
+    for (const photoId of photoIds) {
       const photo = photos.find((p) => p.id === photoId);
       if (photo?.url) {
-        // Increment download count
-        incrementDownloadMutation.mutate({ photoId });
-        
-        // Trigger download
-        const link = document.createElement("a");
-        link.href = photo.url;
-        link.download = `photo-${photoId}.jpg`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        try {
+          // Increment download count
+          incrementDownloadMutation.mutate({ photoId });
+          
+          // Fetch the image as a blob to force download instead of opening
+          const response = await fetch(photo.url);
+          const blob = await response.blob();
+          
+          // Create a blob URL and trigger download
+          const blobUrl = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = blobUrl;
+          link.download = `photo-${photoId}.jpg`;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          
+          // Clean up: remove link and revoke blob URL
+          setTimeout(() => {
+            if (link.parentNode === document.body) {
+              document.body.removeChild(link);
+            }
+            URL.revokeObjectURL(blobUrl);
+          }, 100);
+          
+          // Small delay between downloads to avoid browser blocking multiple downloads
+          await new Promise(resolve => setTimeout(resolve, 300));
+        } catch (error) {
+          console.error(`Error downloading photo ${photoId}:`, error);
+        }
       }
-    });
+    }
   };
 
   const handleDeleteSelected = () => {
@@ -107,14 +128,33 @@ export default function Gallery() {
     }
   };
 
-  const handleDownloadImage = (photoId: number, url: string) => {
-    incrementDownloadMutation.mutate({ photoId });
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `photo-${photoId}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownloadImage = async (photoId: number, url: string) => {
+    try {
+      incrementDownloadMutation.mutate({ photoId });
+      
+      // Fetch the image as a blob to force download instead of opening
+      const response = await fetch(url);
+      const blob = await response.blob();
+      
+      // Create a blob URL and trigger download
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = `photo-${photoId}.jpg`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up: remove link and revoke blob URL
+      setTimeout(() => {
+        if (link.parentNode === document.body) {
+          document.body.removeChild(link);
+        }
+        URL.revokeObjectURL(blobUrl);
+      }, 100);
+    } catch (error) {
+      console.error('Error downloading image:', error);
+    }
   };
 
   const handleToggleFavorite = (e: React.MouseEvent, photoId: number) => {
