@@ -279,7 +279,15 @@ function DashboardLayoutContent({
                     </AvatarFallback>
                   </Avatar>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
+                <div 
+                  className="flex items-center gap-2 text-sm cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => {
+                    // If credits are 0, redirect to buy credits page
+                    if ((user?.credits ?? 0) <= 0) {
+                      setLocation("/dashboard/credits/buy");
+                    }
+                  }}
+                >
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground">{user?.credits ?? 0} {t("dashboardLayout.creditsLabel")}</span>
                 </div>
@@ -495,8 +503,21 @@ function DashboardLayoutContent({
 
             {/* Credits Button */}
             <Button
+              type="button"
               variant="outline"
-              className="h-9 rounded-full px-4 gap-2"
+              className="h-9 rounded-full px-4 gap-2 cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // If credits are 0 or less, redirect to buy credits page
+                const userCredits = user?.credits ?? 0;
+                if (userCredits <= 0) {
+                  setLocation("/dashboard/credits/buy");
+                } else {
+                  // Even if user has credits, allow clicking to go to buy page
+                  setLocation("/dashboard/credits/buy");
+                }
+              }}
             >
               <Clock className="h-4 w-4" />
               <span>{t("dashboardLayout.creditsLabel")}: {user?.credits ?? 0}</span>

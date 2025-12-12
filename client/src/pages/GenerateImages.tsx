@@ -1264,15 +1264,33 @@ export default function GenerateImages() {
   
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   // Define handleDownloadImage using useCallback (must be before return)
-  const handleDownloadImage = useCallback((image: { id: number; url: string; status: string } | string, index: number) => {
-    const imageUrl = typeof image === 'string' ? image : image.url;
-    // Create a temporary anchor element to trigger download
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = `generated-image-${index + 1}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownloadImage = useCallback(async (image: { id: number; url: string; status: string } | string, index: number) => {
+    try {
+      const imageUrl = typeof image === 'string' ? image : image.url;
+      
+      // Fetch the image as a blob to force download instead of opening
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      
+      // Create a blob URL and trigger download
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `generated-image-${index + 1}.jpg`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up: remove link and revoke blob URL
+      setTimeout(() => {
+        if (link.parentNode === document.body) {
+          document.body.removeChild(link);
+        }
+        URL.revokeObjectURL(blobUrl);
+      }, 100);
+    } catch (error) {
+      console.error('Error downloading image:', error);
+    }
   }, []);
   
   // Calculate credits needed based on selected example image (4 variations per selected image)
