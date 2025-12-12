@@ -631,16 +631,16 @@ function HairStyleStep({ value, onChange, onNext, formData }: { value: string; o
     } else {
       // For men: 1->1 (straight), 2->4 (wavy uses dreadlocks), 3->2 (curly uses wavy), 4->3 (dreadlocks uses curly)
       const manMapping: Record<number, number> = {
-        1: 1, // straight → man_hair_type.jpg
-        2: 4, // wavy → man_hair_type4.jpg (was dreadlocks)
-        3: 2, // curly → man_hair_type2.jpg (was wavy)
-        4: 3, // dreadlocks → man_hair_type3.jpg (was curly)
+        1: 1, // straight → man_hair_type.webp
+        2: 4, // wavy → man_hair_type4.webp (was dreadlocks)
+        3: 2, // curly → man_hair_type2.webp (was wavy)
+        4: 3, // dreadlocks → man_hair_type3.webp (was curly)
       };
       const mappedIndex = manMapping[imageIndex] || imageIndex;
       imageNumber = mappedIndex === 1 ? "" : mappedIndex;
     }
     
-    return `/${genderPrefix}_hair_type${imageNumber}.jpg`;
+    return `/${genderPrefix}_hair_type${imageNumber}.webp`;
   };
 
   return (
@@ -660,30 +660,29 @@ function HairStyleStep({ value, onChange, onNext, formData }: { value: string; o
             <button
               key={style.value}
               onClick={() => onChange(style.value)}
-              className={`relative p-0 rounded-lg border-2 transition-all overflow-hidden ${
+              className={`relative w-full aspect-[3/4] rounded-lg border-2 transition-all overflow-hidden ${
                 value === style.value
                   ? "border-primary bg-primary/10"
                   : "border-border hover:border-primary/50"
               }`}
             >
-              <div className="flex flex-col items-center">
-                {/* Example image inside button */}
-                <div className="w-full aspect-[3/4] relative">
-                  <img
-                    src={imageUrl}
-                    alt={t("dashboardV2.exampleForAlt", { label: style.label })}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                    fetchPriority="auto"
-                  />
-                  {value === style.value && (
-                    <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                      <Check className="h-8 w-8 text-primary bg-background rounded-full p-1" />
-                    </div>
-                  )}
+              {/* Example image inside button */}
+              <img
+                src={imageUrl}
+                alt={t("dashboardV2.exampleForAlt", { label: style.label })}
+                className="w-full h-full object-cover"
+                loading="lazy"
+                decoding="async"
+                fetchPriority="auto"
+              />
+              {value === style.value && (
+                <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                  <Check className="h-8 w-8 text-primary bg-background rounded-full p-1" />
                 </div>
-                <p className="text-sm font-semibold p-3">{style.label}</p>
+              )}
+              {/* Label overlay at bottom */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                <p className="text-sm font-semibold text-white text-center">{style.label}</p>
               </div>
             </button>
           );
