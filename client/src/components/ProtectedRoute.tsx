@@ -12,10 +12,17 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   useEffect(() => {
     if (!loading && !user) {
-      // Redirecionar para login se não estiver autenticado
-      // Save current location as returnUrl
+      // Redirect to landing page with returnUrl and variant params
       const currentPath = window.location.pathname + window.location.search;
-      setLocation(`/login?returnUrl=${encodeURIComponent(currentPath)}`);
+      const params = new URLSearchParams(window.location.search);
+      const variant = params.get("variant");
+      
+      let redirectUrl = `/?returnUrl=${encodeURIComponent(currentPath)}`;
+      if (variant) {
+        redirectUrl += `&variant=${variant}`;
+      }
+      
+      setLocation(redirectUrl);
     }
   }, [user, loading, setLocation]);
 

@@ -20,6 +20,11 @@ export function Header() {
   const isOnLoginPage = location === "/login";
   const getNavLink = (anchor: string) => isOnDashboard ? `/${anchor}` : anchor;
 
+  // Check for returnUrl in query params to preserve it in login link
+  const urlParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const returnUrl = urlParams.get("returnUrl");
+  const loginUrl = returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : "/login";
+
   const languages = [
     { code: "pt-BR", label: "🇧🇷 Português", flag: "🇧🇷" },
     { code: "es", label: "🇪🇸 Español", flag: "🇪🇸" },
@@ -90,7 +95,7 @@ export function Header() {
                 size="sm" 
                 className="rounded-full shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 bg-gradient-to-r from-primary to-primary/90 hover:from-primary hover:to-primary border-0 px-6 font-semibold"
               >
-                <a href="/login">{t("header.signIn")}</a>
+                <a href={loginUrl}>{t("header.signIn")}</a>
               </Button>
             ) : (
               <Button 

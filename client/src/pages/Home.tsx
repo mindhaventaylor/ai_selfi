@@ -62,16 +62,21 @@ export default function Home() {
   const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
   const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
 
+  // Check for returnUrl in query params
+  const returnUrl = urlParams.get("returnUrl");
+  const loginUrl = returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : "/login";
+
   // Get localized prices (with page2 variant support)
   const currency = detectCurrency();
   const starterPrice = getLocalizedPrice("starter", currency, isPage2Variant);
   const proPrice = getLocalizedPrice("pro", currency, isPage2Variant);
   const premiumPrice = getLocalizedPrice("premium", currency, isPage2Variant);
 
-  // Redirect authenticated users to dashboard
+  // Redirect authenticated users to dashboard or returnUrl
   useEffect(() => {
     if (!loading && user) {
-      setLocation("/dashboard");
+      const returnUrl = urlParams.get("returnUrl");
+      setLocation(returnUrl || "/dashboard");
     }
   }, [user, loading, setLocation]);
 
@@ -1263,7 +1268,7 @@ export default function Home() {
                   size="lg"
                   className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
-                  <a href="/login">
+                  <a href={loginUrl}>
                     {t("ctaSection.button")}
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </a>
