@@ -13,7 +13,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   useEffect(() => {
     if (!loading && !user) {
       // Redirecionar para login se não estiver autenticado
-      setLocation("/login");
+      // Save current location as returnUrl
+      const currentPath = window.location.pathname + window.location.search;
+      setLocation(`/login?returnUrl=${encodeURIComponent(currentPath)}`);
     }
   }, [user, loading, setLocation]);
 

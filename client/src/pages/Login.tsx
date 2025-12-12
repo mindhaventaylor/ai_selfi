@@ -30,7 +30,9 @@ export default function Login() {
   // Redirect to dashboard if already authenticated
   useEffect(() => {
       if (!loading && user) {
-        setLocation("/dashboard");
+        const params = new URLSearchParams(window.location.search);
+        const returnUrl = params.get("returnUrl");
+        setLocation(returnUrl || "/dashboard");
       }
   }, [user, loading, setLocation]);
 
@@ -48,6 +50,13 @@ export default function Login() {
 
   const handleSignIn = async () => {
     try {
+      // Store returnUrl if present
+      const params = new URLSearchParams(window.location.search);
+      const returnUrl = params.get("returnUrl");
+      if (returnUrl) {
+        localStorage.setItem("auth_return_url", returnUrl);
+      }
+      
       setIsSigningIn(true);
       await signIn();
     } catch (error) {
