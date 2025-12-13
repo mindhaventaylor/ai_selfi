@@ -135,9 +135,9 @@ export default function DashboardV2() {
     }
   }, []);
 
-  // Check for saved form data (e.g., after returning from purchase)
+  // Check for saved form data (e.g., after returning from purchase or reload)
   useEffect(() => {
-    const savedData = localStorage.getItem("dashboardV2_formData");
+    const savedData = safeLocalStorage.getItem("dashboardV2_formData");
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
@@ -155,18 +155,36 @@ export default function DashboardV2() {
           selectedPrice: parsed.selectedPrice || "",
         });
         
-        // If user now has credits and was supposed to go to upload, go there
+        // Priority 1: If resumeStep is set (from purchase flow) and user has credits
         if (parsed.resumeStep === "upload" && (user?.credits ?? 0) > 0) {
           setCurrentStep("upload");
-          // Clear the saved data
-          localStorage.removeItem("dashboardV2_formData");
+        } 
+        // Priority 2: Restore the last saved step
+        else if (parsed.currentStep) {
+          // Verify it's a valid step
+          const validSteps = steps.map(s => s.key);
+          if (validSteps.includes(parsed.currentStep)) {
+            setCurrentStep(parsed.currentStep as Step);
+          }
         }
       } catch (e) {
         console.error("Failed to parse saved form data:", e);
-        localStorage.removeItem("dashboardV2_formData");
+        safeLocalStorage.removeItem("dashboardV2_formData");
       }
     }
-  }, [user?.credits]);
+  }, [user?.credits]); // Run when credits are loaded
+
+  // Save progress automatically whenever step or form data changes
+  useEffect(() => {
+    // Create object with current state
+    const dataToSave = {
+      ...formData,
+      currentStep,
+      timestamp: Date.now()
+    };
+    
+    safeLocalStorage.setItem("dashboardV2_formData", JSON.stringify(dataToSave));
+  }, [formData, currentStep]);
 
   const updateFormData = (key: keyof typeof formData, value: any) => {
     setFormData(prev => ({ ...prev, [key]: value }));
@@ -1203,8 +1221,9 @@ function PricingStep({
         ...formData,
         selectedPrice: plan,
         resumeStep: "upload", // After payment, go to upload step
+        currentStep: "pricing",
       };
-      localStorage.setItem("dashboardV2_formData", JSON.stringify(dataToSave));
+      safeLocalStorage.setItem("dashboardV2_formData", JSON.stringify(dataToSave));
       
       // Directly create checkout session and redirect to Stripe
       
