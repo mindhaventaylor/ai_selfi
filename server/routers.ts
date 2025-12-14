@@ -332,6 +332,7 @@ export const appRouter = router({
       .input(z.object({ 
         packId: z.number(),
         currency: z.enum(["USD", "EUR"]).optional().default("USD"),
+        variant: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
@@ -371,18 +372,23 @@ export const appRouter = router({
         if (!pack) throw new Error(getServerString("packNotFound"));
 
         // Get the base URL for success/cancel URLs
-        // Always use PRODUCTION_DOMAIN for Stripe redirects to ensure users are redirected
-        // to the production domain, not preview deployments
-        // Priority: PRODUCTION_DOMAIN (always for Stripe) > VERCEL_ENV=production check > VERCEL_URL > PHOTO_API_URL > localhost
+        // Determine base URL for Stripe redirects
+        // For local development, always use localhost. For production/preview, use production domain
+        // Priority: LOCAL_BASE_URL (for testing) > localhost (if NODE_ENV=development and not on Vercel) > PRODUCTION_DOMAIN > VERCEL_ENV=production > VERCEL_URL > PHOTO_API_URL > localhost
         let baseUrl: string;
         
-        // Always prefer PRODUCTION_DOMAIN for payment redirects to ensure consistency
-        // This ensures that even in preview deployments, Stripe redirects to production
-        if (PRODUCTION_DOMAIN) {
+        // Allow explicit override for local testing
+        if (process.env.LOCAL_BASE_URL) {
+          baseUrl = process.env.LOCAL_BASE_URL;
+        }
+        // In development mode and not on Vercel, always use localhost for testing
+        else if (process.env.NODE_ENV === "development" && !process.env.VERCEL) {
+          baseUrl = "http://localhost:3000";
+        } else if (PRODUCTION_DOMAIN) {
+          // In production/preview, use PRODUCTION_DOMAIN for Stripe redirects to ensure consistency
           baseUrl = `https://${PRODUCTION_DOMAIN}`;
         } else if (process.env.VERCEL_ENV === "production" && process.env.VERCEL_URL) {
           // Only use VERCEL_URL if we're in a production deployment (not preview)
-          // VERCEL_URL might already include https:// or might not
           const vercelUrl = process.env.VERCEL_URL;
           baseUrl = vercelUrl.startsWith("http") ? vercelUrl : `https://${vercelUrl}`;
         } else if (process.env.PHOTO_API_URL) {
@@ -427,7 +433,9 @@ export const appRouter = router({
           ],
           mode: "payment",
           success_url: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${baseUrl}/payment/cancel`,
+          cancel_url: input.variant === "page2" 
+            ? `${baseUrl}/dashboard?variant=page2&step=pricing&payment=cancelled`
+            : `${baseUrl}/payment/cancel`,
           client_reference_id: ctx.user.id.toString(),
           metadata: {
             userId: ctx.user.id.toString(),
@@ -1797,10 +1805,51 @@ export const appRouter = router({
           : "https://gxwtcdplfkjfidwyrunk.supabase.co/storage/v1/object/public/example-images/image.webp";
         const exampleImagePrompt = selectedPrompt;
 
-        // Build base prompt: use only gender + selected prompt from exampleImages
-        // Don't include user attributes (hair, ethnicity, body type, age) as they override the person's appearance
+        // Build base prompt: include gender + selected prompt from exampleImages + user attributes
         const genderText = input.formData.gender === "man" ? "male" : "female";
-        const basePrompt = `Create a professional headshot for this person, following the guidance below. The photograph and the person should look real, like it was taken from a premium photograph session:
+        
+        // Build attribute descriptions from form data
+        const attributeParts: string[] = [];
+        
+        if (input.formData.age) {
+          attributeParts.push(`Age: ${input.formData.age}`);
+        }
+        
+        if (input.formData.hairColor && input.formData.hairColor !== "other" && input.formData.hairColor !== "bald") {
+          attributeParts.push(`Hair color: ${input.formData.hairColor}`);
+        } else if (input.formData.hairColor === "bald") {
+          attributeParts.push("Bald");
+        }
+        
+        if (input.formData.hairLength) {
+          attributeParts.push(`Hair length: ${input.formData.hairLength}`);
+        }
+        
+        if (input.formData.hairStyle) {
+          attributeParts.push(`Hair style: ${input.formData.hairStyle}`);
+        }
+        
+        if (input.formData.ethnicity) {
+          attributeParts.push(`Ethnicity: ${input.formData.ethnicity}`);
+        }
+        
+        if (input.formData.bodyType) {
+          attributeParts.push(`Body type: ${input.formData.bodyType}`);
+        }
+        
+        if (input.formData.attire && input.formData.attire.length > 0) {
+          attributeParts.push(`Attire/Style: ${input.formData.attire.join(", ")}`);
+        }
+        
+        if (input.formData.backgrounds && input.formData.backgrounds.length > 0) {
+          attributeParts.push(`Background: ${input.formData.backgrounds.join(", ")}`);
+        }
+        
+        const attributesText = attributeParts.length > 0 
+          ? `\n\nPerson attributes:\n${attributeParts.join("\n")}`
+          : "";
+        
+        const basePrompt = `Create a professional headshot for this ${genderText} person, following the guidance below. The photograph and the person should look real, like it was taken from a premium photograph session.${attributesText}
 
 ${selectedPrompt}
 

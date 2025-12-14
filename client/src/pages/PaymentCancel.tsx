@@ -3,11 +3,28 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { XCircle } from "lucide-react";
+import { useEffect } from "react";
 
 export default function PaymentCancel() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
 
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const variant = urlParams.get("variant");
+    const isPage2 = variant === "page2";
+
+    // Check localStorage for page2 form data
+    const savedData = localStorage.getItem("dashboardV2_formData");
+    const isFromPage2 = isPage2 || !!savedData;
+
+    if (isFromPage2) {
+      // For page2, never show this page—redirect back to plans and let DashboardV2 show the toast.
+      setLocation("/dashboard?variant=page2&step=pricing&payment=cancelled");
+    }
+  }, [setLocation, t]);
+
+  // For non-page2 users, show the original popup
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
       <Card className="max-w-md w-full overflow-hidden">

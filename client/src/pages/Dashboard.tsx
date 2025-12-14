@@ -61,6 +61,7 @@ export default function Dashboard() {
   }
 
   // Show DashboardV2 if variant is page2
+  // Note: DashboardLayout is already provided by App.tsx, so we don't wrap again
   if (variant === "page2") {
     return <DashboardV2 />;
   }

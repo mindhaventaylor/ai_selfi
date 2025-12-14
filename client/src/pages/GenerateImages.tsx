@@ -94,10 +94,9 @@ export default function GenerateImages() {
   const hasInitialBatchId = initialBatchId !== null && !isNaN(initialBatchId);
   
   // For page2 variant, if there's a batchId, we should show the modal immediately
+  // ONLY use URL parameter - no localStorage or PostHog fallback
   const urlVariantSync = urlParamsSync.get("variant");
-  const firstVariantSync = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
-  const cachedVariantSync = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
-  const isPage2VariantSync = urlVariantSync === "page2" || firstVariantSync === "page2" || cachedVariantSync === "page2";
+  const isPage2VariantSync = urlVariantSync === "page2";
   // Show modal initially if there's a batchId (for both page1 and page2)
   const shouldShowModalInitially = hasInitialBatchId;
   
@@ -114,26 +113,15 @@ export default function GenerateImages() {
   const targetProgressRef = useRef<number>(0); // Track target progress for smooth animation
   const totalImagesToGenerateRef = useRef<number>(4); // Default to 4, will be updated when generation starts
 
-  // Check for variant - prioritize URL param, then first variant (permanent), then cached, then PostHog
-  // This ensures we detect page2 even when navigating with batchId
+  // Check for variant - ONLY use URL parameter (explicit variant=page2 required)
   const urlParams = new URLSearchParams(window.location.search);
   const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
   
-  // Also check localStorage directly (in case URL param was already removed)
-  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
-  
-  // Also check first variant (permanent storage) - highest priority after URL
-  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
-  
-  // Determine if this is page2 variant - check all sources
-  // Priority: URL > first variant (permanent) > cached variant > PostHog variant
-  const isPage2Variant = urlVariant === "page2" || firstVariant === "page2" || cachedVariant === "page2" || variant === "page2";
+  // ONLY check URL parameter - no localStorage or PostHog fallback
+  const isPage2Variant = urlVariant === "page2";
   
   console.log("[GenerateImages] Variant detection:", {
     urlVariant,
-    firstVariant,
-    cachedVariant,
-    posthogVariant: variant,
     isPage2Variant,
   });
 
@@ -186,15 +174,11 @@ export default function GenerateImages() {
     }
   );
   // Check if we have batchId in URL and variant is page2 (for query enablement)
+  // ONLY use URL parameter
   const urlParamsForQuery = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
   const batchIdFromUrlForQuery = urlParamsForQuery.get("batchId");
   const urlVariantForQuery = urlParamsForQuery.get("variant");
-  const firstVariantForQuery = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
-  const cachedVariantForQuery = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
-  const isPage2ForQuery = urlVariantForQuery === "page2" || 
-    (firstVariantForQuery !== null && firstVariantForQuery === "page2") || 
-    (cachedVariantForQuery !== null && cachedVariantForQuery === "page2") || 
-    isPage2Variant;
+  const isPage2ForQuery = urlVariantForQuery === "page2";
   
   // Determine if query should be enabled - check multiple sources for page2 variant
   const shouldEnablePage2Query = !!currentBatchId && !!isPage2ForQuery;
@@ -252,10 +236,8 @@ export default function GenerateImages() {
     const batchIdFromUrl = urlParams.get("batchId");
     const urlVariant = urlParams.get("variant");
     
-    // Check all variant sources
-    const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
-    const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
-    const isPage2 = urlVariant === "page2" || firstVariant === "page2" || cachedVariant === "page2" || isPage2Variant;
+    // ONLY use URL parameter
+    const isPage2 = urlVariant === "page2";
     
     // Open modal for both page1 and page2 when batchId is in URL
     if (batchIdFromUrl) {
@@ -282,17 +264,11 @@ export default function GenerateImages() {
   // Debug log and ensure variant is saved
   useEffect(() => {
     console.log("[GenerateImages] Variant detection:", {
-      hookVariant: variant,
       urlVariant,
-      cachedVariant,
       isPage2Variant,
     });
     
-    // If we detect page2 variant from URL, save it immediately
-    if (urlVariant === "page2" && cachedVariant !== "page2") {
-      safeLocalStorage.setItem("aiselfi_dashboard_variant", "page2");
-      console.log("[GenerateImages] Saved page2 variant to cache");
-    }
+    // No longer saving variant to localStorage - only using URL parameter
 
     // Check for page2 data from DashboardV2
     if (isPage2Variant && !page2Data) {
@@ -314,7 +290,7 @@ export default function GenerateImages() {
         }
       }
     }
-  }, [variant, urlVariant, cachedVariant, isPage2Variant, page2Data]);
+  }, [variant, urlVariant, isPage2Variant, page2Data]);
 
   // If we have a batchId, use it for polling - check immediately on mount and when location changes
   // Also poll window.location.search to catch URL changes from child components
@@ -389,10 +365,8 @@ export default function GenerateImages() {
     const batchIdFromUrl = urlParamsForBatch.get("batchId");
     const urlVariantForBatch = urlParamsForBatch.get("variant");
     
-    // Check all variant sources synchronously
-    const firstVariantForBatch = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
-    const cachedVariantForBatch = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
-    const isPage2ForBatch = urlVariantForBatch === "page2" || firstVariantForBatch === "page2" || cachedVariantForBatch === "page2";
+    // ONLY use URL parameter
+    const isPage2ForBatch = urlVariantForBatch === "page2";
     
     console.log("[GenerateImages] Initial mount check:", {
       isPage2Variant,
@@ -1412,6 +1386,23 @@ export default function GenerateImages() {
     totalImagesToGenerateRef.current = totalImagesToGenerate;
   }, [totalImagesToGenerate]);
 
+  // Tell layout to show when GenerateImages is rendering (not DashboardV2)
+  // This must be BEFORE the conditional return to maintain hooks order
+  useEffect(() => {
+    // Calculate shouldShowDashboardV2 here to avoid using it before it's defined
+    const urlParamsForLayout = new URLSearchParams(window.location.search);
+    const batchIdFromUrlLayout = urlParamsForLayout.get("batchId");
+    const hasBatchIdLayout = batchIdFromUrlLayout || currentBatchId;
+    const shouldShowDashboardV2Layout = isPage2Variant && !hasBatchIdLayout && !page2Data && !showModal && !isGenerating;
+    
+    if (!shouldShowDashboardV2Layout) {
+      // GenerateImages is rendering, so ensure layout is visible
+      window.dispatchEvent(new CustomEvent('aiselfi-dashboard-layout-mode', { 
+        detail: { showFullLayout: true } 
+      }));
+    }
+  }, [isPage2Variant, currentBatchId, page2Data, showModal, isGenerating]);
+
   // Calculate derived values (not hooks, so safe to call after useEffect)
   const creditsNeeded = totalImagesToGenerate; // 1 credit per generated image
   const userCredits = user?.credits ?? 0;
@@ -2345,20 +2336,25 @@ Output should be a vertical rectangle. Entire head should be visible`;
           // Allow closing the modal even if generating (user can still see progress in background)
           if (!open) {
             setShowModal(false);
-            // For page2 variant, navigate back to generate page (beginning) when modal closes
+            // For page2 variant, navigate to gallery when modal closes
             if (isPage2Variant) {
-              console.log("[GenerateImages] Page2: Navigating back to generate page (beginning)");
-              // Remove batchId from URL and navigate to clean generate page
-              const urlParams = new URLSearchParams(window.location.search);
-              urlParams.delete("batchId");
-              const newUrl = `/dashboard/generate${urlParams.toString() ? `?${urlParams.toString()}` : ''}`;
-              setLocation(newUrl);
+              console.log("[GenerateImages] Page2: Navigating to gallery after closing modal");
+              // Clear saved form data and step to reset flow for next creation
+              try {
+                localStorage.removeItem("dashboardV2_formData");
+                localStorage.removeItem("dashboardV2_generationIntent");
+                console.log("[GenerateImages] ✅ Cleared saved form data after closing page2 modal");
+              } catch (e) {
+                console.warn("[GenerateImages] Failed to clear saved data:", e);
+              }
               // Reset state
               setCurrentBatchId(null);
               setGeneratedImages([]);
               setCompletedImages(0);
               setGenerationProgress(0);
               setIsGenerating(false);
+              // Navigate to gallery to view the generated images
+              setLocation("/dashboard/gallery");
             }
             // Don't stop generation, just close the modal
             // User can reopen by checking the batch status later
@@ -2410,20 +2406,25 @@ Output should be a vertical rectangle. Entire head should be visible`;
                           variant="ghost"
                           onClick={() => {
                             setShowModal(false);
-                            // For page2 variant, navigate back to generate page (beginning) when close button is clicked
+                            // For page2 variant, navigate to gallery when close button is clicked
                             if (isPage2Variant) {
-                              console.log("[GenerateImages] Page2: Close button clicked, navigating back to generate page");
-                              // Remove batchId from URL and navigate to clean generate page
-                              const urlParams = new URLSearchParams(window.location.search);
-                              urlParams.delete("batchId");
-                              const newUrl = `/dashboard/generate${urlParams.toString() ? `?${urlParams.toString()}` : ''}`;
-                              setLocation(newUrl);
+                              console.log("[GenerateImages] Page2: Close button clicked, navigating to gallery");
+                              // Clear saved form data and step to reset flow for next creation
+                              try {
+                                localStorage.removeItem("dashboardV2_formData");
+                                localStorage.removeItem("dashboardV2_generationIntent");
+                                console.log("[GenerateImages] ✅ Cleared saved form data after closing page2 modal");
+                              } catch (e) {
+                                console.warn("[GenerateImages] Failed to clear saved data:", e);
+                              }
                               // Reset state
                               setCurrentBatchId(null);
                               setGeneratedImages([]);
                               setCompletedImages(0);
                               setGenerationProgress(0);
                               setIsGenerating(false);
+                              // Navigate to gallery to view the generated images
+                              setLocation("/dashboard/gallery");
                             }
                           }}
                         >

@@ -73,10 +73,19 @@ export default function Home() {
   const premiumPrice = getLocalizedPrice("premium", currency, isPage2Variant);
 
   // Redirect authenticated users to dashboard or returnUrl
+  // If user is already authenticated, redirect immediately to avoid showing home page
   useEffect(() => {
     if (!loading && user) {
-      const returnUrl = urlParams.get("returnUrl");
-      setLocation(returnUrl || "/dashboard");
+      const params = new URLSearchParams(window.location.search);
+      const returnUrl = params.get("returnUrl");
+      if (returnUrl) {
+        setLocation(returnUrl);
+      } else {
+        // Preserve variant parameter if present
+        const variant = params.get("variant");
+        const dashboardUrl = variant ? `/dashboard?variant=${variant}` : "/dashboard";
+        setLocation(dashboardUrl);
+      }
     }
   }, [user, loading, setLocation]);
 
@@ -88,6 +97,12 @@ export default function Home() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Don't render home page content if user is authenticated (prevents flash)
+  // This must be after all hooks are called
+  if (!loading && user) {
+    return null;
+  }
 
   // Calcular opacidade e transformação baseado no scroll
   const heroImageOpacity = Math.max(0, 1 - scrollY / 400);

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useIsMobile } from "@/hooks/useMobile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -25,7 +26,13 @@ import {
   Camera,
   X,
   Star,
-  Zap
+  Zap,
+  Loader2,
+  Plus,
+  PlusCircle,
+  CreditCard,
+  Settings,
+  HelpCircle
 } from "lucide-react";
 
 type Step = "welcome" | "gender" | "age" | "hairColor" | "hairLength" | "hairStyle" | "ethnicity" | "bodyType" | "attire" | "background" | "pricing" | "upload";
@@ -40,6 +47,7 @@ export default function DashboardV2() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [, setLocation] = useLocation();
+  const isMobile = useIsMobile();
   const [currentStep, setCurrentStep] = useState<Step>("welcome");
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -68,39 +76,33 @@ export default function DashboardV2() {
     { key: "bodyType", number: 7, title: t("dashboardV2.bodyType") },
     { key: "attire", number: 8, title: t("dashboardV2.attire") },
     { key: "background", number: 9, title: t("dashboardV2.background") },
-    { key: "pricing", number: 10, title: t("dashboardV2.pricing") },
-    { key: "upload", number: 11, title: t("dashboardV2.upload") },
+    { key: "upload", number: 10, title: t("dashboardV2.upload") },
+    { key: "pricing", number: 11, title: t("dashboardV2.pricing") },
   ];
 
   const currentStepIndex = steps.findIndex(s => s.key === currentStep);
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
 
+  // Control layout visibility based on current step
+  // Show full layout (sidebar + header) only on welcome step
+  useEffect(() => {
+    const showFullLayout = currentStep === "welcome";
+    window.dispatchEvent(new CustomEvent('aiselfi-dashboard-layout-mode', { 
+      detail: { showFullLayout } 
+    }));
+    
+    // Cleanup: restore full layout when component unmounts
+    return () => {
+      window.dispatchEvent(new CustomEvent('aiselfi-dashboard-layout-mode', { 
+        detail: { showFullLayout: true } 
+      }));
+    };
+  }, [currentStep]);
+
   const handleNext = () => {
     const nextIndex = currentStepIndex + 1;
     if (nextIndex < steps.length) {
       const nextStep = steps[nextIndex].key;
-      
-      // After background step, check if user has credits
-      // If no credits, force them to pricing step before upload
-      if (currentStep === "background" && nextStep === "pricing") {
-        const hasCredits = (user?.credits ?? 0) > 0;
-        if (!hasCredits) {
-          // No credits - go to pricing step
-          setCurrentStep("pricing");
-          return;
-        } else {
-          // Has credits - skip pricing and go directly to upload
-          setCurrentStep("upload");
-          return;
-        }
-      }
-      
-      // If trying to go to upload but no credits, redirect to pricing
-      if (nextStep === "upload" && (user?.credits ?? 0) <= 0) {
-        setCurrentStep("pricing");
-        return;
-      }
-      
       setCurrentStep(nextStep);
     } else {
       // Navigate to upload/generate page with variant=page2 to maintain the flow
@@ -125,11 +127,42 @@ export default function DashboardV2() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const stepParam = urlParams.get("step");
+    const paymentParam = urlParams.get("payment"); // cancelled | error
     const validSteps = ["welcome", "gender", "age", "hairColor", "hairLength", "hairStyle", "ethnicity", "bodyType", "attire", "background", "pricing", "upload"];
-    if (stepParam && validSteps.includes(stepParam)) {
+
+    let shouldCleanUrl = false;
+
+    // If Stripe/checkout flow reports a status, always bring user back to plans
+    if (paymentParam === "cancelled") {
+      setCurrentStep("pricing");
+      toast.error(t("payment.cancel.title") || "Payment Cancelled", {
+        description: t("payment.cancel.message") || "You cancelled the payment process. No charges were made.",
+        duration: 5000,
+      });
+      urlParams.delete("payment");
+      shouldCleanUrl = true;
+    } else if (paymentParam === "error") {
+      setCurrentStep("pricing");
+      toast.error(t("buyCredits.checkoutStartFailed") || "Payment error", {
+        description: t("buyCredits.checkoutFailed") || "Please try again.",
+        duration: 5000,
+      });
+      urlParams.delete("payment");
+      shouldCleanUrl = true;
+    }
+
+    // Step param (e.g. deep link back to a step)
+    if (!paymentParam && stepParam && validSteps.includes(stepParam)) {
       setCurrentStep(stepParam as Step);
-      // Remove step parameter from URL to keep it clean
       urlParams.delete("step");
+      shouldCleanUrl = true;
+    } else if (stepParam) {
+      // Even if payment param existed, remove step from URL to keep it clean
+      urlParams.delete("step");
+      shouldCleanUrl = true;
+    }
+
+    if (shouldCleanUrl) {
       const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : "");
       window.history.replaceState({}, "", newUrl);
     }
@@ -158,6 +191,8 @@ export default function DashboardV2() {
         // Priority 1: If resumeStep is set (from purchase flow) and user has credits
         if (parsed.resumeStep === "upload" && (user?.credits ?? 0) > 0) {
           setCurrentStep("upload");
+          // Check if we have saved files to auto-generate after payment
+          // This will be handled by the useEffect that watches currentStep and generationIntent
         } 
         // Priority 2: Restore the last saved step
         else if (parsed.currentStep) {
@@ -186,6 +221,104 @@ export default function DashboardV2() {
     safeLocalStorage.setItem("dashboardV2_formData", JSON.stringify(dataToSave));
   }, [formData, currentStep]);
 
+  // Auto-start generation when returning to upload step after payment with saved files
+  const hasAutoGeneratedRef = useRef(false);
+  const [isAutoGenerating, setIsAutoGenerating] = useState(false);
+  useEffect(() => {
+    // Only run if:
+    // 1. We're on upload step
+    // 2. User has credits
+    // 3. We have saved generation intent with files
+    // 4. We haven't already auto-generated
+    if (
+      currentStep === "upload" &&
+      (user?.credits ?? 0) > 0 &&
+      !hasAutoGeneratedRef.current &&
+      !isAutoGenerating
+    ) {
+      const generationIntent = safeLocalStorage.getItem("dashboardV2_generationIntent");
+      if (generationIntent) {
+        try {
+          const intent = JSON.parse(generationIntent);
+          if (
+            intent.resumeStep === "generate" &&
+            intent.userImages &&
+            intent.userImages.length > 0 &&
+            intent.formData
+          ) {
+            hasAutoGeneratedRef.current = true;
+            setIsAutoGenerating(true);
+            
+            // Auto-start generation
+            (async () => {
+              try {
+                // Ensure gender is valid (required by the API)
+                const gender = intent.formData.gender === "man" || intent.formData.gender === "woman" 
+                  ? intent.formData.gender 
+                  : "man";
+                
+                // Step 1: Upload images first to get URLs (avoids 413 Content Too Large error)
+                const uploadResult = await uploadPage2ImagesMutation.mutateAsync({
+                  images: intent.userImages,
+                });
+
+                if (!uploadResult.urls || uploadResult.urls.length === 0) {
+                  throw new Error("Failed to upload images");
+                }
+
+                // Step 2: Generate with URLs instead of base64 data
+                const result = await generateFromPage2Mutation.mutateAsync({
+                  userImageUrls: uploadResult.urls, // Use URLs instead of base64 data
+                  formData: {
+                    ...intent.formData,
+                    gender, // Ensure gender is "man" | "woman" (required)
+                  },
+                  exampleImageId: 1, // Ignored - server now selects randomly based on filters
+                  aspectRatio: "9:16",
+                  numImagesPerExample: 4, // This will be overridden by selectedPrice on the server
+                  selectedPrice: (intent.selectedPrice || "standard") as "basic" | "standard" | "premium",
+                });
+
+                // Clear saved data after successful generation
+                safeLocalStorage.removeItem("dashboardV2_generationIntent");
+                safeLocalStorage.removeItem("dashboardV2_formData");
+                
+                // Show success toast briefly
+                toast.success(t("dashboardV2.generationStarted"), {
+                  duration: 1000,
+                });
+                
+                // Redirect to generate page with batchId to show animation
+                if (result.batchId) {
+                  const redirectUrl = `/dashboard/generate?variant=page2&batchId=${result.batchId}`;
+                  // Use window.location for immediate redirect to ensure modal shows
+                  window.location.href = redirectUrl;
+                } else {
+                  throw new Error("No batchId returned from generation");
+                }
+              } catch (error: any) {
+                console.error("[DashboardV2] Failed to auto-resume generation:", error);
+                hasAutoGeneratedRef.current = false; // Allow retry
+                setIsAutoGenerating(false);
+                toast.error(t("dashboardV2.generationError") || "Failed to start generation", {
+                  description: error?.message || t("generateImages.pleaseTryAgain"),
+                });
+              }
+            })();
+          }
+        } catch (e) {
+          console.error("[DashboardV2] Failed to parse generation intent:", e);
+        }
+      }
+    }
+    
+    // Reset flag when leaving upload step
+    if (currentStep !== "upload") {
+      hasAutoGeneratedRef.current = false;
+      setIsAutoGenerating(false);
+    }
+  }, [currentStep, user?.credits, generateFromPage2Mutation, uploadPage2ImagesMutation, setLocation, t, isAutoGenerating]);
+
   const updateFormData = (key: keyof typeof formData, value: any) => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
@@ -202,9 +335,312 @@ export default function DashboardV2() {
     });
   };
 
+  // Determine if Continue button should be enabled based on current step
+  const isContinueEnabled = () => {
+    switch (currentStep) {
+      case "welcome":
+        return true; // Always enabled on welcome
+      case "gender":
+      case "age":
+      case "hairColor":
+      case "hairLength":
+      case "hairStyle":
+      case "ethnicity":
+      case "bodyType":
+        return !!formData[currentStep];
+      case "attire":
+        return formData.attire.length > 0;
+      case "background":
+        return formData.backgrounds.length > 0;
+      case "pricing":
+        return !!formData.selectedPrice;
+      case "upload":
+        return uploadedFiles.length > 0;
+      default:
+        return false;
+    }
+  };
+
+  // Handle continue for upload step
+  const handleUploadContinue = async () => {
+    if (uploadedFiles.length === 0) {
+      toast.error(t("dashboardV2.noFilesSelected"), {
+        description: t("dashboardV2.pleaseSelectFiles"),
+      });
+      return;
+    }
+
+    if (uploadedFiles.length < 1) {
+      toast.error(t("dashboardV2.minFilesError"), {
+        description: t("dashboardV2.pleaseSelectFiles"),
+      });
+      return;
+    }
+
+    if (!user?.id) {
+      toast.error(t("dashboardV2.userNotAuthenticated"), {
+        description: t("dashboardV2.pleaseLogin"),
+      });
+      return;
+    }
+
+    // Check if user has enough credits before generating
+    // If no credits, save uploaded files and redirect to pricing step
+    if ((user?.credits ?? 0) <= 0) {
+      toast.error(t("dashboardV2.insufficientCredits") || "Insufficient credits", {
+        description: t("dashboardV2.pleaseBuyCredits") || "Please purchase credits to continue",
+      });
+      
+      // Save uploaded files as base64 so we can auto-generate after payment
+      try {
+        const userImages = await Promise.all(
+          uploadedFiles.map(async (file) => {
+            return new Promise<{ data: string; fileName: string; contentType: string }>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                const base64 = (reader.result as string).split(',')[1]; // Remove data:image/jpeg;base64, prefix
+                resolve({
+                  data: base64,
+                  fileName: file.file.name,
+                  contentType: file.file.type,
+                });
+              };
+              reader.onerror = reject;
+              reader.readAsDataURL(file.file);
+            });
+          })
+        );
+        
+        // Save generation intent with uploaded files
+        const generationIntent = {
+          resumeStep: "generate",
+          userImages: userImages,
+          formData: formData,
+          selectedPrice: formData.selectedPrice || "standard",
+        };
+        safeLocalStorage.setItem("dashboardV2_generationIntent", JSON.stringify(generationIntent));
+        
+        // Also save form data with resume step
+        const dataToSave = {
+          ...formData,
+          resumeStep: "upload", // After payment, go back to upload (which will auto-generate)
+          currentStep: "pricing",
+        };
+        safeLocalStorage.setItem("dashboardV2_formData", JSON.stringify(dataToSave));
+      } catch (error) {
+        console.error("[DashboardV2] Failed to save uploaded files:", error);
+      }
+      
+      // Navigate to pricing step within the flow
+      setCurrentStep("pricing");
+      return;
+    }
+
+    // Generate images directly using new page2 API
+    try {
+      const loadingToast = toast.loading(t("dashboardV2.generatingImages"));
+      
+      // Step 1: Upload images first to get URLs (avoids 413 Content Too Large error)
+      const userImages = await Promise.all(
+        uploadedFiles.map(async (file) => {
+          return new Promise<{ data: string; fileName: string; contentType: string }>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const base64 = (reader.result as string).split(',')[1]; // Remove data:image/jpeg;base64, prefix
+              resolve({
+                data: base64,
+                fileName: file.file.name,
+                contentType: file.file.type,
+              });
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file.file);
+          });
+        })
+      );
+
+      // Upload images to Supabase Storage and get URLs
+      const uploadResult = await uploadPage2ImagesMutation.mutateAsync({
+        images: userImages,
+      });
+
+      if (!uploadResult.urls || uploadResult.urls.length === 0) {
+        throw new Error(t("dashboardV2.imageUploadFailed"));
+      }
+
+      // Step 2: Call generation API with URLs instead of base64 data
+      const selectedPrice = formData.selectedPrice || "standard"; // Default to standard if not selected
+      
+      // Ensure gender is valid (required by the API)
+      const gender = formData.gender === "man" || formData.gender === "woman" ? formData.gender : "man";
+      
+      const result = await generateFromPage2Mutation.mutateAsync({
+        userImageUrls: uploadResult.urls, // Use URLs instead of base64 data
+        formData: {
+          ...formData,
+          gender, // Ensure gender is "man" | "woman" (required)
+        },
+        exampleImageId: 1, // Ignored - server now selects randomly based on filters
+        aspectRatio: "9:16",
+        numImagesPerExample: 4, // This will be overridden by selectedPrice on the server
+        selectedPrice: selectedPrice as "basic" | "standard" | "premium",
+      });
+
+      toast.dismiss(loadingToast);
+      
+      
+      if (result.batchId) {
+        // Clear saved form data and step to reset flow for next creation
+        safeLocalStorage.removeItem("dashboardV2_formData");
+        safeLocalStorage.removeItem("dashboardV2_generationIntent");
+        console.log("[DashboardV2] ✅ Cleared saved form data after successful generation start");
+        
+        // Show success toast briefly
+        toast.success(t("dashboardV2.generationStarted"), {
+          duration: 1500,
+        });
+        
+        // Navigate immediately - use window.location as fallback if setLocation doesn't work
+        const redirectUrl = `/dashboard/generate?variant=page2&batchId=${result.batchId}`;
+        
+        try {
+          setLocation(redirectUrl);
+          // Fallback: if setLocation doesn't work, use window.location
+          setTimeout(() => {
+            if (window.location.pathname + window.location.search !== redirectUrl) {
+              console.warn("[DashboardV2] setLocation didn't work, using window.location");
+              window.location.href = redirectUrl;
+            }
+          }, 100);
+        } catch (error) {
+          console.error("[DashboardV2] Error with setLocation, using window.location:", error);
+          window.location.href = redirectUrl;
+        }
+      } else {
+        console.error("[DashboardV2] No batchId in result:", result);
+        throw new Error(t("generateImages.failedToStartGeneration"));
+      }
+    } catch (error: any) {
+      toast.error(t("dashboardV2.generationError"), {
+        description: error?.message || t("generateImages.pleaseTryAgain"),
+      });
+    }
+  };
+
+  // Handle purchase for pricing step
+  const handlePricingPurchase = async () => {
+    if (!formData.selectedPrice || isLoadingPacks || createCheckoutMutation.isPending) return;
+    
+    const plan = formData.selectedPrice as "basic" | "standard" | "premium";
+    const currency = detectCurrency();
+    
+    // Get prices for the selected plan
+    const basicPrice = getPage2Price("basic", currency);
+    const standardPrice = getPage2Price("standard", currency);
+    const premiumPrice = getPage2Price("premium", currency);
+    const displayedPrice = plan === "basic" ? basicPrice : plan === "standard" ? standardPrice : premiumPrice;
+    const expectedPriceCents = displayedPrice.amount;
+    const oldPriceCents = displayedPrice.oldAmount || null;
+    
+    // Find matching pack
+    let packId: number | null = null;
+    if (packs && packs.length > 0) {
+      // Try exact match
+      let matchedPack = packs.find(p => {
+        const packPrice = parseFloat(p.price.toString());
+        const packPriceCents = Math.round(packPrice * 100);
+        return Math.abs(packPriceCents - expectedPriceCents) <= 1;
+      });
+      
+      // Try old price if no match
+      if (!matchedPack && oldPriceCents) {
+        matchedPack = packs.find(p => {
+          const packPrice = parseFloat(p.price.toString());
+          const packPriceCents = Math.round(packPrice * 100);
+          return Math.abs(packPriceCents - oldPriceCents) <= 1;
+        });
+      }
+      
+      // Fallback to order-based
+      if (!matchedPack) {
+        const sortedByPrice = [...packs].sort((a, b) => {
+          return parseFloat(a.price.toString()) - parseFloat(b.price.toString());
+        });
+        if (plan === "basic" && sortedByPrice.length >= 1) {
+          matchedPack = sortedByPrice[0];
+        } else if (plan === "standard" && sortedByPrice.length >= 2) {
+          matchedPack = sortedByPrice[1];
+        } else if (plan === "premium" && sortedByPrice.length >= 3) {
+          matchedPack = sortedByPrice[2];
+        }
+      }
+      
+      packId = matchedPack?.id || null;
+    }
+    
+    if (!packId) {
+      toast.error(t("buyCredits.packNotFound") || "Pack not found", {
+        description: t("generateImages.pleaseTryAgain") || "Please try again",
+      });
+      return;
+    }
+    
+    try {
+      // Save form data to localStorage
+      const dataToSave = {
+        ...formData,
+        selectedPrice: plan,
+        resumeStep: "upload",
+        currentStep: "pricing",
+      };
+      safeLocalStorage.setItem("dashboardV2_formData", JSON.stringify(dataToSave));
+      
+      // Create checkout session
+      const result = await createCheckoutMutation.mutateAsync({ 
+        packId,
+        currency: currency,
+        variant: "page2",
+      });
+      
+      if (result?.url) {
+        window.location.href = result.url;
+      } else {
+        toast.error(t("buyCredits.checkoutFailed") || "Failed to create checkout session");
+      }
+    } catch (error: any) {
+      toast.error(error?.message || t("buyCredits.checkoutStartFailed") || "Failed to start checkout");
+    }
+  };
+
+  // Get the handler for Continue button based on current step
+  const getContinueHandler = () => {
+    if (currentStep === "upload") {
+      return handleUploadContinue;
+    }
+    if (currentStep === "pricing") {
+      return handlePricingPurchase;
+    }
+    return handleNext;
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header with Progress */}
+    <div className="min-h-screen bg-background flex flex-col relative">
+      {/* Loading overlay when auto-generating after payment */}
+      {isAutoGenerating && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+            <div>
+              <p className="text-lg font-semibold">{t("dashboardV2.generatingImages") || "Starting image generation..."}</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                {t("payment.success.generationStartingMessage") || "Please wait while we prepare your images..."}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Header with Progress - only show when NOT on welcome step */}
+      {currentStep !== "welcome" && (
       <div className="border-b border-border bg-card/50 sticky top-0 z-50 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between gap-2 mb-2">
@@ -221,24 +657,32 @@ export default function DashboardV2() {
           </div>
         </div>
       </div>
+      )}
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className={`max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex-1 ${currentStep === "welcome" && isMobile ? "pb-20" : "pb-24"}`}>
         {/* Back Button */}
         {currentStepIndex > 0 && (
+          <div className="flex items-center justify-between mb-6">
           <Button
             variant="ghost"
             onClick={handleBack}
-            className="mb-6"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t("dashboardV2.back")}
           </Button>
+            {/* Mobile: Show circular indicator on the opposite side */}
+            {isMobile && (
+              <div className="w-6 h-6 rounded-full bg-primary/10 border-2 border-primary flex items-center justify-center">
+                <span className="text-xs font-bold text-primary">{currentStepIndex + 1}</span>
+              </div>
+            )}
+          </div>
         )}
 
-        {/* Step Indicator */}
-        <div className="flex justify-center mb-8">
-          <div className="w-16 h-16 rounded-full bg-primary/10 border-2 border-primary flex items-center justify-center">
-            <span className="text-2xl font-bold text-primary">{currentStepIndex + 1}</span>
+        {/* Step Indicator - Hide on mobile for steps 2+ */}
+        <div className={`flex justify-center mb-6 ${isMobile && currentStepIndex > 0 ? 'hidden' : ''}`} style={{ transform: 'translateY(-16px)' }}>
+          <div className="w-8 h-8 rounded-full bg-primary/10 border-2 border-primary flex items-center justify-center">
+            <span className="text-base font-bold text-primary">{currentStepIndex + 1}</span>
           </div>
         </div>
 
@@ -353,6 +797,93 @@ export default function DashboardV2() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Bottom Navigation Bar - Only on welcome step and mobile */}
+      {currentStep === "welcome" && isMobile && (
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 shadow-lg">
+          <div className="max-w-4xl mx-auto px-4 py-3">
+            <div className="flex items-end justify-around relative">
+              {/* Start Here */}
+              <button
+                onClick={() => setLocation("/dashboard/start")}
+                className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                aria-label="Start Here"
+              >
+                <HelpCircle className="h-6 w-6 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Start</span>
+              </button>
+
+              {/* Gallery */}
+              <button
+                onClick={() => setLocation("/dashboard/gallery")}
+                className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                aria-label="Gallery"
+              >
+                <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Gallery</span>
+              </button>
+
+              {/* Create - Centered, Prominent Button */}
+              <button
+                onClick={() => setLocation("/dashboard/generate?variant=page2")}
+                className="flex items-center justify-center w-14 h-14 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 -mt-2 z-10"
+                aria-label="Create"
+              >
+                <Plus className="h-7 w-7" />
+              </button>
+
+              {/* Buy Credits */}
+              <button
+                onClick={() => setLocation("/dashboard/credits/buy")}
+                className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                aria-label="Buy Credits"
+              >
+                <CreditCard className="h-6 w-6 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Credits</span>
+              </button>
+
+              {/* Settings */}
+              <button
+                onClick={() => setLocation("/dashboard/settings/general")}
+                className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                aria-label="Settings"
+              >
+                <Settings className="h-6 w-6 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Settings</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Fixed Bottom Navigation with Continue Button - Only from step 2 onwards */}
+      {currentStepIndex > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 p-4 sm:p-6 shadow-lg">
+          <div className="max-w-4xl mx-auto">
+            <Button
+              size="lg"
+              onClick={getContinueHandler()}
+              disabled={
+                !isContinueEnabled() || 
+                (currentStep === "pricing" && (isLoadingPacks || createCheckoutMutation.isPending))
+              }
+              className="bg-primary hover:bg-primary/90 rounded-full disabled:opacity-50"
+              style={{ width: '200px', margin: '0 auto', display: 'block' }}
+            >
+              {currentStep === "pricing" && (isLoadingPacks || createCheckoutMutation.isPending) ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t("buyCredits.loading") || "Loading..."}
+                </div>
+              ) : currentStep === "upload" ? (
+                t("dashboardV2.create") || "Create"
+              ) : (
+                t("dashboardV2.continue")
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -391,7 +922,8 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
       <Button
         size="lg"
         onClick={onNext}
-        className="mt-8 bg-primary hover:bg-primary/90 rounded-full px-8 py-6 text-lg"
+        className="mt-8 bg-primary hover:bg-primary/90 rounded-full px-8 text-lg"
+        style={{ width: '200px' }}
       >
         {t("dashboardV2.createHeadshots")}
         <ArrowRight className="ml-2 h-5 w-5" />
@@ -404,6 +936,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 function GenderStep({ value, onChange, onNext }: { value: string; onChange: (value: string) => void; onNext: () => void }) {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
 
   const options = [
     { value: "man", label: t("dashboardV2.male"), icon: "♂" },
@@ -431,6 +964,26 @@ function GenderStep({ value, onChange, onNext }: { value: string; onChange: (val
                 : "border-border hover:border-primary/50"
             }`}
           >
+            {isMobile ? (
+              // Mobile: Icon, name, and selected indicator in same row
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 flex-1">
+                  <span className="text-4xl flex-shrink-0">{option.icon}</span>
+                  <p className="font-semibold text-left">{option.label}</p>
+                </div>
+                <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 ${
+                  value === option.value
+                    ? "border-primary bg-primary"
+                    : "border-muted-foreground"
+                }`}>
+                  {value === option.value && (
+                    <div className="w-full h-full rounded-full bg-primary" />
+                  )}
+                </div>
+              </div>
+            ) : (
+              // Desktop: Original layout
+              <>
             <div className="flex items-center justify-between">
               <span className="text-4xl">{option.icon}</span>
               <div className={`w-5 h-5 rounded-full border-2 ${
@@ -444,18 +997,11 @@ function GenderStep({ value, onChange, onNext }: { value: string; onChange: (val
               </div>
             </div>
             <p className="mt-4 font-semibold text-left">{option.label}</p>
+              </>
+            )}
           </button>
         ))}
       </div>
-
-      <Button
-        size="lg"
-        onClick={onNext}
-        disabled={!value}
-        className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
-      >
-        {t("dashboardV2.continue")}
-      </Button>
     </div>
   );
 }
@@ -497,15 +1043,6 @@ function AgeStep({ value, onChange, onNext }: { value: string; onChange: (value:
           </button>
         ))}
       </div>
-
-      <Button
-        size="lg"
-        onClick={onNext}
-        disabled={!value}
-        className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
-      >
-        {t("dashboardV2.continue")}
-      </Button>
     </div>
   );
 }
@@ -513,6 +1050,7 @@ function AgeStep({ value, onChange, onNext }: { value: string; onChange: (value:
 // Hair Color Step
 function HairColorStep({ value, onChange, onNext }: { value: string; onChange: (value: string) => void; onNext: () => void }) {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
 
   const colors = [
     { value: "brown", label: t("dashboardV2.brown"), color: "bg-amber-800" },
@@ -546,6 +1084,20 @@ function HairColorStep({ value, onChange, onNext }: { value: string; onChange: (
                 : "border-border hover:border-primary/50"
             }`}
           >
+            {isMobile ? (
+              // Mobile: Color swatch, name, and check in same row
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 flex-1">
+                  <div className={`w-8 h-8 rounded-full flex-shrink-0 ${color.color}`} />
+                  <p className="text-sm font-semibold text-left">{color.label}</p>
+                </div>
+                {value === color.value && (
+                  <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                )}
+              </div>
+            ) : (
+              // Desktop: Original layout
+              <>
             <div className="flex items-center justify-between mb-2">
               <div className={`w-8 h-8 rounded-full ${color.color}`} />
               {value === color.value && (
@@ -553,18 +1105,11 @@ function HairColorStep({ value, onChange, onNext }: { value: string; onChange: (
               )}
             </div>
             <p className="text-sm font-semibold text-left">{color.label}</p>
+              </>
+            )}
           </button>
         ))}
       </div>
-
-      <Button
-        size="lg"
-        onClick={onNext}
-        disabled={!value}
-        className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
-      >
-        {t("dashboardV2.continue")}
-      </Button>
     </div>
   );
 }
@@ -610,15 +1155,6 @@ function HairLengthStep({ value, onChange, onNext }: { value: string; onChange: 
           </button>
         ))}
       </div>
-
-      <Button
-        size="lg"
-        onClick={onNext}
-        disabled={!value}
-        className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
-      >
-        {t("dashboardV2.continue")}
-      </Button>
     </div>
   );
 }
@@ -706,15 +1242,6 @@ function HairStyleStep({ value, onChange, onNext, formData }: { value: string; o
           );
         })}
       </div>
-
-      <Button
-        size="lg"
-        onClick={onNext}
-        disabled={!value}
-        className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
-      >
-        {t("dashboardV2.continue")}
-      </Button>
     </div>
   );
 }
@@ -774,15 +1301,6 @@ function EthnicityStep({ value, onChange, onNext, formData }: { value: string; o
           </button>
         ))}
       </div>
-
-      <Button
-        size="lg"
-        onClick={onNext}
-        disabled={!value}
-        className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
-      >
-        {t("dashboardV2.continue")}
-      </Button>
     </div>
   );
 }
@@ -829,15 +1347,6 @@ function BodyTypeStep({ value, onChange, onNext }: { value: string; onChange: (v
           </button>
         ))}
       </div>
-
-      <Button
-        size="lg"
-        onClick={onNext}
-        disabled={!value}
-        className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
-      >
-        {t("dashboardV2.continue")}
-      </Button>
     </div>
   );
 }
@@ -871,7 +1380,7 @@ function AttireStep({ value, onChange, onNext, formData }: { value: string[]; on
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+      <div className="grid grid-cols-2 gap-4 mt-8">
         {attires.map((attire, index) => {
           const isSelected = value.includes(attire.value);
           // Assign fixed images: first attire gets first image, second attire gets second image
@@ -916,15 +1425,6 @@ function AttireStep({ value, onChange, onNext, formData }: { value: string[]; on
           {t("dashboardV2.attireNote")}
         </p>
       </div>
-
-      <Button
-        size="lg"
-        onClick={onNext}
-        disabled={value.length === 0}
-        className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
-      >
-        {t("dashboardV2.continue")}
-      </Button>
     </div>
   );
 }
@@ -964,7 +1464,7 @@ function BackgroundStep({ value, onChange, onNext, formData }: { value: string[]
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+      <div className="grid grid-cols-2 gap-4 mt-8">
         {backgrounds.map((bg, index) => {
           const isSelected = value.includes(bg.value);
           // Get images filtered by this specific background
@@ -984,7 +1484,7 @@ function BackgroundStep({ value, onChange, onNext, formData }: { value: string[]
               }`}
             >
               {/* Example image */}
-              <div className="w-full aspect-video relative">
+              <div className="w-full aspect-[3/4] relative">
                 <img
                   src={exampleImage.url}
                   alt={t("dashboardV2.exampleForAlt", { label: bg.label })}
@@ -1006,15 +1506,6 @@ function BackgroundStep({ value, onChange, onNext, formData }: { value: string[]
           );
         })}
       </div>
-
-      <Button
-        size="lg"
-        onClick={onNext}
-        disabled={value.length === 0}
-        className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
-      >
-        {t("dashboardV2.continue")}
-      </Button>
     </div>
   );
 }
@@ -1230,6 +1721,7 @@ function PricingStep({
       const result = await createCheckoutMutation.mutateAsync({ 
         packId,
         currency: currency,
+        variant: "page2",
       });
       
       
@@ -1257,76 +1749,90 @@ function PricingStep({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mt-8">
         {plans.map((plan) => {
           const isSelected = value === plan.id;
           return (
             <button
               key={plan.id}
               onClick={() => onChange(plan.id)}
-              className={`relative p-4 sm:p-6 rounded-lg border-2 transition-all text-left ${
+              className={`relative p-3 sm:p-4 md:p-6 rounded-lg border-2 transition-all text-left ${
                 isSelected
                   ? "border-primary bg-primary/10"
                   : "border-border hover:border-primary/50"
               } ${plan.popular ? "ring-2 ring-primary/20" : ""}`}
             >
               {plan.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
+                <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
                     {t("dashboardV2.pricing.popular")}
                   </span>
                 </div>
               )}
               
-              <div className="flex items-center justify-between mb-4 gap-2">
+              <div className="flex flex-row md:flex-col gap-3">
+                {/* Left side: Icon, Name, Price */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-2 sm:mb-4 gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <div className="text-primary shrink-0">{plan.icon}</div>
-                  <h3 className="text-lg sm:text-xl font-bold break-words">{plan.name}</h3>
+                      <div className="text-primary shrink-0 text-sm sm:text-base">{plan.icon}</div>
+                      <h3 className="text-base sm:text-lg md:text-xl font-bold break-words">{plan.name}</h3>
                 </div>
                 {isSelected && (
-                  <Check className="h-6 w-6 text-primary shrink-0" />
+                      <Check className="h-5 w-5 sm:h-6 sm:w-6 text-primary shrink-0" />
                 )}
               </div>
 
-              <div className="mb-4">
+                  <div className="mb-2 sm:mb-4">
                 {plan.price.oldFormatted && (
-                  <div className="text-lg text-muted-foreground line-through mb-1">
+                      <div className="text-sm sm:text-lg text-muted-foreground line-through mb-0.5">
                     {plan.price.oldFormatted}
                   </div>
                 )}
-                <div className="text-2xl sm:text-3xl font-bold text-primary break-words">
+                    <div className="text-xl sm:text-2xl md:text-3xl font-bold text-primary break-words">
                   {plan.price.formatted}
                 </div>
+                  </div>
+                </div>
+
+                {/* Right side: Discounted + Features (mobile only) */}
+                <div className="md:hidden flex flex-col items-end justify-start shrink-0">
                 {plan.price.oldFormatted && (
-                  <div className="text-sm text-green-400 font-semibold mt-1">
+                    <div className="text-xs text-green-400 font-semibold mb-2">
                     {t("dashboardV2.pricing.discounted")}
                   </div>
                 )}
+                  <ul className="space-y-1">
+                    {plan.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-center gap-1.5 justify-end">
+                        <span className="text-xs text-muted-foreground text-right">{feature}</span>
+                        <Check className="h-3 w-3 text-green-400 shrink-0" />
+                      </li>
+                    ))}
+                  </ul>
               </div>
 
-              <ul className="space-y-2">
+                {/* Desktop: Discounted and Features below price */}
+                <div className="hidden md:block">
+                  {plan.price.oldFormatted && (
+                    <div className="text-xs sm:text-sm text-green-400 font-semibold mt-0.5 mb-2 sm:mb-4">
+                      {t("dashboardV2.pricing.discounted")}
+                    </div>
+                  )}
+                  <ul className="space-y-1 sm:space-y-2">
                 {plan.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-green-400 mt-0.5 shrink-0" />
-                    <span className="text-sm text-muted-foreground">{feature}</span>
+                        <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-400 mt-0.5 shrink-0" />
+                        <span className="text-xs sm:text-sm text-muted-foreground">{feature}</span>
                   </li>
                 ))}
               </ul>
+                </div>
+              </div>
             </button>
           );
         })}
       </div>
-
-      <Button
-        size="lg"
-        onClick={handlePurchase}
-        disabled={!value || isProcessing || isLoadingPacks}
-        className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full"
-      >
-        {isProcessing || isLoadingPacks 
-          ? (t("buyCredits.loading") || "Loading...") 
-          : t("dashboardV2.continue")}
-      </Button>
     </div>
   );
 }
@@ -1355,6 +1861,7 @@ function UploadStep({
 }) {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
+  const isMobile = useIsMobile();
   const maxFiles = 10;
   const maxFileSize = 120 * 1024 * 1024; // 120MB
   
@@ -1447,126 +1954,6 @@ function UploadStep({
     toast.success(t("dashboardV2.fileRemoved"));
   };
 
-  const handleContinue = async () => {
-    if (uploadedFiles.length === 0) {
-      toast.error(t("dashboardV2.noFilesSelected"), {
-        description: t("dashboardV2.pleaseSelectFiles"),
-      });
-      return;
-    }
-
-    if (uploadedFiles.length < 1) {
-      toast.error(t("dashboardV2.minFilesError"), {
-        description: t("dashboardV2.pleaseSelectFiles"),
-      });
-      return;
-    }
-
-    if (!user?.id) {
-      toast.error(t("dashboardV2.userNotAuthenticated"), {
-        description: t("dashboardV2.pleaseLogin"),
-      });
-      return;
-    }
-
-    // Credit check should have happened at pricing step, but double-check here
-    // If somehow user reached upload without credits, redirect to pricing
-    if ((user?.credits ?? 0) <= 0) {
-      toast.error(t("dashboardV2.insufficientCredits") || "Insufficient credits", {
-        description: t("dashboardV2.pleaseBuyCredits") || "Please purchase credits to continue",
-      });
-      // Navigate to pricing step
-      setLocation("/dashboard?step=pricing&variant=page2");
-      return;
-    }
-
-    // Generate images directly using new page2 API
-    try {
-      const loadingToast = toast.loading(t("dashboardV2.generatingImages"));
-      
-      // Step 1: Upload images first to get URLs (avoids 413 Content Too Large error)
-      const userImages = await Promise.all(
-        uploadedFiles.map(async (file) => {
-          return new Promise<{ data: string; fileName: string; contentType: string }>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-              const base64 = (reader.result as string).split(',')[1]; // Remove data:image/jpeg;base64, prefix
-              resolve({
-                data: base64,
-                fileName: file.file.name,
-                contentType: file.file.type,
-              });
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file.file);
-          });
-        })
-      );
-
-      // Upload images to Supabase Storage and get URLs
-      const uploadResult = await uploadPage2ImagesMutation.mutateAsync({
-        images: userImages,
-      });
-
-      if (!uploadResult.urls || uploadResult.urls.length === 0) {
-        throw new Error(t("dashboardV2.imageUploadFailed"));
-      }
-
-      // Step 2: Call generation API with URLs instead of base64 data
-      const selectedPrice = formData.selectedPrice || "standard"; // Default to standard if not selected
-      
-      // Ensure gender is valid (required by the API)
-      const gender = formData.gender === "man" || formData.gender === "woman" ? formData.gender : "man";
-      
-      const result = await generateFromPage2Mutation.mutateAsync({
-        userImageUrls: uploadResult.urls, // Use URLs instead of base64 data
-        formData: {
-          ...formData,
-          gender, // Ensure gender is "man" | "woman" (required)
-        },
-        exampleImageId: 1, // Ignored - server now selects randomly based on filters
-        aspectRatio: "9:16",
-        numImagesPerExample: 4, // This will be overridden by selectedPrice on the server
-        selectedPrice: selectedPrice as "basic" | "standard" | "premium",
-      });
-
-      toast.dismiss(loadingToast);
-      
-      
-      if (result.batchId) {
-        
-        // Show success toast briefly
-        toast.success(t("dashboardV2.generationStarted"), {
-          duration: 1500,
-        });
-        
-        // Navigate immediately - use window.location as fallback if setLocation doesn't work
-        const redirectUrl = `/dashboard/generate?variant=page2&batchId=${result.batchId}`;
-        
-        try {
-          setLocation(redirectUrl);
-          // Fallback: if setLocation doesn't work, use window.location
-          setTimeout(() => {
-            if (window.location.pathname + window.location.search !== redirectUrl) {
-              console.warn("[DashboardV2] setLocation didn't work, using window.location");
-              window.location.href = redirectUrl;
-            }
-          }, 100);
-        } catch (error) {
-          console.error("[DashboardV2] Error with setLocation, using window.location:", error);
-          window.location.href = redirectUrl;
-        }
-      } else {
-        console.error("[DashboardV2] No batchId in result:", result);
-        throw new Error(t("generateImages.failedToStartGeneration"));
-      }
-    } catch (error: any) {
-      toast.error(t("dashboardV2.generationError"), {
-        description: error?.message || t("generateImages.pleaseTryAgain"),
-      });
-    }
-  };
-
   // Filter example images based on selected gender, attire (styles), and backgrounds
   const gender = formData.gender === "man" || formData.gender === "woman" ? formData.gender : "man";
   const selectedStyles = formData.attire || [];
@@ -1575,27 +1962,25 @@ function UploadStep({
   const displayImages = filteredImages.length > 0 ? filteredImages.slice(0, 6) : exampleImages.slice(0, 6);
 
   return (
-    <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl sm:text-3xl font-bold break-words">{t("dashboardV2.uploadPhotos")}</h2>
-        <p className="text-muted-foreground">
+    <div className={isMobile ? "space-y-4" : "space-y-6"}>
+      <div className={`text-center ${isMobile ? "space-y-1" : "space-y-2"}`}>
+        <h2 className={`${isMobile ? "text-xl" : "text-2xl sm:text-3xl"} font-bold break-words`}>{t("dashboardV2.uploadPhotos")}</h2>
+        <p className={`${isMobile ? "text-sm" : ""} text-muted-foreground`}>
           {t("dashboardV2.uploadDescription")}
         </p>
       </div>
 
       {/* Upload Area */}
       <div
-        className={`border-2 border-dashed rounded-lg p-12 text-center mt-8 transition-colors ${
-          isDragging
-            ? "border-primary bg-primary/10"
-            : "border-border hover:border-primary/50"
+        className={`border-2 border-dashed rounded-lg transition-colors ${
+          isMobile 
+            ? `p-4 ${isDragging ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"}`
+            : `p-12 text-center mt-8 ${isDragging ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"}`
         }`}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
       >
-        <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-        <p className="text-lg font-semibold mb-2">{t("dashboardV2.uploadFromComputer")}</p>
         <input
           ref={fileInputRef}
           type="file"
@@ -1604,6 +1989,26 @@ function UploadStep({
           className="hidden"
           onChange={(e) => handleFileSelect(e.target.files)}
         />
+        {isMobile ? (
+          // Mobile: Compact horizontal layout
+          <div className="flex flex-col gap-2">
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              {t("dashboardV2.uploadFiles")}
+            </Button>
+            <p className="text-xs text-muted-foreground text-center">
+              {t("dashboardV2.uploadFormats")}
+            </p>
+          </div>
+        ) : (
+          // Desktop: Original vertical layout
+          <>
+            <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-lg font-semibold mb-2">{t("dashboardV2.uploadFromComputer")}</p>
         <Button 
           variant="outline" 
           className="mt-4"
@@ -1614,6 +2019,16 @@ function UploadStep({
         <p className="text-sm text-muted-foreground mt-4">
           {t("dashboardV2.uploadFormats")}
         </p>
+          </>
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept="image/jpeg,image/jpg,image/png,image/heic,image/webp"
+          className="hidden"
+          onChange={(e) => handleFileSelect(e.target.files)}
+        />
       </div>
 
       {/* Uploaded Files Preview */}
@@ -1669,15 +2084,6 @@ function UploadStep({
           </p>
         </div>
       )}
-
-      <Button
-        size="lg"
-        onClick={handleContinue}
-        disabled={uploadedFiles.length === 0}
-        className="w-full mt-8 bg-primary hover:bg-primary/90 rounded-full disabled:opacity-50"
-      >
-        {t("dashboardV2.continue")}
-      </Button>
     </div>
   );
 }

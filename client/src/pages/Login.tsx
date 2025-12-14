@@ -32,7 +32,14 @@ export default function Login() {
       if (!loading && user) {
         const params = new URLSearchParams(window.location.search);
         const returnUrl = params.get("returnUrl");
-        setLocation(returnUrl || "/dashboard");
+        if (returnUrl) {
+          setLocation(returnUrl);
+        } else {
+          // Preserve variant parameter if present
+          const variant = params.get("variant");
+          const dashboardUrl = variant ? `/dashboard?variant=${variant}` : "/dashboard";
+          setLocation(dashboardUrl);
+        }
       }
   }, [user, loading, setLocation]);
 
@@ -47,6 +54,12 @@ export default function Login() {
 
     return () => clearInterval(rotationInterval);
   }, [testimonials]);
+
+  // Don't render login page if user is already authenticated (prevents flash)
+  // This must be after all hooks are called
+  if (!loading && user) {
+    return null;
+  }
 
   const handleSignIn = async () => {
     try {

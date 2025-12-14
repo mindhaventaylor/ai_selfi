@@ -178,6 +178,71 @@ function DashboardLayoutContent({
     return location.startsWith("/dashboard/support");
   });
   const [languageOpen, setLanguageOpen] = useState(false);
+  
+  // Track URL search params to detect changes (wouter's location only gives pathname)
+  const [urlSearch, setUrlSearch] = useState(() => window.location.search);
+  
+  // Poll for URL search changes to catch programmatic navigation
+  useEffect(() => {
+    const checkUrlSearch = () => {
+      if (window.location.search !== urlSearch) {
+        setUrlSearch(window.location.search);
+      }
+    };
+    
+    // Check immediately and on a short interval to catch navigation
+    const intervalId = setInterval(checkUrlSearch, 50);
+    
+    // Also check on popstate
+    window.addEventListener('popstate', checkUrlSearch);
+    
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('popstate', checkUrlSearch);
+    };
+  }, [urlSearch]);
+  
+  // Check if we're on /dashboard/generate with variant=page2 and no batchId
+  // This determines if DashboardV2 will be rendered (which hides the layout)
+  // We need to check this synchronously to avoid showing the header during redirects
+  const shouldHideLayout = (() => {
+    const urlParams = new URLSearchParams(urlSearch);
+    const urlVariant = urlParams.get("variant");
+    const batchId = urlParams.get("batchId");
+    
+    if (location === "/dashboard/generate") {
+      // If variant is page2 and no batchId, DashboardV2 will be rendered, so hide layout
+      return urlVariant === "page2" && !batchId;
+    }
+    if (location === "/dashboard") {
+      // For /dashboard route, check if variant=page2 (DashboardV2 will be rendered)
+      return urlVariant === "page2";
+    }
+    return false;
+  })();
+  
+  const [showFullLayout, setShowFullLayout] = useState(!shouldHideLayout); // Start with correct state
+
+  // Listen for layout mode changes from DashboardV2
+  useEffect(() => {
+    const handleLayoutMode = (event: CustomEvent<{ showFullLayout: boolean }>) => {
+      setShowFullLayout(event.detail.showFullLayout);
+    };
+
+    window.addEventListener('aiselfi-dashboard-layout-mode', handleLayoutMode as EventListener);
+    
+    return () => {
+      window.removeEventListener('aiselfi-dashboard-layout-mode', handleLayoutMode as EventListener);
+    };
+  }, []);
+  
+  // Update layout visibility when location or URL search changes
+  // But only if no event was dispatched (events take precedence)
+  useEffect(() => {
+    // Don't override if GenerateImages or DashboardV2 dispatched an event
+    // Events are handled separately and take precedence
+    setShowFullLayout(!shouldHideLayout);
+  }, [location, urlSearch, shouldHideLayout]);
 
   useEffect(() => {
     if (isCollapsed) {
@@ -224,6 +289,7 @@ function DashboardLayoutContent({
 
   return (
     <>
+      {showFullLayout && (
       <div className="relative" ref={sidebarRef}>
         <Sidebar
           collapsible="icon"
@@ -436,9 +502,11 @@ function DashboardLayoutContent({
           style={{ zIndex: 50 }}
         />
       </div>
+      )}
 
-      <SidebarInset>
-        {/* Top Header Bar */}
+      <SidebarInset style={!showFullLayout ? { marginLeft: 0 } : undefined}>
+        {/* Top Header Bar - only show when full layout is enabled */}
+        {showFullLayout && (
         <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:backdrop-blur">
           <div className="flex h-14 items-center justify-end gap-3 px-6">
             {/* Language Selector */}
@@ -534,8 +602,9 @@ function DashboardLayoutContent({
             </Avatar>
           </div>
         </div>
+        )}
 
-        {isMobile && (
+        {showFullLayout && isMobile && (
           <div className="flex border-b h-14 items-center justify-between bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="h-9 w-9 rounded-lg bg-background" />

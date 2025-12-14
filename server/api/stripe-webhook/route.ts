@@ -109,7 +109,8 @@ router.post("/", async (req, res) => {
             return res.status(500).json({ error: updateError.message });
           }
           
-          console.log(`[Stripe Webhook] Added ${credits} credits to user ${userId} via REST API`);
+          console.log(`[Stripe Webhook] ✅ Successfully added ${credits} credits to user ${userId} (via REST API)`);
+          console.log(`[Stripe Webhook] User ${userId} now has ${newCredits} credits total`);
 
           // Send Reddit conversion event
           const amountTotal = session.amount_total ? session.amount_total / 100 : undefined; // Convert from cents
@@ -148,7 +149,8 @@ router.post("/", async (req, res) => {
             .set({ credits: (user.credits || 0) + credits })
             .where(eq(users.id, userId));
           
-          console.log(`[Stripe Webhook] Added ${credits} credits to user ${userId}`);
+          console.log(`[Stripe Webhook] ✅ Successfully added ${credits} credits to user ${userId}`);
+          console.log(`[Stripe Webhook] User ${userId} now has ${(user.credits || 0) + credits} credits total`);
 
           // Send Reddit conversion event
           const amountTotal = session.amount_total ? session.amount_total / 100 : undefined; // Convert from cents
