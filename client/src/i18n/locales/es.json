@@ -1533,6 +1533,8 @@
     "long": "Largo",
     "curly": "Rizado",
     "selectHairStyle": "Selecciona un estilo de cabello específico para las imágenes generadas",
+    "uploadImages": "Subir Imágenes",
+    "uploadImagesToGenerate": "Sube imágenes para generar fotos",
     "generate": "Generar",
     "images": "imágenes",
     "selectImagesToGenerate": "Selecciona imágenes para generar",

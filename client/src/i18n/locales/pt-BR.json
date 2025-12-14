@@ -1517,6 +1517,8 @@
     "imageDimensions": "Dimensões da Imagem",
     "aspectRatio": "Proporção",
     "doYouWearGlasses": "Você usa óculos?",
+    "uploadImages": "Enviar Imagens",
+    "uploadImagesToGenerate": "Envie imagens para gerar fotos",
     "no": "Não",
     "yes": "Sim",
     "addGlassesToImages": "Adicionar óculos às imagens geradas",

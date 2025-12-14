@@ -1576,6 +1576,8 @@
     "long": "Long",
     "curly": "Curly",
     "selectHairStyle": "Select a specific hair style for generated images",
+    "uploadImages": "Upload Images",
+    "uploadImagesToGenerate": "Upload images to generate photos",
     "generate": "Generate",
     "images": "images",
     "selectImagesToGenerate": "Select images to generate",
