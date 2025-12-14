@@ -52,16 +52,23 @@ export function usePostHogVariant(userId?: string | number): {
         });
       }
       
-      // Don't remove variant from URL immediately - let components read it first
-      // Only remove after a short delay to ensure all components have read it
-      setTimeout(() => {
-        const currentParams = new URLSearchParams(window.location.search);
-        if (currentParams.get("variant") === urlVariant) {
-          currentParams.delete("variant");
-          const newUrl = window.location.pathname + (currentParams.toString() ? `?${currentParams.toString()}` : "");
-          window.history.replaceState({}, "", newUrl);
-        }
-      }, 1000);
+      // Don't remove variant from URL on pages that need it (like /dashboard/generate)
+      // Only remove on dashboard pages where it's just used to set the default
+      const pathname = window.location.pathname;
+      const isGeneratePage = pathname.includes("/dashboard/generate");
+      
+      if (!isGeneratePage) {
+        // Don't remove variant from URL immediately - let components read it first
+        // Only remove after a short delay to ensure all components have read it
+        setTimeout(() => {
+          const currentParams = new URLSearchParams(window.location.search);
+          if (currentParams.get("variant") === urlVariant) {
+            currentParams.delete("variant");
+            const newUrl = window.location.pathname + (currentParams.toString() ? `?${currentParams.toString()}` : "");
+            window.history.replaceState({}, "", newUrl);
+          }
+        }, 1000);
+      }
       
       return;
     }
