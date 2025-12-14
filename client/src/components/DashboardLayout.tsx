@@ -238,7 +238,10 @@ function DashboardLayoutContent({
   }, []);
   
   // Update layout visibility when location or URL search changes
+  // But only if no event was dispatched (events take precedence)
   useEffect(() => {
+    // Don't override if GenerateImages or DashboardV2 dispatched an event
+    // Events are handled separately and take precedence
     setShowFullLayout(!shouldHideLayout);
   }, [location, urlSearch, shouldHideLayout]);
 

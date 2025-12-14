@@ -112,14 +112,15 @@ export default function PaymentSuccess() {
               localStorage.removeItem("dashboardV2_generationIntent");
               localStorage.removeItem("dashboardV2_formData");
               
-              // Redirect to generate page with batchId
-              if (result.batchId) {
-                toast.success(t("dashboardV2.generationStarted") || "Generation started!", {
-                  duration: 2000,
-                });
-                
-                const redirectUrl = `/dashboard/generate?variant=page2&batchId=${result.batchId}`;
-                setLocation(redirectUrl);
+                // Redirect to generate page with batchId to show animation
+                if (result.batchId) {
+                  toast.success(t("dashboardV2.generationStarted") || "Generation started!", {
+                    duration: 1000,
+                  });
+                  
+                  // Use window.location for immediate redirect to ensure modal shows properly
+                  const redirectUrl = `/dashboard/generate?variant=page2&batchId=${result.batchId}`;
+                  window.location.href = redirectUrl;
               } else {
                 throw new Error("No batchId returned from generation");
               }

@@ -1277,6 +1277,23 @@ export default function GenerateImages() {
     totalImagesToGenerateRef.current = totalImagesToGenerate;
   }, [totalImagesToGenerate]);
 
+  // Tell layout to show when GenerateImages is rendering (not DashboardV2)
+  // This must be BEFORE the conditional return to maintain hooks order
+  useEffect(() => {
+    // Calculate shouldShowDashboardV2 here to avoid using it before it's defined
+    const urlParamsForLayout = new URLSearchParams(window.location.search);
+    const batchIdFromUrlLayout = urlParamsForLayout.get("batchId");
+    const hasBatchIdLayout = batchIdFromUrlLayout || currentBatchId;
+    const shouldShowDashboardV2Layout = isPage2Variant && !hasBatchIdLayout && !page2Data && !showModal && !isGenerating;
+    
+    if (!shouldShowDashboardV2Layout) {
+      // GenerateImages is rendering, so ensure layout is visible
+      window.dispatchEvent(new CustomEvent('aiselfi-dashboard-layout-mode', { 
+        detail: { showFullLayout: true } 
+      }));
+    }
+  }, [isPage2Variant, currentBatchId, page2Data, showModal, isGenerating]);
+
   // Calculate derived values (not hooks, so safe to call after useEffect)
   const creditsNeeded = totalImagesToGenerate; // 1 credit per generated image
   const userCredits = user?.credits ?? 0;
@@ -2122,20 +2139,25 @@ Output should be a vertical rectangle. Entire head should be visible`;
           // Allow closing the modal even if generating (user can still see progress in background)
           if (!open) {
             setShowModal(false);
-            // For page2 variant, navigate back to generate page (beginning) when modal closes
+            // For page2 variant, navigate to gallery when modal closes
             if (isPage2Variant) {
-              console.log("[GenerateImages] Page2: Navigating back to generate page (beginning)");
-              // Remove batchId from URL and navigate to clean generate page
-              const urlParams = new URLSearchParams(window.location.search);
-              urlParams.delete("batchId");
-              const newUrl = `/dashboard/generate${urlParams.toString() ? `?${urlParams.toString()}` : ''}`;
-              setLocation(newUrl);
+              console.log("[GenerateImages] Page2: Navigating to gallery after closing modal");
+              // Clear saved form data and step to reset flow for next creation
+              try {
+                localStorage.removeItem("dashboardV2_formData");
+                localStorage.removeItem("dashboardV2_generationIntent");
+                console.log("[GenerateImages] ✅ Cleared saved form data after closing page2 modal");
+              } catch (e) {
+                console.warn("[GenerateImages] Failed to clear saved data:", e);
+              }
               // Reset state
               setCurrentBatchId(null);
               setGeneratedImages([]);
               setCompletedImages(0);
               setGenerationProgress(0);
               setIsGenerating(false);
+              // Navigate to gallery to view the generated images
+              setLocation("/dashboard/gallery");
             }
             // Don't stop generation, just close the modal
             // User can reopen by checking the batch status later
@@ -2187,20 +2209,25 @@ Output should be a vertical rectangle. Entire head should be visible`;
                           variant="ghost"
                           onClick={() => {
                             setShowModal(false);
-                            // For page2 variant, navigate back to generate page (beginning) when close button is clicked
+                            // For page2 variant, navigate to gallery when close button is clicked
                             if (isPage2Variant) {
-                              console.log("[GenerateImages] Page2: Close button clicked, navigating back to generate page");
-                              // Remove batchId from URL and navigate to clean generate page
-                              const urlParams = new URLSearchParams(window.location.search);
-                              urlParams.delete("batchId");
-                              const newUrl = `/dashboard/generate${urlParams.toString() ? `?${urlParams.toString()}` : ''}`;
-                              setLocation(newUrl);
+                              console.log("[GenerateImages] Page2: Close button clicked, navigating to gallery");
+                              // Clear saved form data and step to reset flow for next creation
+                              try {
+                                localStorage.removeItem("dashboardV2_formData");
+                                localStorage.removeItem("dashboardV2_generationIntent");
+                                console.log("[GenerateImages] ✅ Cleared saved form data after closing page2 modal");
+                              } catch (e) {
+                                console.warn("[GenerateImages] Failed to clear saved data:", e);
+                              }
                               // Reset state
                               setCurrentBatchId(null);
                               setGeneratedImages([]);
                               setCompletedImages(0);
                               setGenerationProgress(0);
                               setIsGenerating(false);
+                              // Navigate to gallery to view the generated images
+                              setLocation("/dashboard/gallery");
                             }
                           }}
                         >

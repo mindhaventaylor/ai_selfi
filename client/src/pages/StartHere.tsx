@@ -244,7 +244,7 @@ export default function StartHere() {
                 <Button
                   size="lg"
                   className="text-base md:text-lg px-8 md:px-10 py-6 md:py-7 bg-primary hover:bg-primary/90 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow"
-                  onClick={() => setLocation("/dashboard/generate")}
+                  onClick={() => setLocation(isPage2Variant ? "/dashboard/generate?variant=page2" : "/dashboard/generate")}
                 >
                   <Sparkles className="w-4 h-4 md:w-5 md:h-5 mr-2" />
                   {t("startHere.generateImages")}
@@ -557,7 +557,7 @@ export default function StartHere() {
 
                 <Button
                   className={`mt-6 ${isPage2Variant ? steps[1].buttonColor : steps[2].buttonColor} text-white rounded-full`}
-                  onClick={() => setLocation("/dashboard/generate")}
+                  onClick={() => setLocation(isPage2Variant ? "/dashboard/generate?variant=page2" : "/dashboard/generate")}
                 >
                   {t("startHere.createYourPhotosWithAI")}
                 </Button>
