@@ -1086,7 +1086,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
               {/* Starter Pack */}
               <AnimatedSection delay={100}>
                 <Card className="p-8 h-full">
@@ -1151,9 +1151,38 @@ export default function Home() {
                   </Button>
                 </Card>
               </AnimatedSection>
+
+              {/* Premium Pack */}
+              <AnimatedSection delay={300}>
+                <Card className="p-8 h-full">
+                  <h3 className="text-2xl font-bold mb-2">{t("pricing.plans.premium.name")}</h3>
+                  <p className="text-muted-foreground mb-4">
+                    {isPage2Variant ? "100 photos" : t("pricing.plans.premium.photos")}
+                  </p>
+                  <div className={`text-5xl font-bold mb-2 ${isPage2Variant && premiumPrice.oldFormatted ? "flex items-baseline gap-3" : ""}`}>
+                    <span>
+                      {isPage2Variant ? premiumPrice.formatted : t("pricing.plans.premium.price")}
+                    </span>
+                    {isPage2Variant && premiumPrice.oldFormatted && (
+                      <span className="text-2xl text-muted-foreground line-through font-normal">
+                        {premiumPrice.oldFormatted}
+                      </span>
+                    )}
+                    <span className="text-lg text-muted-foreground ml-2">
+                      {t("pricing.plans.premium.currency")}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    {t("pricing.plans.premium.note")}
+                  </p>
+                  <Button asChild className="w-full rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light" size="lg">
+                    <a href="/login">{t("hero.cta")}</a>
+                  </Button>
+                </Card>
+              </AnimatedSection>
             </div>
 
-            <AnimatedSection delay={300}>
+            <AnimatedSection delay={400}>
               <div className="mt-12 max-w-2xl mx-auto">
                 <h3 className="text-2xl font-bold text-center mb-6">
                   {t("pricing.features.title")}

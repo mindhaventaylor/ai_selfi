@@ -167,18 +167,25 @@
       "starter": {
         "name": "Starter Pack",
         "photos": "40 fotos",
-        "price": "$29",
+        "price": "€5",
         "currency": "USD",
         "note": "Pago único. Sin suscripción."
       },
       "pro": {
         "name": "Pro Pack",
         "photos": "100 fotos (Calidad 4k)",
-        "price": "$39",
-        "oldPrice": "$49",
+        "price": "€10",
+        "oldPrice": "€20",
         "currency": "USD",
         "note": "Pago único. Sin suscripción.",
         "badge": "Popular"
+      },
+      "premium": {
+        "name": "Paquete Premium",
+        "photos": "150 fotos (Calidad 4k)",
+        "price": "€25",
+        "currency": "EUR",
+        "note": "Pago único. Sin suscripción."
       }
     }
   },
@@ -268,7 +275,7 @@
   },
   "dashboard": {
     "title": "AI Selfie",
-    "subtitle": "Convierte tus selfies en fotos profesionales",
+    "subtitle": "Transforma tus selfies en fotos profesionales",
     "generateImages": "Generar Imágenes →",
     "newModelAvailable": "Nuevo modelo de IA disponible",
     "moreRealisticPhotos": "Fotos más realistas y calidad 4k",
@@ -278,23 +285,28 @@
     "createCustomAI": "Crea tu IA personalizada",
     "startTraining": "Comenzar Entrenamiento →",
     "gallery": "Galería",
-    "exploreCreations": "Explora creaciones",
+    "exploreCreations": "Explorar creaciones",
     "viewGallery": "Ver Galería →",
     "howItWorks": "Cómo funciona",
     "learnProcess": "Aprende el proceso",
-    "moreInfo": "Más Información →"
+    "moreInfo": "Más Información →",
+    "aiselfies": "AISelfies",
+    "videoTime": "0:00 / 1:11",
+    "loading": "Cargando...",
+    "photoAlt": "Foto {{number}}",
+    "galleryAlt": "Galería {{number}}"
   },
   "generateImages": {
     "title": "Elige tus Imágenes",
     "selectGender": "Seleccionar Género",
-    "man": "Man",
-    "woman": "Woman",
-    "background": "Background",
-    "style": "Style",
+    "man": "Hombre",
+    "woman": "Mujer",
+    "background": "Fondo",
+    "style": "Estilo",
     "multipleVariations": "Múltiples Variaciones",
-    "multipleVariationsDesc": "Cada imagen seleccionada generará 4 variaciones únicas en ese estilo. ¡Clickea las imágenes de referencia favoritas para comenzar!",
+    "multipleVariationsDesc": "Cada imagen seleccionada generará 4 variaciones únicas en ese estilo. ¡Haz clic en tus imágenes de referencia favoritas para comenzar!",
     "modelTrainingImages": "Imágenes de Entrenamiento del Modelo",
-    "selectReferenceImages": "Selecciona las imágenes de referencia para elegir el estilo de tus fotos generadas",
+    "selectReferenceImages": "Selecciona imágenes de referencia para elegir el estilo de tus fotos generadas",
     "parameters": "Parámetros",
     "model": "Modelo",
     "selectModel": "Seleccionar modelo",
@@ -304,29 +316,32 @@
     "failed": "Fallido",
     "firstNeedToTrain": "Primero necesitas entrenar un modelo",
     "selectModelToGenerate": "Selecciona un modelo para generar imágenes",
-    "modelStillTraining": "Este modelo aún está entrenando. Espera a que termine.",
-    "modelFailed": "Este modelo falló. Por favor entrena uno nuevo.",
+    "modelStillTraining": "Este modelo aún se está entrenando. Espera a que termine.",
+    "modelFailed": "Este modelo falló. Por favor, entrena uno nuevo.",
     "imageDimensions": "Dimensiones de la Imagen",
-    "aspectRatio": "Aspecto de la imagen",
-    "doYouWearGlasses": "Usas Gafas",
+    "aspectRatio": "Relación de aspecto",
+    "doYouWearGlasses": "¿Usas gafas?",
     "no": "No",
     "yes": "Sí",
     "addGlassesToImages": "Agregar gafas a las imágenes generadas",
-    "hairColor": "Color de Pelo (opcional)",
-    "default": "Predeterminado",
+    "hairColor": "Color de Cabello (opcional)",
+    "default": "Por defecto",
     "black": "Negro",
     "brown": "Marrón",
     "blonde": "Rubio",
     "red": "Rojo",
-    "chooseHairColor": "Elige el color de pelo para tus imágenes generadas",
-    "hairStyle": "Estilo de Pelo (opcional)",
+    "chooseHairColor": "Elige el color de cabello para tus imágenes generadas",
+    "hairStyle": "Estilo de Cabello (opcional)",
     "noPreference": "Sin preferencia",
     "short": "Corto",
     "medium": "Medio",
     "long": "Largo",
     "curly": "Rizado",
-    "selectHairStyle": "Selecciona un estilo de pelo específico para las imágenes generadas",
+    "selectHairStyle": "Selecciona un estilo de cabello específico para las imágenes generadas",
+    "uploadImages": "Subir Imágenes",
+    "uploadImagesToGenerate": "Sube imágenes para generar fotos",
     "generate": "Generar",
+    "images": "imágenes",
     "selectImagesToGenerate": "Selecciona imágenes para generar",
     "notEnoughCredits": "No tienes suficientes créditos",
     "needCredits": "necesitas",
@@ -341,30 +356,78 @@
     "of": "de",
     "imagesCompleted": "imágenes completadas",
     "generatingProfessionalPhotos": "Generando tus fotos profesionales... Por favor espera.",
-    "canCloseWindow": "Puedes cerrar esta ventana. Tus fotos aparecen en galería",
+    "canCloseWindow": "Puedes cerrar esta ventana. Tus fotos aparecen en la galería",
     "retry": "Reintentar",
     "close": "Cerrar",
     "generating": "Generando...",
     "pleaseSelectValidModel": "Por favor selecciona un modelo válido",
     "noTrainingImagesFound": "No se encontraron imágenes de entrenamiento para este modelo",
-    "errorGenerating": "Error al generar las imágenes. Por favor intenta de nuevo."
+    "errorGenerating": "Error al generar imágenes. Por favor intenta de nuevo.",
+    "userNotAuthenticated": "Usuario no autenticado",
+    "failedToStartGeneration": "Error al iniciar la generación",
+    "failedToGenerateImages": "Error al generar imágenes",
+    "pleaseTryAgain": "Por favor intenta de nuevo",
+    "generationInProgress": "Generación en progreso",
+    "modelSelectionHidden": "Selección de modelo oculta",
+    "page2VariantActive": "Variante Page2 Activa",
+    "batchNotFound": "Lote no encontrado. La generación puede haber fallado al iniciar. Por favor intenta de nuevo.",
+    "generationFailed": "Error al generar imágenes. Por favor intenta de nuevo.",
+    "generatedImageAlt": "Imagen generada {{number}}",
+    "badges": {
+      "premium": "Premium",
+      "new": "Nuevo",
+      "popular": "Popular"
+    },
+    "altText": {
+      "reference": "Referencia"
+    }
   },
   "login": {
-    "loading": "Carregando...",
+    "loading": "Cargando...",
     "stats": "70K+ FOTOS PROFESIONALES GENERADAS",
-    "title": "Transform Selfies into Professional Photos",
-    "subtitle": "Sign up to create your photos",
-    "redirecting": "Redirecionando...",
-    "signInWithGoogle": "Sign in with Google",
-    "moneyBackGuarantee": "100% money-back guarantee",
-    "photosUnder30Minutes": "Your photos in under 30 minutes",
-    "foundedInEurope": "Founded in Europe. We respect your privacy",
-    "thousandsHappyCustomers": "Thousands of happy customers",
-    "bootstrapped": "100% bootstrapped and solo funded",
-    "termsAgreement": "Ao continuar, você concorda com nossos",
-    "termsOfService": "Termos de Serviço",
-    "and": "e",
-    "privacyPolicy": "Política de Privacidade"
+    "title": "Transforma Selfies en Fotos Profesionales",
+    "subtitle": "Regístrate para crear tus fotos",
+    "redirecting": "Redirigiendo...",
+    "signInWithGoogle": "Iniciar sesión con Google",
+    "moneyBackGuarantee": "Garantía de devolución del 100%",
+    "photosUnder30Minutes": "Tus fotos en menos de 30 minutos",
+    "foundedInEurope": "Fundado en Europa. Respetamos tu privacidad",
+    "thousandsHappyCustomers": "Miles de clientes satisfechos",
+    "bootstrapped": "100% autofinanciado y financiado en solitario",
+    "termsAgreement": "Al continuar, aceptas nuestros",
+    "termsOfService": "Términos de Servicio",
+    "and": "y",
+    "privacyPolicy": "Política de Privacidad",
+    "brandName": "Aiselfie",
+    "altText": {
+      "professionalPhoto": "Foto profesional {{number}}",
+      "logo": "AISelfie"
+    },
+    "ariaLabel": {
+      "goToTestimonial": "Ir al testimonio {{number}}"
+    },
+    "testimonials": [
+      {
+        "text": "Creé 40 fotos profesionales en menos de 10 minutos. No podía creer que fuera posible obtener resultados tan realistas con inteligencia artificial. Las fotos son perfectas para mi perfil de LinkedIn y mi sitio web.",
+        "author": "Sofia Bianchi",
+        "stars": 5
+      },
+      {
+        "text": "¡Increíble! Actualicé todas mis fotos profesionales en pocos minutos. La calidad es increíble y los resultados son muy naturales. Ya he recibido varios elogios sobre mis nuevas fotos.",
+        "author": "Marco Rossi",
+        "stars": 5
+      },
+      {
+        "text": "¡Perfecto para mi trabajo! Necesito fotos profesionales para presentaciones y materiales corporativos, y esta herramienta resolvió mi problema de forma rápida y económica.",
+        "author": "Chiara Romano",
+        "stars": 5
+      },
+      {
+        "text": "¡Fantástico! Creé una galería completa de fotos profesionales en menos de 15 minutos. Lo que más me impresionó es la atención al detalle: cada foto es perfecta y profesional.",
+        "author": "Valentina Marchetti",
+        "stars": 5
+      }
+    ]
   },
   "notFound": {
     "title": "404",
@@ -1015,7 +1078,8 @@
   "supportWhatsApp": {
     "redirecting": "Redirigiendo a WhatsApp...",
     "notRedirected": "Si no eres redirigido automáticamente,",
-    "clickHere": "haz clic aquí"
+    "clickHere": "haz clic aquí",
+    "message": "Hola, necesito ayuda con Aiselfie"
   },
   "supportReviews": {
     "leaveReview": "Dejar una Reseña",
@@ -1239,12 +1303,6 @@
     },
     "lastUpdated": "Última actualización:"
   },
-  "supportWhatsApp": {
-    "redirecting": "Redirigiendo a WhatsApp...",
-    "notRedirected": "Si no eres redirigido automáticamente,",
-    "clickHere": "haz clic aquí",
-    "message": "Hola, necesito ayuda con Aiselfie"
-  },
   "home": {
     "examples": [
       {
@@ -1299,76 +1357,6 @@
       "subtitle": "Consigue tus fotos profesionales en minutos.",
       "cta": "Crear mis fotos profesionales"
     }
-  },
-  "login": {
-    "loading": "Cargando...",
-    "stats": "70K+ FOTOS PROFESIONALES GENERADAS",
-    "title": "Transforma Selfies en Fotos Profesionales",
-    "subtitle": "Regístrate para crear tus fotos",
-    "redirecting": "Redirigiendo...",
-    "signInWithGoogle": "Iniciar sesión con Google",
-    "moneyBackGuarantee": "Garantía de devolución del 100%",
-    "photosUnder30Minutes": "Tus fotos en menos de 30 minutos",
-    "foundedInEurope": "Fundado en Europa. Respetamos tu privacidad",
-    "thousandsHappyCustomers": "Miles de clientes satisfechos",
-    "bootstrapped": "100% autofinanciado y financiado en solitario",
-    "termsAgreement": "Al continuar, aceptas nuestros",
-    "termsOfService": "Términos de Servicio",
-    "and": "y",
-    "privacyPolicy": "Política de Privacidad",
-    "brandName": "Aiselfie",
-    "altText": {
-      "professionalPhoto": "Foto profesional {{number}}",
-      "logo": "AISelfie"
-    },
-    "ariaLabel": {
-      "goToTestimonial": "Ir al testimonio {{number}}"
-    },
-    "testimonials": [
-      {
-        "text": "Creé 40 fotos profesionales en menos de 10 minutos. No podía creer que fuera posible obtener resultados tan realistas con inteligencia artificial. Las fotos son perfectas para mi perfil de LinkedIn y mi sitio web.",
-        "author": "Sofia Bianchi",
-        "stars": 5
-      },
-      {
-        "text": "¡Increíble! Actualicé todas mis fotos profesionales en pocos minutos. La calidad es increíble y los resultados son muy naturales. Ya he recibido varios elogios sobre mis nuevas fotos.",
-        "author": "Marco Rossi",
-        "stars": 5
-      },
-      {
-        "text": "¡Perfecto para mi trabajo! Necesito fotos profesionales para presentaciones y materiales corporativos, y esta herramienta resolvió mi problema de forma rápida y económica.",
-        "author": "Chiara Romano",
-        "stars": 5
-      },
-      {
-        "text": "¡Fantástico! Creé una galería completa de fotos profesionales en menos de 15 minutos. Lo que más me impresionó es la atención al detalle: cada foto es perfecta y profesional.",
-        "author": "Valentina Marchetti",
-        "stars": 5
-      }
-    ]
-  },
-  "dashboard": {
-    "title": "AI Selfie",
-    "subtitle": "Transforma tus selfies en fotos profesionales",
-    "generateImages": "Generar Imágenes →",
-    "newModelAvailable": "Nuevo modelo de IA disponible",
-    "moreRealisticPhotos": "Fotos más realistas y calidad 4k",
-    "in60Seconds": "AISelfie en 60\"",
-    "trainModel": "Entrenar un modelo",
-    "newAIModel": "Nuevo modelo de IA",
-    "createCustomAI": "Crea tu IA personalizada",
-    "startTraining": "Comenzar Entrenamiento →",
-    "gallery": "Galería",
-    "exploreCreations": "Explorar creaciones",
-    "viewGallery": "Ver Galería →",
-    "howItWorks": "Cómo funciona",
-    "learnProcess": "Aprende el proceso",
-    "moreInfo": "Más Información →",
-    "aiselfies": "AISelfies",
-    "videoTime": "0:00 / 1:11",
-    "loading": "Cargando...",
-    "photoAlt": "Foto {{number}}",
-    "galleryAlt": "Galería {{number}}"
   },
   "dashboardV2": {
     "welcome": "Bienvenido",
@@ -1490,92 +1478,6 @@
     "of": "de",
     "insufficientCredits": "Créditos insuficientes",
     "pleaseBuyCredits": "Por favor, compra créditos para continuar"
-  },
-  "generateImages": {
-    "title": "Elige tus Imágenes",
-    "selectGender": "Seleccionar Género",
-    "man": "Hombre",
-    "woman": "Mujer",
-    "background": "Fondo",
-    "style": "Estilo",
-    "multipleVariations": "Múltiples Variaciones",
-    "multipleVariationsDesc": "Cada imagen seleccionada generará 4 variaciones únicas en ese estilo. ¡Haz clic en tus imágenes de referencia favoritas para comenzar!",
-    "modelTrainingImages": "Imágenes de Entrenamiento del Modelo",
-    "selectReferenceImages": "Selecciona imágenes de referencia para elegir el estilo de tus fotos generadas",
-    "parameters": "Parámetros",
-    "model": "Modelo",
-    "selectModel": "Seleccionar modelo",
-    "loadingModels": "Cargando modelos...",
-    "noModelsAvailable": "No hay modelos disponibles",
-    "training": "Entrenando...",
-    "failed": "Fallido",
-    "firstNeedToTrain": "Primero necesitas entrenar un modelo",
-    "selectModelToGenerate": "Selecciona un modelo para generar imágenes",
-    "modelStillTraining": "Este modelo aún se está entrenando. Espera a que termine.",
-    "modelFailed": "Este modelo falló. Por favor, entrena uno nuevo.",
-    "imageDimensions": "Dimensiones de la Imagen",
-    "aspectRatio": "Relación de aspecto",
-    "doYouWearGlasses": "¿Usas gafas?",
-    "no": "No",
-    "yes": "Sí",
-    "addGlassesToImages": "Agregar gafas a las imágenes generadas",
-    "hairColor": "Color de Cabello (opcional)",
-    "default": "Por defecto",
-    "black": "Negro",
-    "brown": "Marrón",
-    "blonde": "Rubio",
-    "red": "Rojo",
-    "chooseHairColor": "Elige el color de cabello para tus imágenes generadas",
-    "hairStyle": "Estilo de Cabello (opcional)",
-    "noPreference": "Sin preferencia",
-    "short": "Corto",
-    "medium": "Medio",
-    "long": "Largo",
-    "curly": "Rizado",
-    "selectHairStyle": "Selecciona un estilo de cabello específico para las imágenes generadas",
-    "uploadImages": "Subir Imágenes",
-    "uploadImagesToGenerate": "Sube imágenes para generar fotos",
-    "generate": "Generar",
-    "images": "imágenes",
-    "selectImagesToGenerate": "Selecciona imágenes para generar",
-    "notEnoughCredits": "No tienes suficientes créditos",
-    "needCredits": "necesitas",
-    "haveCredits": "tienes",
-    "selectModelFirst": "Selecciona un modelo primero",
-    "willUseCredits": "Esto usará",
-    "credit": "crédito",
-    "credits": "créditos",
-    "professionalPhotosAlmostReady": "Tus fotos profesionales están casi listas",
-    "errorGeneratingImages": "Error al generar imágenes",
-    "progress": "Progreso",
-    "of": "de",
-    "imagesCompleted": "imágenes completadas",
-    "generatingProfessionalPhotos": "Generando tus fotos profesionales... Por favor espera.",
-    "canCloseWindow": "Puedes cerrar esta ventana. Tus fotos aparecen en la galería",
-    "retry": "Reintentar",
-    "close": "Cerrar",
-    "generating": "Generando...",
-    "pleaseSelectValidModel": "Por favor selecciona un modelo válido",
-    "noTrainingImagesFound": "No se encontraron imágenes de entrenamiento para este modelo",
-    "errorGenerating": "Error al generar imágenes. Por favor intenta de nuevo.",
-    "userNotAuthenticated": "Usuario no autenticado",
-    "failedToStartGeneration": "Error al iniciar la generación",
-    "failedToGenerateImages": "Error al generar imágenes",
-    "pleaseTryAgain": "Por favor intenta de nuevo",
-    "generationInProgress": "Generación en progreso",
-    "modelSelectionHidden": "Selección de modelo oculta",
-    "page2VariantActive": "Variante Page2 Activa",
-    "batchNotFound": "Lote no encontrado. La generación puede haber fallado al iniciar. Por favor intenta de nuevo.",
-    "generationFailed": "Error al generar imágenes. Por favor intenta de nuevo.",
-    "generatedImageAlt": "Imagen generada {{number}}",
-    "badges": {
-      "premium": "Premium",
-      "new": "Nuevo",
-      "popular": "Popular"
-    },
-    "altText": {
-      "reference": "Referencia"
-    }
   },
   "errorBoundary": {
     "title": "Ocurrió un error inesperado.",

@@ -4,15 +4,15 @@ Este guia explica como criar os packs de créditos necessários para o sistema f
 
 ## 📦 Packs Necessários
 
-### Page1 (Flow Original):
-- **Starter Pack**: $29.00 - 40 créditos
-- **Pro Pack**: $39.00 - 100 créditos
-- **Premium Pack**: $49.00 - 150 créditos (ou 140 se preferir)
+### Page1 (Flow Original) - Variation 1:
+- **Starter Pack**: $5.00 - 40 créditos
+- **Pro Pack**: $10.00 - 100 créditos
+- **Premium Pack**: $25.00 - 150 créditos
 
-### Page2 (Flow Promocional):
-- **Basic Pack**: $18.00 - 40 créditos
-- **Standard Pack**: $25.00 - 60 créditos
-- **Premium Pack**: $40.00 - 100 créditos
+### Page2 (Flow Promocional) - Variation 2:
+- **Basic Pack**: $10.00 - 40 créditos
+- **Standard Pack**: $20.00 - 60 créditos
+- **Premium Pack**: $25.00 - 100 créditos
 
 ## 🚀 Métodos de Criação
 
@@ -57,12 +57,12 @@ Este guia explica como criar os packs de créditos necessários para o sistema f
 1. **Acesse o Stripe Dashboard** → Products
 
 2. **Crie os produtos:**
-   - Starter Pack: $29.00
-   - Pro Pack: $39.00
-   - Premium Pack: $49.00
-   - Basic Pack: $18.00
-   - Standard Pack: $25.00
-   - Premium Pack (Page2): $40.00
+   - Starter Pack: $5.00
+   - Pro Pack: $10.00
+   - Premium Pack: $25.00
+   - Basic Pack: $10.00
+   - Standard Pack: $20.00
+   - Premium Pack (Page2): $25.00
 
 3. **Copie os Price IDs:**
    - Cada produto terá um ou mais preços
@@ -86,12 +86,12 @@ ORDER BY price ASC;
 ```
 
 **Resultado esperado:**
-- Basic Pack: $18.00, 40 créditos
-- Standard Pack: $25.00, 60 créditos
-- Starter Pack: $29.00, 40 créditos
-- Premium Pack (Page2): $40.00, 100 créditos
-- Pro Pack: $39.00, 100 créditos
-- Premium Pack: $49.00, 150 créditos
+- Starter Pack: $5.00, 40 créditos
+- Pro Pack: $10.00, 100 créditos
+- Basic Pack: $10.00, 40 créditos
+- Standard Pack: $20.00, 60 créditos
+- Premium Pack: $25.00, 150 créditos
+- Premium Pack (Page2): $25.00, 100 créditos
 
 ## ⚠️ Notas Importantes
 

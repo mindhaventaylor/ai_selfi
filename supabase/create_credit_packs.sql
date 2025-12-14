@@ -9,39 +9,39 @@
 -- DELETE FROM public.credit_packs;
 
 -- ============================================
--- PAGE1 VARIANTS (Flow Original)
+-- PAGE1 VARIANTS (Flow Original) - Variation 1
 -- ============================================
 
--- Starter Pack - $29, 40 créditos
+-- Starter Pack - $5, 40 créditos
 INSERT INTO public.credit_packs (name, description, price, credits, "stripePriceId", "createdAt")
 VALUES (
   'Starter Pack',
   '40 professional AI-generated photos',
-  29.00,
+  5.00,
   40,
   NULL, -- SUBSTITUA pelo stripePriceId real do Stripe
   NOW()
 )
 ON CONFLICT DO NOTHING;
 
--- Pro Pack - $39, 100 créditos
+-- Pro Pack - $10, 100 créditos
 INSERT INTO public.credit_packs (name, description, price, credits, "stripePriceId", "createdAt")
 VALUES (
   'Pro Pack',
   '100 professional AI-generated photos',
-  39.00,
+  10.00,
   100,
   NULL, -- SUBSTITUA pelo stripePriceId real do Stripe
   NOW()
 )
 ON CONFLICT DO NOTHING;
 
--- Premium Pack - $49, 150 créditos (ou 140 se preferir)
+-- Premium Pack - $25, 150 créditos
 INSERT INTO public.credit_packs (name, description, price, credits, "stripePriceId", "createdAt")
 VALUES (
   'Premium Pack',
   '150 professional AI-generated photos',
-  49.00,
+  25.00,
   150,
   NULL, -- SUBSTITUA pelo stripePriceId real do Stripe
   NOW()
@@ -61,39 +61,39 @@ ON CONFLICT DO NOTHING;
 -- ON CONFLICT DO NOTHING;
 
 -- ============================================
--- PAGE2 VARIANTS (Flow com Preços Promocionais)
+-- PAGE2 VARIANTS (Flow Promocional) - Variation 2
 -- ============================================
 
--- Basic Pack (Page2) - $18, 40 créditos
+-- Basic Pack (Page2) - $10, 40 créditos
 INSERT INTO public.credit_packs (name, description, price, credits, "stripePriceId", "createdAt")
 VALUES (
   'Basic Pack',
   '40 professional AI-generated photos',
-  18.00,
+  10.00,
   40,
   NULL, -- SUBSTITUA pelo stripePriceId real do Stripe
   NOW()
 )
 ON CONFLICT DO NOTHING;
 
--- Standard Pack (Page2) - $25, 60 créditos
+-- Standard Pack (Page2) - $20, 60 créditos
 INSERT INTO public.credit_packs (name, description, price, credits, "stripePriceId", "createdAt")
 VALUES (
   'Standard Pack',
   '60 professional AI-generated photos',
-  25.00,
+  20.00,
   60,
   NULL, -- SUBSTITUA pelo stripePriceId real do Stripe
   NOW()
 )
 ON CONFLICT DO NOTHING;
 
--- Premium Pack (Page2) - $40, 100 créditos
+-- Premium Pack (Page2) - $25, 100 créditos
 INSERT INTO public.credit_packs (name, description, price, credits, "stripePriceId", "createdAt")
 VALUES (
   'Premium Pack (Page2)',
   '100 professional AI-generated photos',
-  40.00,
+  25.00,
   100,
   NULL, -- SUBSTITUA pelo stripePriceId real do Stripe
   NOW()

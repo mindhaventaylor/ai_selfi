@@ -12,51 +12,51 @@ const db = getDb();
 // Definir os packs necessários
 const packsToCreate = [
   // ============================================
-  // PAGE1 VARIANTS (Flow Original)
+  // PAGE1 VARIANTS (Flow Original) - Variation 1
   // ============================================
   {
     name: "Starter Pack",
     description: "40 professional AI-generated photos",
-    price: "29.00",
+    price: "5.00",
     credits: 40,
     stripePriceId: null as string | null, // Você precisará adicionar o stripePriceId do Stripe
   },
   {
     name: "Pro Pack",
     description: "100 professional AI-generated photos",
-    price: "39.00",
+    price: "10.00",
     credits: 100,
     stripePriceId: null as string | null,
   },
   {
     name: "Premium Pack",
     description: "150 professional AI-generated photos",
-    price: "49.00",
-    credits: 150, // Altere para 140 se preferir
+    price: "25.00",
+    credits: 150,
     stripePriceId: null as string | null,
   },
   
   // ============================================
-  // PAGE2 VARIANTS (Flow com Preços Promocionais)
+  // PAGE2 VARIANTS (Flow Promocional) - Variation 2
   // ============================================
   {
     name: "Basic Pack",
     description: "40 professional AI-generated photos",
-    price: "18.00",
+    price: "10.00",
     credits: 40,
     stripePriceId: null as string | null,
   },
   {
     name: "Standard Pack",
     description: "60 professional AI-generated photos",
-    price: "25.00",
+    price: "20.00",
     credits: 60,
     stripePriceId: null as string | null,
   },
   {
     name: "Premium Pack (Page2)",
     description: "100 professional AI-generated photos",
-    price: "40.00",
+    price: "25.00",
     credits: 100,
     stripePriceId: null as string | null,
   },

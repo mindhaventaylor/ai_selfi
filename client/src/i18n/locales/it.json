@@ -167,18 +167,25 @@
       "starter": {
         "name": "Pacchetto Starter",
         "photos": "40 foto",
-        "price": "$29",
+        "price": "€5",
         "currency": "USD",
         "note": "Pagamento unico. Nessun abbonamento."
       },
       "pro": {
         "name": "Pacchetto Pro",
         "photos": "100 foto (Qualità 4k)",
-        "price": "$39",
-        "oldPrice": "$49",
+        "price": "€10",
+        "oldPrice": "€20",
         "currency": "USD",
         "note": "Pagamento unico. Nessun abbonamento.",
         "badge": "Popolare"
+      },
+      "premium": {
+        "name": "Pacchetto Premium",
+        "photos": "150 foto (Qualità 4k)",
+        "price": "€25",
+        "currency": "EUR",
+        "note": "Pagamento unico. Nessun abbonamento."
       }
     }
   },
@@ -284,7 +291,10 @@
     "learnProcess": "Impara il processo",
     "moreInfo": "Maggiori Informazioni →",
     "aiselfies": "AISelfies",
-    "videoTime": "0:00 / 1:11"
+    "videoTime": "0:00 / 1:11",
+    "loading": "Caricamento...",
+    "photoAlt": "Foto {{number}}",
+    "galleryAlt": "Galleria {{number}}"
   },
   "generateImages": {
     "title": "Scegli le Tue Immagini",
@@ -1348,29 +1358,6 @@
       "cta": "Crea le mie foto professionali"
     }
   },
-  "dashboard": {
-    "title": "AI Selfie",
-    "subtitle": "Trasforma i tuoi selfie in foto professionali",
-    "generateImages": "Genera Immagini →",
-    "newModelAvailable": "Nuovo modello IA disponibile",
-    "moreRealisticPhotos": "Foto più realistiche e qualità 4k",
-    "in60Seconds": "AISelfie in 60\"",
-    "trainModel": "Addestra un modello",
-    "newAIModel": "Nuovo modello IA",
-    "createCustomAI": "Crea la tua IA personalizzata",
-    "startTraining": "Inizia Addestramento →",
-    "gallery": "Galleria",
-    "exploreCreations": "Esplora creazioni",
-    "viewGallery": "Vedi Galleria →",
-    "howItWorks": "Come funziona",
-    "learnProcess": "Impara il processo",
-    "moreInfo": "Maggiori Informazioni →",
-    "aiselfies": "AISelfies",
-    "videoTime": "0:00 / 1:11",
-    "loading": "Caricamento...",
-    "photoAlt": "Foto {{number}}",
-    "galleryAlt": "Galleria {{number}}"
-  },
   "dashboardV2": {
     "welcome": "Benvenuto",
     "gender": "Genere",
@@ -1661,4 +1648,3 @@
     "ctaButton": "Sfoglia Stili di Foto Professionali"
   }
 }
-

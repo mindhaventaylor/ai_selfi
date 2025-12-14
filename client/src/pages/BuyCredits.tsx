@@ -92,8 +92,8 @@ export default function BuyCredits() {
   };
 
   // Map hardcoded packs to database packs by price
-  // For page1: Starter = $29, Pro = $39, Premium = $49
-  // For page2: Starter = $18, Pro = $25, Premium = $40
+  // For page1: Starter = $5, Pro = $10, Premium = $25
+  // For page2: Starter = $10, Pro = $20, Premium = $25
   const getPackIdByBasePrice = (basePriceUSD: number): number | null => {
     if (!packs || packs.length === 0) {
       console.warn("[BuyCredits] No packs available for price matching:", basePriceUSD);
@@ -170,9 +170,9 @@ export default function BuyCredits() {
     const expectedPremiumCredits = isPage2Variant ? 100 : 150;
 
     // Try to find packs by price AND credits first
-    let mappedStarter = findPackByPriceAndCredits(isPage2Variant ? 18 : 29, expectedStarterCredits);
-    let mappedPro = findPackByPriceAndCredits(isPage2Variant ? 25 : 39, expectedProCredits);
-    let mappedPremium = findPackByPriceAndCredits(isPage2Variant ? 40 : 49, expectedPremiumCredits);
+    let mappedStarter = findPackByPriceAndCredits(isPage2Variant ? 10 : 5, expectedStarterCredits);
+    let mappedPro = findPackByPriceAndCredits(isPage2Variant ? 20 : 10, expectedProCredits);
+    let mappedPremium = findPackByPriceAndCredits(isPage2Variant ? 25 : 25, expectedPremiumCredits);
     
     const needsFallback = !mappedStarter || !mappedPro || !mappedPremium;
     // For page2 variant, ALWAYS use fallback mapping regardless of price match
@@ -387,9 +387,9 @@ export default function BuyCredits() {
                   <p className="text-sm text-muted-foreground">
                     {isPage2Variant ? `${starterCredits} ${t("buyCredits.photos") || "photos"}` : t("buyCredits.starterCredits")}
                   </p>
-                  <div className={`text-4xl font-bold text-primary mt-4 ${isPage2Variant && starterPrice.oldFormatted ? "flex items-center justify-center gap-2" : ""}`}>
+                  <div className={`text-4xl font-bold text-primary mt-4 ${starterPrice.oldFormatted ? "flex items-center justify-center gap-2" : ""}`}>
                     <span>{starterPrice.formatted}</span>
-                    {isPage2Variant && starterPrice.oldFormatted && (
+                    {starterPrice.oldFormatted && (
                       <span className="text-xl text-muted-foreground line-through font-normal">
                         {starterPrice.oldFormatted}
                       </span>
@@ -453,13 +453,9 @@ export default function BuyCredits() {
                   </p>
                   <div className="text-4xl font-bold text-primary mt-4 flex items-center justify-center gap-2">
                     <span>{proPrice.formatted}</span>
-                    {isPage2Variant && proPrice.oldFormatted ? (
+                    {proPrice.oldFormatted && (
                       <span className="text-xl text-muted-foreground line-through font-normal">
                         {proPrice.oldFormatted}
-                      </span>
-                    ) : !isPage2Variant && (
-                      <span className="text-xl text-muted-foreground line-through font-normal">
-                        {premiumPrice.formatted}
                       </span>
                     )}
                   </div>
@@ -530,9 +526,9 @@ export default function BuyCredits() {
                   <p className="text-sm text-muted-foreground">
                     {isPage2Variant ? `${premiumCredits} ${t("buyCredits.photos") || "photos"}` : t("buyCredits.premiumCredits")}
                   </p>
-                  <div className={`text-4xl font-bold text-primary mt-4 ${isPage2Variant && premiumPrice.oldFormatted ? "flex items-center justify-center gap-2" : ""}`}>
+                  <div className={`text-4xl font-bold text-primary mt-4 ${premiumPrice.oldFormatted ? "flex items-center justify-center gap-2" : ""}`}>
                     <span>{premiumPrice.formatted}</span>
-                    {isPage2Variant && premiumPrice.oldFormatted && (
+                    {premiumPrice.oldFormatted && (
                       <span className="text-xl text-muted-foreground line-through font-normal">
                         {premiumPrice.oldFormatted}
                       </span>
