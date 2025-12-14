@@ -8,6 +8,8 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -46,7 +48,8 @@ import {
   Scissors,
   Download,
   AlertCircle,
-  X
+  X,
+  Upload
 } from "lucide-react";
 import { exampleImages, filterExampleImages, type ExampleImage } from "@/data/exampleImages";
 import { toast } from "sonner";
@@ -67,11 +70,21 @@ export default function GenerateImages() {
   const [selectedBackgrounds, setSelectedBackgrounds] = useState<string[]>([]);
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [aspectRatio, setAspectRatio] = useState<"1:1" | "9:16" | "16:9">("9:16");
-  const [modelId, setModelId] = useState<string>("");
+  const [modelId, setModelId] = useState<string>(""); // Keep for backward compatibility but won't be used
   const [glasses, setGlasses] = useState<string>("no");
   const [hairColor, setHairColor] = useState<string>("default");
   const [hairStyle, setHairStyle] = useState<string>("no-preference");
   const [isParametersSheetOpen, setIsParametersSheetOpen] = useState(false);
+  
+  // Upload state for user images (replaces model selection)
+  interface UploadedFile {
+    id: string;
+    file: File;
+    preview: string;
+  }
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Generation modal state
   // Check for batchId in URL immediately (synchronously) to avoid rendering DashboardV2 when we have a batchId
@@ -124,9 +137,10 @@ export default function GenerateImages() {
     isPage2Variant,
   });
 
-  // Fetch user's models
+  // Fetch user's models (keep for backward compatibility, but won't be displayed)
   const { data: modelsData, isLoading: isLoadingModels } = trpc.model.list.useQuery();
   const generateMutation = trpc.photo.generate.useMutation();
+  const uploadImagesMutation = trpc.model.uploadTrainingImages.useMutation();
   const getBatchStatusQuery = trpc.photo.getBatchStatus.useQuery(
     currentBatchId ? { batchId: currentBatchId } : { batchId: 0 },
     { 
@@ -259,11 +273,7 @@ export default function GenerateImages() {
     }
   }, [isPage2Variant, currentBatchId, showModal]);
   
-  // Fetch training images for selected model (only if model is selected and not page2 variant)
-  const { data: trainingImages } = trpc.model.getTrainingImages.useQuery(
-    { modelId: parseInt(modelId) },
-    { enabled: !!modelId && modelId !== "" && !isPage2Variant }
-  );
+  // Training images query removed - we now use uploaded images instead of models
   
   // State for page2 data from DashboardV2
   const [page2Data, setPage2Data] = useState<any>(null);
@@ -1263,6 +1273,105 @@ export default function GenerateImages() {
   }, []);
   
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
+  
+  // Upload functions for user images (replaces model selection)
+  const readFileAsBase64 = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.includes(",") ? result.split(",")[1] : result;
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const handleFileSelect = (files: FileList | null) => {
+    if (!files || files.length === 0) {
+      return;
+    }
+
+    const newFiles: UploadedFile[] = [];
+    const maxFiles = 10;
+    const currentCount = uploadedFiles.length;
+    const totalFiles = currentCount + files.length;
+
+    // Check total files limit first
+    if (totalFiles > maxFiles) {
+      toast.error(t("trainModel.max5Images") || "Too many files", {
+        description: `Maximum ${maxFiles} images allowed. You have ${currentCount} and trying to add ${files.length}.`,
+      });
+      return;
+    }
+
+    // Process each file
+    for (const file of Array.from(files)) {
+      // Check if we've reached the limit
+      if (currentCount + newFiles.length >= maxFiles) {
+        toast.error(t("trainModel.max5Images") || "Too many files", {
+          description: `Maximum ${maxFiles} images allowed.`,
+        });
+        break;
+      }
+      
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/webp'];
+      if (!validTypes.includes(file.type.toLowerCase())) {
+        toast.error(t("trainModel.onlyJpgPng") || "Invalid file type", {
+          description: `File "${file.name}" is not a valid format. Use PNG, JPG, HEIC or WEBP.`,
+        });
+        continue;
+      }
+
+      // Validate file size (120MB)
+      const maxFileSize = 120 * 1024 * 1024;
+      if (file.size > maxFileSize) {
+        toast.error(t("trainModel.fileTooLarge") || "File too large", {
+          description: `File "${file.name}" is too large (maximum 120MB)`,
+        });
+        continue;
+      }
+
+      const id = `${Date.now()}-${Math.random()}`;
+      const preview = URL.createObjectURL(file);
+      newFiles.push({ id, file, preview });
+    }
+
+    if (newFiles.length > 0) {
+      setUploadedFiles((prev) => [...prev, ...newFiles]);
+      toast.success(`${newFiles.length} ${newFiles.length === 1 ? "image selected" : "images selected"}`, {
+        description: "Ready to use",
+      });
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    handleFileSelect(e.dataTransfer.files);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const removeFile = (id: string) => {
+    setUploadedFiles((prev) => {
+      const file = prev.find((f) => f.id === id);
+      if (file) {
+        URL.revokeObjectURL(file.preview);
+      }
+      return prev.filter((f) => f.id !== id);
+    });
+    toast.success("Image removed");
+  };
+  
   // Define handleDownloadImage using useCallback (must be before return)
   const handleDownloadImage = useCallback(async (image: { id: number; url: string; status: string } | string, index: number) => {
     try {
@@ -1307,15 +1416,14 @@ export default function GenerateImages() {
   const creditsNeeded = totalImagesToGenerate; // 1 credit per generated image
   const userCredits = user?.credits ?? 0;
   const hasEnoughCredits = creditsNeeded <= userCredits;
-  const selectedModelStatus = modelsData?.find((m) => m.id.toString() === modelId)?.status;
-  const isModelReady = selectedModelStatus === "ready";
+  // Model status check removed - we now use uploaded images instead
   
-  // For page2 variant, model is optional; for page1, model is required
+  // For page2 variant, model is optional; for page1, uploaded images are required
   // For page1: Don't check credits in canGenerate - let button redirect if no credits
   // For page2: Keep credit check as it has its own flow
   const canGenerate = isPage2Variant
     ? imageCount > 0 && hasEnoughCredits
-    : imageCount > 0 && modelId !== "" && isModelReady; // Removed hasEnoughCredits check for page1
+    : imageCount > 0 && uploadedFiles.length > 0; // Require uploaded images instead of model
   
   // Define helper functions and constants (not hooks, safe to call after hooks)
   const backgrounds = ["office", "studio", "city", "nature", "interior"];
@@ -1475,36 +1583,60 @@ Output should be a vertical rectangle. Entire head should be visible`;
       }
     }
     
-    // Build reference image URLs:
+    // Build reference image URLs from uploaded images
+    // For page1 variant: Use uploaded user images + example images
     // For page2 variant: Only use example images (no model required)
-    // For page1 variant: Use model's training images + example images
     const referenceImageUrls: string[] = [];
     
     if (!isPage2Variant) {
-      // Page1 variant: require model
-      if (!modelId) {
-        alert(t("generateImages.pleaseSelectValidModel"));
+      // Page1 variant: require uploaded images
+      if (uploadedFiles.length === 0) {
+        toast.error(t("generateImages.noImagesUploaded") || "Please upload images", {
+          description: t("generateImages.uploadImagesToGenerate") || "Upload images to generate photos",
+        });
         return;
       }
     
-      // Get selected model
-      const selectedModel = modelsData?.find((m) => m.id.toString() === modelId);
-      if (!selectedModel) {
-        alert(t("generateImages.pleaseSelectValidModel"));
+      // Upload user images and get URLs
+      try {
+        const uploadedUrls: string[] = [];
+        for (const file of uploadedFiles) {
+          const base64 = await readFileAsBase64(file.file);
+          const { urls } = await uploadImagesMutation.mutateAsync({
+            images: [
+              {
+                data: base64,
+                fileName: file.file.name,
+                contentType: file.file.type,
+              },
+            ],
+          });
+
+          if (!urls || urls.length === 0) {
+            throw new Error(t("trainModel.couldNotUploadImages") || "Could not upload images");
+          }
+
+          uploadedUrls.push(urls[0]);
+        }
+        
+        // Use uploaded images as reference (max 1 to minimize payload size)
+        if (uploadedUrls.length > 0) {
+          referenceImageUrls.push(uploadedUrls[0]); // Use only the first uploaded image
+        }
+      } catch (error: any) {
+        console.error("[GenerateImages] Upload error:", error);
+        toast.error(t("generateImages.failedToUploadImages") || "Failed to upload images", {
+          description: error?.message || t("generateImages.pleaseTryAgain"),
+        });
+        setIsGenerating(false);
+        setShowModal(false);
         return;
-      }
-    
-      // Add model's training images (max 1 to minimize payload size and token consumption)
-      // Using only 1 training image significantly reduces the payload size and helps avoid rate limits
-      if (trainingImages && trainingImages.length > 0) {
-        referenceImageUrls.push(trainingImages[0]); // Use only the first training image
-      } else if (selectedModel.previewImageUrl) {
-        // Fallback to preview image if training images aren't loaded yet
-        referenceImageUrls.push(selectedModel.previewImageUrl);
       }
     
       if (referenceImageUrls.length === 0) {
-        alert(t("generateImages.noTrainingImagesFound"));
+        toast.error(t("generateImages.noImagesUploaded") || "No images uploaded");
+        setIsGenerating(false);
+        setShowModal(false);
         return;
       }
     }
@@ -1557,11 +1689,11 @@ Output should be a vertical rectangle. Entire head should be visible`;
       }
 
       // Call the API with new structure
-      // For page1: Only send gender (embedded in basePrompt) and exampleImage prompt
+      // For page1: Use uploaded user images instead of model
       // Don't send user attributes (hair, glasses, backgrounds, styles) as they're not used
-      const result = await generateMutation.mutateAsync({
-        modelId: isPage2Variant ? undefined : parseInt(modelId), // Optional for page2
-        trainingImageUrls: referenceImageUrls, // Empty for page2, contains model images for page1
+      const generateInput: any = {
+        // Don't send modelId - we're using uploaded images instead
+        trainingImageUrls: referenceImageUrls, // Contains uploaded user images for page1, empty for page2
         exampleImages: [{
           id: selectedExampleImage.id,
           url: absoluteUrl,
@@ -1573,7 +1705,12 @@ Output should be a vertical rectangle. Entire head should be visible`;
         glasses: "no", // Not used for page1, but required by schema
         backgrounds: [], // Not used for page1
         styles: [], // Not used for page1
-      });
+      };
+      
+      // Only include modelId if it's a valid number (shouldn't happen anymore, but just in case)
+      // Since we're not using models, we don't send modelId at all
+      
+      const result = await generateMutation.mutateAsync(generateInput);
 
       // Set batch ID for polling
       if (result.batchId) {
@@ -1774,49 +1911,81 @@ Output should be a vertical rectangle. Entire head should be visible`;
                   
                   <CollapsibleContent>
                     <div className="p-6 space-y-6">
-                      {/* Model ID - Hidden for page2 variant */}
-                      {!isPage2Variant && (
+                      {/* Upload Images - Replaces model selection */}
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 mb-2">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          <label className="text-sm font-medium">{t("generateImages.model")}</label>
+                          <Upload className="h-4 w-4 text-muted-foreground" />
+                          <Label className="text-sm font-medium">{t("generateImages.uploadImages") || "Upload Images"}</Label>
                         </div>
-                        <Select value={modelId} onValueChange={setModelId}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder={t("generateImages.selectModel")} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {isLoadingModels ? (
-                              <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                                {t("generateImages.loadingModels")}
-                              </div>
-                            ) : modelsData && modelsData.length > 0 ? (
-                              modelsData.map((model) => (
-                                <SelectItem 
-                                  key={model.id} 
-                                  value={model.id.toString()}
-                                  disabled={model.status !== "ready"}
-                                >
-                                  {model.name} {model.gender ? `(${model.gender})` : ""} 
-                                  {model.status === "training" && ` - ${t("generateImages.training")}`}
-                                  {model.status === "failed" && ` - ${t("generateImages.failed")}`}
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                                {t("generateImages.noModelsAvailable")}
-                              </div>
+                        <div
+                          className={`border-2 border-dashed rounded-lg p-4 transition-colors cursor-pointer relative ${
+                            isDragging
+                              ? "border-primary bg-primary/10"
+                              : "border-border hover:border-primary/50"
+                          }`}
+                          onDrop={handleDrop}
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                        >
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/jpeg,image/jpg,image/png,image/heic,image/webp"
+                            multiple
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            onChange={(e) => {
+                              handleFileSelect(e.target.files);
+                              e.target.value = '';
+                            }}
+                          />
+                          <div className="text-center">
+                            <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">
+                              {t("trainModel.orDragAndDrop") || "Click or drag and drop"}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {t("trainModel.minMaxImages") || "1-10 images, max 120MB each"}
+                            </p>
+                            {uploadedFiles.length > 0 && (
+                              <p className="text-sm text-green-500 font-medium mt-2">
+                                {uploadedFiles.length} {uploadedFiles.length === 1 ? "image selected" : "images selected"}
+                              </p>
                             )}
-                          </SelectContent>
-                        </Select>
+                          </div>
+                        </div>
+                        {uploadedFiles.length > 0 && (
+                          <div className="grid grid-cols-3 gap-2 mt-2">
+                            {uploadedFiles.map((file, index) => (
+                              <div
+                                key={file.id}
+                                className="relative aspect-square rounded-lg overflow-hidden border-2 border-border group"
+                              >
+                                <img
+                                  src={file.preview}
+                                  alt={file.file.name}
+                                  className="w-full h-full object-cover"
+                                />
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeFile(file.id);
+                                  }}
+                                  className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  title="Remove image"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                                <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate">
+                                  {index + 1}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                         <p className="text-xs text-muted-foreground mt-1.5">
-                          {!modelId && modelsData && modelsData.length === 0 && t("generateImages.firstNeedToTrain")}
-                          {!modelId && modelsData && modelsData.length > 0 && t("generateImages.selectModelToGenerate")}
-                          {modelId && modelsData?.find((m) => m.id.toString() === modelId)?.status === "training" && t("generateImages.modelStillTraining")}
-                          {modelId && modelsData?.find((m) => m.id.toString() === modelId)?.status === "failed" && t("generateImages.modelFailed")}
+                          {uploadedFiles.length === 0 && (t("generateImages.uploadImagesToGenerate") || "Upload images to generate photos")}
                         </p>
                       </div>
-                      )}
 
                       {/* Image Dimensions */}
                       <div className="space-y-2">
@@ -1936,8 +2105,8 @@ Output should be a vertical rectangle. Entire head should be visible`;
                               ? t("generateImages.selectImagesToGenerate")
                               : !hasEnoughCredits
                               ? `${t("generateImages.notEnoughCredits")} (${t("generateImages.needCredits")} ${creditsNeeded}, ${t("generateImages.haveCredits")} ${userCredits})`
-                              : !isPage2Variant && modelId === ""
-                              ? t("generateImages.selectModelFirst")
+                              : !isPage2Variant && uploadedFiles.length === 0
+                              ? t("generateImages.uploadImagesToGenerate") || "Upload images to generate photos"
                               : `${t("generateImages.willUseCredits")} ${creditsNeeded} ${creditsNeeded === 1 ? t("generateImages.credit") : t("generateImages.credits")}`
                             }
                           </span>
@@ -1961,49 +2130,81 @@ Output should be a vertical rectangle. Entire head should be visible`;
               </SheetHeader>
               
               <div className="py-6 space-y-6">
-                {/* Model ID - Hidden for page2 variant */}
-                {!isPage2Variant && (
+                {/* Upload Images - Replaces model selection */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 mb-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <label className="text-sm font-medium">{t("generateImages.model")}</label>
+                    <Upload className="h-4 w-4 text-muted-foreground" />
+                    <Label className="text-sm font-medium">{t("generateImages.uploadImages") || "Upload Images"}</Label>
                   </div>
-                  <Select value={modelId} onValueChange={setModelId}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t("generateImages.selectModel")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {isLoadingModels ? (
-                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                          {t("generateImages.loadingModels")}
-                        </div>
-                      ) : modelsData && modelsData.length > 0 ? (
-                        modelsData.map((model) => (
-                          <SelectItem 
-                            key={model.id} 
-                            value={model.id.toString()}
-                            disabled={model.status !== "ready"}
-                          >
-                            {model.name} {model.gender ? `(${model.gender})` : ""} 
-                            {model.status === "training" && ` - ${t("generateImages.training")}`}
-                            {model.status === "failed" && ` - ${t("generateImages.failed")}`}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                          {t("generateImages.noModelsAvailable")}
-                        </div>
+                  <div
+                    className={`border-2 border-dashed rounded-lg p-4 transition-colors cursor-pointer relative ${
+                      isDragging
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/heic,image/webp"
+                      multiple
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      onChange={(e) => {
+                        handleFileSelect(e.target.files);
+                        e.target.value = '';
+                      }}
+                    />
+                    <div className="text-center">
+                      <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        {t("trainModel.orDragAndDrop") || "Click or drag and drop"}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t("trainModel.minMaxImages") || "1-10 images, max 120MB each"}
+                      </p>
+                      {uploadedFiles.length > 0 && (
+                        <p className="text-sm text-green-500 font-medium mt-2">
+                          {uploadedFiles.length} {uploadedFiles.length === 1 ? "image selected" : "images selected"}
+                        </p>
                       )}
-                    </SelectContent>
-                  </Select>
+                    </div>
+                  </div>
+                  {uploadedFiles.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      {uploadedFiles.map((file, index) => (
+                        <div
+                          key={file.id}
+                          className="relative aspect-square rounded-lg overflow-hidden border-2 border-border group"
+                        >
+                          <img
+                            src={file.preview}
+                            alt={file.file.name}
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeFile(file.id);
+                            }}
+                            className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Remove image"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate">
+                            {index + 1}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground mt-1.5">
-                    {!modelId && modelsData && modelsData.length === 0 && t("generateImages.firstNeedToTrain")}
-                    {!modelId && modelsData && modelsData.length > 0 && t("generateImages.selectModelToGenerate")}
-                    {modelId && modelsData?.find((m) => m.id.toString() === modelId)?.status === "training" && t("generateImages.modelStillTraining")}
-                    {modelId && modelsData?.find((m) => m.id.toString() === modelId)?.status === "failed" && t("generateImages.modelFailed")}
+                    {uploadedFiles.length === 0 && (t("generateImages.uploadImagesToGenerate") || "Upload images to generate photos")}
                   </p>
                 </div>
-                )}
 
                 {/* Image Dimensions */}
                 <div className="space-y-2">

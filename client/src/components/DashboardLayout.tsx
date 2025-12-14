@@ -30,7 +30,6 @@ import { APP_LOGO, APP_TITLE } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
 import {
   HelpCircle,
-  FlaskConical,
   PlusCircle,
   Image as ImageIcon,
   Sparkles,
@@ -160,20 +159,14 @@ function DashboardLayoutContent({
   // Determine current variant to pass to generate page
   const currentVariant = urlVariant || firstVariant || cachedVariant || variant;
   
-  const allMenuItems = [
+  const menuItems = [
     { icon: HelpCircle, label: t("dashboardLayout.startHere"), path: "/dashboard/start" },
-    { icon: FlaskConical, label: t("dashboardLayout.models"), path: "/dashboard/models" },
     { icon: PlusCircle, label: t("dashboardLayout.create"), path: `/dashboard/generate${currentVariant ? `?variant=${currentVariant}` : ""}` },
     { icon: ImageIcon, label: t("dashboardLayout.gallery"), path: "/dashboard/gallery" },
     { icon: Sparkles, label: t("dashboardLayout.proFeatures"), path: "/dashboard/pro" },
     { icon: CreditCard, label: t("dashboardLayout.buyCredits"), path: "/dashboard/credits/buy" },
     { icon: Settings, label: t("dashboardLayout.settings"), path: "/dashboard/settings/general" },
   ];
-  
-  // Filter out models menu item for page2 variant (but keep Start Here)
-  const menuItems = isPage2Variant
-    ? allMenuItems.filter(item => item.path !== "/dashboard/models")
-    : allMenuItems;
   const activeMenuItem = menuItems.find(item => item.path === location);
   const [supportOpen, setSupportOpen] = useState(() => {
     return location.startsWith("/dashboard/support");

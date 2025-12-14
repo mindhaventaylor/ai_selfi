@@ -10,7 +10,6 @@ import { safeLocalStorage } from "@/utils/localStorage";
 import {
   Sparkles,
   CreditCard,
-  FlaskConical,
   Image as ImageIcon,
   Play,
   Check,
@@ -44,7 +43,7 @@ export default function StartHere() {
     "/over100_4.jpg",
   ];
 
-  // Define all steps
+  // Define steps (step 2 - Train Model was removed completely)
   const allSteps = [
     {
       id: 1,
@@ -54,70 +53,29 @@ export default function StartHere() {
       buttonColor: "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl",
     },
     {
-      id: 2,
-      title: t("startHere.step2"),
-      icon: FlaskConical,
-      color: "yellow",
-      buttonColor: "bg-gradient-to-br from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 shadow-lg hover:shadow-xl",
-    },
-    {
       id: 3,
-      title: t("startHere.step3"),
+      title: t("startHere.step3"), // Step 3 becomes step 2
       icon: Sparkles,
       color: "purple",
       buttonColor: "bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg hover:shadow-xl",
     },
     {
       id: 4,
-      title: t("startHere.step4"),
+      title: t("startHere.step4"), // Step 4 becomes step 3
       icon: ImageIcon,
       color: "green",
       buttonColor: "bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl",
     },
   ];
   
-  // Helper function to get step title for the buttons (adjusts numbers for page2)
-  const getStepButtonTitle = (stepId: number, originalTitle: string): string => {
-    if (!isPage2Variant) {
-      return originalTitle;
-    }
-    
-    // For page2 variant, adjust step numbers in titles
-    if (stepId === 3) {
-      // Step 3 becomes Step 2 in page2
-      return originalTitle
-        .replace(/Step\s+3\s*:/gi, "Step 2:")
-        .replace(/Step\s+3\s+/gi, "Step 2 ")
-        .replace(/Passo\s+3\s*:/gi, "Passo 2:")
-        .replace(/Passo\s+3\s+/gi, "Passo 2 ")
-        .replace(/Paso\s+3\s*:/gi, "Paso 2:")
-        .replace(/Paso\s+3\s+/gi, "Paso 2 ");
-    } else if (stepId === 4) {
-      // Step 4 becomes Step 3 in page2
-      return originalTitle
-        .replace(/Step\s+4\s*:/gi, "Step 3:")
-        .replace(/Step\s+4\s+/gi, "Step 3 ")
-        .replace(/Passo\s+4\s*:/gi, "Passo 3:")
-        .replace(/Passo\s+4\s+/gi, "Passo 3 ")
-        .replace(/Paso\s+4\s*:/gi, "Paso 3:")
-        .replace(/Paso\s+4\s+/gi, "Paso 3 ");
-    }
-    
-    return originalTitle;
-  };
 
-  // For page2 variant, remove step 2 and renumber the remaining steps
-  const steps = isPage2Variant
-    ? allSteps
-        .filter(step => step.id !== 2) // Remove step 2
-        .map((step, index) => ({
-          ...step,
-          id: index + 1, // Renumber: 1, 2, 3 (was 1, 3, 4)
-          title: getStepButtonTitle(step.id, step.title), // Adjust title numbers
-        }))
-    : allSteps;
+  // Steps are already defined without step 2
+  const steps = allSteps.map((step, index) => ({
+    ...step,
+    id: index + 1, // Renumber: 1, 2, 3 (was 1, 3, 4)
+  }));
 
-  // Helper function to get step title with correct number for page2 variant
+  // Helper function to get step title with correct number (step 2 was removed)
   const getStepTitle = (stepKey: "step3Title" | "step4Title"): string => {
     try {
       // Use the full translation key with namespace
@@ -129,9 +87,9 @@ export default function StartHere() {
         console.warn(`[StartHere] Translation missing for ${translationKey}, got: ${fullTitle}`);
         // Return a fallback based on the key
         if (stepKey === "step3Title") {
-          return isPage2Variant ? "Step 2: Creating Your Photos" : "Step 3: Creating Your Photos";
+          return "Step 2: Creating Your Photos"; // Step 3 becomes step 2
         } else {
-          return isPage2Variant ? "Step 3: Gallery - Your Photos" : "Step 4: Gallery - Your Photos";
+          return "Step 3: Gallery - Your Photos"; // Step 4 becomes step 3
         }
       }
       
@@ -142,58 +100,49 @@ export default function StartHere() {
       
       if (stepKey === "step3Title" && step3Match) {
         const [, prefix, text] = step3Match;
-        const stepNumber = isPage2Variant ? 2 : 3;
+        const stepNumber = 2; // Step 2 was removed, so step 3 becomes step 2
         return `${prefix} ${stepNumber}: ${text}`;
       } else if (stepKey === "step4Title" && step4Match) {
         const [, prefix, text] = step4Match;
-        const stepNumber = isPage2Variant ? 3 : 4;
+        const stepNumber = 3; // Step 2 was removed, so step 4 becomes step 3
         return `${prefix} ${stepNumber}: ${text}`;
       }
       
       // Fallback: try simple replacement if regex doesn't match
-      if (isPage2Variant) {
-        if (stepKey === "step3Title") {
-          const replaced = fullTitle.replace(/^(Step|Passo|Paso)\s+3\s*:/i, "$1 2:");
-          return replaced !== fullTitle ? replaced : fullTitle;
-        } else if (stepKey === "step4Title") {
-          const replaced = fullTitle.replace(/^(Step|Passo|Paso)\s+4\s*:/i, "$1 3:");
-          return replaced !== fullTitle ? replaced : fullTitle;
-        }
+      if (stepKey === "step3Title") {
+        return fullTitle.replace(/^(Step|Passo|Paso)\s+3\s*:/i, "$1 2:");
+      } else if (stepKey === "step4Title") {
+        return fullTitle.replace(/^(Step|Passo|Paso)\s+4\s*:/i, "$1 3:");
       }
       
       return fullTitle;
     } catch (error) {
       console.error(`[StartHere] Error getting step title for ${stepKey}:`, error);
-      // Return fallback
+      // Return fallback (step 2 was removed)
       if (stepKey === "step3Title") {
-        return isPage2Variant ? "Step 2: Creating Your Photos" : "Step 3: Creating Your Photos";
+        return "Step 2: Creating Your Photos"; // Step 3 becomes step 2
       } else {
-        return isPage2Variant ? "Step 3: Gallery - Your Photos" : "Step 4: Gallery - Your Photos";
+        return "Step 3: Gallery - Your Photos"; // Step 4 becomes step 3
       }
     }
   };
 
   const scrollToStep = (stepId: number) => {
-    // For page2 variant, the HTML element IDs are already adjusted:
-    // - step-1 stays step-1
-    // - step-3 becomes step-2 (because id={isPage2Variant ? "step-2" : "step-3"})
-    // - step-4 becomes step-3 (because id={isPage2Variant ? "step-3" : "step-4"})
-    // For normal variant, use step IDs as-is: 1->1, 2->2, 3->3, 4->4
+    // Map displayed step IDs to actual step IDs (step 2 was removed):
+    // Displayed step 1 -> actual step 1
+    // Displayed step 2 -> actual step 3 (was step 3, now displayed as step 2)
+    // Displayed step 3 -> actual step 4 (was step 4, now displayed as step 3)
     let actualStepId = stepId;
-    if (isPage2Variant) {
-      // In page2, the displayed step IDs (1, 2, 3) map directly to HTML element IDs
-      // because the elements already have adjusted IDs
-      // stepId 1 -> step-1, stepId 2 -> step-2, stepId 3 -> step-3
-      actualStepId = stepId;
-    } else {
-      // In normal variant, step IDs map directly: 1->1, 2->2, 3->3, 4->4
-      actualStepId = stepId;
+    if (stepId === 1) {
+      actualStepId = 1;
+    } else if (stepId === 2) {
+      actualStepId = 3; // Displayed step 2 maps to actual step 3
+    } else if (stepId === 3) {
+      actualStepId = 4; // Displayed step 3 maps to actual step 4
     }
     const element = document.getElementById(`step-${actualStepId}`);
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      console.warn(`[StartHere] Element with id "step-${actualStepId}" not found. isPage2Variant: ${isPage2Variant}, stepId: ${stepId}`);
     }
   };
 
@@ -391,79 +340,6 @@ export default function StartHere() {
             </CardContent>
           </Card>
 
-        {/* Step 2: Train an AI Model - Hidden for page2 variant */}
-        {!isPage2Variant && (
-        <Card id="step-2" className="bg-gradient-to-br from-yellow-500/10 via-yellow-400/5 to-yellow-600/10 border-yellow-500/20 mb-6">
-          <CardContent className="p-6 md:p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-lg bg-yellow-500/20 flex items-center justify-center">
-                <FlaskConical className="w-6 h-6 text-yellow-400" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">
-                  {t("startHere.step2Title")}
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {t("startHere.step2Subtitle")}
-                </p>
-              </div>
-            </div>
-
-              <div className="space-y-6 text-sm">
-                <div>
-                  <h3 className="font-semibold mb-3">
-                    {t("startHere.goodPhotosForTraining")}
-                  </h3>
-                  <ul className="space-y-2 list-disc list-inside text-muted-foreground">
-                    <li>{t("startHere.goodPhoto1")}</li>
-                    <li>{t("startHere.goodPhoto2")}</li>
-                    <li>{t("startHere.goodPhoto3")}</li>
-                    <li>{t("startHere.goodPhoto4")}</li>
-                    <li>{t("startHere.goodPhoto5")}</li>
-                    <li>{t("startHere.goodPhoto6")}</li>
-                    <li>
-                      {t("startHere.goodPhoto7")}
-                    </li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-3">{t("startHere.photosToAvoid")}</h3>
-                  <ul className="space-y-2 list-disc list-inside text-muted-foreground">
-                    <li>{t("startHere.badPhoto1")}</li>
-                    <li>{t("startHere.badPhoto2")}</li>
-                    <li>{t("startHere.badPhoto3")}</li>
-                    <li>{t("startHere.badPhoto4")}</li>
-                    <li>{t("startHere.badPhoto5")}</li>
-                    <li>{t("startHere.badPhoto6")}</li>
-                    <li>{t("startHere.badPhoto7")}</li>
-                    <li>{t("startHere.badPhoto8")}</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-3">
-                    {t("startHere.forBestResults")}
-                  </h3>
-                  <ul className="space-y-2 list-disc list-inside text-muted-foreground">
-                    <li>{t("startHere.bestResult1")}</li>
-                    <li>{t("startHere.bestResult2")}</li>
-                    <li>{t("startHere.bestResult3")}</li>
-                    <li>{t("startHere.bestResult4")}</li>
-                    <li>{t("startHere.bestResult5")}</li>
-                  </ul>
-                </div>
-
-                <Button
-                  className={`mt-6 ${steps[1].buttonColor} text-white rounded-full`}
-                  onClick={() => setLocation("/dashboard/models")}
-                >
-                  {t("startHere.trainYourAIModel")}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Step 3: Creating Your Photos (becomes Step 2 for page2) */}
         <Card id={isPage2Variant ? "step-2" : "step-3"} className="bg-gradient-to-br from-purple-500/10 via-purple-400/5 to-purple-600/10 border-purple-500/20 mb-6">
@@ -556,7 +432,7 @@ export default function StartHere() {
                 </div>
 
                 <Button
-                  className={`mt-6 ${isPage2Variant ? steps[1].buttonColor : steps[2].buttonColor} text-white rounded-full`}
+                  className={`mt-6 ${steps[1].buttonColor} text-white rounded-full`}
                   onClick={() => setLocation("/dashboard/generate")}
                 >
                   {t("startHere.createYourPhotosWithAI")}
@@ -565,8 +441,8 @@ export default function StartHere() {
             </CardContent>
           </Card>
 
-        {/* Step 4: Gallery (becomes Step 3 for page2) */}
-        <Card id={isPage2Variant ? "step-3" : "step-4"} className="bg-gradient-to-br from-green-500/10 via-green-400/5 to-green-600/10 border-green-500/20 mb-6">
+        {/* Step 4: Gallery (becomes Step 3 after removing model step) */}
+        <Card id="step-4" className="bg-gradient-to-br from-green-500/10 via-green-400/5 to-green-600/10 border-green-500/20 mb-6">
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center">
@@ -621,7 +497,7 @@ export default function StartHere() {
                 </Alert>
 
                 <Button
-                  className={`mt-6 ${isPage2Variant ? steps[2].buttonColor : steps[3].buttonColor} text-white rounded-full`}
+                  className={`mt-6 ${steps[2].buttonColor} text-white rounded-full`}
                   onClick={() => setLocation("/dashboard/gallery")}
                 >
                   {t("startHere.viewYourGallery")}
