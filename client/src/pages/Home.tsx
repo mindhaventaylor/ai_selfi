@@ -62,16 +62,21 @@ export default function Home() {
   const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
   const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
 
+  // Check for returnUrl in query params
+  const returnUrl = urlParams.get("returnUrl");
+  const loginUrl = returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : "/login";
+
   // Get localized prices (with page2 variant support)
   const currency = detectCurrency();
   const starterPrice = getLocalizedPrice("starter", currency, isPage2Variant);
   const proPrice = getLocalizedPrice("pro", currency, isPage2Variant);
   const premiumPrice = getLocalizedPrice("premium", currency, isPage2Variant);
 
-  // Redirect authenticated users to dashboard
+  // Redirect authenticated users to dashboard or returnUrl
   useEffect(() => {
     if (!loading && user) {
-      setLocation("/dashboard");
+      const returnUrl = urlParams.get("returnUrl");
+      setLocation(returnUrl || "/dashboard");
     }
   }, [user, loading, setLocation]);
 
@@ -112,7 +117,7 @@ export default function Home() {
             }}
           >
             <OptimizedImage
-              src="/image.jpg"
+              src="/image.webp"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
               priority
@@ -132,7 +137,7 @@ export default function Home() {
             }}
           >
             <OptimizedImage
-              src="/image_1.jpg"
+              src="/image_1.webp"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
               priority
@@ -151,7 +156,7 @@ export default function Home() {
             }}
           >
             <OptimizedImage
-              src="/image_100.jpg"
+              src="/image_100.webp"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
             />
@@ -170,7 +175,7 @@ export default function Home() {
             }}
           >
             <OptimizedImage
-              src="/image_10.jpg"
+              src="/image_10.webp"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
               priority
@@ -190,7 +195,7 @@ export default function Home() {
             }}
           >
             <OptimizedImage
-              src="/image_101_last.jpg"
+              src="/image_101_last.webp"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
             />
@@ -209,7 +214,7 @@ export default function Home() {
             }}
           >
             <OptimizedImage
-              src="/image_101.jpg"
+              src="/image_101.webp"
               alt={t("home.altText.professionalPhoto")}
               className="w-full h-full object-cover"
             />
@@ -222,7 +227,7 @@ export default function Home() {
             {/* Badge with avatars */}
             <div className="flex items-center gap-3 bg-secondary/50 backdrop-blur-sm px-6 py-3 rounded-full">
               <div className="flex -space-x-2">
-                {["/image.jpg", "/image_1.jpg", "/image_10.jpg", "/image_100.jpg", "/image_101.jpg"].map(
+                {["/image.webp", "/image_1.webp", "/image_10.webp", "/image_100.webp", "/image_101.webp"].map(
                   (img, idx) => (
                     <div
                       key={idx}
@@ -266,7 +271,7 @@ export default function Home() {
 
           {/* Mobile - Simple Grid */}
           <div className="grid grid-cols-2 gap-4 lg:hidden max-w-md mx-auto mt-12">
-            {["/image.jpg", "/image_1.jpg", "/image_10.jpg", "/image_100.jpg"].map((img, idx) => (
+            {["/image.webp", "/image_1.webp", "/image_10.webp", "/image_100.webp"].map((img, idx) => (
               <div
                 key={idx}
                 className="aspect-[3/4] rounded-2xl overflow-hidden shadow-xl"
@@ -336,42 +341,42 @@ export default function Home() {
                     
                     if (isAndreaMarino) {
                       // Andrea Marino - 1 profile + 6 result images
-                      profileImage = "/andrea_marino_profile.jpg";
+                      profileImage = "/andrea_marino_profile.webp";
                       resultImages = [
-                        "/andrea_marino1.jpg",
-                        "/andrea_marino2.jpg",
-                        "/andrea_marino3.jpg",
-                        "/andrea_marino4.jpg",
-                        "/andrea_marino5.jpg",
-                        "/andrea_marino6.jpg",
+                        "/andrea_marino1.webp",
+                        "/andrea_marino2.webp",
+                        "/andrea_marino3.webp",
+                        "/andrea_marino4.webp",
+                        "/andrea_marino5.webp",
+                        "/andrea_marino6.webp",
                       ];
                     } else if (isJorge) {
                       // Jorge is example 9 - 1 profile + 6 results
-                      profileImage = "/9_profile.jpg";
+                      profileImage = "/9_profile.webp";
                       resultImages = [
-                        "/9_result1.jpg",
-                        "/9_result2.jpg",
-                        "/9_result3.jpg",
-                        "/9_result4.jpg",
-                        "/9_result5.jpg",
-                        "/9_result6.jpg",
+                        "/9_result1.webp",
+                        "/9_result2.webp",
+                        "/9_result3.webp",
+                        "/9_result4.webp",
+                        "/9_result5.webp",
+                        "/9_result6.webp",
                       ];
                     } else if (isElisa) {
                       // Elisa De Luca - 1 profile + 1 result
-                      profileImage = "/elisa_profile.jpg";
-                      resultImages = ["/elisa_AI_image.jpg"];
+                      profileImage = "/elisa_profile.webp";
+                      resultImages = ["/elisa_AI_image.webp"];
                     } else if (isMarco) {
                       // Marco Ferri - 1 profile + 1 result
-                      profileImage = "/caterina_profile.jpg";
-                      resultImages = ["/caterina_ai_image.jpg"];
+                      profileImage = "/caterina_profile.webp";
+                      resultImages = ["/caterina_ai_image.webp"];
                     } else if (isLuca) {
                       // Luca Neri - 1 profile + 1 result
-                      profileImage = "/silvia_profile.jpg";
-                      resultImages = ["/silvia_ai_image.jpg"];
+                      profileImage = "/silvia_profile.webp";
+                      resultImages = ["/silvia_ai_image.webp"];
                     } else {
                       // Other examples: 1 profile + 1 result
-                      profileImage = `/${exampleNumber}_profile.jpg`;
-                      resultImages = [`/${exampleNumber}_result.jpg`];
+                      profileImage = `/${exampleNumber}_profile.webp`;
+                      resultImages = [`/${exampleNumber}_result.webp`];
                     }
 
                     return (
@@ -646,31 +651,31 @@ export default function Home() {
                   if (hasMultipleResults) {
                     // Example 14: 1 profile + 6 results (14_result.jpg + 14_result_1.jpg through 14_result_5.jpg)
                     // Example 15: 1 profile + 6 results (15_result.jpg + 15_result_1.jpg through 15_result_5.jpg)
-                    profileImage = `/reviews/${exampleNumber}_profile.jpg`;
+                    profileImage = `/reviews/${exampleNumber}_profile.webp`;
                     if (exampleNumber === 14) {
                       resultImages = [
-                        `/reviews/14_result.jpg`,
-                        `/reviews/14_result_1.jpg`,
-                        `/reviews/14_result_2.jpg`,
-                        `/reviews/14_result_3.jpg`,
-                        `/reviews/14_result_4.jpg`,
-                        `/reviews/14_result_5.jpg`,
+                        `/reviews/14_result.webp`,
+                        `/reviews/14_result_1.webp`,
+                        `/reviews/14_result_2.webp`,
+                        `/reviews/14_result_3.webp`,
+                        `/reviews/14_result_4.webp`,
+                        `/reviews/14_result_5.webp`,
                       ];
                     } else {
                       // Example 15 - all 6 result images
                       resultImages = [
-                        `/reviews/15_result.jpg`,
-                        `/reviews/15_result_1.jpg`,
-                        `/reviews/15_result_2.jpg`,
-                        `/reviews/15_result_3.jpg`,
-                        `/reviews/15_result_4.jpg`,
-                        `/reviews/15_result_5.jpg`,
+                        `/reviews/15_result.webp`,
+                        `/reviews/15_result_1.webp`,
+                        `/reviews/15_result_2.webp`,
+                        `/reviews/15_result_3.webp`,
+                        `/reviews/15_result_4.webp`,
+                        `/reviews/15_result_5.webp`,
                       ];
                     }
                   } else {
                     // Examples 1-13: 1 profile + 1 result
-                    profileImage = `/reviews/${exampleNumber}_profile.jpg`;
-                    resultImages = [`/reviews/${exampleNumber}_result.jpg`];
+                    profileImage = `/reviews/${exampleNumber}_profile.webp`;
+                    resultImages = [`/reviews/${exampleNumber}_result.webp`];
                   }
                   
                   // Check if review should be truncated (more than 4 lines, roughly 200 characters)
@@ -838,7 +843,7 @@ export default function Home() {
               <div className="relative z-20 flex-shrink-0 -mr-6 md:-mr-8">
                 <div className="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-gray-900">
                   <OptimizedImage
-                    src="/image_101.jpg"
+                    src="/image_101.webp"
                     alt={t("home.altText.danielaMora")}
                     className="w-full h-full object-cover"
                   />
@@ -901,15 +906,15 @@ export default function Home() {
                 {/* Image Grid */}
                 <div className="grid grid-cols-3 gap-2 rounded-2xl overflow-hidden bg-gray-800 p-4">
                   {[
-                    { img: "/over100_1.jpg", label: null }, // Girl
-                    { img: "/over100_4.jpg", label: "New" }, // Guy
-                    { img: "/over100_2.jpg", label: "Popular" }, // Girl
-                    { img: "/over100_5.jpg", label: null }, // Guy
-                    { img: "/over100_3.jpg", label: null }, // Girl
-                    { img: "/over100_6.jpg", label: null }, // Guy
-                    { img: "/over100_8.jpg", label: null }, // Girl
-                    { img: "/over100_7.jpg", label: "Popular" }, // Guy
-                    { img: "/over100_9.jpg", label: null }, // Girl
+                    { img: "/over100_1.webp", label: null }, // Girl
+                    { img: "/over100_4.webp", label: "New" }, // Guy
+                    { img: "/over100_2.webp", label: "Popular" }, // Girl
+                    { img: "/over100_5.webp", label: null }, // Guy
+                    { img: "/over100_3.webp", label: null }, // Girl
+                    { img: "/over100_6.webp", label: null }, // Guy
+                    { img: "/over100_8.webp", label: null }, // Girl
+                    { img: "/over100_7.webp", label: "Popular" }, // Guy
+                    { img: "/over100_9.webp", label: null }, // Girl
                   ].map((item, idx) => {
                     const badgeLabels = t("generateImages.badges", { returnObjects: true }) as { premium: string; new: string; popular: string };
                     return (
@@ -1006,10 +1011,10 @@ export default function Home() {
               ).map((step, idx) => {
                 // Images for each step
                 const stepImages = [
-                  "/howAISelfieWorks1.jpg", // Step 1: Upload selfies
-                  "/howAISelfieWorks2.jpg", // Step 2: Choose style
-                  "/howAISelfieWorks3.jpg", // Step 3: AI magic
-                  "/howAISelfieWorks4.jpg", // Step 4: Download and share
+                  "/howAISelfieWorks1.webp", // Step 1: Upload selfies
+                  "/howAISelfieWorks2.webp", // Step 2: Choose style
+                  "/howAISelfieWorks3.webp", // Step 3: AI magic
+                  "/howAISelfieWorks4.webp", // Step 4: Download and share
                 ];
                 
                 return (
@@ -1195,10 +1200,10 @@ export default function Home() {
                 </h3>
                 <div className="grid grid-cols-2 gap-4 max-w-lg md:max-w-xl">
                   {[
-                    "/girl_image_sample.jpg",
-                    "/girl_image_sample2.jpg",
-                    "/girl_image_sample3.jpg",
-                    "/girl_image_sample4.jpg",
+                    "/girl_image_sample.webp",
+                    "/girl_image_sample2.webp",
+                    "/girl_image_sample3.webp",
+                    "/girl_image_sample4.webp",
                   ].map((img, idx) => (
                     <div
                       key={idx}
@@ -1219,7 +1224,7 @@ export default function Home() {
                 {/* Large Generated Image */}
                 <div className="relative rounded-2xl overflow-hidden bg-gray-800">
                   <OptimizedImage
-                    src="/girl_image_result.jpg"
+                    src="/girl_image_result.webp"
                     alt={t("home.altText.aiGeneratedPhoto")}
                     className="w-full h-full object-cover aspect-[3/4]"
                   />
@@ -1263,7 +1268,7 @@ export default function Home() {
                   size="lg"
                   className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
-                  <a href="/login">
+                  <a href={loginUrl}>
                     {t("ctaSection.button")}
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </a>
@@ -1273,11 +1278,11 @@ export default function Home() {
                 <div className="flex items-center gap-4">
                   <div className="flex -space-x-2">
                     {[
-                      "/image.jpg",
-                      "/image_1.jpg",
-                      "/image_10.jpg",
-                      "/image_100.jpg",
-                      "/image_101.jpg",
+                      "/image.webp",
+                      "/image_1.webp",
+                      "/image_10.webp",
+                      "/image_100.webp",
+                      "/image_101.webp",
                     ].map((img, idx) => (
                       <div
                         key={idx}
@@ -1308,7 +1313,7 @@ export default function Home() {
                   }}
                 >
                   <OptimizedImage
-                    src="/similar_human2.jpeg"
+                    src="/similar_human2.webp"
                     alt={t("home.altText.professionalPhotoNumber", { number: 1 })}
                     className="w-full h-full object-cover"
                   />
@@ -1322,7 +1327,7 @@ export default function Home() {
                   }}
                 >
                   <OptimizedImage
-                    src="/image_1.jpg"
+                    src="/image_1.webp"
                     alt={t("home.altText.professionalPhotoNumber", { number: 2 })}
                     className="w-full h-full object-cover"
                   />
@@ -1337,7 +1342,7 @@ export default function Home() {
                   }}
                 >
                   <OptimizedImage
-                    src="/image_10.jpg"
+                    src="/image_10.webp"
                     alt={t("home.altText.professionalPhotoNumber", { number: 3 })}
                     className="w-full h-full object-cover"
                   />

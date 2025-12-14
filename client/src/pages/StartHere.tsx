@@ -32,18 +32,18 @@ export default function StartHere() {
 
   // Mock photos for the grid background
   const gridPhotos = [
-    "/image.jpg",
-    "/image_1.jpg",
-    "/image_10.jpg",
-    "/image_100.jpg",
-    "/image_101.jpg",
-    "/over100_1.jpg",
-    "/over100_2.jpg",
-    "/over100_3.jpg",
-    "/over100_4.jpg",
+    "/image.webp",
+    "/image_1.webp",
+    "/image_10.webp",
+    "/image_100.webp",
+    "/image_101.webp",
+    "/over100_1.webp",
+    "/over100_2.webp",
+    "/over100_3.webp",
+    "/over100_4.webp",
   ];
 
-  // Define steps (step 2 - Train Model was removed completely)
+  // Define all steps
   const allSteps = [
     {
       id: 1,
@@ -68,14 +68,48 @@ export default function StartHere() {
     },
   ];
   
+  // Helper function to get step title for the buttons (adjusts numbers for page2)
+  const getStepButtonTitle = (stepId: number, originalTitle: string): string => {
+    if (!isPage2Variant) {
+      return originalTitle;
+    }
+    
+    // For page2 variant, adjust step numbers in titles
+    if (stepId === 3) {
+      // Step 3 becomes Step 2 in page2
+      return originalTitle
+        .replace(/Step\s+3\s*:/gi, "Step 2:")
+        .replace(/Step\s+3\s+/gi, "Step 2 ")
+        .replace(/Passo\s+3\s*:/gi, "Passo 2:")
+        .replace(/Passo\s+3\s+/gi, "Passo 2 ")
+        .replace(/Paso\s+3\s*:/gi, "Paso 2:")
+        .replace(/Paso\s+3\s+/gi, "Paso 2 ");
+    } else if (stepId === 4) {
+      // Step 4 becomes Step 3 in page2
+      return originalTitle
+        .replace(/Step\s+4\s*:/gi, "Step 3:")
+        .replace(/Step\s+4\s+/gi, "Step 3 ")
+        .replace(/Passo\s+4\s*:/gi, "Passo 3:")
+        .replace(/Passo\s+4\s+/gi, "Passo 3 ")
+        .replace(/Paso\s+4\s*:/gi, "Paso 3:")
+        .replace(/Paso\s+4\s+/gi, "Paso 3 ");
+    }
+    
+    return originalTitle;
+  };
 
-  // Steps are already defined without step 2
-  const steps = allSteps.map((step, index) => ({
-    ...step,
-    id: index + 1, // Renumber: 1, 2, 3 (was 1, 3, 4)
-  }));
+  // For page2 variant, remove step 2 and renumber the remaining steps
+  const steps = isPage2Variant
+    ? allSteps
+        .filter(step => step.id !== 2) // Remove step 2
+        .map((step, index) => ({
+          ...step,
+          id: index + 1, // Renumber: 1, 2, 3 (was 1, 3, 4)
+          title: getStepButtonTitle(step.id, step.title), // Adjust title numbers
+        }))
+    : allSteps;
 
-  // Helper function to get step title with correct number (step 2 was removed)
+  // Helper function to get step title with correct number for page2 variant
   const getStepTitle = (stepKey: "step3Title" | "step4Title"): string => {
     try {
       // Use the full translation key with namespace
@@ -87,9 +121,9 @@ export default function StartHere() {
         console.warn(`[StartHere] Translation missing for ${translationKey}, got: ${fullTitle}`);
         // Return a fallback based on the key
         if (stepKey === "step3Title") {
-          return "Step 2: Creating Your Photos"; // Step 3 becomes step 2
+          return isPage2Variant ? "Step 2: Creating Your Photos" : "Step 3: Creating Your Photos";
         } else {
-          return "Step 3: Gallery - Your Photos"; // Step 4 becomes step 3
+          return isPage2Variant ? "Step 3: Gallery - Your Photos" : "Step 4: Gallery - Your Photos";
         }
       }
       
@@ -100,49 +134,58 @@ export default function StartHere() {
       
       if (stepKey === "step3Title" && step3Match) {
         const [, prefix, text] = step3Match;
-        const stepNumber = 2; // Step 2 was removed, so step 3 becomes step 2
+        const stepNumber = isPage2Variant ? 2 : 3;
         return `${prefix} ${stepNumber}: ${text}`;
       } else if (stepKey === "step4Title" && step4Match) {
         const [, prefix, text] = step4Match;
-        const stepNumber = 3; // Step 2 was removed, so step 4 becomes step 3
+        const stepNumber = isPage2Variant ? 3 : 4;
         return `${prefix} ${stepNumber}: ${text}`;
       }
       
       // Fallback: try simple replacement if regex doesn't match
-      if (stepKey === "step3Title") {
-        return fullTitle.replace(/^(Step|Passo|Paso)\s+3\s*:/i, "$1 2:");
-      } else if (stepKey === "step4Title") {
-        return fullTitle.replace(/^(Step|Passo|Paso)\s+4\s*:/i, "$1 3:");
+      if (isPage2Variant) {
+        if (stepKey === "step3Title") {
+          const replaced = fullTitle.replace(/^(Step|Passo|Paso)\s+3\s*:/i, "$1 2:");
+          return replaced !== fullTitle ? replaced : fullTitle;
+        } else if (stepKey === "step4Title") {
+          const replaced = fullTitle.replace(/^(Step|Passo|Paso)\s+4\s*:/i, "$1 3:");
+          return replaced !== fullTitle ? replaced : fullTitle;
+        }
       }
       
       return fullTitle;
     } catch (error) {
       console.error(`[StartHere] Error getting step title for ${stepKey}:`, error);
-      // Return fallback (step 2 was removed)
+      // Return fallback
       if (stepKey === "step3Title") {
-        return "Step 2: Creating Your Photos"; // Step 3 becomes step 2
+        return isPage2Variant ? "Step 2: Creating Your Photos" : "Step 3: Creating Your Photos";
       } else {
-        return "Step 3: Gallery - Your Photos"; // Step 4 becomes step 3
+        return isPage2Variant ? "Step 3: Gallery - Your Photos" : "Step 4: Gallery - Your Photos";
       }
     }
   };
 
   const scrollToStep = (stepId: number) => {
-    // Map displayed step IDs to actual step IDs (step 2 was removed):
-    // Displayed step 1 -> actual step 1
-    // Displayed step 2 -> actual step 3 (was step 3, now displayed as step 2)
-    // Displayed step 3 -> actual step 4 (was step 4, now displayed as step 3)
+    // For page2 variant, the HTML element IDs are already adjusted:
+    // - step-1 stays step-1
+    // - step-3 becomes step-2 (because id={isPage2Variant ? "step-2" : "step-3"})
+    // - step-4 becomes step-3 (because id={isPage2Variant ? "step-3" : "step-4"})
+    // For normal variant, use step IDs as-is: 1->1, 2->2, 3->3, 4->4
     let actualStepId = stepId;
-    if (stepId === 1) {
-      actualStepId = 1;
-    } else if (stepId === 2) {
-      actualStepId = 3; // Displayed step 2 maps to actual step 3
-    } else if (stepId === 3) {
-      actualStepId = 4; // Displayed step 3 maps to actual step 4
+    if (isPage2Variant) {
+      // In page2, the displayed step IDs (1, 2, 3) map directly to HTML element IDs
+      // because the elements already have adjusted IDs
+      // stepId 1 -> step-1, stepId 2 -> step-2, stepId 3 -> step-3
+      actualStepId = stepId;
+    } else {
+      // In normal variant, step IDs map directly: 1->1, 2->2, 3->3, 4->4
+      actualStepId = stepId;
     }
     const element = document.getElementById(`step-${actualStepId}`);
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      console.warn(`[StartHere] Element with id "step-${actualStepId}" not found. isPage2Variant: ${isPage2Variant}, stepId: ${stepId}`);
     }
   };
 
@@ -340,7 +383,6 @@ export default function StartHere() {
             </CardContent>
           </Card>
 
-
         {/* Step 3: Creating Your Photos (becomes Step 2 for page2) */}
         <Card id={isPage2Variant ? "step-2" : "step-3"} className="bg-gradient-to-br from-purple-500/10 via-purple-400/5 to-purple-600/10 border-purple-500/20 mb-6">
           <CardContent className="p-6 md:p-8">
@@ -432,7 +474,7 @@ export default function StartHere() {
                 </div>
 
                 <Button
-                  className={`mt-6 ${steps[1].buttonColor} text-white rounded-full`}
+                  className={`mt-6 ${isPage2Variant ? steps[1].buttonColor : steps[2].buttonColor} text-white rounded-full`}
                   onClick={() => setLocation("/dashboard/generate")}
                 >
                   {t("startHere.createYourPhotosWithAI")}
@@ -503,8 +545,8 @@ export default function StartHere() {
                   {t("startHere.viewYourGallery")}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

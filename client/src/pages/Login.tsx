@@ -10,10 +10,10 @@ import { Check } from "lucide-react";
 // Images for carousel - matching the 4 testimonials
 // Sofia Bianchi (example 1), Marco Rossi (example 2), Chiara Romano (example 4), Valentina Marchetti (example 6)
 const carouselImages = [
-  "/reviews/1_result.jpg",
-  "/reviews/2_result.jpg",
-  "/reviews/4_result.jpg",
-  "/reviews/6_result.jpg",
+  "/reviews/1_result.webp",
+  "/reviews/2_result.webp",
+  "/reviews/4_result.webp",
+  "/reviews/6_result.webp",
 ];
 
 export default function Login() {
@@ -30,7 +30,9 @@ export default function Login() {
   // Redirect to dashboard if already authenticated
   useEffect(() => {
       if (!loading && user) {
-        setLocation("/dashboard");
+        const params = new URLSearchParams(window.location.search);
+        const returnUrl = params.get("returnUrl");
+        setLocation(returnUrl || "/dashboard");
       }
   }, [user, loading, setLocation]);
 
@@ -48,6 +50,13 @@ export default function Login() {
 
   const handleSignIn = async () => {
     try {
+      // Store returnUrl if present
+      const params = new URLSearchParams(window.location.search);
+      const returnUrl = params.get("returnUrl");
+      if (returnUrl) {
+        localStorage.setItem("auth_return_url", returnUrl);
+      }
+      
       setIsSigningIn(true);
       await signIn();
     } catch (error) {

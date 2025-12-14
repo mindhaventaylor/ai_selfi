@@ -97,12 +97,24 @@ export default function OAuthCallback() {
                 // Don't throw - proceed anyway as session is valid
               }
               
-              // Redirect to dashboard
-              setLocation("/dashboard");
+              // Redirect to dashboard or return URL
+              const returnUrl = localStorage.getItem("auth_return_url");
+              if (returnUrl) {
+                localStorage.removeItem("auth_return_url");
+                setLocation(returnUrl);
+              } else {
+                setLocation("/dashboard");
+              }
             } catch (fetchError: any) {
               console.warn("[OAuth] Error fetching user data, but session is valid. Redirecting anyway:", fetchError);
               // Even if fetch fails, we have a valid session, so redirect
-              setLocation("/dashboard");
+              const returnUrl = localStorage.getItem("auth_return_url");
+              if (returnUrl) {
+                localStorage.removeItem("auth_return_url");
+                setLocation(returnUrl);
+              } else {
+                setLocation("/dashboard");
+              }
             }
           } catch (syncError: any) {
             console.error("Sync error details:", {

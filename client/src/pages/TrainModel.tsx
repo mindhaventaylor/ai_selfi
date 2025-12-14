@@ -281,22 +281,22 @@ export default function TrainModel() {
 
   // Good photos examples
   const goodPhotos = [
-    "/tips_best_results1.jpg",
-    "/tips_best_results2.jpg",
-    "/tips_best_results3.jpg",
-    "/tips_best_results4.jpg",
-    "/tips_best_results5.jpg",
-    "/tips_best_results6.jpg",
+    "/tips_best_results1.webp",
+    "/tips_best_results2.webp",
+    "/tips_best_results3.webp",
+    "/tips_best_results4.webp",
+    "/tips_best_results5.webp",
+    "/tips_best_results6.webp",
   ];
 
   // Bad photos examples (with red X)
   const badPhotos = [
-    "/train_model_bad_images/train model bad 1.jpg",
-    "/train_model_bad_images/train model bad 2.jpg",
-    "/train_model_bad_images/train model bad 3.jpg",
-    "/train_model_bad_images/train model bad 4.jpg",
-    "/train_model_bad_images/train model bad 5.jpg",
-    "/train_model_bad_images/train model bad 6.jpg",
+    "/train_model_bad_images/train model bad 1.webp",
+    "/train_model_bad_images/train model bad 2.webp",
+    "/train_model_bad_images/train model bad 3.webp",
+    "/train_model_bad_images/train model bad 4.webp",
+    "/train_model_bad_images/train model bad 5.webp",
+    "/train_model_bad_images/train model bad 6.webp",
   ];
 
   return (

@@ -1418,12 +1418,12 @@ export default function GenerateImages() {
   const hasEnoughCredits = creditsNeeded <= userCredits;
   // Model status check removed - we now use uploaded images instead
   
-  // For page2 variant, model is optional; for page1, uploaded images are required
+  // For page2 variant, model is optional; for page1, model is required
   // For page1: Don't check credits in canGenerate - let button redirect if no credits
   // For page2: Keep credit check as it has its own flow
   const canGenerate = isPage2Variant
     ? imageCount > 0 && hasEnoughCredits
-    : imageCount > 0 && uploadedFiles.length > 0; // Require uploaded images instead of model
+    : imageCount > 0 && modelId !== "" && isModelReady; // Removed hasEnoughCredits check for page1
   
   // Define helper functions and constants (not hooks, safe to call after hooks)
   const backgrounds = ["office", "studio", "city", "nature", "interior"];
@@ -1583,8 +1583,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
       }
     }
     
-    // Build reference image URLs from uploaded images
-    // For page1 variant: Use uploaded user images + example images
+    // Build reference image URLs:
     // For page2 variant: Only use example images (no model required)
     const referenceImageUrls: string[] = [];
     
@@ -1689,11 +1688,11 @@ Output should be a vertical rectangle. Entire head should be visible`;
       }
 
       // Call the API with new structure
-      // For page1: Use uploaded user images instead of model
+      // For page1: Only send gender (embedded in basePrompt) and exampleImage prompt
       // Don't send user attributes (hair, glasses, backgrounds, styles) as they're not used
-      const generateInput: any = {
-        // Don't send modelId - we're using uploaded images instead
-        trainingImageUrls: referenceImageUrls, // Contains uploaded user images for page1, empty for page2
+      const result = await generateMutation.mutateAsync({
+        modelId: isPage2Variant ? undefined : parseInt(modelId), // Optional for page2
+        trainingImageUrls: referenceImageUrls, // Empty for page2, contains model images for page1
         exampleImages: [{
           id: selectedExampleImage.id,
           url: absoluteUrl,
@@ -1705,12 +1704,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
         glasses: "no", // Not used for page1, but required by schema
         backgrounds: [], // Not used for page1
         styles: [], // Not used for page1
-      };
-      
-      // Only include modelId if it's a valid number (shouldn't happen anymore, but just in case)
-      // Since we're not using models, we don't send modelId at all
-      
-      const result = await generateMutation.mutateAsync(generateInput);
+      });
 
       // Set batch ID for polling
       if (result.batchId) {
@@ -2130,81 +2124,49 @@ Output should be a vertical rectangle. Entire head should be visible`;
               </SheetHeader>
               
               <div className="py-6 space-y-6">
-                {/* Upload Images - Replaces model selection */}
+                {/* Model ID - Hidden for page2 variant */}
+                {!isPage2Variant && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 mb-2">
-                    <Upload className="h-4 w-4 text-muted-foreground" />
-                    <Label className="text-sm font-medium">{t("generateImages.uploadImages") || "Upload Images"}</Label>
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <label className="text-sm font-medium">{t("generateImages.model")}</label>
                   </div>
-                  <div
-                    className={`border-2 border-dashed rounded-lg p-4 transition-colors cursor-pointer relative ${
-                      isDragging
-                        ? "border-primary bg-primary/10"
-                        : "border-border hover:border-primary/50"
-                    }`}
-                    onDrop={handleDrop}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/jpeg,image/jpg,image/png,image/heic,image/webp"
-                      multiple
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                      onChange={(e) => {
-                        handleFileSelect(e.target.files);
-                        e.target.value = '';
-                      }}
-                    />
-                    <div className="text-center">
-                      <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">
-                        {t("trainModel.orDragAndDrop") || "Click or drag and drop"}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {t("trainModel.minMaxImages") || "1-10 images, max 120MB each"}
-                      </p>
-                      {uploadedFiles.length > 0 && (
-                        <p className="text-sm text-green-500 font-medium mt-2">
-                          {uploadedFiles.length} {uploadedFiles.length === 1 ? "image selected" : "images selected"}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  {uploadedFiles.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2 mt-2">
-                      {uploadedFiles.map((file, index) => (
-                        <div
-                          key={file.id}
-                          className="relative aspect-square rounded-lg overflow-hidden border-2 border-border group"
-                        >
-                          <img
-                            src={file.preview}
-                            alt={file.file.name}
-                            className="w-full h-full object-cover"
-                          />
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeFile(file.id);
-                            }}
-                            className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Remove image"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                          <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate">
-                            {index + 1}
-                          </div>
+                  <Select value={modelId} onValueChange={setModelId}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t("generateImages.selectModel")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {isLoadingModels ? (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                          {t("generateImages.loadingModels")}
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      ) : modelsData && modelsData.length > 0 ? (
+                        modelsData.map((model) => (
+                          <SelectItem 
+                            key={model.id} 
+                            value={model.id.toString()}
+                            disabled={model.status !== "ready"}
+                          >
+                            {model.name} {model.gender ? `(${model.gender})` : ""} 
+                            {model.status === "training" && ` - ${t("generateImages.training")}`}
+                            {model.status === "failed" && ` - ${t("generateImages.failed")}`}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                          {t("generateImages.noModelsAvailable")}
+                        </div>
+                      )}
+                    </SelectContent>
+                  </Select>
                   <p className="text-xs text-muted-foreground mt-1.5">
-                    {uploadedFiles.length === 0 && (t("generateImages.uploadImagesToGenerate") || "Upload images to generate photos")}
+                    {!modelId && modelsData && modelsData.length === 0 && t("generateImages.firstNeedToTrain")}
+                    {!modelId && modelsData && modelsData.length > 0 && t("generateImages.selectModelToGenerate")}
+                    {modelId && modelsData?.find((m) => m.id.toString() === modelId)?.status === "training" && t("generateImages.modelStillTraining")}
+                    {modelId && modelsData?.find((m) => m.id.toString() === modelId)?.status === "failed" && t("generateImages.modelFailed")}
                   </p>
                 </div>
+                )}
 
                 {/* Image Dimensions */}
                 <div className="space-y-2">

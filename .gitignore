@@ -110,3 +110,7 @@ temp/
 *.db
 *.sqlite
 *.sqlite3
+
+# Large files
+client/public.zip
+*.zip
