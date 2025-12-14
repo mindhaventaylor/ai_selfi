@@ -1825,9 +1825,10 @@ export const appRouter = router({
           attributeParts.push(`Hair length: ${input.formData.hairLength}`);
         }
         
-        if (input.formData.hairStyle) {
-          attributeParts.push(`Hair style: ${input.formData.hairStyle}`);
-        }
+        // Hair style removed from prompt for nano banana pro API
+        // if (input.formData.hairStyle) {
+        //   attributeParts.push(`Hair style: ${input.formData.hairStyle}`);
+        // }
         
         if (input.formData.ethnicity) {
           attributeParts.push(`Ethnicity: ${input.formData.ethnicity}`);

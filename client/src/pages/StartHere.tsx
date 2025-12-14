@@ -14,7 +14,11 @@ import {
   Play,
   Check,
   AlertCircle,
+  Plus,
+  Settings,
+  HelpCircle,
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/useMobile";
 
 export default function StartHere() {
   const { t } = useTranslation();
@@ -22,6 +26,7 @@ export default function StartHere() {
   const [isPlaying, setIsPlaying] = useState(false);
   const { user } = useAuth();
   const { variant: posthogVariant } = usePostHogVariant(user?.id);
+  const isMobile = useIsMobile();
   
   // Check for page2 variant - same logic as DashboardLayout
   const urlParams = new URLSearchParams(window.location.search);
@@ -191,7 +196,7 @@ export default function StartHere() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className={`max-w-5xl mx-auto px-6 py-8 ${isMobile ? "pb-20" : ""}`}>
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-3">
@@ -548,6 +553,64 @@ export default function StartHere() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Bottom Navigation Bar - Mobile Only */}
+      {isMobile && (
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 shadow-lg">
+          <div className="max-w-4xl mx-auto px-4 py-3">
+            <div className="flex items-end justify-around relative">
+              {/* Start Here */}
+              <button
+                onClick={() => setLocation("/dashboard/start")}
+                className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                aria-label="Start Here"
+              >
+                <HelpCircle className="h-6 w-6 text-primary" />
+                <span className="text-xs text-primary">Start</span>
+              </button>
+
+              {/* Gallery */}
+              <button
+                onClick={() => setLocation("/dashboard/gallery")}
+                className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                aria-label="Gallery"
+              >
+                <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Gallery</span>
+              </button>
+
+              {/* Create - Centered, Prominent Button */}
+              <button
+                onClick={() => setLocation(isPage2Variant ? "/dashboard/generate?variant=page2" : "/dashboard/generate")}
+                className="flex items-center justify-center w-14 h-14 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 -mt-2 z-10"
+                aria-label="Create"
+              >
+                <Plus className="h-7 w-7" />
+              </button>
+
+              {/* Buy Credits */}
+              <button
+                onClick={() => setLocation("/dashboard/credits/buy")}
+                className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                aria-label="Buy Credits"
+              >
+                <CreditCard className="h-6 w-6 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Credits</span>
+              </button>
+
+              {/* Settings */}
+              <button
+                onClick={() => setLocation("/dashboard/settings/general")}
+                className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                aria-label="Settings"
+              >
+                <Settings className="h-6 w-6 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Settings</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

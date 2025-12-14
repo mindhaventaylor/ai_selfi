@@ -1440,19 +1440,28 @@ function BackgroundStep({ value, onChange, onNext, formData }: { value: string[]
     { value: "studio", label: t("dashboardV2.studio"), description: t("dashboardV2.studioDesc") },
   ];
 
-  // Filter example images based on selected gender and attire (styles)
-  // Filter by specific background to get images that match each background type
+  // Use static images for background selection based on gender
   const gender = formData.gender === "man" || formData.gender === "woman" ? formData.gender : "man";
-  const attireToStyleMap: Record<string, string> = {
-    "professional": "professional",
-    "business-casual": "casual"
-  };
-  const selectedStyles = (Array.isArray(formData.attire) ? formData.attire : []).map((attire: string) => attireToStyleMap[attire] || attire).filter(Boolean);
   
-  // Get images for each background - filter by background value
-  const getImagesForBackground = (bgValue: string) => {
-    const filtered = filterExampleImages(exampleImages, gender, selectedStyles, [bgValue]);
-    return filtered.length > 0 ? filtered : exampleImages.filter(img => img.gender === gender || img.gender === "both");
+  // Static image mapping for men and women
+  const staticBackgroundImages: Record<string, Record<string, string>> = {
+    man: {
+      city: "/image_selection/Man/39_man_city_casual.webp",
+      nature: "/image_selection/Man/14_man_nature_elegant.webp",
+      office: "/image_selection/Man/7_man_office_professional.webp",
+      studio: "/image_selection/Man/9_man_studio_professional.webp",
+    },
+    woman: {
+      city: "/image_selection/Woman/48_woman_city_casual.webp",
+      nature: "/image_selection/Woman/28_woman_nature_professional.webp",
+      office: "/image_selection/Woman/25_woman_office_professional.webp",
+      studio: "/image_selection/Woman/7_woman_studio_professional.webp",
+    },
+  };
+  
+  // Get static image URL for a background
+  const getStaticImageUrl = (bgValue: string): string => {
+    return staticBackgroundImages[gender]?.[bgValue] || staticBackgroundImages.man[bgValue] || "";
   };
 
   return (
@@ -1467,11 +1476,8 @@ function BackgroundStep({ value, onChange, onNext, formData }: { value: string[]
       <div className="grid grid-cols-2 gap-4 mt-8">
         {backgrounds.map((bg, index) => {
           const isSelected = value.includes(bg.value);
-          // Get images filtered by this specific background
-          const backgroundImages = getImagesForBackground(bg.value);
-          // Use different image for each background (index 0, 1, 2, 3) to ensure they're different
-          // If not enough images for this background, get from all filtered images
-          const exampleImage = backgroundImages[index] || backgroundImages[0] || exampleImages[index] || exampleImages[0];
+          // Use static image URL based on gender and background
+          const imageUrl = getStaticImageUrl(bg.value);
           
           return (
             <button
@@ -1486,7 +1492,7 @@ function BackgroundStep({ value, onChange, onNext, formData }: { value: string[]
               {/* Example image */}
               <div className="w-full aspect-[3/4] relative">
                 <img
-                  src={exampleImage.url}
+                  src={imageUrl}
                   alt={t("dashboardV2.exampleForAlt", { label: bg.label })}
                   className="w-full h-full object-cover"
                   loading="lazy"
