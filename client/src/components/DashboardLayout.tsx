@@ -151,17 +151,22 @@ function DashboardLayoutContent({
   
   // Check for variant in URL and localStorage
   const urlParams = new URLSearchParams(window.location.search);
-  const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
-  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
-  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
+  const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
+  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
+  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | null;
   const isPage2Variant = variant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
+  const isPage3Variant = variant === "page3" || urlVariant === "page3" || cachedVariant === "page3" || firstVariant === "page3";
   
   // Determine current variant to pass to generate page
   const currentVariant = urlVariant || firstVariant || cachedVariant || variant;
+  const createPath =
+    currentVariant === "page3"
+      ? "/dashboard?variant=page3"
+      : `/dashboard/generate${currentVariant ? `?variant=${currentVariant}` : ""}`;
   
   const allMenuItems = [
     { icon: HelpCircle, label: t("dashboardLayout.startHere"), path: "/dashboard/start" },
-    { icon: PlusCircle, label: t("dashboardLayout.create"), path: `/dashboard/generate${currentVariant ? `?variant=${currentVariant}` : ""}` },
+    { icon: PlusCircle, label: t("dashboardLayout.create"), path: createPath },
     { icon: ImageIcon, label: t("dashboardLayout.gallery"), path: "/dashboard/gallery" },
     { icon: Sparkles, label: t("dashboardLayout.proFeatures"), path: "/dashboard/pro" },
     { icon: CreditCard, label: t("dashboardLayout.buyCredits"), path: "/dashboard/credits/buy" },
@@ -289,7 +294,7 @@ function DashboardLayoutContent({
 
   return (
     <>
-      {showFullLayout && (
+      {showFullLayout && !isPage3Variant && (
       <div className="relative" ref={sidebarRef}>
         <Sidebar
           collapsible="icon"
@@ -304,7 +309,7 @@ function DashboardLayoutContent({
                     src={APP_LOGO}
                     className="h-8 w-8 rounded-lg object-cover cursor-pointer"
                     alt="Logo"
-                    onClick={() => setLocation(`/dashboard/generate${currentVariant ? `?variant=${currentVariant}` : ""}`)}
+                    onClick={() => setLocation(createPath)}
                   />
                   <button
                     onClick={toggleSidebar}
@@ -316,7 +321,7 @@ function DashboardLayoutContent({
               ) : (
                 <div 
                   className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => setLocation(`/dashboard/generate${currentVariant ? `?variant=${currentVariant}` : ""}`)}
+                  onClick={() => setLocation(createPath)}
                 >
                     <img
                       src={APP_LOGO}
@@ -504,11 +509,32 @@ function DashboardLayoutContent({
       </div>
       )}
 
-      <SidebarInset style={!showFullLayout ? { marginLeft: 0 } : undefined}>
+      <SidebarInset style={!showFullLayout || isPage3Variant ? { marginLeft: 0 } : undefined}>
         {/* Top Header Bar - only show when full layout is enabled */}
         {showFullLayout && (
         <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:backdrop-blur">
-          <div className="flex h-14 items-center justify-end gap-3 px-6">
+          <div className="flex h-14 items-center justify-between gap-3 px-6">
+            {/* Left side: Logo/Name for page3, empty for others */}
+            {isPage3Variant ? (
+              <div 
+                className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => setLocation("/dashboard?variant=page3")}
+              >
+                <img
+                  src={APP_LOGO}
+                  className="h-8 w-8 rounded-lg object-cover shrink-0"
+                  alt="Logo"
+                />
+                <span className="font-bold text-lg bg-gradient-to-r from-pink-400 to-orange-500 bg-clip-text text-transparent">
+                  Alselfie
+                </span>
+              </div>
+            ) : (
+              <div />
+            )}
+            
+            {/* Right side controls */}
+            <div className="flex items-center gap-3">
             {/* Language Selector */}
             <DropdownMenu open={languageOpen} onOpenChange={setLanguageOpen}>
               <DropdownMenuTrigger asChild>
@@ -560,13 +586,15 @@ function DashboardLayoutContent({
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Help/Book Icon */}
-            <button 
-              className="h-9 w-9 rounded-full border border-border hover:bg-accent transition-colors flex items-center justify-center"
-              onClick={() => setLocation("/dashboard/start")}
-            >
-              <BookOpen className="h-4 w-4" />
-            </button>
+            {/* Help/Book Icon - hidden for page3 */}
+            {!isPage3Variant && (
+              <button 
+                className="h-9 w-9 rounded-full border border-border hover:bg-accent transition-colors flex items-center justify-center"
+                onClick={() => setLocation("/dashboard/start")}
+              >
+                <BookOpen className="h-4 w-4" />
+              </button>
+            )}
 
             {/* Credits Button */}
             <Button
@@ -600,11 +628,12 @@ function DashboardLayoutContent({
                 {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
               </AvatarFallback>
             </Avatar>
+            </div>
           </div>
         </div>
         )}
 
-        {showFullLayout && isMobile && (
+        {showFullLayout && isMobile && !isPage3Variant && (
           <div className="flex border-b h-14 items-center justify-between bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="h-9 w-9 rounded-lg bg-background" />

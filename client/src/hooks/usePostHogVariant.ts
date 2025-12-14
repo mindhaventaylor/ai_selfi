@@ -21,7 +21,7 @@ const FIRST_VARIANT_KEY = "aiselfi_first_dashboard_variant"; // Store the first 
 const POSTHOG_API_KEY = "phc_67dWkHktFLDuxuUy7zOYyyRBwOj25sw3plZHtKjZzy0";
 const FEATURE_FLAG_KEY = "dashboard-variant";
 
-export type DashboardVariant = "page1" | "page2";
+export type DashboardVariant = "page1" | "page2" | "page3";
 
 export function usePostHogVariant(userId?: string | number): {
   variant: DashboardVariant;
@@ -36,7 +36,7 @@ export function usePostHogVariant(userId?: string | number): {
     const urlParams = new URLSearchParams(window.location.search);
     const urlVariant = urlParams.get("variant") as DashboardVariant | null;
     
-    if (urlVariant && (urlVariant === "page1" || urlVariant === "page2")) {
+    if (urlVariant && (urlVariant === "page1" || urlVariant === "page2" || urlVariant === "page3")) {
       // If variant is provided in URL, update it as the new default (first variant)
       // This allows users to change their default by changing the URL
       safeLocalStorage.setItem(FIRST_VARIANT_KEY, urlVariant);
@@ -163,7 +163,8 @@ export function usePostHogVariant(userId?: string | number): {
 
               // Get feature flag value
               const flagValue = window.posthog.getFeatureFlag(FEATURE_FLAG_KEY);
-              const newVariant: DashboardVariant = flagValue === "page2" ? "page2" : "page1";
+              const newVariant: DashboardVariant =
+                flagValue === "page2" ? "page2" : flagValue === "page3" ? "page3" : "page1";
               
               // Store as first variant (persistent, never changes)
               safeLocalStorage.setItem(FIRST_VARIANT_KEY, newVariant);
@@ -228,7 +229,8 @@ export function usePostHogVariant(userId?: string | number): {
         }
         
         const flagValue = window.posthog?.getFeatureFlag(FEATURE_FLAG_KEY);
-        const newVariant: DashboardVariant = flagValue === "page2" ? "page2" : "page1";
+        const newVariant: DashboardVariant =
+          flagValue === "page2" ? "page2" : flagValue === "page3" ? "page3" : "page1";
         
         // Only update if first variant is not set
         if (!safeLocalStorage.getItem(FIRST_VARIANT_KEY)) {

@@ -113,16 +113,20 @@ export default function GenerateImages() {
   const targetProgressRef = useRef<number>(0); // Track target progress for smooth animation
   const totalImagesToGenerateRef = useRef<number>(4); // Default to 4, will be updated when generation starts
 
-  // Check for variant - ONLY use URL parameter (explicit variant=page2 required)
+  // Check for variant - ONLY use URL parameter (explicit variant=page2 or page3 required)
   const urlParams = new URLSearchParams(window.location.search);
-  const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
+  const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
   
   // ONLY check URL parameter - no localStorage or PostHog fallback
   const isPage2Variant = urlVariant === "page2";
+  const isPage3Variant = urlVariant === "page3";
+  // For modal close behavior, both page2 and page3 should redirect to gallery
+  const shouldRedirectToGalleryOnClose = isPage2Variant || isPage3Variant;
   
   console.log("[GenerateImages] Variant detection:", {
     urlVariant,
     isPage2Variant,
+    isPage3Variant,
   });
 
   // Fetch user's models (keep for backward compatibility, but won't be displayed)
@@ -2332,18 +2336,19 @@ Output should be a vertical rectangle. Entire head should be visible`;
       <Dialog 
         open={showModal} 
         onOpenChange={(open) => {
-          console.log("[GenerateImages] Modal onOpenChange:", open, "current showModal:", showModal, "isGenerating:", isGenerating, "isPage2Variant:", isPage2Variant);
+          console.log("[GenerateImages] Modal onOpenChange:", open, "current showModal:", showModal, "isGenerating:", isGenerating, "shouldRedirectToGalleryOnClose:", shouldRedirectToGalleryOnClose);
           // Allow closing the modal even if generating (user can still see progress in background)
           if (!open) {
             setShowModal(false);
-            // For page2 variant, navigate to gallery when modal closes
-            if (isPage2Variant) {
-              console.log("[GenerateImages] Page2: Navigating to gallery after closing modal");
+            // For page2/page3 variant, navigate to gallery when modal closes
+            if (shouldRedirectToGalleryOnClose) {
+              console.log("[GenerateImages] Page2/Page3: Navigating to gallery after closing modal");
               // Clear saved form data and step to reset flow for next creation
               try {
                 localStorage.removeItem("dashboardV2_formData");
                 localStorage.removeItem("dashboardV2_generationIntent");
-                console.log("[GenerateImages] ✅ Cleared saved form data after closing page2 modal");
+                localStorage.removeItem("dashboardV3_formData");
+                console.log("[GenerateImages] ✅ Cleared saved form data after closing modal");
               } catch (e) {
                 console.warn("[GenerateImages] Failed to clear saved data:", e);
               }
@@ -2406,14 +2411,15 @@ Output should be a vertical rectangle. Entire head should be visible`;
                           variant="ghost"
                           onClick={() => {
                             setShowModal(false);
-                            // For page2 variant, navigate to gallery when close button is clicked
-                            if (isPage2Variant) {
-                              console.log("[GenerateImages] Page2: Close button clicked, navigating to gallery");
+                            // For page2/page3 variant, navigate to gallery when close button is clicked
+                            if (shouldRedirectToGalleryOnClose) {
+                              console.log("[GenerateImages] Page2/Page3: Close button clicked, navigating to gallery");
                               // Clear saved form data and step to reset flow for next creation
                               try {
                                 localStorage.removeItem("dashboardV2_formData");
                                 localStorage.removeItem("dashboardV2_generationIntent");
-                                console.log("[GenerateImages] ✅ Cleared saved form data after closing page2 modal");
+                                localStorage.removeItem("dashboardV3_formData");
+                                console.log("[GenerateImages] ✅ Cleared saved form data after closing modal");
                               } catch (e) {
                                 console.warn("[GenerateImages] Failed to clear saved data:", e);
                               }

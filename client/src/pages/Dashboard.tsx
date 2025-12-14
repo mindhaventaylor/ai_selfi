@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { safeLocalStorage } from "@/utils/localStorage";
 import DashboardV2 from "./DashboardV2";
+import DashboardV3 from "./DashboardV3";
 import {
   Sparkles,
   CreditCard,
@@ -27,12 +28,12 @@ export default function Dashboard() {
   // Use useMemo to avoid reading from localStorage on every render
   const forcedVariant = useMemo(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get("variant") as "page1" | "page2" | null;
+    return urlParams.get("variant") as "page1" | "page2" | "page3" | null;
   }, []);
   
   // Also check localStorage directly - use state initialized once to avoid re-reading on every render
-  const [cachedVariant] = useState<"page1" | "page2" | null>(() => {
-    return safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
+  const [cachedVariant] = useState<"page1" | "page2" | "page3" | null>(() => {
+    return safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
   });
   
   // Use forced variant from URL if present, then cached, then PostHog variant
@@ -65,13 +66,18 @@ export default function Dashboard() {
   if (variant === "page2") {
     return <DashboardV2 />;
   }
+
+  // Show DashboardV3 if variant is page3
+  if (variant === "page3") {
+    return <DashboardV3 />;
+  }
   
 
   // Check for page2 variant for content filtering
   const urlParams = new URLSearchParams(window.location.search);
-  const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
-  const cachedVariantForContent = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
-  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
+  const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
+  const cachedVariantForContent = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
+  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | null;
   const isPage2Variant = urlVariant === "page2" || cachedVariantForContent === "page2" || firstVariant === "page2";
 
   // Mock photos for the grid background
