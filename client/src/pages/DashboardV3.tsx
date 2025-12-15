@@ -23,6 +23,7 @@ import {
   Star,
   Zap,
   Check,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { exampleImages } from "@/data/exampleImages";
@@ -67,6 +68,7 @@ export default function DashboardV3() {
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"basic" | "standard" | "premium">("standard");
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [currency, setCurrency] = useState<Currency>(detectCurrency());
 
   // Mutations
@@ -380,6 +382,11 @@ export default function DashboardV3() {
 
   // Generate handler
   const handleGenerate = async () => {
+    // Prevent multiple clicks
+    if (isGenerating) {
+      return;
+    }
+
     if (!uploadedFile) {
       toast.error("Please upload an image first");
       return;
@@ -408,14 +415,21 @@ export default function DashboardV3() {
     }
 
     // Proceed with generation
+    setIsGenerating(true);
     await startGeneration();
+    // Note: If generation succeeds, we redirect and component unmounts
+    // If generation fails, startGeneration will set isGenerating to false
   };
 
   const startGeneration = async () => {
-    if (!uploadedFile || !user) return;
+    if (!uploadedFile || !user) {
+      setIsGenerating(false);
+      return;
+    }
 
+    let loadingToast: string | number | undefined;
     try {
-      const loadingToast = toast.loading("Preparing generation...");
+      loadingToast = toast.loading("Preparing generation...");
 
       // 1) Upload image
       const reader = new FileReader();
@@ -491,10 +505,15 @@ Output should be a vertical rectangle. Entire head should be visible`;
         toast.success("Generation started!");
         // Navigate to generate page with batchId - this will show the generation modal
         // When closed, it will redirect to gallery
+        // Note: Component will unmount on redirect, so isGenerating doesn't need to be reset
         setLocation(`/dashboard/generate?variant=page3&batchId=${result.batchId}`);
       }
     } catch (error: any) {
+      if (loadingToast) {
+        toast.dismiss(loadingToast);
+      }
       toast.error(error?.message || "Generation failed");
+      setIsGenerating(false); // Allow retry on error
     }
   };
 
@@ -820,9 +839,16 @@ Output should be a vertical rectangle. Entire head should be visible`;
                   isMobile ? "mt-6 h-12 text-base" : "mt-8 h-14 text-lg"
                 )}
                 onClick={handleGenerate}
-                disabled={!uploadedFile || (tab === "custom" && !customPrompt.trim()) || (tab !== "custom" && !selectedExampleImage)}
+                disabled={isGenerating || !uploadedFile || (tab === "custom" && !customPrompt.trim()) || (tab !== "custom" && !selectedExampleImage)}
               >
-                Generate
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  "Generate"
+                )}
               </Button>
             </div>
           </div>

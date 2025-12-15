@@ -11,15 +11,25 @@ import { exampleImages } from "@/data/exampleImages";
 export default function PaymentSuccess() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
+  
+  // Check for generation intent immediately
+  const hasV2Intent = typeof window !== "undefined" && !!localStorage.getItem("dashboardV2_generationIntent");
+  const hasV3Intent = typeof window !== "undefined" && !!localStorage.getItem("dashboardV3_generationIntent");
+  const hasAnyGenerationIntent = hasV2Intent || hasV3Intent;
+  
   const [hasPage2FormData, setHasPage2FormData] = useState(false);
   const [hasPage3FormData, setHasPage3FormData] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(hasAnyGenerationIntent);
+  const [statusMessage, setStatusMessage] = useState("Processing payment...");
   const hasProcessedGeneration = useRef(false);
   
   const generateFromPage2Mutation = trpc.photo.generateFromPage2.useMutation();
   const uploadPage2ImagesMutation = trpc.photo.uploadPage2Images.useMutation();
   const uploadImagesMutation = trpc.model.uploadTrainingImages.useMutation();
   const generateMutation = trpc.photo.generate.useMutation();
+  
+  // NEW: Mutation to verify payment and add credits directly
+  const verifyPaymentMutation = trpc.payment.verifyPaymentAndAddCredits.useMutation();
   
   const sessionId = useMemo(() => {
     if (typeof window === "undefined") return null;
@@ -31,7 +41,6 @@ export default function PaymentSuccess() {
   useEffect(() => {
     if (sessionId && typeof window !== "undefined" && (window as any).rdt) {
       try {
-        // Track purchase conversion with unique session ID as conversion ID
         (window as any).rdt('track', 'Purchase', {
           conversionId: sessionId
         });
@@ -42,278 +51,235 @@ export default function PaymentSuccess() {
     }
   }, [sessionId]);
 
+  // Main effect - verify payment, add credits, then generate
   useEffect(() => {
-    // The webhook should have already processed the payment
-    // But we can show a success message
+    if (hasProcessedGeneration.current) return;
     
-    let redirectTimer: NodeJS.Timeout | null = null;
-    
-    // Check if user has saved form data from DashboardV2 flow
-    const savedData = localStorage.getItem("dashboardV2_formData");
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        if (parsed.resumeStep === "upload") {
-          setHasPage2FormData(true);
-          
-          // Auto-redirect to upload step after a brief delay to ensure credits are updated
-          // Wait a bit for webhook to process credits, then redirect
-          redirectTimer = setTimeout(() => {
-            setLocation("/dashboard?step=upload&variant=page2");
-          }, 2000); // Wait 2s to ensure credits are updated
-        }
-      } catch (e) {
-        console.error("[PaymentSuccess] Failed to parse saved form data:", e);
-      }
-    }
-
-    // Check for generation intent (from upload step when credits were insufficient)
-    // Only auto-generate if we have saved user images (files were uploaded)
-    const generationIntent = localStorage.getItem("dashboardV2_generationIntent");
-    
-    if (generationIntent && !hasProcessedGeneration.current) {
-      hasProcessedGeneration.current = true;
-      
-      try {
-        const intent = JSON.parse(generationIntent);
-        
-        // Only auto-generate if we have userImages (user uploaded files before payment)
-        if (intent.resumeStep === "generate" && intent.userImages && intent.userImages.length > 0 && intent.formData) {
-          setIsGenerating(true);
-          
-          // Auto-start generation after a brief delay to ensure credits are updated
-          setTimeout(async () => {
-            try {
-              // Ensure gender is valid (required by the API)
-              const gender = intent.formData.gender === "man" || intent.formData.gender === "woman" 
-                ? intent.formData.gender 
-                : "man";
-              
-              // Step 1: Upload images first to get URLs (avoids 413 Content Too Large error)
-              const uploadResult = await uploadPage2ImagesMutation.mutateAsync({
-                images: intent.userImages,
-              });
-
-              if (!uploadResult.urls || uploadResult.urls.length === 0) {
-                throw new Error("Failed to upload images");
-              }
-
-              // Step 2: Generate with URLs instead of base64 data
-              const result = await generateFromPage2Mutation.mutateAsync({
-                userImageUrls: uploadResult.urls, // Use URLs instead of base64 data
-                formData: {
-                  ...intent.formData,
-                  gender, // Ensure gender is "man" | "woman" (required)
-                },
-                exampleImageId: 1, // Ignored - server now selects randomly based on filters
-                aspectRatio: "9:16",
-                numImagesPerExample: 4, // This will be overridden by selectedPrice on the server
-                selectedPrice: (intent.selectedPrice || "standard") as "basic" | "standard" | "premium",
-              });
-
-              
-              // Clear ALL saved data after successful generation
-              localStorage.removeItem("dashboardV2_generationIntent");
-              localStorage.removeItem("dashboardV2_formData");
-              
-                // Redirect to generate page with batchId to show animation
-              if (result.batchId) {
-                toast.success(t("dashboardV2.generationStarted") || "Generation started!", {
-                    duration: 1000,
-                });
-                
-                  // Use window.location for immediate redirect to ensure modal shows properly
-                const redirectUrl = `/dashboard/generate?variant=page2&batchId=${result.batchId}`;
-                  window.location.href = redirectUrl;
-              } else {
-                throw new Error("No batchId returned from generation");
-              }
-            } catch (error: any) {
-              console.error("[PaymentSuccess] Failed to auto-resume generation:", error);
-              setIsGenerating(false);
-              toast.error(t("dashboardV2.generationError") || "Failed to start generation", {
-                description: error?.message || t("generateImages.pleaseTryAgain"),
-              });
-              
-              // Redirect to dashboard so user can try manually
-              setTimeout(() => {
-                setLocation("/dashboard?variant=page2");
-              }, 3000);
-            }
-          }, 1500); // Wait 1.5s to ensure webhook has processed credits
-        }
-      } catch (e) {
-        console.error("[PaymentSuccess] Failed to parse generation intent:", e);
-      }
-    }
-    
-    // ========== PAGE 3 (V3) GENERATION INTENT - EXACT SAME AS V2 ==========
+    const generationIntentV2 = localStorage.getItem("dashboardV2_generationIntent");
     const generationIntentV3 = localStorage.getItem("dashboardV3_generationIntent");
     
-    if (generationIntentV3 && !hasProcessedGeneration.current) {
-      hasProcessedGeneration.current = true;
+    // If no generation intent, just show normal success page
+    if (!generationIntentV2 && !generationIntentV3) {
+      setIsProcessing(false);
+      
+      const savedData = localStorage.getItem("dashboardV2_formData");
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          if (parsed.resumeStep === "upload") {
+            setHasPage2FormData(true);
+          }
+        } catch (e) {}
+      }
+      
+      const savedDataV3 = localStorage.getItem("dashboardV3_formData");
+      if (savedDataV3) {
+        setHasPage3FormData(true);
+      }
+      return;
+    }
+    
+    hasProcessedGeneration.current = true;
+    setIsProcessing(true);
+    
+    const processPaymentAndGenerate = async () => {
+      const isV3 = !!generationIntentV3;
+      const intentStr = isV3 ? generationIntentV3 : generationIntentV2;
       
       try {
-        const intent = JSON.parse(generationIntentV3);
+        const intent = JSON.parse(intentStr!);
         
-        // Only auto-generate if we have userImages (user uploaded files before payment)
-        if (intent.resumeStep === "generate" && intent.userImages && intent.userImages.length > 0 && intent.formData) {
-          setIsGenerating(true);
+        if (!intent.resumeStep || intent.resumeStep !== "generate" || !intent.userImages || intent.userImages.length === 0) {
+          throw new Error("Invalid generation intent");
+        }
+        
+        // Step 1: Verify payment and add credits using the session_id
+        if (sessionId) {
+          setStatusMessage("Confirming payment...");
+          console.log("[PaymentSuccess] Verifying payment and adding credits...");
+          
+          try {
+            const verifyResult = await verifyPaymentMutation.mutateAsync({ sessionId });
+            console.log("[PaymentSuccess] Verify result:", verifyResult);
+            
+            if (verifyResult.success) {
+              console.log(`[PaymentSuccess] ✅ Credits verified/added. User now has ${verifyResult.credits} credits`);
+              
+              if (verifyResult.added) {
+                toast.success(`${verifyResult.added} credits added to your account!`, { duration: 2000 });
+              }
+            } else {
+              console.warn("[PaymentSuccess] Payment verification issue:", verifyResult.message);
+              // Continue anyway - maybe webhook already processed it
+            }
+          } catch (verifyError: any) {
+            console.error("[PaymentSuccess] Error verifying payment:", verifyError);
+            // Continue anyway - try to generate
+          }
+          
+          // Small delay after adding credits to ensure database sync
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
+        // Step 2: Upload images
+        setStatusMessage("Uploading your image...");
+        
+        if (isV3) {
+          // V3 Generation
           setHasPage3FormData(true);
           
-          // Auto-start generation after a brief delay to ensure credits are updated
-          setTimeout(async () => {
-            try {
-              // Step 1: Upload images first to get URLs
-              const uploadResult = await uploadImagesMutation.mutateAsync({
-                images: intent.userImages,
-              });
+          const uploadResult = await uploadImagesMutation.mutateAsync({
+            images: intent.userImages,
+          });
 
-              if (!uploadResult.urls || uploadResult.urls.length === 0) {
-                throw new Error("Failed to upload images");
-              }
+          if (!uploadResult.urls || uploadResult.urls.length === 0) {
+            throw new Error("Failed to upload images");
+          }
 
-              const trainingImageUrls = [uploadResult.urls[0]];
-              
-              // Step 2: Build prompt from saved form data
-              const { tab, selectedExampleImageId, customPrompt } = intent.formData;
-              
-              // Find the selected example image
-              const selectedExampleImage = tab !== "custom" 
-                ? exampleImages.find((img) => img.id === selectedExampleImageId)
-                : null;
-              
-              const promptBody = tab === "custom"
-                ? (customPrompt || "").trim()
-                : (selectedExampleImage?.prompt || "A professional headshot in a studio setting with soft, even lighting.");
+          const trainingImageUrls = [uploadResult.urls[0]];
+          
+          setStatusMessage("Creating your headshots...");
+          
+          const { tab, selectedExampleImageId, customPrompt } = intent.formData;
+          
+          const selectedExampleImage = tab !== "custom" 
+            ? exampleImages.find((img) => img.id === selectedExampleImageId)
+            : null;
+          
+          const promptBody = tab === "custom"
+            ? (customPrompt || "").trim()
+            : (selectedExampleImage?.prompt || "A professional headshot in a studio setting with soft, even lighting.");
 
-              const selectedUrl = selectedExampleImage?.url ?? "/image_selection/Man/1_man_office_elegant.webp";
+          const selectedUrl = selectedExampleImage?.url ?? "/image_selection/Man/1_man_office_elegant.webp";
 
-              let absoluteUrl = selectedUrl;
-              if (!selectedUrl.startsWith("http")) {
-                const publicDomain = window.location.origin;
-                absoluteUrl = selectedUrl.startsWith("/") ? `${publicDomain}${selectedUrl}` : `${publicDomain}/${selectedUrl}`;
-              }
+          let absoluteUrl = selectedUrl;
+          if (!selectedUrl.startsWith("http")) {
+            const publicDomain = window.location.origin;
+            absoluteUrl = selectedUrl.startsWith("/") ? `${publicDomain}${selectedUrl}` : `${publicDomain}/${selectedUrl}`;
+          }
 
-              const basePrompt = `Create a professional headshot for this person, following the guidance below. The photograph and the person should look real, like it was taken from a premium photograph session:
+          const basePrompt = `Create a professional headshot for this person, following the guidance below. The photograph and the person should look real, like it was taken from a premium photograph session:
 
 ${promptBody}
 
 Output should be a vertical rectangle. Entire head should be visible`;
 
-              // Step 3: Generate images
-              const result = await generateMutation.mutateAsync({
-                modelId: undefined,
-                trainingImageUrls,
-                exampleImages: [
-                  {
-                    id: tab === "custom" ? 1 : (selectedExampleImage?.id ?? 1),
-                    url: absoluteUrl,
-                    prompt: promptBody,
-                  },
-                ],
-                basePrompt,
-                aspectRatio: "9:16",
-                numImagesPerExample: 4,
-                glasses: "no",
-                hairColor: undefined,
-                hairStyle: undefined,
-                backgrounds: [],
-                styles: [],
-              });
+          const result = await generateMutation.mutateAsync({
+            modelId: undefined,
+            trainingImageUrls,
+            exampleImages: [
+              {
+                id: tab === "custom" ? 1 : (selectedExampleImage?.id ?? 1),
+                url: absoluteUrl,
+                prompt: promptBody,
+              },
+            ],
+            basePrompt,
+            aspectRatio: "9:16",
+            numImagesPerExample: 4,
+            glasses: "no",
+            hairColor: undefined,
+            hairStyle: undefined,
+            backgrounds: [],
+            styles: [],
+          });
 
-              // Clear ALL saved data after successful generation
-              localStorage.removeItem("dashboardV3_generationIntent");
-              localStorage.removeItem("dashboardV3_formData");
-              
-              // Redirect to generate page with batchId to show animation
-              if (result.batchId) {
-                toast.success(t("dashboardV2.generationStarted") || "Generation started!", {
-                  duration: 1000,
-                });
-                
-                // Use window.location for immediate redirect to ensure modal shows properly
-                const redirectUrl = `/dashboard/generate?variant=page3&batchId=${result.batchId}`;
-                window.location.href = redirectUrl;
-              } else {
-                throw new Error("No batchId returned from generation");
-              }
-            } catch (error: any) {
-              console.error("[PaymentSuccess] Failed to auto-resume V3 generation:", error);
-              setIsGenerating(false);
-              toast.error(t("dashboardV2.generationError") || "Failed to start generation", {
-                description: error?.message || t("generateImages.pleaseTryAgain"),
-              });
-              
-              // Redirect to dashboard so user can try manually
-              setTimeout(() => {
-                setLocation("/dashboard?variant=page3");
-              }, 3000);
-            }
-          }, 1500); // Wait 1.5s to ensure webhook has processed credits
+          // Clear saved data
+          localStorage.removeItem("dashboardV3_generationIntent");
+          localStorage.removeItem("dashboardV3_formData");
+          
+          if (result.batchId) {
+            window.location.href = `/dashboard/generate?variant=page3&batchId=${result.batchId}`;
+          } else {
+            throw new Error("No batchId returned from generation");
+          }
+        } else {
+          // V2 Generation
+          setHasPage2FormData(true);
+          
+          const gender = intent.formData.gender === "man" || intent.formData.gender === "woman" 
+            ? intent.formData.gender 
+            : "man";
+          
+          const uploadResult = await uploadPage2ImagesMutation.mutateAsync({
+            images: intent.userImages,
+          });
+
+          if (!uploadResult.urls || uploadResult.urls.length === 0) {
+            throw new Error("Failed to upload images");
+          }
+
+          setStatusMessage("Creating your headshots...");
+
+          const result = await generateFromPage2Mutation.mutateAsync({
+            userImageUrls: uploadResult.urls,
+            formData: {
+              ...intent.formData,
+              gender,
+            },
+            exampleImageId: 1,
+            aspectRatio: "9:16",
+            numImagesPerExample: 4,
+            selectedPrice: (intent.selectedPrice || "standard") as "basic" | "standard" | "premium",
+          });
+
+          // Clear saved data
+          localStorage.removeItem("dashboardV2_generationIntent");
+          localStorage.removeItem("dashboardV2_formData");
+          
+          if (result.batchId) {
+            window.location.href = `/dashboard/generate?variant=page2&batchId=${result.batchId}`;
+          } else {
+            throw new Error("No batchId returned from generation");
+          }
         }
-      } catch (e) {
-        console.error("[PaymentSuccess] Failed to parse V3 generation intent:", e);
-      }
-    }
-    
-    // Check for page3 form data (without generation intent - just redirect)
-    const savedDataV3 = localStorage.getItem("dashboardV3_formData");
-    if (savedDataV3 && !generationIntentV3) {
-      setHasPage3FormData(true);
-    }
-    
-    // Cleanup function - clear redirect timer if component unmounts
-    return () => {
-      if (redirectTimer) {
-        clearTimeout(redirectTimer);
+      } catch (error: any) {
+        console.error("[PaymentSuccess] Generation failed:", error);
+        setIsProcessing(false);
+        toast.error(t("dashboardV2.generationError") || "Failed to start generation", {
+          description: error?.message || t("generateImages.pleaseTryAgain"),
+        });
+        
+        setTimeout(() => {
+          const variant = generationIntentV3 ? "page3" : "page2";
+          setLocation(`/dashboard?variant=${variant}`);
+        }, 3000);
       }
     };
-  }, [sessionId, generateFromPage2Mutation, setLocation, t]);
+    
+    processPaymentAndGenerate();
+  }, [sessionId, verifyPaymentMutation, generateFromPage2Mutation, uploadPage2ImagesMutation, uploadImagesMutation, generateMutation, setLocation, t]);
 
   const handleContinue = () => {
-    // Don't redirect if we're currently generating
-    if (isGenerating) {
-      return;
-    }
-    
-    // Check if there's generation intent for page2 - if so, don't redirect, let auto-generation handle it
-    const generationIntent = localStorage.getItem("dashboardV2_generationIntent");
-    if (generationIntent) {
-      try {
-        const intent = JSON.parse(generationIntent);
-        if (intent.resumeStep === "generate" && intent.userImages && intent.userImages.length > 0) {
-          return; // Don't redirect, let the auto-generation happen
-        }
-      } catch (e) {
-        console.error("[PaymentSuccess] Error checking generation intent:", e);
-      }
-    }
-    
-    // Check if there's generation intent for page3 - if so, don't redirect, let auto-generation handle it
-    const generationIntentV3 = localStorage.getItem("dashboardV3_generationIntent");
-    if (generationIntentV3) {
-      try {
-        const intent = JSON.parse(generationIntentV3);
-        if (intent.resumeStep === "generate" && intent.userImages && intent.userImages.length > 0) {
-          return; // Don't redirect, let the auto-generation happen
-        }
-      } catch (e) {
-        console.error("[PaymentSuccess] Error checking V3 generation intent:", e);
-      }
-    }
+    if (isProcessing) return;
     
     if (hasPage3FormData) {
-      // User came from DashboardV3 flow, redirect back to continue
       setLocation("/dashboard?variant=page3");
     } else if (hasPage2FormData) {
-      // User came from DashboardV2 flow, redirect back to continue
       setLocation("/dashboard?variant=page2");
     } else {
       setLocation("/dashboard");
     }
   };
 
+  // Show processing/loading state
+  if (isProcessing) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
+        <div className="text-center space-y-6">
+          <Loader2 className="h-16 w-16 animate-spin text-primary mx-auto" />
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold">{statusMessage}</h2>
+            <p className="text-muted-foreground">
+              Please wait, this will only take a moment...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Normal success UI (only shown if no generation intent)
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
       <Card className="max-w-md w-full overflow-hidden">
@@ -340,74 +306,22 @@ Output should be a vertical rectangle. Entire head should be visible`;
             </div>
           )}
 
-          {isGenerating ? (
-            <div className="flex flex-col gap-3 pt-4">
-              <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>{t("payment.success.startingGeneration") || "Starting image generation..."}</span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {t("payment.success.generationStartingMessage") || "Please wait while we prepare your images..."}
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3 pt-4">
-              {/* Only show continue button if there's no generation intent */}
-              {(() => {
-                const generationIntent = localStorage.getItem("dashboardV2_generationIntent");
-                const generationIntentV3 = localStorage.getItem("dashboardV3_generationIntent");
-                let shouldShowButton = true;
-                
-                // Check page2 generation intent
-                if (generationIntent) {
-                  try {
-                    const intent = JSON.parse(generationIntent);
-                    // Hide button if we have generation intent with files - auto-generation will handle it
-                    if (intent.resumeStep === "generate" && intent.userImages && intent.userImages.length > 0) {
-                      shouldShowButton = false;
-                    }
-                  } catch (e) {
-                    // Show button on error
-                  }
-                }
-                
-                // Check page3 generation intent
-                if (generationIntentV3) {
-                  try {
-                    const intent = JSON.parse(generationIntentV3);
-                    // Hide button if we have generation intent with files - auto-generation will handle it
-                    if (intent.resumeStep === "generate" && intent.userImages && intent.userImages.length > 0) {
-                      shouldShowButton = false;
-                    }
-                  } catch (e) {
-                    // Show button on error
-                  }
-                }
-                
-                return shouldShowButton ? (
-                  <Button
-                    onClick={handleContinue}
-                    className="w-full"
-                  >
-                    {(hasPage2FormData || hasPage3FormData) ? t("payment.success.continueCreating") || t("payment.success.goToDashboard") : t("payment.success.goToDashboard")}
-                  </Button>
-                ) : (
-                  <div className="text-sm text-muted-foreground text-center py-2">
-                    {t("payment.success.waitingForGeneration") || "Please wait, generation will start automatically..."}
-                  </div>
-                );
-              })()}
-              {!hasPage2FormData && !hasPage3FormData && !isGenerating && (
-                <Button
-                  variant="outline"
-                  onClick={() => setLocation("/dashboard/credits/buy")}
-                  className="w-full"
-                >
-                  {t("payment.success.buyMore")}
-                </Button>
-              )}
-            </div>
-          )}
+          <div className="flex flex-col gap-3 pt-4">
+            <Button onClick={handleContinue} className="w-full">
+              {(hasPage2FormData || hasPage3FormData) 
+                ? t("payment.success.continueCreating") || t("payment.success.goToDashboard") 
+                : t("payment.success.goToDashboard")}
+            </Button>
+            {!hasPage2FormData && !hasPage3FormData && (
+              <Button
+                variant="outline"
+                onClick={() => setLocation("/dashboard/credits/buy")}
+                className="w-full"
+              >
+                {t("payment.success.buyMore")}
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
