@@ -2348,6 +2348,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                 localStorage.removeItem("dashboardV2_formData");
                 localStorage.removeItem("dashboardV2_generationIntent");
                 localStorage.removeItem("dashboardV3_formData");
+                localStorage.removeItem("dashboardV3_generationIntent");
                 console.log("[GenerateImages] ✅ Cleared saved form data after closing modal");
               } catch (e) {
                 console.warn("[GenerateImages] Failed to clear saved data:", e);
@@ -2419,6 +2420,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                                 localStorage.removeItem("dashboardV2_formData");
                                 localStorage.removeItem("dashboardV2_generationIntent");
                                 localStorage.removeItem("dashboardV3_formData");
+                                localStorage.removeItem("dashboardV3_generationIntent");
                                 console.log("[GenerateImages] ✅ Cleared saved form data after closing modal");
                               } catch (e) {
                                 console.warn("[GenerateImages] Failed to clear saved data:", e);

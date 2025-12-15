@@ -75,13 +75,46 @@ export default function DashboardV3() {
   const createCheckoutMutation = trpc.payment.createCheckoutSession.useMutation();
   
   // Queries
-  const { data: packsData, isLoading: isLoadingPacks } = trpc.payment.getPacks.useQuery();
-  const packs = packsData?.packs;
+  const { data: packs, isLoading: isLoadingPacks } = trpc.payment.listPacks.useQuery();
 
   // Update currency when language changes
   useEffect(() => {
     setCurrency(detectCurrency());
   }, [currentLanguage]);
+
+  // Handle payment cancellation - show toast and restore state
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get("payment");
+    
+    if (paymentStatus === "cancelled") {
+      // Show toast notification
+      toast.error(t("payment.cancel.title") || "Payment cancelled", {
+        description: t("payment.cancel.message") || "Your payment was not completed. You can try again when you're ready.",
+      });
+      
+      // Restore form data if available
+      const savedData = safeLocalStorage.getItem("dashboardV3_formData");
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          if (parsed.tab) setTab(parsed.tab);
+          if (parsed.selectedExampleImageId) setSelectedExampleImageId(parsed.selectedExampleImageId);
+          if (parsed.customPrompt) setCustomPrompt(parsed.customPrompt);
+          if (parsed.selectedPlan) setSelectedPlan(parsed.selectedPlan);
+          // Switch to create view to show the form
+          setView("create");
+        } catch (e) {
+          console.error("[DashboardV3] Failed to parse saved form data:", e);
+        }
+      }
+      
+      // Clean up URL parameter
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete("payment");
+      window.history.replaceState({}, "", newUrl.toString());
+    }
+  }, [t]);
 
   // Pricing
   const basicPrice = getPage2Price("basic", currency);
@@ -267,7 +300,7 @@ export default function DashboardV3() {
     return sortedByPrice[0]?.id || null;
   };
 
-  // Handle purchase
+  // Handle purchase - Same exact logic as DashboardV2
   const handlePurchase = async () => {
     if (isProcessingPayment || isLoadingPacks) return;
     
@@ -280,6 +313,43 @@ export default function DashboardV3() {
     setIsProcessingPayment(true);
     
     try {
+      // Convert uploaded file to base64 for storage - exact same as V2
+      let userImageBase64: string | null = null;
+      if (uploadedFile?.file) {
+        const reader = new FileReader();
+        userImageBase64 = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => {
+            const result = reader.result as string;
+            // Get just the base64 part (after the comma) - MUST split properly
+            const base64 = result.split(',')[1];
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(uploadedFile.file);
+        });
+      }
+      
+      // Save generation intent with uploaded image for auto-generation after payment
+      // Use exact same structure as V2
+      if (userImageBase64) {
+        const generationIntent = {
+          resumeStep: "generate",
+          userImages: [{
+            data: userImageBase64,
+            fileName: uploadedFile?.file.name || "image.png",
+            contentType: uploadedFile?.file.type || "image/png",
+          }],
+          formData: {
+            tab,
+            selectedExampleImageId,
+            customPrompt,
+            selectedPlan,
+          },
+          selectedPrice: selectedPlan,
+        };
+        safeLocalStorage.setItem("dashboardV3_generationIntent", JSON.stringify(generationIntent));
+      }
+      
       // Save form data to resume after payment
       const dataToSave = {
         variant: "page3",
@@ -531,7 +601,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
     <div className="bg-background min-h-screen">
       {/* Back Button */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border">
-        <div className="max-w-md mx-auto px-4 py-3 flex items-center">
+        <div className={cn("mx-auto px-4 py-3 flex items-center", isMobile ? "max-w-md" : "max-w-6xl")}>
           <button
             onClick={() => setView("hero")}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
@@ -542,177 +612,221 @@ Output should be a vertical rectangle. Entire head should be visible`;
         </div>
       </div>
 
-      <div className={cn("mx-auto w-full max-w-md px-4", isMobile ? "pt-4 pb-8" : "py-6 space-y-6")}>
-        {/* Upload Section */}
-        <div 
-          className={cn(
-            "relative w-full rounded-2xl border-2 border-dashed transition-all overflow-hidden cursor-pointer",
-            isDragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
-            isMobile ? "h-[16svh] min-h-[100px] max-h-[140px]" : "h-32"
-          )}
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => handleFileSelect(e.target.files)}
-          />
-
-          {uploadedFile ? (
-            <div className="relative w-full h-full flex items-center justify-center p-2">
-              <img
-                src={uploadedFile.preview}
-                alt="Upload"
-                className="h-full max-h-full w-auto max-w-full object-cover rounded-xl"
-              />
-              <button
-                type="button"
-                onClick={removeFile}
-                className="absolute top-2 right-2 h-8 w-8 rounded-full bg-background/90 border border-border shadow flex items-center justify-center"
-                aria-label="Remove image"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-2">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                <Upload className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-semibold text-sm mb-0.5">Drag or upload image</h3>
-              <p className="text-xs text-muted-foreground">Support jpg/jpeg/png/webp, up to 16MB</p>
-            </div>
-          )}
-        </div>
-
-        {/* Tabs */}
-        <div className={cn("flex items-center justify-center gap-8 border-b border-border pb-1", isMobile ? "mt-4" : "mt-6")}>
-          <button 
-            onClick={() => {
-              setTab("woman");
-              setCustomPrompt("");
-              setSelectedExampleImageId(46);
-            }}
-            className={cn(
-              "flex items-center gap-2 pb-2 -mb-2.5 transition-colors",
-              tab === "woman" ? "text-primary border-b-2 border-primary font-medium" : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <User className="h-4 w-4" />
-            Female
-          </button>
-          <button 
-            onClick={() => {
-              setTab("man");
-              setCustomPrompt("");
-              setSelectedExampleImageId(1);
-            }}
-            className={cn(
-              "flex items-center gap-2 pb-2 -mb-2.5 transition-colors",
-              tab === "man" ? "text-primary border-b-2 border-primary font-medium" : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <User className="h-4 w-4" />
-            Male
-          </button>
-          <button 
-            onClick={() => setTab("custom")}
-            className={cn(
-              "flex items-center gap-2 pb-2 -mb-2.5 transition-colors",
-              tab === "custom" ? "text-primary border-b-2 border-primary font-medium" : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Settings className="h-4 w-4" />
-            Custom
-          </button>
-        </div>
-
-        {/* Content Area */}
-        <div className={cn(isMobile ? "mt-4" : "space-y-4 mt-4")}>
-          {tab === "custom" ? (
-            <div className="space-y-4">
-              <Textarea 
-                value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
-                placeholder="Describe the image you want to generate..."
-                className={cn("resize-none text-base", isMobile ? "h-[150px]" : "min-h-[187px]")}
-              />
+      <div className={cn("mx-auto w-full px-4", isMobile ? "max-w-md pt-4 pb-8" : "max-w-6xl py-8")}>
+        <div className={cn(!isMobile && "grid grid-cols-12 gap-10")}>
+          
+          {/* LEFT COLUMN: Upload */}
+          <div className={cn(!isMobile && "col-span-5 lg:col-span-4")}>
+            <div className={cn(!isMobile && "sticky top-24")}>
+              {!isMobile && (
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold">Upload Photo</h2>
+                  <p className="text-muted-foreground mt-1">
+                    Upload a selfie to generate your professional headshots.
+                  </p>
+                </div>
+              )}
               
-              <div className="flex flex-wrap gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setCustomPrompt(presets.professional.prompt)}
-                  className={cn(customPrompt === presets.professional.prompt && "bg-primary/10 border-primary")}
-                >
-                  Professional
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setCustomPrompt(presets.business.prompt)}
-                  className={cn(customPrompt === presets.business.prompt && "bg-primary/10 border-primary")}
-                >
-                  Business
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setCustomPrompt(presets.id_photo.prompt)}
-                  className={cn(customPrompt === presets.id_photo.prompt && "bg-primary/10 border-primary")}
-                >
-                  ID Photo
-                </Button>
+              {/* Upload Section */}
+              <div 
+                className={cn(
+                  "relative w-full rounded-2xl border-2 border-dashed transition-all overflow-hidden cursor-pointer",
+                  isDragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
+                  isMobile ? "h-[16svh] min-h-[100px] max-h-[140px]" : "aspect-[3/4] max-h-[500px]"
+                )}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handleFileSelect(e.target.files)}
+                />
+
+                {uploadedFile ? (
+                  <div className="relative w-full h-full flex items-center justify-center p-2">
+                    <img
+                      src={uploadedFile.preview}
+                      alt="Upload"
+                      className="h-full max-h-full w-auto max-w-full object-cover rounded-xl"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeFile}
+                      className="absolute top-2 right-2 h-8 w-8 rounded-full bg-background/90 border border-border shadow flex items-center justify-center hover:bg-background transition-colors"
+                      aria-label="Remove image"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
+                    <div className={cn("rounded-full bg-primary/10 flex items-center justify-center mb-4", isMobile ? "w-10 h-10" : "w-16 h-16")}>
+                      <Upload className={cn("text-primary", isMobile ? "h-5 w-5" : "h-8 w-8")} />
+                    </div>
+                    <h3 className={cn("font-semibold mb-1", isMobile ? "text-sm" : "text-lg")}>
+                      {isMobile ? "Drag or upload image" : "Drag & drop or click to upload"}
+                    </h3>
+                    <p className="text-xs text-muted-foreground max-w-[200px]">
+                      Support jpg/jpeg/png/webp, up to 16MB
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
-          ) : (
-            <div className={cn("grid grid-cols-3 gap-3")}>
-              {styleCards.map((card) => {
-                const img = exampleImages.find((e) => e.id === card.exampleImageId);
-                if (!img) return null;
-                const isSelected = selectedExampleImageId === card.exampleImageId;
-                return (
-                  <button
-                    key={card.exampleImageId}
-                    type="button"
-                    onClick={() => setSelectedExampleImageId(card.exampleImageId)}
-                    className={cn(
-                      "rounded-2xl overflow-hidden border transition-all bg-card/40",
-                      isSelected ? "border-primary ring-2 ring-primary/20" : "border-border hover:border-primary/50"
-                    )}
-                    aria-label={card.label}
-                  >
-                    <div className="aspect-square w-full overflow-hidden">
-                      <img
-                        src={img.url}
-                        alt={card.label}
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className={cn("text-center font-medium text-foreground/90", isMobile ? "py-2 text-sm" : "py-3 text-sm")}>
-                      {card.label}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
+          </div>
 
-        <Button 
-          size="lg" 
-          className={cn("w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full h-12 text-base font-semibold shadow-lg", isMobile ? "mt-6" : "mt-6")}
-          onClick={handleGenerate}
-          disabled={!uploadedFile || (tab === "custom" && !customPrompt.trim()) || (tab !== "custom" && !selectedExampleImage)}
-        >
-          Generate
-        </Button>
+          {/* RIGHT COLUMN: Controls */}
+          <div className={cn(!isMobile && "col-span-7 lg:col-span-8 space-y-8")}>
+            <div>
+              {!isMobile && (
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold">Customize</h2>
+                  <p className="text-muted-foreground mt-1">
+                    Choose your style and preferences.
+                  </p>
+                </div>
+              )}
+
+              {/* Tabs */}
+              <div className={cn(
+                "flex items-center gap-8 border-b border-border pb-1", 
+                isMobile ? "justify-center mt-4" : "justify-start mb-8"
+              )}>
+                <button 
+                  onClick={() => {
+                    setTab("woman");
+                    setCustomPrompt("");
+                    setSelectedExampleImageId(46);
+                  }}
+                  className={cn(
+                    "flex items-center gap-2 pb-2 -mb-2.5 transition-colors",
+                    tab === "woman" ? "text-primary border-b-2 border-primary font-medium" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <User className="h-4 w-4" />
+                  Female
+                </button>
+                <button 
+                  onClick={() => {
+                    setTab("man");
+                    setCustomPrompt("");
+                    setSelectedExampleImageId(1);
+                  }}
+                  className={cn(
+                    "flex items-center gap-2 pb-2 -mb-2.5 transition-colors",
+                    tab === "man" ? "text-primary border-b-2 border-primary font-medium" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <User className="h-4 w-4" />
+                  Male
+                </button>
+                <button 
+                  onClick={() => setTab("custom")}
+                  className={cn(
+                    "flex items-center gap-2 pb-2 -mb-2.5 transition-colors",
+                    tab === "custom" ? "text-primary border-b-2 border-primary font-medium" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Settings className="h-4 w-4" />
+                  Custom
+                </button>
+              </div>
+
+              {/* Content Area */}
+              <div className={cn(isMobile ? "mt-4" : "")}>
+                {tab === "custom" ? (
+                  <div className="space-y-4">
+                    <Textarea 
+                      value={customPrompt}
+                      onChange={(e) => setCustomPrompt(e.target.value)}
+                      placeholder="Describe the image you want to generate..."
+                      className={cn("resize-none text-base", isMobile ? "h-[150px]" : "min-h-[200px]")}
+                    />
+                    
+                    <div className="flex flex-wrap gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setCustomPrompt(presets.professional.prompt)}
+                        className={cn(customPrompt === presets.professional.prompt && "bg-primary/10 border-primary")}
+                      >
+                        Professional
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setCustomPrompt(presets.business.prompt)}
+                        className={cn(customPrompt === presets.business.prompt && "bg-primary/10 border-primary")}
+                      >
+                        Business
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setCustomPrompt(presets.id_photo.prompt)}
+                        className={cn(customPrompt === presets.id_photo.prompt && "bg-primary/10 border-primary")}
+                      >
+                        ID Photo
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={cn("grid gap-3", isMobile ? "grid-cols-3" : "grid-cols-3 lg:grid-cols-4 xl:grid-cols-4")}>
+                    {styleCards.map((card) => {
+                      const img = exampleImages.find((e) => e.id === card.exampleImageId);
+                      if (!img) return null;
+                      const isSelected = selectedExampleImageId === card.exampleImageId;
+                      return (
+                        <button
+                          key={card.exampleImageId}
+                          type="button"
+                          onClick={() => setSelectedExampleImageId(card.exampleImageId)}
+                          className={cn(
+                            "rounded-2xl overflow-hidden border transition-all bg-card/40 group",
+                            isSelected ? "border-primary ring-2 ring-primary/20" : "border-border hover:border-primary/50"
+                          )}
+                          aria-label={card.label}
+                        >
+                          <div className="aspect-square w-full overflow-hidden">
+                            <img
+                              src={img.url}
+                              alt={card.label}
+                              className={cn(
+                                "h-full w-full object-cover transition-transform duration-300", 
+                                !isMobile && "group-hover:scale-105"
+                              )}
+                              loading="lazy"
+                            />
+                          </div>
+                          <div className={cn("text-center font-medium text-foreground/90", isMobile ? "py-2 text-sm" : "py-3 text-sm")}>
+                            {card.label}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <Button 
+                size="lg" 
+                className={cn(
+                  "w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-semibold shadow-lg", 
+                  isMobile ? "mt-6 h-12 text-base" : "mt-8 h-14 text-lg"
+                )}
+                onClick={handleGenerate}
+                disabled={!uploadedFile || (tab === "custom" && !customPrompt.trim()) || (tab !== "custom" && !selectedExampleImage)}
+              >
+                Generate
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Pricing Modal */}

@@ -550,8 +550,8 @@ export default function StartHere() {
                   {t("startHere.viewYourGallery")}
                 </Button>
               </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
       </div>
 
       {/* Bottom Navigation Bar - Mobile Only */}

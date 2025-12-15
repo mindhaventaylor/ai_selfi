@@ -435,6 +435,8 @@ export const appRouter = router({
           success_url: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: input.variant === "page2" 
             ? `${baseUrl}/dashboard?variant=page2&step=pricing&payment=cancelled`
+            : input.variant === "page3"
+            ? `${baseUrl}/payment/cancel?variant=page3`
             : `${baseUrl}/payment/cancel`,
           client_reference_id: ctx.user.id.toString(),
           metadata: {

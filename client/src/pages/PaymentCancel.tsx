@@ -13,10 +13,21 @@ export default function PaymentCancel() {
     const urlParams = new URLSearchParams(window.location.search);
     const variant = urlParams.get("variant");
     const isPage2 = variant === "page2";
+    const isPage3 = variant === "page3";
 
     // Check localStorage for page2 form data
     const savedData = localStorage.getItem("dashboardV2_formData");
     const isFromPage2 = isPage2 || !!savedData;
+
+    // Check localStorage for page3 form data
+    const savedDataV3 = localStorage.getItem("dashboardV3_formData");
+    const isFromPage3 = isPage3 || !!savedDataV3;
+
+    if (isFromPage3) {
+      // For page3, redirect back to dashboard and let DashboardV3 show the toast
+      setLocation("/dashboard?variant=page3&payment=cancelled");
+      return;
+    }
 
     if (isFromPage2) {
       // For page2, never show this page—redirect back to plans and let DashboardV2 show the toast.

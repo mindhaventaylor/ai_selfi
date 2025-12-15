@@ -6,16 +6,20 @@ import { CheckCircle, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { exampleImages } from "@/data/exampleImages";
 
 export default function PaymentSuccess() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [hasPage2FormData, setHasPage2FormData] = useState(false);
+  const [hasPage3FormData, setHasPage3FormData] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const hasProcessedGeneration = useRef(false);
   
   const generateFromPage2Mutation = trpc.photo.generateFromPage2.useMutation();
   const uploadPage2ImagesMutation = trpc.photo.uploadPage2Images.useMutation();
+  const uploadImagesMutation = trpc.model.uploadTrainingImages.useMutation();
+  const generateMutation = trpc.photo.generate.useMutation();
   
   const sessionId = useMemo(() => {
     if (typeof window === "undefined") return null;
@@ -113,13 +117,13 @@ export default function PaymentSuccess() {
               localStorage.removeItem("dashboardV2_formData");
               
                 // Redirect to generate page with batchId to show animation
-                if (result.batchId) {
-                  toast.success(t("dashboardV2.generationStarted") || "Generation started!", {
+              if (result.batchId) {
+                toast.success(t("dashboardV2.generationStarted") || "Generation started!", {
                     duration: 1000,
-                  });
-                  
+                });
+                
                   // Use window.location for immediate redirect to ensure modal shows properly
-                  const redirectUrl = `/dashboard/generate?variant=page2&batchId=${result.batchId}`;
+                const redirectUrl = `/dashboard/generate?variant=page2&batchId=${result.batchId}`;
                   window.location.href = redirectUrl;
               } else {
                 throw new Error("No batchId returned from generation");
@@ -143,6 +147,122 @@ export default function PaymentSuccess() {
       }
     }
     
+    // ========== PAGE 3 (V3) GENERATION INTENT - EXACT SAME AS V2 ==========
+    const generationIntentV3 = localStorage.getItem("dashboardV3_generationIntent");
+    
+    if (generationIntentV3 && !hasProcessedGeneration.current) {
+      hasProcessedGeneration.current = true;
+      
+      try {
+        const intent = JSON.parse(generationIntentV3);
+        
+        // Only auto-generate if we have userImages (user uploaded files before payment)
+        if (intent.resumeStep === "generate" && intent.userImages && intent.userImages.length > 0 && intent.formData) {
+          setIsGenerating(true);
+          setHasPage3FormData(true);
+          
+          // Auto-start generation after a brief delay to ensure credits are updated
+          setTimeout(async () => {
+            try {
+              // Step 1: Upload images first to get URLs
+              const uploadResult = await uploadImagesMutation.mutateAsync({
+                images: intent.userImages,
+              });
+
+              if (!uploadResult.urls || uploadResult.urls.length === 0) {
+                throw new Error("Failed to upload images");
+              }
+
+              const trainingImageUrls = [uploadResult.urls[0]];
+              
+              // Step 2: Build prompt from saved form data
+              const { tab, selectedExampleImageId, customPrompt } = intent.formData;
+              
+              // Find the selected example image
+              const selectedExampleImage = tab !== "custom" 
+                ? exampleImages.find((img) => img.id === selectedExampleImageId)
+                : null;
+              
+              const promptBody = tab === "custom"
+                ? (customPrompt || "").trim()
+                : (selectedExampleImage?.prompt || "A professional headshot in a studio setting with soft, even lighting.");
+
+              const selectedUrl = selectedExampleImage?.url ?? "/image_selection/Man/1_man_office_elegant.webp";
+
+              let absoluteUrl = selectedUrl;
+              if (!selectedUrl.startsWith("http")) {
+                const publicDomain = window.location.origin;
+                absoluteUrl = selectedUrl.startsWith("/") ? `${publicDomain}${selectedUrl}` : `${publicDomain}/${selectedUrl}`;
+              }
+
+              const basePrompt = `Create a professional headshot for this person, following the guidance below. The photograph and the person should look real, like it was taken from a premium photograph session:
+
+${promptBody}
+
+Output should be a vertical rectangle. Entire head should be visible`;
+
+              // Step 3: Generate images
+              const result = await generateMutation.mutateAsync({
+                modelId: undefined,
+                trainingImageUrls,
+                exampleImages: [
+                  {
+                    id: tab === "custom" ? 1 : (selectedExampleImage?.id ?? 1),
+                    url: absoluteUrl,
+                    prompt: promptBody,
+                  },
+                ],
+                basePrompt,
+                aspectRatio: "9:16",
+                numImagesPerExample: 4,
+                glasses: "no",
+                hairColor: undefined,
+                hairStyle: undefined,
+                backgrounds: [],
+                styles: [],
+              });
+
+              // Clear ALL saved data after successful generation
+              localStorage.removeItem("dashboardV3_generationIntent");
+              localStorage.removeItem("dashboardV3_formData");
+              
+              // Redirect to generate page with batchId to show animation
+              if (result.batchId) {
+                toast.success(t("dashboardV2.generationStarted") || "Generation started!", {
+                  duration: 1000,
+                });
+                
+                // Use window.location for immediate redirect to ensure modal shows properly
+                const redirectUrl = `/dashboard/generate?variant=page3&batchId=${result.batchId}`;
+                window.location.href = redirectUrl;
+              } else {
+                throw new Error("No batchId returned from generation");
+              }
+            } catch (error: any) {
+              console.error("[PaymentSuccess] Failed to auto-resume V3 generation:", error);
+              setIsGenerating(false);
+              toast.error(t("dashboardV2.generationError") || "Failed to start generation", {
+                description: error?.message || t("generateImages.pleaseTryAgain"),
+              });
+              
+              // Redirect to dashboard so user can try manually
+              setTimeout(() => {
+                setLocation("/dashboard?variant=page3");
+              }, 3000);
+            }
+          }, 1500); // Wait 1.5s to ensure webhook has processed credits
+        }
+      } catch (e) {
+        console.error("[PaymentSuccess] Failed to parse V3 generation intent:", e);
+      }
+    }
+    
+    // Check for page3 form data (without generation intent - just redirect)
+    const savedDataV3 = localStorage.getItem("dashboardV3_formData");
+    if (savedDataV3 && !generationIntentV3) {
+      setHasPage3FormData(true);
+    }
+    
     // Cleanup function - clear redirect timer if component unmounts
     return () => {
       if (redirectTimer) {
@@ -157,7 +277,7 @@ export default function PaymentSuccess() {
       return;
     }
     
-    // Check if there's generation intent - if so, don't redirect, let auto-generation handle it
+    // Check if there's generation intent for page2 - if so, don't redirect, let auto-generation handle it
     const generationIntent = localStorage.getItem("dashboardV2_generationIntent");
     if (generationIntent) {
       try {
@@ -170,7 +290,23 @@ export default function PaymentSuccess() {
       }
     }
     
-    if (hasPage2FormData) {
+    // Check if there's generation intent for page3 - if so, don't redirect, let auto-generation handle it
+    const generationIntentV3 = localStorage.getItem("dashboardV3_generationIntent");
+    if (generationIntentV3) {
+      try {
+        const intent = JSON.parse(generationIntentV3);
+        if (intent.resumeStep === "generate" && intent.userImages && intent.userImages.length > 0) {
+          return; // Don't redirect, let the auto-generation happen
+        }
+      } catch (e) {
+        console.error("[PaymentSuccess] Error checking V3 generation intent:", e);
+      }
+    }
+    
+    if (hasPage3FormData) {
+      // User came from DashboardV3 flow, redirect back to continue
+      setLocation("/dashboard?variant=page3");
+    } else if (hasPage2FormData) {
       // User came from DashboardV2 flow, redirect back to continue
       setLocation("/dashboard?variant=page2");
     } else {
@@ -219,10 +355,26 @@ export default function PaymentSuccess() {
               {/* Only show continue button if there's no generation intent */}
               {(() => {
                 const generationIntent = localStorage.getItem("dashboardV2_generationIntent");
+                const generationIntentV3 = localStorage.getItem("dashboardV3_generationIntent");
                 let shouldShowButton = true;
+                
+                // Check page2 generation intent
                 if (generationIntent) {
                   try {
                     const intent = JSON.parse(generationIntent);
+                    // Hide button if we have generation intent with files - auto-generation will handle it
+                    if (intent.resumeStep === "generate" && intent.userImages && intent.userImages.length > 0) {
+                      shouldShowButton = false;
+                    }
+                  } catch (e) {
+                    // Show button on error
+                  }
+                }
+                
+                // Check page3 generation intent
+                if (generationIntentV3) {
+                  try {
+                    const intent = JSON.parse(generationIntentV3);
                     // Hide button if we have generation intent with files - auto-generation will handle it
                     if (intent.resumeStep === "generate" && intent.userImages && intent.userImages.length > 0) {
                       shouldShowButton = false;
@@ -237,7 +389,7 @@ export default function PaymentSuccess() {
                     onClick={handleContinue}
                     className="w-full"
                   >
-                    {hasPage2FormData ? t("payment.success.continueCreating") || t("payment.success.goToDashboard") : t("payment.success.goToDashboard")}
+                    {(hasPage2FormData || hasPage3FormData) ? t("payment.success.continueCreating") || t("payment.success.goToDashboard") : t("payment.success.goToDashboard")}
                   </Button>
                 ) : (
                   <div className="text-sm text-muted-foreground text-center py-2">
@@ -245,7 +397,7 @@ export default function PaymentSuccess() {
                   </div>
                 );
               })()}
-              {!hasPage2FormData && !isGenerating && (
+              {!hasPage2FormData && !hasPage3FormData && !isGenerating && (
                 <Button
                   variant="outline"
                   onClick={() => setLocation("/dashboard/credits/buy")}
@@ -261,4 +413,3 @@ export default function PaymentSuccess() {
     </div>
   );
 }
-
