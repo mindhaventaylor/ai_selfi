@@ -49,7 +49,8 @@ import {
   Download,
   AlertCircle,
   X,
-  Upload
+  Upload,
+  Loader2
 } from "lucide-react";
 import { exampleImages, filterExampleImages, type ExampleImage } from "@/data/exampleImages";
 import { toast } from "sonner";
@@ -102,6 +103,7 @@ export default function GenerateImages() {
   
   const [currentBatchId, setCurrentBatchId] = useState<number | null>(hasInitialBatchId ? initialBatchId : null);
   const [isGenerating, setIsGenerating] = useState(shouldShowModalInitially);
+  const [isStartingGeneration, setIsStartingGeneration] = useState(false); // Immediate loading state when button is clicked
   const [showModal, setShowModal] = useState(shouldShowModalInitially);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [completedImages, setCompletedImages] = useState(0);
@@ -1563,12 +1565,22 @@ Output should be a vertical rectangle. Entire head should be visible`;
   };
 
   const handleGenerate = async () => {
+    // Prevent multiple clicks while generating or starting
+    if (isGenerating || isStartingGeneration) {
+      console.log("[GenerateImages] Generation already in progress, ignoring click");
+      return;
+    }
+    
     if (!canGenerate) return;
+    
+    // Set loading state immediately for instant UI feedback
+    setIsStartingGeneration(true);
     
     // For page1 flow: Check credits before generating
     if (!isPage2Variant) {
       // Check if user has credits - redirect to buy credits page if no credits
       if ((user?.credits ?? 0) <= 0) {
+        setIsStartingGeneration(false);
         toast.error(t("generateImages.notEnoughCredits") || "Insufficient credits", {
           description: t("buyCredits.subtitle") || "Please purchase credits to generate images",
         });
@@ -1585,6 +1597,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
     if (!isPage2Variant) {
       // Page1 variant: require uploaded images
       if (uploadedFiles.length === 0) {
+        setIsStartingGeneration(false);
         toast.error(t("generateImages.noImagesUploaded") || "Please upload images", {
           description: t("generateImages.uploadImagesToGenerate") || "Upload images to generate photos",
         });
@@ -1622,6 +1635,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
         toast.error(t("generateImages.failedToUploadImages") || "Failed to upload images", {
           description: error?.message || t("generateImages.pleaseTryAgain"),
         });
+        setIsStartingGeneration(false);
         setIsGenerating(false);
         setShowModal(false);
         return;
@@ -1629,6 +1643,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
     
       if (referenceImageUrls.length === 0) {
         toast.error(t("generateImages.noImagesUploaded") || "No images uploaded");
+        setIsStartingGeneration(false);
         setIsGenerating(false);
         setShowModal(false);
         return;
@@ -1643,6 +1658,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
     
     if (!selectedExampleImage) {
       alert(t("generateImages.noImagesSelected"));
+      setIsStartingGeneration(false);
       return;
     }
     
@@ -1686,8 +1702,8 @@ Output should be a vertical rectangle. Entire head should be visible`;
       // For page1: Only send gender (embedded in basePrompt) and exampleImage prompt
       // Don't send user attributes (hair, glasses, backgrounds, styles) as they're not used
       const result = await generateMutation.mutateAsync({
-        modelId: isPage2Variant ? undefined : parseInt(modelId), // Optional for page2
-        trainingImageUrls: referenceImageUrls, // Empty for page2, contains model images for page1
+        modelId: undefined, // No longer using models - using uploaded images instead for both flows
+        trainingImageUrls: referenceImageUrls, // Contains uploaded user images for page1, empty for page2
         exampleImages: [{
           id: selectedExampleImage.id,
           url: absoluteUrl,
@@ -1713,11 +1729,13 @@ Output should be a vertical rectangle. Entire head should be visible`;
         }, 100);
       } else {
         // Fallback if no batch ID (shouldn't happen)
+        setIsStartingGeneration(false);
         setIsGenerating(false);
         setErrorMessage(t("generateImages.failedToStartGeneration"));
       }
     } catch (error: any) {
       console.error("Error generating images:", error);
+      setIsStartingGeneration(false);
       setIsGenerating(false);
       
       // Show error in modal instead of alert
@@ -1887,10 +1905,10 @@ Output should be a vertical rectangle. Entire head should be visible`;
 
           {/* Parameters Sidebar - Hidden on mobile, shown on desktop */}
           <div className="hidden lg:block w-[380px] shrink-0 flex-shrink-0">
-            <Card className="bg-card/50 border-border sticky top-20 w-full">
-              <CardContent className="p-0">
-                <Collapsible defaultOpen>
-                  <CollapsibleTrigger className="w-full px-6 py-4 flex items-center justify-between hover:bg-accent/50 transition-colors border-b border-border">
+            <Card className="bg-card/50 border-border sticky top-20 w-full max-h-[calc(100vh-6rem)] flex flex-col overflow-hidden">
+              <CardContent className="p-0 flex flex-col h-full overflow-hidden">
+                <Collapsible defaultOpen className="flex flex-col h-full overflow-hidden">
+                  <CollapsibleTrigger className="w-full px-6 py-4 flex items-center justify-between hover:bg-accent/50 transition-colors border-b border-border flex-shrink-0">
                     <div className="flex items-center gap-3">
                       <Settings className="h-5 w-5 text-purple-400" />
                       <h2 className="text-xl font-bold">{t("generateImages.parameters")}</h2>
@@ -1898,7 +1916,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   </CollapsibleTrigger>
                   
-                  <CollapsibleContent>
+                  <CollapsibleContent className="flex-1 min-h-0 overflow-y-auto">
                     <div className="p-6 space-y-6">
                       {/* Upload Images - Replaces model selection */}
                       <div className="space-y-2">
@@ -2079,11 +2097,20 @@ Output should be a vertical rectangle. Entire head should be visible`;
                         <Button
                           className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                           size="lg"
-                          disabled={!canGenerate || (isPage2Variant && !hasEnoughCredits)}
+                          disabled={!canGenerate || (isPage2Variant && !hasEnoughCredits) || isGenerating || isStartingGeneration || generateMutation.isPending}
                           onClick={handleGenerate}
                         >
-                          <Sparkles className="w-5 h-5 mr-2" />
-                          {t("generateImages.generate")} {totalImagesToGenerate} {t("generateImages.images")}
+                          {(isGenerating || isStartingGeneration || generateMutation.isPending) ? (
+                            <>
+                              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                              {t("generateImages.generating") || "Generating..."}
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-5 h-5 mr-2" />
+                              {t("generateImages.generate")} {totalImagesToGenerate} {t("generateImages.images")}
+                            </>
+                          )}
                         </Button>
                         
                         {/* Credits Usage */}
@@ -2300,14 +2327,23 @@ Output should be a vertical rectangle. Entire head should be visible`;
                   <Button
                     className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     size="lg"
-                    disabled={!canGenerate || (isPage2Variant && !hasEnoughCredits)}
+                    disabled={!canGenerate || (isPage2Variant && !hasEnoughCredits) || isGenerating || isStartingGeneration || generateMutation.isPending}
                     onClick={() => {
                       setIsParametersSheetOpen(false);
                       handleGenerate();
                     }}
                   >
-                    <Sparkles className="w-5 h-5 mr-2" />
-                    {t("generateImages.generate")} {totalImagesToGenerate} {t("generateImages.images")}
+                    {(isGenerating || isStartingGeneration || generateMutation.isPending) ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        {t("generateImages.generating") || "Generating..."}
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        {t("generateImages.generate")} {totalImagesToGenerate} {t("generateImages.images")}
+                      </>
+                    )}
                   </Button>
                   
                   {/* Credits Usage */}
