@@ -479,6 +479,102 @@ export const appRouter = router({
           url: session.url,
         };
     }),
+    
+    // Verify payment and add credits - backup for when webhooks fail (common in local dev)
+    verifyPaymentAndAddCredits: protectedProcedure
+      .input(z.object({ 
+        sessionId: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        console.log(`[Payment] Verifying session ${input.sessionId} for user ${ctx.user.id}`);
+        
+        try {
+          // Retrieve the session from Stripe
+          const session = await stripe.checkout.sessions.retrieve(input.sessionId);
+          
+          if (session.payment_status !== "paid") {
+            console.log(`[Payment] Session ${input.sessionId} not paid, status: ${session.payment_status}`);
+            return { success: false, message: "Payment not completed", credits: ctx.user.credits || 0 };
+          }
+          
+          // Get credits from metadata
+          const credits = parseInt(session.metadata?.credits || "0");
+          const sessionUserId = parseInt(session.metadata?.userId || session.client_reference_id || "0");
+          
+          // Verify the session belongs to this user
+          if (sessionUserId !== ctx.user.id) {
+            console.error(`[Payment] Session user ${sessionUserId} doesn't match current user ${ctx.user.id}`);
+            return { success: false, message: "Session user mismatch", credits: ctx.user.credits || 0 };
+          }
+          
+          if (!credits || credits <= 0) {
+            console.error(`[Payment] No credits in session metadata`);
+            return { success: false, message: "No credits in metadata", credits: ctx.user.credits || 0 };
+          }
+          
+          // Check if user already has credits (webhook might have already processed)
+          // We use a simple check - if user has 0 credits, add them
+          const currentCredits = ctx.user.credits || 0;
+          
+          // Check if this session was already processed by looking at transactions
+          const { data: existingTransaction } = await supabaseServer
+            .from('transactions')
+            .select('id, status, creditsAwarded')
+            .eq('stripePaymentId', input.sessionId)
+            .single();
+          
+          if (existingTransaction && existingTransaction.status === "completed" && existingTransaction.creditsAwarded > 0) {
+            console.log(`[Payment] Session ${input.sessionId} already processed, user has ${currentCredits} credits`);
+            // Session already processed - refetch current credits
+            const { data: userData } = await supabaseServer
+              .from('users')
+              .select('credits')
+              .eq('id', ctx.user.id)
+              .single();
+            return { success: true, message: "Already processed", credits: userData?.credits || currentCredits, alreadyProcessed: true };
+          }
+          
+          // Add credits to user
+          const newCredits = currentCredits + credits;
+          const { error: updateError } = await supabaseServer
+            .from('users')
+            .update({ credits: newCredits })
+            .eq('id', ctx.user.id);
+          
+          if (updateError) {
+            console.error(`[Payment] Error updating credits:`, updateError);
+            return { success: false, message: "Failed to add credits", credits: currentCredits };
+          }
+          
+          // Update or create transaction record
+          if (existingTransaction) {
+            await supabaseServer
+              .from('transactions')
+              .update({ status: "completed", creditsAwarded: credits })
+              .eq('stripePaymentId', input.sessionId);
+          } else {
+            // Create transaction if it doesn't exist
+            await supabaseServer
+              .from('transactions')
+              .insert({
+                userId: ctx.user.id,
+                packId: parseInt(session.metadata?.packId || "1"),
+                amount: (session.amount_total || 0) / 100,
+                status: "completed",
+                stripePaymentId: input.sessionId,
+                creditsAwarded: credits,
+              });
+          }
+          
+          console.log(`[Payment] ✅ Manually added ${credits} credits to user ${ctx.user.id}. New total: ${newCredits}`);
+          
+          return { success: true, message: "Credits added", credits: newCredits, added: credits };
+        } catch (error: any) {
+          console.error(`[Payment] Error verifying session:`, error);
+          return { success: false, message: error.message, credits: ctx.user.credits || 0 };
+        }
+      }),
+      
     createTransaction: protectedProcedure
       .input(z.object({ packId: z.number() }))
       .mutation(async ({ ctx, input }) => {

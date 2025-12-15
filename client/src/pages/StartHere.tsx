@@ -28,12 +28,13 @@ export default function StartHere() {
   const { variant: posthogVariant } = usePostHogVariant(user?.id);
   const isMobile = useIsMobile();
   
-  // Check for page2 variant - same logic as DashboardLayout
+  // Check for page2/page3 variant - same logic as DashboardLayout
   const urlParams = new URLSearchParams(window.location.search);
-  const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
-  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
-  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
+  const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
+  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
+  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | null;
   const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
+  const isPage3Variant = posthogVariant === "page3" || urlVariant === "page3" || cachedVariant === "page3" || firstVariant === "page3";
 
   // Mock photos for the grid background
   const gridPhotos = [
@@ -241,7 +242,15 @@ export default function StartHere() {
                 <Button
                   size="lg"
                   className="text-base md:text-lg px-8 md:px-10 py-6 md:py-7 bg-primary hover:bg-primary/90 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow"
-                  onClick={() => setLocation(isPage2Variant ? "/dashboard/generate?variant=page2" : "/dashboard/generate")}
+                  onClick={() => {
+                    if (isPage3Variant) {
+                      setLocation("/dashboard/generate?variant=page3");
+                    } else if (isPage2Variant) {
+                      setLocation("/dashboard/generate?variant=page2");
+                    } else {
+                      setLocation("/dashboard/generate");
+                    }
+                  }}
                 >
                   <Sparkles className="w-4 h-4 md:w-5 md:h-5 mr-2" />
                   {t("startHere.generateImages")}
@@ -480,7 +489,15 @@ export default function StartHere() {
 
                 <Button
                   className={`mt-6 ${isPage2Variant ? steps[1].buttonColor : steps[2].buttonColor} text-white rounded-full`}
-                  onClick={() => setLocation(isPage2Variant ? "/dashboard/generate?variant=page2" : "/dashboard/generate")}
+                  onClick={() => {
+                    if (isPage3Variant) {
+                      setLocation("/dashboard/generate?variant=page3");
+                    } else if (isPage2Variant) {
+                      setLocation("/dashboard/generate?variant=page2");
+                    } else {
+                      setLocation("/dashboard/generate");
+                    }
+                  }}
                 >
                   {t("startHere.createYourPhotosWithAI")}
                 </Button>
@@ -581,7 +598,15 @@ export default function StartHere() {
 
               {/* Create - Centered, Prominent Button */}
               <button
-                onClick={() => setLocation(isPage2Variant ? "/dashboard/generate?variant=page2" : "/dashboard/generate")}
+                onClick={() => {
+                  if (isPage3Variant) {
+                    setLocation("/dashboard/generate?variant=page3");
+                  } else if (isPage2Variant) {
+                    setLocation("/dashboard/generate?variant=page2");
+                  } else {
+                    setLocation("/dashboard/generate");
+                  }
+                }}
                 className="flex items-center justify-center w-14 h-14 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 -mt-2 z-10"
                 aria-label="Create"
               >

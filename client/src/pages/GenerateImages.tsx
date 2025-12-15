@@ -56,6 +56,7 @@ import { toast } from "sonner";
 import { safeLocalStorage } from "@/utils/localStorage";
 
 import DashboardV2 from "./DashboardV2";
+import DashboardV3 from "./DashboardV3";
 
 export default function GenerateImages() {
   // ALL HOOKS MUST BE CALLED FIRST, before any conditional returns
@@ -136,7 +137,7 @@ export default function GenerateImages() {
   const getBatchStatusQuery = trpc.photo.getBatchStatus.useQuery(
     currentBatchId ? { batchId: currentBatchId } : { batchId: 0 },
     { 
-      enabled: !!currentBatchId && !isPage2Variant, // Always enabled when we have a batchId
+      enabled: !!currentBatchId && !isPage2Variant, // Enabled for page1 and page3 (page3 uses regular batches)
       // Debug query status
       onSuccess: (data) => {
         console.log("[GenerateImages] ✅ getBatchStatusQuery onSuccess:", {
@@ -146,6 +147,7 @@ export default function GenerateImages() {
           enabled: !!currentBatchId && !isPage2Variant,
           currentBatchId,
           isPage2Variant,
+          isPage3Variant,
         });
       },
       onError: (error) => {
@@ -177,14 +179,16 @@ export default function GenerateImages() {
       cacheTime: 0, // Don't cache to see updates immediately
     }
   );
-  // Check if we have batchId in URL and variant is page2 (for query enablement)
+  // Check if we have batchId in URL and variant is page2 or page3 (for query enablement)
   // ONLY use URL parameter
   const urlParamsForQuery = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
   const batchIdFromUrlForQuery = urlParamsForQuery.get("batchId");
   const urlVariantForQuery = urlParamsForQuery.get("variant");
   const isPage2ForQuery = urlVariantForQuery === "page2";
+  const isPage3ForQuery = urlVariantForQuery === "page3";
   
-  // Determine if query should be enabled - check multiple sources for page2 variant
+  // Determine if query should be enabled - only page2 uses the specialized query
+  // page3 uses regular generate mutation which creates regular batches, so it needs regular query
   const shouldEnablePage2Query = !!currentBatchId && !!isPage2ForQuery;
   
   const getPage2BatchStatusQuery = trpc.photo.getPage2BatchStatus.useQuery(
@@ -220,7 +224,7 @@ export default function GenerateImages() {
     }
   );
   
-  // Debug: Log query status
+  // Debug: Log query status for page2
   useEffect(() => {
     if (isPage2Variant && currentBatchId) {
       console.log("[GenerateImages] Page2 query status:", {
@@ -233,6 +237,20 @@ export default function GenerateImages() {
       });
     }
   }, [isPage2Variant, currentBatchId, isPage2ForQuery, getPage2BatchStatusQuery.isLoading, getPage2BatchStatusQuery.error, getPage2BatchStatusQuery.data]);
+
+  // Debug: Log query status for page3
+  useEffect(() => {
+    if (isPage3Variant && currentBatchId) {
+      console.log("[GenerateImages] Page3 query status:", {
+        enabled: !!currentBatchId && !isPage2Variant,
+        currentBatchId,
+        isPage3Variant,
+        isLoading: getBatchStatusQuery.isLoading,
+        error: getBatchStatusQuery.error,
+        data: getBatchStatusQuery.data,
+      });
+    }
+  }, [isPage3Variant, currentBatchId, isPage2Variant, getBatchStatusQuery.isLoading, getBatchStatusQuery.error, getBatchStatusQuery.data]);
   
   // Force modal open when batchId is present in URL (for both page1 and page2)
   useEffect(() => {
@@ -625,8 +643,9 @@ export default function GenerateImages() {
     };
   }, [currentBatchId, isPage2Variant]); // Remove query refs from dependencies to prevent unnecessary re-subscriptions
 
-  // Update progress from polling - use page2 query if page2 variant, otherwise use regular query
-  const batchStatusData = isPage2Variant 
+  // Update progress from polling - use page2 query only for page2 variant
+  // page3 uses regular generate mutation which creates regular batches, so it needs regular query
+  const batchStatusData = isPage2Variant
     ? getPage2BatchStatusQuery.data 
     : getBatchStatusQuery.data;
   
@@ -1390,22 +1409,23 @@ export default function GenerateImages() {
     totalImagesToGenerateRef.current = totalImagesToGenerate;
   }, [totalImagesToGenerate]);
 
-  // Tell layout to show when GenerateImages is rendering (not DashboardV2)
+  // Tell layout to show when GenerateImages is rendering (not DashboardV2/V3)
   // This must be BEFORE the conditional return to maintain hooks order
   useEffect(() => {
-    // Calculate shouldShowDashboardV2 here to avoid using it before it's defined
+    // Calculate shouldShowDashboard here to avoid using it before it's defined
     const urlParamsForLayout = new URLSearchParams(window.location.search);
     const batchIdFromUrlLayout = urlParamsForLayout.get("batchId");
     const hasBatchIdLayout = batchIdFromUrlLayout || currentBatchId;
     const shouldShowDashboardV2Layout = isPage2Variant && !hasBatchIdLayout && !page2Data && !showModal && !isGenerating;
+    const shouldShowDashboardV3Layout = isPage3Variant && !hasBatchIdLayout && !showModal && !isGenerating;
     
-    if (!shouldShowDashboardV2Layout) {
+    if (!shouldShowDashboardV2Layout && !shouldShowDashboardV3Layout) {
       // GenerateImages is rendering, so ensure layout is visible
       window.dispatchEvent(new CustomEvent('aiselfi-dashboard-layout-mode', { 
         detail: { showFullLayout: true } 
       }));
     }
-  }, [isPage2Variant, currentBatchId, page2Data, showModal, isGenerating]);
+  }, [isPage2Variant, isPage3Variant, currentBatchId, page2Data, showModal, isGenerating]);
 
   // Calculate derived values (not hooks, so safe to call after useEffect)
   const creditsNeeded = totalImagesToGenerate; // 1 credit per generated image
@@ -1454,22 +1474,25 @@ export default function GenerateImages() {
     );
   };
 
-  // Check if we should show DashboardV2 (no batchId and no page2Data)
+  // Check if we should show DashboardV2 or DashboardV3 (no batchId)
   // This check happens AFTER all hooks are called
   const urlParamsForCheck = new URLSearchParams(window.location.search);
   const batchIdFromUrlCheck = urlParamsForCheck.get("batchId");
   const hasBatchId = batchIdFromUrlCheck || currentBatchId;
   const shouldShowDashboardV2 = isPage2Variant && !hasBatchId && !page2Data && !showModal && !isGenerating;
-  const shouldShowPage1UI = !isPage2Variant || !hasBatchId;
+  const shouldShowDashboardV3 = isPage3Variant && !hasBatchId && !showModal && !isGenerating;
+  const shouldShowPage1UI = !isPage2Variant && !isPage3Variant;
   
   console.log("[GenerateImages] Render check:", {
     isPage2Variant,
+    isPage3Variant,
     batchIdFromUrlCheck,
     currentBatchId,
     showModal,
     isGenerating,
     page2Data: !!page2Data,
     shouldShowDashboardV2,
+    shouldShowDashboardV3,
   });
   
   // For page2 variant without batchId, show DashboardV2 flow
@@ -1479,7 +1502,16 @@ export default function GenerateImages() {
     return <DashboardV2 />;
   }
   
-  console.log("[GenerateImages] Rendering GenerateImages", isPage2Variant ? "(page2 variant with data)" : "(page1 variant)");
+  // For page3 variant without batchId, show DashboardV3 flow
+  if (shouldShowDashboardV3) {
+    console.log("[GenerateImages] Rendering DashboardV3 flow (page3 variant, no batchId)");
+    return <DashboardV3 />;
+  }
+  
+  console.log("[GenerateImages] Rendering GenerateImages", 
+    isPage2Variant ? "(page2 variant with batchId)" : 
+    isPage3Variant ? "(page3 variant with batchId)" : 
+    "(page1 variant)");
 
   // Handle generation with page2 data (auto-called)
   const handleGenerateWithPage2Data = async (data: any, exampleImage: any) => {
@@ -1565,8 +1597,9 @@ Output should be a vertical rectangle. Entire head should be visible`;
   const handleGenerate = async () => {
     if (!canGenerate) return;
     
-    // For page1 flow: Check credits before generating
-    if (!isPage2Variant) {
+    // For page1 flow only: Check credits before generating
+    // page2 and page3 have their own credit checking in their respective dashboards
+    if (!isPage2Variant && !isPage3Variant) {
       // Check if user has credits - redirect to buy credits page if no credits
       if ((user?.credits ?? 0) <= 0) {
         toast.error(t("generateImages.notEnoughCredits") || "Insufficient credits", {
@@ -1582,7 +1615,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
     // For page2 variant: Only use example images (no model required)
     const referenceImageUrls: string[] = [];
     
-    if (!isPage2Variant) {
+    if (!isPage2Variant && !isPage3Variant) {
       // Page1 variant: require uploaded images
       if (uploadedFiles.length === 0) {
         toast.error(t("generateImages.noImagesUploaded") || "Please upload images", {
@@ -1940,7 +1973,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                                 {uploadedFiles.length} {uploadedFiles.length === 1 ? "image selected" : "images selected"}
                               </p>
                             )}
-                          </div>
+                              </div>
                         </div>
                         {uploadedFiles.length > 0 && (
                           <div className="grid grid-cols-3 gap-2 mt-2">
@@ -1969,8 +2002,8 @@ Output should be a vertical rectangle. Entire head should be visible`;
                                 </div>
                               </div>
                             ))}
-                          </div>
-                        )}
+                              </div>
+                            )}
                         <p className="text-xs text-muted-foreground mt-1.5">
                           {uploadedFiles.length === 0 && (t("generateImages.uploadImagesToGenerate") || "Upload images to generate photos")}
                         </p>
@@ -2160,7 +2193,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                           {uploadedFiles.length} {uploadedFiles.length === 1 ? "image selected" : "images selected"}
                         </p>
                       )}
-                    </div>
+                        </div>
                   </div>
                   {uploadedFiles.length > 0 && (
                     <div className="grid grid-cols-3 gap-2 mt-2">
@@ -2189,8 +2222,8 @@ Output should be a vertical rectangle. Entire head should be visible`;
                           </div>
                         </div>
                       ))}
-                    </div>
-                  )}
+                        </div>
+                      )}
                   <p className="text-xs text-muted-foreground mt-1.5">
                     {uploadedFiles.length === 0 && (t("generateImages.uploadImagesToGenerate") || "Upload images to generate photos")}
                   </p>
@@ -2504,7 +2537,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
             <div className="grid grid-cols-2 gap-4">
               {/* Show generated images - appear one by one with smooth animation */}
               {/* Always show images, even during generation */}
-              {generatedImages.length > 0 ? (
+              {generatedImages.length > 0 && (
                 generatedImages.map((image, index) => {
                   console.log(`[GenerateImages] 🖼️ Rendering image ${index + 1}/${generatedImages.length}:`, {
                     id: image.id,
@@ -2580,10 +2613,10 @@ Output should be a vertical rectangle. Entire head should be visible`;
                 </div>
                   );
                 })
-              ) : null}
+              )}
               
-              {/* Show loading placeholders for remaining images */}
-              {Array.from({ length: Math.max(0, totalImagesToGenerate - generatedImages.length) }).map((_, index) => (
+              {/* Show loading placeholders for remaining images (or all 4 if no images loaded yet) */}
+              {Array.from({ length: Math.max(0, isGenerating && generatedImages.length === 0 ? totalImagesToGenerate : (totalImagesToGenerate - generatedImages.length)) }).map((_, index) => (
                 <div
                   key={`loading-${index}`}
                   className="relative aspect-square rounded-lg overflow-hidden border-2 border-dashed border-primary/30 bg-primary/5"
