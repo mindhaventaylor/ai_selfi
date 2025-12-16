@@ -12,7 +12,6 @@ import DashboardV3 from "./DashboardV3";
 import {
   Sparkles,
   CreditCard,
-  FlaskConical,
   Image as ImageIcon,
   AlertCircle,
 } from "lucide-react";
@@ -93,7 +92,7 @@ export default function Dashboard() {
     "/over100_4.webp",
   ];
 
-  // Define all steps
+  // Define all steps (Step 2 removed for both variants)
   const allSteps = [
     {
       id: 1,
@@ -103,39 +102,30 @@ export default function Dashboard() {
       buttonColor: "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl",
     },
     {
-      id: 2,
-      title: t("startHere.step2"),
-      icon: FlaskConical,
-      color: "yellow",
-      buttonColor: "bg-gradient-to-br from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 shadow-lg hover:shadow-xl",
-    },
-    {
       id: 3,
-      title: t("startHere.step3"),
+      title: t("startHere.step3"), // Step 3 becomes step 2
       icon: Sparkles,
       color: "purple",
       buttonColor: "bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg hover:shadow-xl",
     },
     {
       id: 4,
-      title: t("startHere.step4"),
+      title: t("startHere.step4"), // Step 4 becomes step 3
       icon: ImageIcon,
       color: "green",
       buttonColor: "bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl",
     },
   ];
   
-  // For page2 variant, remove step 2 and renumber the remaining steps
+  // For page2 variant, renumber the steps
   const steps = isPage2Variant
-    ? allSteps
-        .filter(step => step.id !== 2) // Remove step 2
-        .map((step, index) => ({
-          ...step,
-          id: index + 1, // Renumber: 1, 2, 3 (was 1, 3, 4)
-        }))
+    ? allSteps.map((step, index) => ({
+        ...step,
+        id: index + 1, // Renumber: 1, 2, 3 (was 1, 3, 4)
+      }))
     : allSteps;
 
-  // Helper function to get step title with correct number for page2 variant
+  // Helper function to get step title with correct number (Step 2 removed for both variants)
   const getStepTitle = (stepKey: "step3Title" | "step4Title"): string => {
     const fullTitle = t(stepKey);
     
@@ -167,24 +157,26 @@ export default function Dashboard() {
   };
 
   const scrollToStep = (stepId: number) => {
-    // For page2 variant, map displayed step IDs to actual step IDs:
-    // Displayed step 1 -> actual step 1
-    // Displayed step 2 -> actual step 3 (was step 3, now displayed as step 2)
-    // Displayed step 3 -> actual step 4 (was step 4, now displayed as step 3)
-    // For normal variant, use step IDs as-is: 1->1, 2->2, 3->3, 4->4
+    // For page2 variant, the HTML element IDs are already adjusted:
+    // - step-1 stays step-1
+    // - step-3 becomes step-2 (because id={isPage2Variant ? "step-2" : "step-3"})
+    // - step-4 becomes step-3 (because id={isPage2Variant ? "step-3" : "step-4"})
+    // For normal variant, use step IDs as-is: 1->1, 3->3, 4->4
     let actualStepId = stepId;
     if (isPage2Variant) {
-      if (stepId === 1) {
-        actualStepId = 1;
-      } else if (stepId === 2) {
-        actualStepId = 3; // Displayed step 2 maps to actual step 3
-      } else if (stepId === 3) {
-        actualStepId = 4; // Displayed step 3 maps to actual step 4
-      }
+      // In page2, the displayed step IDs (1, 2, 3) map directly to HTML element IDs
+      // because the elements already have adjusted IDs
+      // stepId 1 -> step-1, stepId 2 -> step-2, stepId 3 -> step-3
+      actualStepId = stepId;
+    } else {
+      // In normal variant, step IDs map directly: 1->1, 3->3, 4->4
+      actualStepId = stepId;
     }
     const element = document.getElementById(`step-${actualStepId}`);
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      console.warn(`[Dashboard] Element with id "step-${actualStepId}" not found. isPage2Variant: ${isPage2Variant}, stepId: ${stepId}`);
     }
   };
 
@@ -329,79 +321,6 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-        {/* Step 2: Train an AI Model - Hidden for page2 variant */}
-        {!isPage2Variant && (
-        <Card id="step-2" className="bg-gradient-to-br from-yellow-500/10 via-yellow-400/5 to-yellow-600/10 border-yellow-500/20 mb-6">
-          <CardContent className="p-6 md:p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-lg bg-yellow-500/20 flex items-center justify-center">
-                <FlaskConical className="w-6 h-6 text-yellow-400" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">
-                  {t("startHere.step2Title")}
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {t("startHere.step2Subtitle")}
-                </p>
-              </div>
-            </div>
-
-              <div className="space-y-6 text-sm">
-                <div>
-                  <h3 className="font-semibold mb-3">
-                    {t("startHere.goodPhotosForTraining")}
-                  </h3>
-                  <ul className="space-y-2 list-disc list-inside text-muted-foreground">
-                    <li>{t("startHere.goodPhoto1")}</li>
-                    <li>{t("startHere.goodPhoto2")}</li>
-                    <li>{t("startHere.goodPhoto3")}</li>
-                    <li>{t("startHere.goodPhoto4")}</li>
-                    <li>{t("startHere.goodPhoto5")}</li>
-                    <li>{t("startHere.goodPhoto6")}</li>
-                    <li>
-                      {t("startHere.goodPhoto7")}
-                    </li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-3">{t("startHere.photosToAvoid")}</h3>
-                  <ul className="space-y-2 list-disc list-inside text-muted-foreground">
-                    <li>{t("startHere.badPhoto1")}</li>
-                    <li>{t("startHere.badPhoto2")}</li>
-                    <li>{t("startHere.badPhoto3")}</li>
-                    <li>{t("startHere.badPhoto4")}</li>
-                    <li>{t("startHere.badPhoto5")}</li>
-                    <li>{t("startHere.badPhoto6")}</li>
-                    <li>{t("startHere.badPhoto7")}</li>
-                    <li>{t("startHere.badPhoto8")}</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-3">
-                    {t("startHere.forBestResults")}
-                  </h3>
-                  <ul className="space-y-2 list-disc list-inside text-muted-foreground">
-                    <li>{t("startHere.bestResult1")}</li>
-                    <li>{t("startHere.bestResult2")}</li>
-                    <li>{t("startHere.bestResult3")}</li>
-                    <li>{t("startHere.bestResult4")}</li>
-                    <li>{t("startHere.bestResult5")}</li>
-                  </ul>
-                </div>
-
-                <Button
-                  className={`mt-6 ${steps[1].buttonColor} text-white rounded-full`}
-                  onClick={() => setLocation("/dashboard/models")}
-                >
-                  {t("startHere.trainYourAIModel")}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Step 3: Creating Your Photos (becomes Step 2 for page2) */}
         <Card id={isPage2Variant ? "step-2" : "step-3"} className="bg-gradient-to-br from-purple-500/10 via-purple-400/5 to-purple-600/10 border-purple-500/20 mb-6">
@@ -487,7 +406,7 @@ export default function Dashboard() {
                 </div>
 
                 <Button
-                  className={`mt-6 ${isPage2Variant ? steps[1].buttonColor : steps[2].buttonColor} text-white rounded-full`}
+                  className={`mt-6 ${isPage2Variant ? steps[1].buttonColor : steps[1].buttonColor} text-white rounded-full`}
                   onClick={() => setLocation("/dashboard/generate")}
                 >
                   {t("startHere.createYourPhotosWithAI")}
@@ -552,8 +471,7 @@ export default function Dashboard() {
                 </Alert>
 
                 <Button
-className={`mt-6 ${steps[2].buttonColor} text-white rounded-full`}
-
+                  className={`mt-6 ${steps[2].buttonColor} text-white rounded-full`}
                   onClick={() => setLocation("/dashboard/gallery")}
                 >
                   {t("startHere.viewYourGallery")}

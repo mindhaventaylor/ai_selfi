@@ -13,12 +13,23 @@ import {
 import { Globe, LogOut, Plus, CreditCard, Settings, HelpCircle, Image as ImageIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks/useMobile";
 import { useLocation } from "wouter";
+import { usePostHogVariant } from "@/hooks/usePostHogVariant";
+import { safeLocalStorage } from "@/utils/localStorage";
 
 export default function SettingsGeneral() {
   const { t, changeLanguage, currentLanguage } = useTranslation();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [, setLocation] = useLocation();
   const isMobile = useIsMobile();
+  const { variant: posthogVariant } = usePostHogVariant(user?.id);
+  
+  // Check for page2/page3 variant
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
+  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
+  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | null;
+  const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
+  const isPage3Variant = posthogVariant === "page3" || urlVariant === "page3" || cachedVariant === "page3" || firstVariant === "page3";
   const [language, setLanguage] = useState(currentLanguage || "it");
   
   // Sync language state with currentLanguage
@@ -148,8 +159,8 @@ export default function SettingsGeneral() {
         </div>
       </div>
 
-      {/* Bottom Navigation Bar - Mobile Only */}
-      {isMobile && (
+      {/* Bottom Navigation Bar - Mobile Only (Hidden for page1 variant) */}
+      {isMobile && (isPage2Variant || isPage3Variant) && (
         <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 shadow-lg">
           <div className="max-w-4xl mx-auto px-4 py-3">
             <div className="flex items-end justify-around relative">

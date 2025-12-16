@@ -1338,7 +1338,17 @@ export default function GenerateImages() {
     }
 
     if (newFiles.length > 0) {
-      setUploadedFiles((prev) => [...prev, ...newFiles]);
+      setUploadedFiles((prev) => {
+        const updated = [...prev, ...newFiles];
+        // For page1 variant: Auto-open parameters when files are uploaded and an image is selected
+        if (!isPage2Variant && !isPage3Variant && selectedImage !== null) {
+          // Use setTimeout to ensure state is updated first
+          setTimeout(() => {
+            setIsParametersSheetOpen(true);
+          }, 100);
+        }
+        return updated;
+      });
       toast.success(`${newFiles.length} ${newFiles.length === 1 ? "image selected" : "images selected"}`, {
         description: "Ready to use",
       });
@@ -1429,6 +1439,28 @@ export default function GenerateImages() {
     }
   }, [isPage2Variant, isPage3Variant, currentBatchId, page2Data, showModal, isGenerating]);
 
+  // Auto-open parameters for page1 when both image is selected and files are uploaded
+  // But don't open during generation to avoid interfering with user's intent to close
+  useEffect(() => {
+    if (
+      !isPage2Variant && 
+      !isPage3Variant && 
+      selectedImage !== null && 
+      uploadedFiles.length > 0 && 
+      !isParametersSheetOpen &&
+      !isGenerating && 
+      !isStartingGeneration && 
+      !generateMutation.isPending
+    ) {
+      // Small delay to ensure UI is ready
+      const timer = setTimeout(() => {
+        setIsParametersSheetOpen(true);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedImage, uploadedFiles.length, isPage2Variant, isPage3Variant, isParametersSheetOpen, isGenerating, isStartingGeneration, generateMutation.isPending]);
+
+
   // Calculate derived values (not hooks, so safe to call after useEffect)
   const creditsNeeded = totalImagesToGenerate; // 1 credit per generated image
   const userCredits = user?.credits ?? 0;
@@ -1460,6 +1492,10 @@ export default function GenerateImages() {
     setSelectedImage(newValue);
     // Open parameters sheet on mobile when an image is selected
     if (newValue !== null && window.innerWidth < 1024) {
+      setIsParametersSheetOpen(true);
+    }
+    // For page1 variant: Auto-open parameters when image is selected and files are uploaded
+    if (!isPage2Variant && !isPage3Variant && newValue !== null && uploadedFiles.length > 0) {
       setIsParametersSheetOpen(true);
     }
   };
@@ -1704,7 +1740,8 @@ ${selectedExampleImage.prompt}
 
 Output should be a vertical rectangle. Entire head should be visible`;
     
-    // Reset state
+    // Reset state - clear starting state first, then set generating state
+    setIsStartingGeneration(false); // Clear starting state, now we're actually generating
     setIsGenerating(true);
     setGenerationProgress(0); // Will be updated to 5% when batch status is first received
     setCompletedImages(0);
@@ -1753,12 +1790,16 @@ Output should be a vertical rectangle. Entire head should be visible`;
       // Set batch ID for polling
       if (result.batchId) {
         console.log(`[GenerateImages] Setting batch ID to ${result.batchId}`);
-        console.log("[GenerateImages] Page2 generation started, batch ID:", result.batchId);
         setCurrentBatchId(result.batchId);
         // Force query to refetch immediately after setting batchId
         setTimeout(() => {
-          console.log("[GenerateImages] Forcing Page2 query refetch after batchId set");
-          getPage2BatchStatusQuery.refetch();
+          if (isPage2Variant) {
+            console.log("[GenerateImages] Forcing Page2 query refetch after batchId set");
+            getPage2BatchStatusQuery.refetch();
+          } else {
+            console.log("[GenerateImages] Forcing Page1 query refetch after batchId set");
+            getBatchStatusQuery.refetch();
+          }
         }, 100);
       } else {
         // Fallback if no batch ID (shouldn't happen)
@@ -2169,7 +2210,17 @@ Output should be a vertical rectangle. Entire head should be visible`;
           </div>
 
           {/* Mobile Parameters Sheet - Slides from right when image is selected */}
-          <Sheet open={isParametersSheetOpen} onOpenChange={setIsParametersSheetOpen}>
+          <Sheet 
+            open={isParametersSheetOpen} 
+            onOpenChange={(open) => {
+              // Don't allow closing the sheet while generating to avoid confusion
+              if (!open && (isGenerating || isStartingGeneration || generateMutation.isPending)) {
+                return;
+              }
+              // Allow manual closing - user can close it if they want
+              setIsParametersSheetOpen(open);
+            }}
+          >
             <SheetContent side="right" className="w-[85vw] sm:w-[400px] overflow-y-auto px-3">
               <SheetHeader className="pb-4 border-b border-border">
                 <SheetTitle className="flex items-center gap-3">
@@ -2220,7 +2271,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                           {uploadedFiles.length} {uploadedFiles.length === 1 ? "image selected" : "images selected"}
                         </p>
                       )}
-                        </div>
+                    </div>
                   </div>
                   {uploadedFiles.length > 0 && (
                     <div className="grid grid-cols-3 gap-2 mt-2">
@@ -2249,8 +2300,8 @@ Output should be a vertical rectangle. Entire head should be visible`;
                           </div>
                         </div>
                       ))}
-                        </div>
-                      )}
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground mt-1.5">
                     {uploadedFiles.length === 0 && (t("generateImages.uploadImagesToGenerate") || "Upload images to generate photos")}
                   </p>
@@ -2361,10 +2412,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                     className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     size="lg"
                     disabled={!canGenerate || (isPage2Variant && !hasEnoughCredits) || isGenerating || isStartingGeneration || generateMutation.isPending}
-                    onClick={() => {
-                      setIsParametersSheetOpen(false);
-                      handleGenerate();
-                    }}
+                    onClick={handleGenerate}
                   >
                     {(isGenerating || isStartingGeneration || generateMutation.isPending) ? (
                       <>
@@ -2422,6 +2470,17 @@ Output should be a vertical rectangle. Entire head should be visible`;
               } catch (e) {
                 console.warn("[GenerateImages] Failed to clear saved data:", e);
               }
+              // Reset state
+              setCurrentBatchId(null);
+              setGeneratedImages([]);
+              setCompletedImages(0);
+              setGenerationProgress(0);
+              setIsGenerating(false);
+              // Navigate to gallery to view the generated images
+              setLocation("/dashboard/gallery");
+            } else if (!isPage2Variant && !isPage3Variant) {
+              // For page1 variant, also navigate to gallery when modal closes
+              console.log("[GenerateImages] Page1: Navigating to gallery after closing modal");
               // Reset state
               setCurrentBatchId(null);
               setGeneratedImages([]);
@@ -2494,6 +2553,17 @@ Output should be a vertical rectangle. Entire head should be visible`;
                               } catch (e) {
                                 console.warn("[GenerateImages] Failed to clear saved data:", e);
                               }
+                              // Reset state
+                              setCurrentBatchId(null);
+                              setGeneratedImages([]);
+                              setCompletedImages(0);
+                              setGenerationProgress(0);
+                              setIsGenerating(false);
+                              // Navigate to gallery to view the generated images
+                              setLocation("/dashboard/gallery");
+                            } else if (!isPage2Variant && !isPage3Variant) {
+                              // For page1 variant, also navigate to gallery when close button is clicked
+                              console.log("[GenerateImages] Page1: Close button clicked, navigating to gallery");
                               // Reset state
                               setCurrentBatchId(null);
                               setGeneratedImages([]);

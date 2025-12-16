@@ -617,8 +617,8 @@ export default function BuyCredits() {
         </div>
       </div>
 
-      {/* Bottom Navigation Bar - Mobile Only */}
-      {isMobile && (
+      {/* Bottom Navigation Bar - Mobile Only (Hidden for page1 variant) */}
+      {isMobile && isPage2Variant && (
         <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 shadow-lg">
           <div className="max-w-4xl mx-auto px-4 py-3">
             <div className="flex items-end justify-around relative">

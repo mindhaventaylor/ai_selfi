@@ -1179,9 +1179,18 @@ function HairStyleStep({ value, onChange, onNext, formData }: { value: string; o
     let imageNumber: number | string;
     
     if (gender === "woman") {
-      // Reverse the order for women: 1->4, 2->3, 3->2, 4->1
-      const reversedIndex = 5 - imageIndex; // This reverses: 1->4, 2->3, 3->2, 4->1
-      imageNumber = reversedIndex === 1 ? "" : reversedIndex;
+      // For women: swap only straight (1) and wavy (2) images, keep others as before (reversed)
+      // Original reverse: 1->4, 2->3, 3->2, 4->1
+      // New: swap 1 and 2, keep 3 and 4 as original reverse
+      // 1 (straight) -> 3 (was 4), 2 (wavy) -> 4 (was 3), 3 (curly) -> 2, 4 (dreadlocks) -> 1
+      const womanMapping: Record<number, number> = {
+        1: 3, // straight → woman_hair_type3.webp (was 4 in original reverse)
+        2: 4, // wavy → woman_hair_type4.webp (was 3 in original reverse)
+        3: 2, // curly → woman_hair_type2.webp (same as original reverse)
+        4: 1, // dreadlocks → woman_hair_type.webp (same as original reverse)
+      };
+      const mappedIndex = womanMapping[imageIndex] || imageIndex;
+      imageNumber = mappedIndex === 1 ? "" : mappedIndex;
     } else {
       // For men: 1->1 (straight), 2->4 (wavy uses dreadlocks), 3->2 (curly uses wavy), 4->3 (dreadlocks uses curly)
       const manMapping: Record<number, number> = {
@@ -1356,8 +1365,10 @@ function AttireStep({ value, onChange, onNext, formData }: { value: string[]; on
   const { t } = useTranslation();
 
   const attires = [
-    { value: "professional", label: t("dashboardV2.professionalBusiness"), description: t("dashboardV2.professionalBusinessDesc") },
-    { value: "business-casual", label: t("dashboardV2.businessCasual"), description: t("dashboardV2.businessCasualDesc") },
+    { value: "professional", label: t("dashboardV2.professionalBusiness") || "Professional", description: t("dashboardV2.professionalBusinessDesc") || "Business professional attire" },
+    { value: "casual", label: t("dashboardV2.casual") || "Casual", description: t("dashboardV2.casualDesc") || "Casual everyday wear" },
+    { value: "elegant", label: t("dashboardV2.elegant") || "Elegant", description: t("dashboardV2.elegantDesc") || "Elegant and sophisticated style" },
+    { value: "formal", label: t("dashboardV2.formal") || "Formal", description: t("dashboardV2.formalDesc") || "Formal and traditional attire" },
   ];
 
   // Filter example images based on selected gender and backgrounds only
@@ -1366,10 +1377,10 @@ function AttireStep({ value, onChange, onNext, formData }: { value: string[]; on
   const selectedBackgrounds = formData.backgrounds || [];
   // Filter by gender and backgrounds only, not by attire styles
   const filteredImages = filterExampleImages(exampleImages, gender, [], selectedBackgrounds);
-  // Get first 2 images for the 2 attire options - these will be fixed
-  const displayImages = filteredImages.length >= 2 
-    ? filteredImages.slice(0, 2) 
-    : (filteredImages.length > 0 ? filteredImages : exampleImages.slice(0, 2));
+  // Get first 4 images for the 4 attire options - these will be fixed
+  const displayImages = filteredImages.length >= 4 
+    ? filteredImages.slice(0, 4) 
+    : (filteredImages.length > 0 ? filteredImages : exampleImages.slice(0, 4));
 
   return (
     <div className="space-y-6">
@@ -1380,28 +1391,28 @@ function AttireStep({ value, onChange, onNext, formData }: { value: string[]; on
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mt-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
         {attires.map((attire, index) => {
           const isSelected = value.includes(attire.value);
-          // Assign fixed images: first attire gets first image, second attire gets second image
+          // Assign fixed images: each attire gets its corresponding image
           const exampleImage = displayImages[index] || displayImages[0];
           
           return (
             <button
               key={attire.value}
               onClick={() => onChange(attire.value)}
-              className={`relative rounded-lg border-2 transition-all overflow-hidden ${
+              className={`relative rounded-lg border-2 transition-all overflow-hidden flex flex-col ${
                 isSelected
                   ? "border-primary bg-primary/10"
                   : "border-border hover:border-primary/50"
               }`}
             >
               {/* Example image at the top */}
-              <div className="w-full aspect-[3/4] relative">
+              <div className="w-full aspect-[3/4] relative overflow-hidden flex-shrink-0">
                 <img
                   src={exampleImage.url}
                   alt={t("dashboardV2.exampleForAlt", { label: attire.label })}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-top"
                   loading="lazy"
                 />
                 {isSelected && (
@@ -1411,7 +1422,7 @@ function AttireStep({ value, onChange, onNext, formData }: { value: string[]; on
                 )}
               </div>
               {/* Label and description at the bottom */}
-              <div className="p-4">
+              <div className="p-4 flex-shrink-0">
                 <h3 className="font-semibold text-lg mb-1">{attire.label}</h3>
                 <p className="text-sm text-muted-foreground">{attire.description}</p>
               </div>
