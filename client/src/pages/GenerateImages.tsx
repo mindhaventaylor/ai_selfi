@@ -1504,15 +1504,31 @@ export default function GenerateImages() {
   };
 
   const toggleBackground = (bg: string) => {
-    setSelectedBackgrounds((prev) =>
-      prev.includes(bg) ? prev.filter((b) => b !== bg) : [...prev, bg]
-    );
+    if (isPage2Variant) {
+      // For page2 variant, only allow single selection
+      setSelectedBackgrounds((prev) =>
+        prev.includes(bg) ? [] : [bg]
+      );
+    } else {
+      // For other variants, allow multiple selections
+      setSelectedBackgrounds((prev) =>
+        prev.includes(bg) ? prev.filter((b) => b !== bg) : [...prev, bg]
+      );
+    }
   };
 
   const toggleStyle = (style: string) => {
-    setSelectedStyles((prev) =>
-      prev.includes(style) ? prev.filter((s) => s !== style) : [...prev, style]
-    );
+    if (isPage2Variant) {
+      // For page2 variant, only allow single selection
+      setSelectedStyles((prev) =>
+        prev.includes(style) ? [] : [style]
+      );
+    } else {
+      // For other variants, allow multiple selections
+      setSelectedStyles((prev) =>
+        prev.includes(style) ? prev.filter((s) => s !== style) : [...prev, style]
+      );
+    }
   };
 
   // Check if we should show DashboardV2 or DashboardV3 (no batchId)

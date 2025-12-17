@@ -326,11 +326,12 @@ export default function DashboardV2() {
   const toggleArrayValue = (key: "attire" | "backgrounds", value: string) => {
     setFormData(prev => {
       const arr = prev[key] as string[];
+      // For variant 2, only allow single selection
       return {
         ...prev,
         [key]: arr.includes(value) 
-          ? arr.filter(v => v !== value)
-          : [...arr, value]
+          ? [] // Deselect if clicking the same item
+          : [value] // Replace with only the selected item
       };
     });
   };
