@@ -128,15 +128,13 @@ export default function PaymentSuccess() {
           // V3 Generation
           setHasPage3FormData(true);
           
-          const uploadResult = await uploadImagesMutation.mutateAsync({
-            images: intent.userImages,
-          });
-
-          if (!uploadResult.urls || uploadResult.urls.length === 0) {
-            throw new Error("Failed to upload images");
+          // Use the uploaded image URL directly (image was uploaded before payment)
+          // This avoids 413 Content Too Large error
+          if (!intent.userImageUrl) {
+            throw new Error("Image URL not found. Please try generating again.");
           }
-
-          const trainingImageUrls = [uploadResult.urls[0]];
+          
+          const trainingImageUrls = [intent.userImageUrl];
           
           setStatusMessage("Creating your headshots...");
           

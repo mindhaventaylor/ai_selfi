@@ -302,7 +302,7 @@ export default function DashboardV3() {
     return sortedByPrice[0]?.id || null;
   };
 
-  // Handle purchase - Same exact logic as DashboardV2
+  // Handle purchase - Upload image first to avoid 413 error
   const handlePurchase = async () => {
     if (isProcessingPayment || isLoadingPacks) return;
     
@@ -315,32 +315,40 @@ export default function DashboardV3() {
     setIsProcessingPayment(true);
     
     try {
-      // Convert uploaded file to base64 for storage - exact same as V2
-      let userImageBase64: string | null = null;
+      // Step 1: Upload image first to get URL (avoids 413 Content Too Large error)
+      let uploadedImageUrl: string | null = null;
       if (uploadedFile?.file) {
         const reader = new FileReader();
-        userImageBase64 = await new Promise<string>((resolve, reject) => {
+        const base64Data = await new Promise<string>((resolve, reject) => {
           reader.onload = () => {
             const result = reader.result as string;
-            // Get just the base64 part (after the comma) - MUST split properly
             const base64 = result.split(',')[1];
             resolve(base64);
           };
           reader.onerror = reject;
           reader.readAsDataURL(uploadedFile.file);
         });
+
+        const uploadResult = await uploadImagesMutation.mutateAsync({
+          images: [{
+            data: base64Data,
+            fileName: uploadedFile.file.name,
+            contentType: uploadedFile.file.type
+          }]
+        });
+
+        if (!uploadResult.urls || uploadResult.urls.length === 0) {
+          throw new Error("Failed to upload image");
+        }
+
+        uploadedImageUrl = uploadResult.urls[0];
       }
       
-      // Save generation intent with uploaded image for auto-generation after payment
-      // Use exact same structure as V2
-      if (userImageBase64) {
+      // Save generation intent with uploaded image URL for auto-generation after payment
+      if (uploadedImageUrl) {
         const generationIntent = {
           resumeStep: "generate",
-          userImages: [{
-            data: userImageBase64,
-            fileName: uploadedFile?.file.name || "image.png",
-            contentType: uploadedFile?.file.type || "image/png",
-          }],
+          userImageUrl: uploadedImageUrl, // Save URL instead of base64
           formData: {
             tab,
             selectedExampleImageId,
