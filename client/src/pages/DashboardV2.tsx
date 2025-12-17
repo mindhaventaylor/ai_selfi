@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { exampleImages, filterExampleImages } from "@/data/exampleImages";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
-import { detectCurrency, getPage2Price, PAGE2_PRICES, type Currency } from "@/utils/currency";
+import { detectCurrency, getPage2Price, PAGE2_PRICES, PAGE2_OLD_PRICES, type Currency } from "@/utils/currency";
 import { safeLocalStorage } from "@/utils/localStorage";
 import { 
   ArrowLeft, 
@@ -1614,7 +1614,7 @@ function PricingStep({
     
     // Also get the USD base price for logging
     const basePriceCentsUSD = PAGE2_PRICES[plan];
-    const oldBasePriceCentsUSD = plan === "basic" ? 2900 : plan === "standard" ? 3900 : 4900; // PAGE2_OLD_PRICES
+    const oldBasePriceCentsUSD = PAGE2_OLD_PRICES[plan];
     
     // Convert expected price to user's currency if needed
     const currency = detectCurrency();

@@ -108,7 +108,7 @@ export const BASE_PRICES = {
 export const BASE_OLD_PRICES = {
   starter: 500, // $5.00 (no discount for starter)
   pro: 2000, // $20.00 (original price, discounted to $10)
-  premium: 1500, // $15.00 (no discount for premium)
+  premium: 3000, // $30.00 (original price, discounted to $15)
 };
 
 // Page2 flow price variations (USD cents) - Variation 2 (page2) - buy credits prices
@@ -128,8 +128,8 @@ export const PAGE2_CREDITS = {
 // Original prices before discount for page2 buy credits (USD cents)
 export const PAGE2_OLD_PRICES = {
   basic: 500, // $5.00 (no discount for basic)
-  standard: 1000, // $10.00 (no discount for standard)
-  premium: 1500, // $15.00 (no discount for premium)
+  standard: 1500, // $15.00 (original price, discounted to $10)
+  premium: 3000, // $30.00 (original price, discounted to $15)
 };
 
 // Get localized price for page2 plan
@@ -146,11 +146,14 @@ export function getPage2Price(plan: "basic" | "standard" | "premium", currency?:
   const convertedPrice = convertPrice(basePrice, detectedCurrency);
   const oldConvertedPrice = convertPrice(oldBasePrice, detectedCurrency);
   
+  // Only show old price if it's different from current price
+  const shouldShowOldPrice = oldConvertedPrice !== convertedPrice;
+  
   return {
     amount: convertedPrice,
     formatted: formatPrice(convertedPrice, detectedCurrency),
-    oldAmount: oldConvertedPrice,
-    oldFormatted: formatPrice(oldConvertedPrice, detectedCurrency),
+    oldAmount: shouldShowOldPrice ? oldConvertedPrice : undefined,
+    oldFormatted: shouldShowOldPrice ? formatPrice(oldConvertedPrice, detectedCurrency) : undefined,
     currency: detectedCurrency,
   };
 }
@@ -195,7 +198,7 @@ export function getLocalizedPrice(pack: "starter" | "pro" | "premium" | "busines
 } {
   const detectedCurrency = currency || detectCurrency();
   
-  // For page2 variant, use page2 prices (no old prices for page2)
+  // For page2 variant, use page2 prices with old prices
   if (isPage2) {
     const page2PackMap: Record<"starter" | "pro" | "premium", "basic" | "standard" | "premium"> = {
       starter: "basic",
@@ -205,10 +208,18 @@ export function getLocalizedPrice(pack: "starter" | "pro" | "premium" | "busines
     const page2Pack = page2PackMap[pack];
     if (page2Pack) {
       const basePrice = PAGE2_PRICES[page2Pack];
+      const oldBasePrice = PAGE2_OLD_PRICES[page2Pack];
       const convertedPrice = convertPrice(basePrice, detectedCurrency);
+      const oldConvertedPrice = convertPrice(oldBasePrice, detectedCurrency);
+      
+      // Only show old price if it's different from current price
+      const shouldShowOldPrice = oldConvertedPrice !== convertedPrice;
+      
       return {
         amount: convertedPrice,
         formatted: formatPrice(convertedPrice, detectedCurrency),
+        oldAmount: shouldShowOldPrice ? oldConvertedPrice : undefined,
+        oldFormatted: shouldShowOldPrice ? formatPrice(oldConvertedPrice, detectedCurrency) : undefined,
         currency: detectedCurrency,
       };
     }

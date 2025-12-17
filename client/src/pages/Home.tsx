@@ -1174,11 +1174,11 @@ export default function Home() {
                   <p className="text-muted-foreground mb-4">
                     {isPage2Variant ? "100 photos" : t("pricing.plans.premium.photos")}
                   </p>
-                  <div className={`text-5xl font-bold mb-2 ${isPage2Variant && premiumPrice.oldFormatted ? "flex items-baseline gap-3" : ""}`}>
+                  <div className={`text-5xl font-bold mb-2 ${premiumPrice.oldFormatted ? "flex items-baseline gap-3" : ""}`}>
                     <span>
-                      {isPage2Variant ? premiumPrice.formatted : t("pricing.plans.premium.price")}
+                      {premiumPrice.formatted}
                     </span>
-                    {isPage2Variant && premiumPrice.oldFormatted && (
+                    {premiumPrice.oldFormatted && (
                       <span className="text-2xl text-muted-foreground line-through font-normal">
                         {premiumPrice.oldFormatted}
                       </span>
