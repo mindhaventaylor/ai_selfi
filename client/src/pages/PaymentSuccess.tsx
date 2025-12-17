@@ -199,18 +199,31 @@ Output should be a vertical rectangle. Entire head should be visible`;
             ? intent.formData.gender 
             : "man";
           
-          const uploadResult = await uploadPage2ImagesMutation.mutateAsync({
-            images: intent.userImages,
-          });
+          // Use saved URLs if available (new format), otherwise upload base64 (old format for backwards compatibility)
+          let userImageUrls: string[];
+          if (intent.userImageUrls && intent.userImageUrls.length > 0) {
+            // New format: URLs already uploaded
+            userImageUrls = intent.userImageUrls;
+          } else if (intent.userImages && intent.userImages.length > 0) {
+            // Old format: upload base64 data first (may cause 413 error for large images)
+            setStatusMessage("Uploading your images...");
+            const uploadResult = await uploadPage2ImagesMutation.mutateAsync({
+              images: intent.userImages,
+            });
 
-          if (!uploadResult.urls || uploadResult.urls.length === 0) {
-            throw new Error("Failed to upload images");
+            if (!uploadResult.urls || uploadResult.urls.length === 0) {
+              throw new Error("Failed to upload images");
+            }
+
+            userImageUrls = uploadResult.urls;
+          } else {
+            throw new Error("No image data found. Please try generating again.");
           }
 
           setStatusMessage("Creating your headshots...");
 
           const result = await generateFromPage2Mutation.mutateAsync({
-            userImageUrls: uploadResult.urls,
+            userImageUrls: userImageUrls,
             formData: {
               ...intent.formData,
               gender,
