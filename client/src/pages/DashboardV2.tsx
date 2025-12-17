@@ -262,16 +262,22 @@ export default function DashboardV2() {
                   // New format: URLs already uploaded
                   userImageUrls = intent.userImageUrls;
                 } else if (intent.userImages && intent.userImages.length > 0) {
-                  // Old format: upload base64 data first
-                  const uploadResult = await uploadPage2ImagesMutation.mutateAsync({
-                    images: intent.userImages,
-                  });
+                  // Old format: upload base64 data first (one at a time to avoid 413 error)
+                  const uploadedUrls: string[] = [];
+                  
+                  for (const image of intent.userImages) {
+                    const uploadResult = await uploadPage2ImagesMutation.mutateAsync({
+                      images: [image], // Upload one at a time
+                    });
 
-                  if (!uploadResult.urls || uploadResult.urls.length === 0) {
-                    throw new Error("Failed to upload images");
+                    if (!uploadResult.urls || uploadResult.urls.length === 0) {
+                      throw new Error("Failed to upload images");
+                    }
+
+                    uploadedUrls.push(uploadResult.urls[0]);
                   }
 
-                  userImageUrls = uploadResult.urls;
+                  userImageUrls = uploadedUrls;
                 } else {
                   throw new Error("No image data found in generation intent");
                 }
@@ -403,38 +409,46 @@ export default function DashboardV2() {
       });
       
       // Upload images first to get URLs (avoids 413 Content Too Large error)
+      // Upload one at a time to prevent payload size issues
       try {
-        const userImages = await Promise.all(
-          uploadedFiles.map(async (file) => {
-            return new Promise<{ data: string; fileName: string; contentType: string }>((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onload = () => {
-                const base64 = (reader.result as string).split(',')[1]; // Remove data:image/jpeg;base64, prefix
-                resolve({
-                  data: base64,
-                  fileName: file.file.name,
-                  contentType: file.file.type,
-                });
-              };
-              reader.onerror = reject;
-              reader.readAsDataURL(file.file);
-            });
-          })
-        );
+        const uploadedUrls: string[] = [];
+        
+        for (const file of uploadedFiles) {
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const result = reader.result as string;
+              const base64Data = result.split(',')[1]; // Remove data:image/jpeg;base64, prefix
+              resolve(base64Data);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file.file);
+          });
 
-        // Upload images to get URLs
-        const uploadResult = await uploadPage2ImagesMutation.mutateAsync({
-          images: userImages,
-        });
+          // Upload one image at a time
+          const uploadResult = await uploadPage2ImagesMutation.mutateAsync({
+            images: [{
+              data: base64,
+              fileName: file.file.name,
+              contentType: file.file.type,
+            }],
+          });
 
-        if (!uploadResult.urls || uploadResult.urls.length === 0) {
+          if (!uploadResult.urls || uploadResult.urls.length === 0) {
+            throw new Error("Failed to upload images");
+          }
+
+          uploadedUrls.push(uploadResult.urls[0]);
+        }
+
+        if (uploadedUrls.length === 0) {
           throw new Error("Failed to upload images");
         }
         
         // Save generation intent with uploaded image URLs (not base64)
         const generationIntent = {
           resumeStep: "generate",
-          userImageUrls: uploadResult.urls, // Save URLs instead of base64
+          userImageUrls: uploadedUrls, // Save URLs instead of base64
           formData: formData,
           selectedPrice: formData.selectedPrice || "standard",
         };
@@ -460,31 +474,39 @@ export default function DashboardV2() {
     try {
       const loadingToast = toast.loading(t("dashboardV2.generatingImages"));
       
-      // Step 1: Upload images first to get URLs (avoids 413 Content Too Large error)
-      const userImages = await Promise.all(
-        uploadedFiles.map(async (file) => {
-          return new Promise<{ data: string; fileName: string; contentType: string }>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-              const base64 = (reader.result as string).split(',')[1]; // Remove data:image/jpeg;base64, prefix
-              resolve({
-                data: base64,
-                fileName: file.file.name,
-                contentType: file.file.type,
-              });
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file.file);
-          });
-        })
-      );
+      // Step 1: Upload images one at a time to get URLs (avoids 413 Content Too Large error)
+      // Upload sequentially instead of all at once to prevent payload size issues
+      const uploadedUrls: string[] = [];
+      
+      for (const file of uploadedFiles) {
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            const base64Data = result.split(',')[1]; // Remove data:image/jpeg;base64, prefix
+            resolve(base64Data);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file.file);
+        });
 
-      // Upload images to Supabase Storage and get URLs
-      const uploadResult = await uploadPage2ImagesMutation.mutateAsync({
-        images: userImages,
-      });
+        // Upload one image at a time
+        const uploadResult = await uploadPage2ImagesMutation.mutateAsync({
+          images: [{
+            data: base64,
+            fileName: file.file.name,
+            contentType: file.file.type,
+          }],
+        });
 
-      if (!uploadResult.urls || uploadResult.urls.length === 0) {
+        if (!uploadResult.urls || uploadResult.urls.length === 0) {
+          throw new Error(t("dashboardV2.imageUploadFailed"));
+        }
+
+        uploadedUrls.push(uploadResult.urls[0]);
+      }
+
+      if (uploadedUrls.length === 0) {
         throw new Error(t("dashboardV2.imageUploadFailed"));
       }
 
@@ -495,7 +517,7 @@ export default function DashboardV2() {
       const gender = formData.gender === "man" || formData.gender === "woman" ? formData.gender : "man";
       
       const result = await generateFromPage2Mutation.mutateAsync({
-        userImageUrls: uploadResult.urls, // Use URLs instead of base64 data
+        userImageUrls: uploadedUrls, // Use URLs instead of base64 data
         formData: {
           ...formData,
           gender, // Ensure gender is "man" | "woman" (required)
