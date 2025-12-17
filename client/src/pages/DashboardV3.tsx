@@ -565,7 +565,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
             <div className="max-w-4xl mx-auto px-4 py-3">
               <div className="flex items-end justify-around relative">
                 <button
-                  onClick={() => setLocation("/dashboard/start")}
+                  onClick={() => setLocation("/dashboard/start?variant=page3")}
                   className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
                   aria-label="Start Here"
                 >
@@ -574,7 +574,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                 </button>
 
                 <button
-                  onClick={() => setLocation("/dashboard/gallery")}
+                  onClick={() => setLocation("/dashboard/gallery?variant=page3")}
                   className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
                   aria-label="Gallery"
                 >
@@ -591,7 +591,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                 </button>
 
                 <button
-                  onClick={() => setLocation("/dashboard/credits/buy")}
+                  onClick={() => setLocation("/dashboard/credits/buy?variant=page3")}
                   className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
                   aria-label="Buy Credits"
                 >
@@ -600,7 +600,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                 </button>
 
                 <button
-                  onClick={() => setLocation("/dashboard/settings/general")}
+                  onClick={() => setLocation("/dashboard/settings/general?variant=page3")}
                   className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
                   aria-label="Settings"
                 >

@@ -805,7 +805,7 @@ export default function DashboardV2() {
             <div className="flex items-end justify-around relative">
               {/* Start Here */}
               <button
-                onClick={() => setLocation("/dashboard/start")}
+                onClick={() => setLocation("/dashboard/start?variant=page2")}
                 className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
                 aria-label="Start Here"
               >
@@ -815,7 +815,7 @@ export default function DashboardV2() {
 
               {/* Gallery */}
               <button
-                onClick={() => setLocation("/dashboard/gallery")}
+                onClick={() => setLocation("/dashboard/gallery?variant=page2")}
                 className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
                 aria-label="Gallery"
               >
@@ -834,7 +834,7 @@ export default function DashboardV2() {
 
               {/* Buy Credits */}
               <button
-                onClick={() => setLocation("/dashboard/credits/buy")}
+                onClick={() => setLocation("/dashboard/credits/buy?variant=page2")}
                 className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
                 aria-label="Buy Credits"
               >
@@ -844,7 +844,7 @@ export default function DashboardV2() {
 
               {/* Settings */}
               <button
-                onClick={() => setLocation("/dashboard/settings/general")}
+                onClick={() => setLocation("/dashboard/settings/general?variant=page2")}
                 className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
                 aria-label="Settings"
               >

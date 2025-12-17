@@ -572,13 +572,15 @@ export default function StartHere() {
       </div>
 
       {/* Bottom Navigation Bar - Mobile Only (Hidden for page1 variant) */}
-      {isMobile && (isPage2Variant || isPage3Variant) && (
+      {isMobile && (isPage2Variant || isPage3Variant) && (() => {
+        const variantParam = isPage3Variant ? "?variant=page3" : "?variant=page2";
+        return (
         <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 shadow-lg">
           <div className="max-w-4xl mx-auto px-4 py-3">
             <div className="flex items-end justify-around relative">
               {/* Start Here */}
               <button
-                onClick={() => setLocation("/dashboard/start")}
+                onClick={() => setLocation(`/dashboard/start${variantParam}`)}
                 className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
                 aria-label="Start Here"
               >
@@ -588,7 +590,7 @@ export default function StartHere() {
 
               {/* Gallery */}
               <button
-                onClick={() => setLocation("/dashboard/gallery")}
+                onClick={() => setLocation(`/dashboard/gallery${variantParam}`)}
                 className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
                 aria-label="Gallery"
               >
@@ -598,15 +600,7 @@ export default function StartHere() {
 
               {/* Create - Centered, Prominent Button */}
               <button
-                onClick={() => {
-                  if (isPage3Variant) {
-                    setLocation("/dashboard/generate?variant=page3");
-                  } else if (isPage2Variant) {
-                    setLocation("/dashboard/generate?variant=page2");
-                  } else {
-                    setLocation("/dashboard/generate");
-                  }
-                }}
+                onClick={() => setLocation(`/dashboard/generate${variantParam}`)}
                 className="flex items-center justify-center w-14 h-14 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 -mt-2 z-10"
                 aria-label="Create"
               >
@@ -615,7 +609,7 @@ export default function StartHere() {
 
               {/* Buy Credits */}
               <button
-                onClick={() => setLocation("/dashboard/credits/buy")}
+                onClick={() => setLocation(`/dashboard/credits/buy${variantParam}`)}
                 className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
                 aria-label="Buy Credits"
               >
@@ -625,7 +619,7 @@ export default function StartHere() {
 
               {/* Settings */}
               <button
-                onClick={() => setLocation("/dashboard/settings/general")}
+                onClick={() => setLocation(`/dashboard/settings/general${variantParam}`)}
                 className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
                 aria-label="Settings"
               >
@@ -635,7 +629,8 @@ export default function StartHere() {
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

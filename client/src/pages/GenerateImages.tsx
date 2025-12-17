@@ -50,8 +50,10 @@ import {
   AlertCircle,
   X,
   Upload,
-  Loader2
+  Loader2,
+  HelpCircle
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/useMobile";
 import { exampleImages, filterExampleImages, type ExampleImage } from "@/data/exampleImages";
 import { toast } from "sonner";
 import { safeLocalStorage } from "@/utils/localStorage";
@@ -65,6 +67,7 @@ export default function GenerateImages() {
   const { t } = useTranslation();
   const { variant } = usePostHogVariant(user?.id);
   const [location, setLocation] = useLocation(); // Must be called before any useEffect
+  const isMobile = useIsMobile();
   
   // State hooks
   const [gender, setGender] = useState<"man" | "woman">("man");
@@ -2745,6 +2748,70 @@ Output should be a vertical rectangle. Entire head should be visible`;
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Bottom Navigation Bar - Mobile Only (Hidden for page1 variant) */}
+      {isMobile && (isPage2Variant || isPage3Variant) && (() => {
+        const variantParam = isPage3Variant ? "?variant=page3" : "?variant=page2";
+        return (
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 shadow-lg">
+          <div className="max-w-4xl mx-auto px-4 py-3">
+            <div className="flex items-end justify-around relative">
+              {/* Start Here */}
+              <button
+                onClick={() => setLocation(`/dashboard/start${variantParam}`)}
+                className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                aria-label="Start Here"
+              >
+                <HelpCircle className="h-6 w-6 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Start</span>
+              </button>
+
+              {/* Gallery */}
+              <button
+                onClick={() => setLocation(`/dashboard/gallery${variantParam}`)}
+                className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                aria-label="Gallery"
+              >
+                <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Gallery</span>
+              </button>
+
+              {/* Create - Center with prominent styling (current page) */}
+              <div className="relative -mt-4">
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-16 h-16 bg-primary/20 rounded-full blur-xl" />
+                <button
+                  className="relative flex flex-col items-center justify-center w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all hover:scale-105"
+                  aria-label="Create"
+                >
+                  <Sparkles className="h-6 w-6" />
+                </button>
+                <span className="block text-xs text-primary font-medium mt-1.5 text-center">Create</span>
+              </div>
+
+              {/* Credits */}
+              <button
+                onClick={() => setLocation(`/dashboard/credits/buy${variantParam}`)}
+                className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                aria-label="Credits"
+              >
+                <CreditCard className="h-6 w-6 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Credits</span>
+              </button>
+
+              {/* Settings */}
+              <button
+                onClick={() => setLocation(`/dashboard/settings/general${variantParam}`)}
+                className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                aria-label="Settings"
+              >
+                <Settings className="h-6 w-6 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Settings</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        );
+      })()}
     </div>
   );
 }

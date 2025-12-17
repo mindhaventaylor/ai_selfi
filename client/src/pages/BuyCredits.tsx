@@ -34,13 +34,14 @@ export default function BuyCredits() {
   const { variant: posthogVariant } = usePostHogVariant(user?.id);
   const autoBuyRef = useRef<boolean>(false);
   
-  // Check for page2 variant
+  // Check for page2 and page3 variants
   const urlParams = new URLSearchParams(window.location.search);
-  const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
+  const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
   const planParam = urlParams.get("plan") as "basic" | "standard" | "premium" | null;
-  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
-  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
+  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
+  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | null;
   const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
+  const isPage3Variant = posthogVariant === "page3" || urlVariant === "page3" || cachedVariant === "page3" || firstVariant === "page3";
   
   // Removed console.log statements for production
 
@@ -619,13 +620,15 @@ export default function BuyCredits() {
       </div>
 
       {/* Bottom Navigation Bar - Mobile Only (Hidden for page1 variant) */}
-      {isMobile && isPage2Variant && (
+      {isMobile && (isPage2Variant || isPage3Variant) && (() => {
+        const variantParam = isPage3Variant ? "?variant=page3" : "?variant=page2";
+        return (
         <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 shadow-lg">
           <div className="max-w-4xl mx-auto px-4 py-3">
             <div className="flex items-end justify-around relative">
               {/* Start Here */}
               <button
-                onClick={() => setLocation("/dashboard/start")}
+                onClick={() => setLocation(`/dashboard/start${variantParam}`)}
                 className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
                 aria-label="Start Here"
               >
@@ -635,7 +638,7 @@ export default function BuyCredits() {
 
               {/* Gallery */}
               <button
-                onClick={() => setLocation("/dashboard/gallery")}
+                onClick={() => setLocation(`/dashboard/gallery${variantParam}`)}
                 className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
                 aria-label="Gallery"
               >
@@ -645,7 +648,7 @@ export default function BuyCredits() {
 
               {/* Create - Centered, Prominent Button */}
               <button
-                onClick={() => setLocation(isPage2Variant ? "/dashboard/generate?variant=page2" : "/dashboard/generate")}
+                onClick={() => setLocation(`/dashboard/generate${variantParam}`)}
                 className="flex items-center justify-center w-14 h-14 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 -mt-2 z-10"
                 aria-label="Create"
               >
@@ -654,7 +657,7 @@ export default function BuyCredits() {
 
               {/* Buy Credits */}
               <button
-                onClick={() => setLocation("/dashboard/credits/buy")}
+                onClick={() => setLocation(`/dashboard/credits/buy${variantParam}`)}
                 className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
                 aria-label="Buy Credits"
               >
@@ -664,7 +667,7 @@ export default function BuyCredits() {
 
               {/* Settings */}
               <button
-                onClick={() => setLocation("/dashboard/settings/general")}
+                onClick={() => setLocation(`/dashboard/settings/general${variantParam}`)}
                 className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
                 aria-label="Settings"
               >
@@ -674,7 +677,8 @@ export default function BuyCredits() {
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
