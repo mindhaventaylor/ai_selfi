@@ -10,6 +10,7 @@ import { eq } from "drizzle-orm";
 const db = getDb();
 
 // Definir os packs necessários
+// Todos os packs usam os mesmos preços: $5, $10, $15
 const packsToCreate = [
   // ============================================
   // PAGE1 VARIANTS (Flow Original) - Variation 1
@@ -31,7 +32,7 @@ const packsToCreate = [
   {
     name: "Premium Pack",
     description: "150 professional AI-generated photos",
-    price: "25.00",
+    price: "15.00",
     credits: 150,
     stripePriceId: null as string | null,
   },
@@ -42,21 +43,21 @@ const packsToCreate = [
   {
     name: "Basic Pack",
     description: "40 professional AI-generated photos",
-    price: "10.00",
+    price: "5.00",
     credits: 40,
     stripePriceId: null as string | null,
   },
   {
     name: "Standard Pack",
     description: "60 professional AI-generated photos",
-    price: "20.00",
+    price: "10.00",
     credits: 60,
     stripePriceId: null as string | null,
   },
   {
     name: "Premium Pack (Page2)",
     description: "100 professional AI-generated photos",
-    price: "25.00",
+    price: "15.00",
     credits: 100,
     stripePriceId: null as string | null,
   },

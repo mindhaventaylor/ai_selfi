@@ -94,8 +94,8 @@ export default function BuyCredits() {
   };
 
   // Map hardcoded packs to database packs by price
-  // For page1: Starter = $5, Pro = $10, Premium = $25
-  // For page2: Starter = $10, Pro = $20, Premium = $25
+  // For page1: Starter = $5, Pro = $10, Premium = $15
+  // For page2: Starter = $5, Pro = $10, Premium = $15
   const getPackIdByBasePrice = (basePriceUSD: number): number | null => {
     if (!packs || packs.length === 0) {
       console.warn("[BuyCredits] No packs available for price matching:", basePriceUSD);
@@ -172,9 +172,10 @@ export default function BuyCredits() {
     const expectedPremiumCredits = isPage2Variant ? 100 : 150;
 
     // Try to find packs by price AND credits first
-    let mappedStarter = findPackByPriceAndCredits(isPage2Variant ? 10 : 5, expectedStarterCredits);
-    let mappedPro = findPackByPriceAndCredits(isPage2Variant ? 20 : 10, expectedProCredits);
-    let mappedPremium = findPackByPriceAndCredits(isPage2Variant ? 25 : 25, expectedPremiumCredits);
+    // All variations use same prices: $5, $10, $15
+    let mappedStarter = findPackByPriceAndCredits(5, expectedStarterCredits);
+    let mappedPro = findPackByPriceAndCredits(10, expectedProCredits);
+    let mappedPremium = findPackByPriceAndCredits(15, expectedPremiumCredits);
     
     const needsFallback = !mappedStarter || !mappedPro || !mappedPremium;
     // For page2 variant, ALWAYS use fallback mapping regardless of price match

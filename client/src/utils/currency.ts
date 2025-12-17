@@ -100,7 +100,7 @@ const EXCHANGE_RATES: Record<Currency, number> = {
 export const BASE_PRICES = {
   starter: 500, // $5.00
   pro: 1000, // $10.00
-  premium: 2500, // $25.00
+  premium: 1500, // $15.00
   business: 1500, // $15.00 per person
 };
 
@@ -108,14 +108,14 @@ export const BASE_PRICES = {
 export const BASE_OLD_PRICES = {
   starter: 500, // $5.00 (no discount for starter)
   pro: 2000, // $20.00 (original price, discounted to $10)
-  premium: 2500, // $25.00 (no discount for premium)
+  premium: 1500, // $15.00 (no discount for premium)
 };
 
 // Page2 flow price variations (USD cents) - Variation 2 (page2) - buy credits prices
 export const PAGE2_PRICES = {
-  basic: 1000, // $10.00 (40 fotos)
-  standard: 2000, // $20.00 (60 fotos)
-  premium: 2500, // $25.00 (100 fotos)
+  basic: 500, // $5.00 (40 fotos)
+  standard: 1000, // $10.00 (60 fotos)
+  premium: 1500, // $15.00 (100 fotos)
 };
 
 // Page2 flow credits/photos count
@@ -127,9 +127,9 @@ export const PAGE2_CREDITS = {
 
 // Original prices before discount for page2 buy credits (USD cents)
 export const PAGE2_OLD_PRICES = {
-  basic: 1000, // $10.00 (no discount for basic)
-  standard: 2000, // $20.00 (no discount for standard)
-  premium: 2500, // $25.00 (no discount for premium)
+  basic: 500, // $5.00 (no discount for basic)
+  standard: 1000, // $10.00 (no discount for standard)
+  premium: 1500, // $15.00 (no discount for premium)
 };
 
 // Get localized price for page2 plan

@@ -7,12 +7,12 @@ Este guia explica como criar os packs de créditos necessários para o sistema f
 ### Page1 (Flow Original) - Variation 1:
 - **Starter Pack**: $5.00 - 40 créditos
 - **Pro Pack**: $10.00 - 100 créditos
-- **Premium Pack**: $25.00 - 150 créditos
+- **Premium Pack**: $15.00 - 150 créditos
 
 ### Page2 (Flow Promocional) - Variation 2:
-- **Basic Pack**: $10.00 - 40 créditos
-- **Standard Pack**: $20.00 - 60 créditos
-- **Premium Pack**: $25.00 - 100 créditos
+- **Basic Pack**: $5.00 - 40 créditos
+- **Standard Pack**: $10.00 - 60 créditos
+- **Premium Pack**: $15.00 - 100 créditos
 
 ## 🚀 Métodos de Criação
 
@@ -59,10 +59,10 @@ Este guia explica como criar os packs de créditos necessários para o sistema f
 2. **Crie os produtos:**
    - Starter Pack: $5.00
    - Pro Pack: $10.00
-   - Premium Pack: $25.00
-   - Basic Pack: $10.00
-   - Standard Pack: $20.00
-   - Premium Pack (Page2): $25.00
+   - Premium Pack: $15.00
+   - Basic Pack: $5.00
+   - Standard Pack: $10.00
+   - Premium Pack (Page2): $15.00
 
 3. **Copie os Price IDs:**
    - Cada produto terá um ou mais preços
@@ -87,11 +87,11 @@ ORDER BY price ASC;
 
 **Resultado esperado:**
 - Starter Pack: $5.00, 40 créditos
+- Basic Pack: $5.00, 40 créditos
 - Pro Pack: $10.00, 100 créditos
-- Basic Pack: $10.00, 40 créditos
-- Standard Pack: $20.00, 60 créditos
-- Premium Pack: $25.00, 150 créditos
-- Premium Pack (Page2): $25.00, 100 créditos
+- Standard Pack: $10.00, 60 créditos
+- Premium Pack: $15.00, 150 créditos
+- Premium Pack (Page2): $15.00, 100 créditos
 
 ## ⚠️ Notas Importantes
 
