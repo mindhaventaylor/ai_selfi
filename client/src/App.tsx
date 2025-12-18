@@ -45,6 +45,7 @@ import { WhatsAppButton } from "./components/WhatsAppButton";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import DashboardLayout from "./components/DashboardLayout";
 import "./i18n/config";
+import { usePostHogTracking, usePostHogInit } from "@/hooks/usePostHogTracking";
 
 function Router() {
   const [location] = useLocation();
@@ -187,7 +188,8 @@ function Router() {
 // - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
 
 function App() {
-
+  usePostHogInit(); // Inicializa PostHog uma vez
+  usePostHogTracking(); // 
   return (
     <ErrorBoundary>
       <ThemeProvider

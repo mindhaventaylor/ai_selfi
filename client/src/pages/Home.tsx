@@ -22,6 +22,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Linkedin } from "lucide-react";
 import { OptimizedImage } from "@/components/OptimizedImage";
+import { initPostHog, trackPageView } from "@/lib/posthog";
 
 function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const { ref, isVisible } = useScrollAnimation();
@@ -74,6 +75,15 @@ export default function Home() {
 
   // Redirect authenticated users to dashboard or returnUrl
   // If user is already authenticated, redirect immediately to avoid showing home page
+
+  useEffect(() => {
+    initPostHog().then(() => {
+      trackPageView("/", {
+        page_type: "landing",
+      });
+    });
+  }, []);
+  
   useEffect(() => {
     if (!loading && user) {
       const params = new URLSearchParams(window.location.search);
