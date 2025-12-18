@@ -90,6 +90,15 @@ export default function PaymentSuccess() {
       
       try {
         const intent = JSON.parse(intentStr!);
+        console.log("[PaymentSuccess] Parsed generation intent:", {
+          resumeStep: intent.resumeStep,
+          hasUserImages: !!intent.userImages,
+          userImagesCount: intent.userImages?.length || 0,
+          hasUserImageUrls: !!intent.userImageUrls,
+          userImageUrlsCount: intent.userImageUrls?.length || 0,
+          hasFormData: !!intent.formData,
+          selectedPrice: intent.selectedPrice,
+        });
         
         // Validate intent based on variant
         if (!intent.resumeStep || intent.resumeStep !== "generate") {
@@ -136,14 +145,18 @@ export default function PaymentSuccess() {
             } else {
               console.warn("[PaymentSuccess] Payment verification issue:", verifyResult.message);
               // Continue anyway - maybe webhook already processed it
+              // Still refresh user context in case webhook already added credits
+              await refreshUser();
             }
           } catch (verifyError: any) {
             console.error("[PaymentSuccess] Error verifying payment:", verifyError);
             // Continue anyway - try to generate
+            // Still refresh user context in case webhook already added credits
+            await refreshUser();
           }
           
           // Small delay after adding credits to ensure database sync
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
         
         // Step 2: Upload images

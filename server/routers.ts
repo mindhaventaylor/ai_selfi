@@ -1984,14 +1984,42 @@ Output should be a vertical rectangle. Entire head should be visible`;
         
         console.log(`[Photo Generate Page2] Selected plan: ${input.selectedPrice}, Total images to generate: ${totalImages}, Credits needed: ${creditsNeeded}`);
 
-        // Check credits
+        // Check credits - refetch from database to ensure we have latest credits (important after payment)
         const db = await getDb();
-        if ((ctx.user.credits || 0) < creditsNeeded) {
+        let currentCredits = ctx.user.credits || 0;
+        
+        // Refetch user credits from database to ensure we have the latest value
+        // This is important after payment when credits were just added
+        if (!db) {
+          const { data: userData, error: userError } = await supabaseServer
+            .from('users')
+            .select('credits')
+            .eq('id', ctx.user.id)
+            .single();
+          
+          if (!userError && userData) {
+            currentCredits = userData.credits || 0;
+            console.log(`[Photo Generate Page2] Refetched credits from DB: ${currentCredits} (context had: ${ctx.user.credits || 0})`);
+          }
+        } else {
+          const [userData] = await db
+            .select({ credits: users.credits })
+            .from(users)
+            .where(eq(users.id, ctx.user.id))
+            .limit(1);
+          
+          if (userData) {
+            currentCredits = userData.credits || 0;
+            console.log(`[Photo Generate Page2] Refetched credits from DB: ${currentCredits} (context had: ${ctx.user.credits || 0})`);
+          }
+        }
+        
+        if (currentCredits < creditsNeeded) {
           throw new Error(getServerString("insufficientCredits"));
         }
 
         // Deduct credits immediately
-        const userCreditsBefore = ctx.user.credits || 0;
+        const userCreditsBefore = currentCredits;
         const userCreditsAfter = userCreditsBefore - creditsNeeded;
         
         if (!db) {
