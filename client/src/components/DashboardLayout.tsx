@@ -151,13 +151,17 @@ function DashboardLayoutContent({
   
   // Check for variant in URL and localStorage
   const urlParams = new URLSearchParams(window.location.search);
-  const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
-  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
-  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | null;
+  const urlVariantRaw = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
+  // Normalize page1 to page2 - page1 should never be used
+  const urlVariant = urlVariantRaw === "page1" ? "page2" : urlVariantRaw;
+  const cachedVariantRaw = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
+  const cachedVariant = cachedVariantRaw === "page1" ? "page2" : cachedVariantRaw;
+  const firstVariantRaw = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | null;
+  const firstVariant = firstVariantRaw === "page1" ? "page2" : firstVariantRaw;
   const isPage2Variant = variant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
   const isPage3Variant = variant === "page3" || urlVariant === "page3" || cachedVariant === "page3" || firstVariant === "page3";
   
-  // Determine current variant to pass to generate page
+  // Determine current variant to pass to generate page (normalized)
   const currentVariant = urlVariant || firstVariant || cachedVariant || variant;
   const createPath =
     currentVariant === "page3"

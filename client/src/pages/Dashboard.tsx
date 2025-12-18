@@ -25,20 +25,34 @@ export default function Dashboard() {
 
   // Check for URL parameter to force variant (for testing)
   // Use useMemo to avoid reading from localStorage on every render
-  const forcedVariant = useMemo(() => {
+  const forcedVariantRaw = useMemo(() => {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get("variant") as "page1" | "page2" | "page3" | null;
   }, []);
+  // Normalize page1 to page2 - page1 should never be used
+  const forcedVariant = forcedVariantRaw === "page1" ? "page2" : forcedVariantRaw;
   
   // Also check localStorage directly - use state initialized once to avoid re-reading on every render
-  const [cachedVariant] = useState<"page1" | "page2" | "page3" | null>(() => {
+  const [cachedVariantRaw] = useState<"page1" | "page2" | "page3" | null>(() => {
     return safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
   });
+  // Normalize page1 to page2
+  const cachedVariant = cachedVariantRaw === "page1" ? "page2" : cachedVariantRaw;
   
   // Use forced variant from URL if present, then cached, then PostHog variant
   const variant = forcedVariant || cachedVariant || posthogVariant;
   
-  // Save variant to cache if detected from URL
+  // Update URL if it was page1
+  useEffect(() => {
+    if (forcedVariantRaw === "page1" && forcedVariant === "page2") {
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.set("variant", "page2");
+      const newUrl = window.location.pathname + (urlParams.toString() ? "?" + urlParams.toString() : "");
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, [forcedVariantRaw, forcedVariant]);
+  
+  // Save variant to cache if detected from URL (normalized)
   // Use useRef to track if we've already saved to avoid infinite loops
   const savedVariantRef = useRef<string | null>(null);
   useEffect(() => {

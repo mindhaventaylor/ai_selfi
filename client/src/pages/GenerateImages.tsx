@@ -121,7 +121,19 @@ export default function GenerateImages() {
 
   // Check for variant - ONLY use URL parameter (explicit variant=page2 or page3 required)
   const urlParams = new URLSearchParams(window.location.search);
-  const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
+  const urlVariantRaw = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
+  // Normalize page1 to page2 - page1 should never be used
+  const urlVariant = urlVariantRaw === "page1" ? "page2" : urlVariantRaw;
+  
+  // Update URL if it was page1
+  useEffect(() => {
+    if (urlVariantRaw === "page1" && urlVariant === "page2") {
+      const newParams = new URLSearchParams(window.location.search);
+      newParams.set("variant", "page2");
+      const newUrl = window.location.pathname + "?" + newParams.toString();
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, [urlVariantRaw, urlVariant]);
   
   // ONLY check URL parameter - no localStorage or PostHog fallback
   const isPage2Variant = urlVariant === "page2";
