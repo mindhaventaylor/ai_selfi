@@ -91,11 +91,14 @@ export default function PaymentSuccess() {
       try {
         const intent = JSON.parse(intentStr!);
         console.log("[PaymentSuccess] Parsed generation intent:", {
+          isV3,
           resumeStep: intent.resumeStep,
           hasUserImages: !!intent.userImages,
           userImagesCount: intent.userImages?.length || 0,
           hasUserImageUrls: !!intent.userImageUrls,
           userImageUrlsCount: intent.userImageUrls?.length || 0,
+          hasUserImageUrl: !!intent.userImageUrl, // For V3
+          userImageUrl: intent.userImageUrl ? intent.userImageUrl.substring(0, 50) + "..." : null, // Preview for V3
           hasFormData: !!intent.formData,
           selectedPrice: intent.selectedPrice,
         });
@@ -303,7 +306,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
     };
     
     processPaymentAndGenerate();
-  }, [sessionId, verifyPaymentMutation, generateFromPage2Mutation, uploadPage2ImagesMutation, uploadImagesMutation, generateMutation, setLocation, t]);
+  }, [sessionId, verifyPaymentMutation, generateFromPage2Mutation, uploadPage2ImagesMutation, uploadImagesMutation, generateMutation, setLocation, t, refreshUser]);
 
   const handleContinue = () => {
     if (isProcessing) return;
