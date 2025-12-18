@@ -345,26 +345,16 @@ export default function Home() {
                     // Example 9 (Jorge) has 1 profile + 6 results, others have 1 profile + 1 result
                     const exampleMapping = [1, 2, 9, 3, 4, 5, 6, 7, 8];
                     const exampleNumber = exampleMapping[idx] || (idx + 1);
-                    const isJorge = review.name.includes("Jorge") || (exampleNumber === 9 && !review.name.includes("Andrea"));
-                    const isAndreaMarino = review.name.includes("Andrea Marino");
-                    const isElisa = review.name.includes("Elisa De Luca");
-                    const isMarco = review.name.includes("Marco Ferri");
-                    const isLuca = review.name.includes("Luca Neri");
+                    const isJorge = review.name.includes("Jorge");
+                    const isAndreaMarino = review.name.includes("Andrea Marino") || review.name.includes("David Ross");
                     
                     let profileImage: string;
                     let resultImages: string[];
                     
                     if (isAndreaMarino) {
-                      // Andrea Marino - 1 profile + 6 result images
+                      // Andrea Marino / David Ross - 1 profile + 1 result image
                       profileImage = "/andrea_marino_profile.webp";
-                      resultImages = [
-                        "/andrea_marino1.webp",
-                        "/andrea_marino2.webp",
-                        "/andrea_marino3.webp",
-                        "/andrea_marino4.webp",
-                        "/andrea_marino5.webp",
-                        "/andrea_marino6.webp",
-                      ];
+                      resultImages = ["/andrea_marino_result.webp"];
                     } else if (isJorge) {
                       // Jorge is example 9 - 1 profile + 6 results
                       profileImage = "/9_profile.webp";
@@ -376,18 +366,6 @@ export default function Home() {
                         "/9_result5.webp",
                         "/9_result6.webp",
                       ];
-                    } else if (isElisa) {
-                      // Elisa De Luca - 1 profile + 1 result
-                      profileImage = "/elisa_profile.webp";
-                      resultImages = ["/elisa_AI_image.webp"];
-                    } else if (isMarco) {
-                      // Marco Ferri - 1 profile + 1 result
-                      profileImage = "/caterina_profile.webp";
-                      resultImages = ["/caterina_ai_image.webp"];
-                    } else if (isLuca) {
-                      // Luca Neri - 1 profile + 1 result
-                      profileImage = "/silvia_profile.webp";
-                      resultImages = ["/silvia_ai_image.webp"];
                     } else {
                       // Other examples: 1 profile + 1 result
                       profileImage = `/${exampleNumber}_profile.webp`;
@@ -498,8 +476,8 @@ export default function Home() {
 
                           {/* Professional Photo(s) */}
                           <div className="w-full px-4 -mt-4">
-                            {isJorge || isAndreaMarino ? (
-                              // Multiple images grid for Jorge and Andrea Marino (6 results)
+                            {isJorge ? (
+                              // Multiple images grid for Jorge (6 results)
                               <div className="grid grid-cols-3 gap-1">
                                 {resultImages.map((imgSrc, imgIdx) => (
                                   <div
