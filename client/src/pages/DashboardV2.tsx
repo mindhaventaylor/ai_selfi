@@ -574,6 +574,28 @@ export default function DashboardV2() {
     if (!formData.selectedPrice || isLoadingPacks || createCheckoutMutation.isPending) return;
     
     const plan = formData.selectedPrice as "basic" | "standard" | "premium";
+    
+    // Check if we have a generation intent (user came from upload step with no credits)
+    // If so, ensure it's preserved before redirecting to checkout
+    const existingIntent = safeLocalStorage.getItem("dashboardV2_generationIntent");
+    if (existingIntent) {
+      try {
+        const intent = JSON.parse(existingIntent);
+        // Update the selectedPrice in the intent to match what user selected
+        const updatedIntent = {
+          ...intent,
+          selectedPrice: plan,
+          formData: {
+            ...intent.formData,
+            selectedPrice: plan,
+          },
+        };
+        safeLocalStorage.setItem("dashboardV2_generationIntent", JSON.stringify(updatedIntent));
+        console.log("[DashboardV2] Updated generation intent with selected price:", plan);
+      } catch (e) {
+        console.error("[DashboardV2] Failed to update generation intent:", e);
+      }
+    }
     const currency = detectCurrency();
     
     // Get prices for the selected plan
@@ -1765,6 +1787,28 @@ function PricingStep({
     setIsProcessing(true);
     
     try {
+      // Check if we have a generation intent (user came from upload step with no credits)
+      // If so, ensure it's preserved and updated with selected price before redirecting to checkout
+      const existingIntent = safeLocalStorage.getItem("dashboardV2_generationIntent");
+      if (existingIntent) {
+        try {
+          const intent = JSON.parse(existingIntent);
+          // Update the selectedPrice in the intent to match what user selected
+          const updatedIntent = {
+            ...intent,
+            selectedPrice: plan,
+            formData: {
+              ...intent.formData,
+              selectedPrice: plan,
+            },
+          };
+          safeLocalStorage.setItem("dashboardV2_generationIntent", JSON.stringify(updatedIntent));
+          console.log("[DashboardV2 PricingStep] Updated generation intent with selected price:", plan);
+        } catch (e) {
+          console.error("[DashboardV2 PricingStep] Failed to update generation intent:", e);
+        }
+      }
+      
       // Save form data to localStorage so we can resume after purchase
       // User will continue to upload step after payment (not generate, since files aren't uploaded yet)
       const dataToSave = {

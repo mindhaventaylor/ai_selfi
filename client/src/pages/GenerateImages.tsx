@@ -746,6 +746,18 @@ export default function GenerateImages() {
           
           setGenerationProgress(100);
           setIsGenerating(false);
+          setErrorMessage(null); // Clear any error messages on success
+        }
+        
+        // Check for failed batch status and display error message
+        if (data.batch?.status === "failed") {
+          console.error("[GenerateImages] Batch failed:", data.batch);
+          setIsGenerating(false);
+          const errorMsg = (data.batch as any)?.errorMessage || t("generateImages.failedToGenerateImages");
+          setErrorMessage(errorMsg);
+          toast.error(t("generateImages.failedToGenerateImages"), {
+            description: errorMsg,
+          });
         }
       } else {
         console.log("[GenerateImages] ⏭️ Skipping update - no new photos", {

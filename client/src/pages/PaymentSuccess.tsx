@@ -7,10 +7,12 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { exampleImages } from "@/data/exampleImages";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function PaymentSuccess() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
+  const { refresh: refreshUser } = useAuth();
   
   // Check for generation intent immediately
   const hasV2Intent = typeof window !== "undefined" && !!localStorage.getItem("dashboardV2_generationIntent");
@@ -89,8 +91,22 @@ export default function PaymentSuccess() {
       try {
         const intent = JSON.parse(intentStr!);
         
-        if (!intent.resumeStep || intent.resumeStep !== "generate" || !intent.userImages || intent.userImages.length === 0) {
-          throw new Error("Invalid generation intent");
+        // Validate intent based on variant
+        if (!intent.resumeStep || intent.resumeStep !== "generate") {
+          throw new Error("Invalid generation intent: missing resumeStep");
+        }
+        
+        // For V3, check for userImageUrl (singular)
+        if (isV3) {
+          if (!intent.userImageUrl) {
+            throw new Error("Invalid generation intent: missing userImageUrl for V3");
+          }
+        } else {
+          // For V2, check for userImages or userImageUrls
+          if ((!intent.userImages || intent.userImages.length === 0) && 
+              (!intent.userImageUrls || intent.userImageUrls.length === 0)) {
+            throw new Error("Invalid generation intent: missing userImages or userImageUrls for V2");
+          }
         }
         
         // Step 1: Verify payment and add credits using the session_id
@@ -107,6 +123,15 @@ export default function PaymentSuccess() {
               
               if (verifyResult.added) {
                 toast.success(`${verifyResult.added} credits added to your account!`, { duration: 2000 });
+              }
+              
+              // Refresh user data to update credits in UI
+              try {
+                await refreshUser();
+                console.log("[PaymentSuccess] ✅ User data refreshed");
+              } catch (refreshError) {
+                console.warn("[PaymentSuccess] Failed to refresh user data:", refreshError);
+                // Continue anyway - credits are already added
               }
             } else {
               console.warn("[PaymentSuccess] Payment verification issue:", verifyResult.message);

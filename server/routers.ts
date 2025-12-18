@@ -512,16 +512,14 @@ export const appRouter = router({
             return { success: false, message: "No credits in metadata", credits: ctx.user.credits || 0 };
           }
           
-          // Check if user already has credits (webhook might have already processed)
-          // We use a simple check - if user has 0 credits, add them
-          const currentCredits = ctx.user.credits || 0;
-          
           // Check if this session was already processed by looking at transactions
           const { data: existingTransaction } = await supabaseServer
             .from('transactions')
             .select('id, status, creditsAwarded')
             .eq('stripePaymentId', input.sessionId)
             .single();
+          
+          const currentCredits = ctx.user.credits || 0;
           
           if (existingTransaction && existingTransaction.status === "completed" && existingTransaction.creditsAwarded > 0) {
             console.log(`[Payment] Session ${input.sessionId} already processed, user has ${currentCredits} credits`);
@@ -534,7 +532,7 @@ export const appRouter = router({
             return { success: true, message: "Already processed", credits: userData?.credits || currentCredits, alreadyProcessed: true };
           }
           
-          // Add credits to user
+          // Add credits to user (always add if payment is successful and not already processed)
           const newCredits = currentCredits + credits;
           const { error: updateError } = await supabaseServer
             .from('users')
@@ -1274,6 +1272,15 @@ export const appRouter = router({
             .select('id, status, errorMessage, generatedImageUrl')
             .eq('batchId', input.batchId);
           
+          // Collect error messages from failed jobs
+          const failedJobs = queueJobs?.filter(j => j.status === "failed") || [];
+          const errorMessages = failedJobs
+            .map(j => j.errorMessage)
+            .filter((msg): msg is string => !!msg);
+          const errorMessage = errorMessages.length > 0 
+            ? errorMessages[0] // Use first error message, or combine them
+            : null;
+          
           // Update batch status if needed
           if (queueJobs && queueJobs.length > 0) {
             const allFailed = queueJobs.every(j => j.status === "failed");
@@ -1316,6 +1323,7 @@ export const appRouter = router({
               totalImagesGenerated: batch.totalImagesGenerated,
               createdAt: batch.createdAt,
               completedAt: batch.completedAt,
+              errorMessage: errorMessage, // Include error message if batch failed
             },
             photos: safePhotos.map((p: any) => ({
               id: p.id,
@@ -1351,6 +1359,15 @@ export const appRouter = router({
           })
           .from(page2GenerationQueue)
           .where(eq(page2GenerationQueue.batchId, input.batchId));
+        
+        // Collect error messages from failed jobs
+        const failedJobs = queueJobs.filter(j => j.status === "failed");
+        const errorMessages = failedJobs
+          .map(j => j.errorMessage)
+          .filter((msg): msg is string => !!msg);
+        const errorMessage = errorMessages.length > 0 
+          ? errorMessages[0] // Use first error message
+          : null;
         
         // Update batch status if needed
         if (queueJobs && queueJobs.length > 0) {
@@ -1402,6 +1419,7 @@ export const appRouter = router({
             totalImagesGenerated: batch.totalImagesGenerated,
             createdAt: batch.createdAt,
             completedAt: batch.completedAt,
+            errorMessage: errorMessage, // Include error message if batch failed
           },
           photos: safeBatchPhotos,
         };
