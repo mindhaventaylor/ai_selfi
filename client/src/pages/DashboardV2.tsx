@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -65,7 +65,7 @@ export default function DashboardV2() {
     selectedPrice: "" as "" | "basic" | "standard" | "premium",
   });
 
-  const steps: { key: Step; number: number; title: string }[] = [
+  const steps: { key: Step; number: number; title: string }[] = useMemo(() => [
     { key: "welcome", number: 0, title: t("dashboardV2.welcome") },
     { key: "gender", number: 1, title: t("dashboardV2.gender") },
     { key: "age", number: 2, title: t("dashboardV2.age") },
@@ -78,10 +78,16 @@ export default function DashboardV2() {
     { key: "background", number: 9, title: t("dashboardV2.background") },
     { key: "upload", number: 10, title: t("dashboardV2.upload") },
     { key: "pricing", number: 11, title: t("dashboardV2.pricing") },
-  ];
+  ], [t]);
 
-  const currentStepIndex = steps.findIndex(s => s.key === currentStep);
-  const progress = ((currentStepIndex + 1) / steps.length) * 100;
+  const currentStepIndex = useMemo(() => {
+    const index = steps.findIndex(s => s.key === currentStep);
+    return index >= 0 ? index : 0; // Fallback to 0 if step not found
+  }, [steps, currentStep]);
+  
+  const progress = useMemo(() => {
+    return ((currentStepIndex + 1) / steps.length) * 100;
+  }, [currentStepIndex, steps.length]);
 
   // Control layout visibility based on current step
   // Show full layout (sidebar + header) only on welcome step
@@ -402,17 +408,14 @@ export default function DashboardV2() {
     }
 
     // Check if user has enough credits before generating
-    // If no credits, upload images first and save URLs, then redirect to pricing step
+    // If no credits, immediately redirect to pricing step (images will be uploaded after payment)
     if ((user?.credits ?? 0) <= 0) {
-      toast.error(t("dashboardV2.insufficientCredits") || "Insufficient credits", {
-        description: t("dashboardV2.pleaseBuyCredits") || "Please purchase credits to continue",
-      });
-      
-      // Upload images first to get URLs (avoids 413 Content Too Large error)
-      // Upload one at a time to prevent payload size issues
+      // Save file data as base64 for later upload (after payment)
+      // This is faster than uploading to server first
       try {
-        const uploadedUrls: string[] = [];
+        const userImages: Array<{ data: string; fileName: string; contentType: string }> = [];
         
+        // Convert files to base64 quickly (just reading, not uploading)
         for (const file of uploadedFiles) {
           const base64 = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
@@ -425,30 +428,17 @@ export default function DashboardV2() {
             reader.readAsDataURL(file.file);
           });
 
-          // Upload one image at a time
-          const uploadResult = await uploadPage2ImagesMutation.mutateAsync({
-            images: [{
-              data: base64,
-              fileName: file.file.name,
-              contentType: file.file.type,
-            }],
+          userImages.push({
+            data: base64,
+            fileName: file.file.name,
+            contentType: file.file.type,
           });
-
-          if (!uploadResult.urls || uploadResult.urls.length === 0) {
-            throw new Error("Failed to upload images");
-          }
-
-          uploadedUrls.push(uploadResult.urls[0]);
-        }
-
-        if (uploadedUrls.length === 0) {
-          throw new Error("Failed to upload images");
         }
         
-        // Save generation intent with uploaded image URLs (not base64)
+        // Save generation intent with base64 image data (will be uploaded after payment)
         const generationIntent = {
           resumeStep: "generate",
-          userImageUrls: uploadedUrls, // Save URLs instead of base64
+          userImages: userImages, // Save base64 data - will be uploaded when returning after payment
           formData: formData,
           selectedPrice: formData.selectedPrice || "standard",
         };
@@ -462,10 +452,11 @@ export default function DashboardV2() {
         };
         safeLocalStorage.setItem("dashboardV2_formData", JSON.stringify(dataToSave));
       } catch (error) {
-        console.error("[DashboardV2] Failed to save uploaded files:", error);
+        console.error("[DashboardV2] Failed to save file data:", error);
+        // Still redirect to pricing even if saving fails
       }
       
-      // Navigate to pricing step within the flow
+      // Immediately navigate to pricing step (no delay from server uploads)
       setCurrentStep("pricing");
       return;
     }

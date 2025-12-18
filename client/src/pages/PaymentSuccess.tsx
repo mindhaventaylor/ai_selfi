@@ -7,10 +7,12 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { exampleImages } from "@/data/exampleImages";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function PaymentSuccess() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
+  const { refresh: refreshUser } = useAuth();
   
   // Check for generation intent immediately
   const hasV2Intent = typeof window !== "undefined" && !!localStorage.getItem("dashboardV2_generationIntent");
@@ -88,9 +90,24 @@ export default function PaymentSuccess() {
       
       try {
         const intent = JSON.parse(intentStr!);
+        console.log("[PaymentSuccess] Parsed generation intent:", {
+          resumeStep: intent.resumeStep,
+          hasUserImages: !!intent.userImages,
+          userImagesCount: intent.userImages?.length || 0,
+          hasUserImageUrls: !!intent.userImageUrls,
+          userImageUrlsCount: intent.userImageUrls?.length || 0,
+          hasFormData: !!intent.formData,
+          selectedPrice: intent.selectedPrice,
+        });
         
-        if (!intent.resumeStep || intent.resumeStep !== "generate" || !intent.userImages || intent.userImages.length === 0) {
-          throw new Error("Invalid generation intent");
+        if (!intent.resumeStep || intent.resumeStep !== "generate") {
+          throw new Error(`Invalid generation intent: resumeStep is "${intent.resumeStep}", expected "generate"`);
+        }
+        
+        if (!intent.userImages || intent.userImages.length === 0) {
+          if (!intent.userImageUrls || intent.userImageUrls.length === 0) {
+            throw new Error("Invalid generation intent: No user images found (neither userImages nor userImageUrls)");
+          }
         }
         
         // Step 1: Verify payment and add credits using the session_id
@@ -108,17 +125,25 @@ export default function PaymentSuccess() {
               if (verifyResult.added) {
                 toast.success(`${verifyResult.added} credits added to your account!`, { duration: 2000 });
               }
+              
+              // Refresh user context to ensure latest credits are available
+              await refreshUser();
+              console.log("[PaymentSuccess] User context refreshed");
             } else {
               console.warn("[PaymentSuccess] Payment verification issue:", verifyResult.message);
               // Continue anyway - maybe webhook already processed it
+              // Still refresh user context in case webhook already added credits
+              await refreshUser();
             }
           } catch (verifyError: any) {
             console.error("[PaymentSuccess] Error verifying payment:", verifyError);
             // Continue anyway - try to generate
+            // Still refresh user context in case webhook already added credits
+            await refreshUser();
           }
           
           // Small delay after adding credits to ensure database sync
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
         
         // Step 2: Upload images
