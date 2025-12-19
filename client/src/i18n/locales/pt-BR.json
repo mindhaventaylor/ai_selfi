@@ -1476,7 +1476,25 @@
     "fileSizeUnit": "MB",
     "of": "de",
     "insufficientCredits": "Créditos insuficientes",
-    "pleaseBuyCredits": "Por favor, compre créditos para continuar"
+    "pleaseBuyCredits": "Por favor, compre créditos para continuar",
+    "pricing": {
+      "title": "Escolha Seu Plano",
+      "description": "Selecione o plano que melhor se adapta às suas necessidades. Todos os planos incluem fotos profissionais geradas por IA.",
+      "popular": "POPULAR",
+      "discounted": "Descontado",
+      "basic": "Básico",
+      "basicFeature1": "40 fotos profissionais",
+      "basicFeature2": "Qualidade padrão",
+      "basicFeature3": "Entrega rápida",
+      "standard": "Padrão",
+      "standardFeature1": "60 fotos profissionais",
+      "standardFeature2": "Alta qualidade",
+      "standardFeature3": "Processamento prioritário",
+      "premium": "Premium",
+      "premiumFeature1": "100 fotos profissionais",
+      "premiumFeature2": "Qualidade premium",
+      "premiumFeature3": "Entrega mais rápida"
+    }
   },
   "errorBoundary": {
     "title": "Ocorreu um erro inesperado.",
