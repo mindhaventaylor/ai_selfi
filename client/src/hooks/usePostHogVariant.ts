@@ -38,12 +38,25 @@ export function usePostHogVariant(userId?: string | number): {
   const [variant, setVariant] = useState<DashboardVariant>("page2");
   const [isLoading, setIsLoading] = useState(true);
   const listenerRegisteredRef = useRef(false); // Track if onFeatureFlags listener is registered
+  const hasInitializedRef = useRef(false); // Track if variant has been initialized
 
   useEffect(() => {
     // Check for URL parameter first (highest priority)
     const urlParams = new URLSearchParams(window.location.search);
     const urlVariantRaw = urlParams.get("variant") as DashboardVariant | null;
     const urlVariant = normalizeVariant(urlVariantRaw);
+    
+    // If already initialized and no URL variant param, skip re-initialization
+    // This prevents the hook from re-running when tabs or other state changes
+    if (hasInitializedRef.current && !urlVariantRaw) {
+      // Only update if variant from localStorage differs from current state
+      const cachedVariantRaw = safeLocalStorage.getItem(VARIANT_CACHE_KEY) as DashboardVariant | null;
+      const cachedVariant = normalizeVariant(cachedVariantRaw);
+      if (cachedVariant && cachedVariant !== variant) {
+        setVariant(cachedVariant);
+      }
+      return;
+    }
     
     if (urlVariantRaw && (urlVariantRaw === "page1" || urlVariantRaw === "page2" || urlVariantRaw === "page3")) {
       // If variant is provided in URL, normalize page1 to page2 and update it as the new default (first variant)
@@ -52,6 +65,7 @@ export function usePostHogVariant(userId?: string | number): {
       safeLocalStorage.setItem(VARIANT_CACHE_KEY, urlVariant);
       setVariant(urlVariant);
       setIsLoading(false);
+      hasInitializedRef.current = true;
       
       // Track variant assignment from URL
       if (window.posthog?.capture) {
@@ -137,6 +151,7 @@ export function usePostHogVariant(userId?: string | number): {
                 safeLocalStorage.setItem(FIRST_VARIANT_KEY, firstVariant);
               }
               setIsLoading(false);
+              hasInitializedRef.current = true;
               
               // Track variant view
               if (window.posthog?.capture) {
@@ -158,6 +173,7 @@ export function usePostHogVariant(userId?: string | number): {
               safeLocalStorage.setItem(FIRST_VARIANT_KEY, cachedVariant);
               setVariant(cachedVariant);
               setIsLoading(false);
+              hasInitializedRef.current = true;
               
               // Track first variant assignment
               if (window.posthog?.capture) {
@@ -185,6 +201,7 @@ export function usePostHogVariant(userId?: string | number): {
               safeLocalStorage.setItem(FIRST_VARIANT_KEY, newVariant);
               safeLocalStorage.setItem(VARIANT_CACHE_KEY, newVariant);
               setVariant(newVariant);
+              hasInitializedRef.current = true;
               
               // Track first variant assignment
               window.posthog.capture("dashboard_first_variant_assigned", {
@@ -197,6 +214,7 @@ export function usePostHogVariant(userId?: string | number): {
               safeLocalStorage.setItem(FIRST_VARIANT_KEY, defaultVariant);
               safeLocalStorage.setItem(VARIANT_CACHE_KEY, defaultVariant);
               setVariant(defaultVariant);
+              hasInitializedRef.current = true;
             }
           } catch (error) {
             console.error("[PostHog] Error loading variant:", error);
@@ -218,6 +236,7 @@ export function usePostHogVariant(userId?: string | number): {
         if (firstVariantRaw === "page1") {
           safeLocalStorage.setItem(FIRST_VARIANT_KEY, firstVariant);
         }
+        hasInitializedRef.current = true;
       } else {
         // Check cache
         const cachedRaw = safeLocalStorage.getItem(VARIANT_CACHE_KEY) as DashboardVariant | null;
@@ -226,12 +245,14 @@ export function usePostHogVariant(userId?: string | number): {
           // Save cache as first variant if it doesn't exist (normalized)
           safeLocalStorage.setItem(FIRST_VARIANT_KEY, cached);
           setVariant(cached);
+          hasInitializedRef.current = true;
         } else {
           // Default to page2 and save as first variant
           const defaultVariant: DashboardVariant = "page2";
           safeLocalStorage.setItem(FIRST_VARIANT_KEY, defaultVariant);
           safeLocalStorage.setItem(VARIANT_CACHE_KEY, defaultVariant);
           setVariant(defaultVariant);
+          hasInitializedRef.current = true;
         }
       }
       setIsLoading(false);
