@@ -126,14 +126,14 @@ export default function DashboardV3() {
   const plans = [
     {
       id: "basic" as const,
-      name: "Basic",
+      name: t("dashboardV3.pricing.plans.basic"),
       price: basicPrice,
       credits: PAGE2_CREDITS.basic,
       icon: <Sparkles className="h-5 w-5" />,
     },
     {
       id: "standard" as const,
-      name: "Standard",
+      name: t("dashboardV3.pricing.plans.standard"),
       price: standardPrice,
       credits: PAGE2_CREDITS.standard,
       icon: <Star className="h-5 w-5" />,
@@ -141,7 +141,7 @@ export default function DashboardV3() {
     },
     {
       id: "premium" as const,
-      name: "Premium",
+      name: t("dashboardV3.pricing.plans.premium"),
       price: premiumPrice,
       credits: PAGE2_CREDITS.premium,
       icon: <Zap className="h-5 w-5" />,
@@ -151,46 +151,46 @@ export default function DashboardV3() {
   // Custom presets
   const presets: Record<CustomPreset, { label: string; prompt: string }> = {
     professional: {
-      label: "Professional",
-      prompt: "A formal professional headshot with a suit, neutral background, and a confident expression."
+      label: t("dashboardV3.create.customTab.presets.professional.label"),
+      prompt: t("dashboardV3.create.customTab.presets.professional.prompt")
     },
     business: {
-      label: "Business",
-      prompt: "A modern business headshot with a friendly yet authoritative expression, wearing smart office attire (e.g., blazer without tie or elegant blouse), captured in a bright indoor setting such as an office or co-working space."
+      label: t("dashboardV3.create.customTab.presets.business.label"),
+      prompt: t("dashboardV3.create.customTab.presets.business.prompt")
     },
     id_photo: {
-      label: "ID Photo",
-      prompt: "Standard ID photo, head-on, neutral expression, no smiling, plain white background, well-lit, no shadows, face fully visible, clear and sharp image, no accessories (e.g., glasses, hats)."
+      label: t("dashboardV3.create.customTab.presets.idPhoto.label"),
+      prompt: t("dashboardV3.create.customTab.presets.idPhoto.prompt")
     }
   };
 
   const styleCards = useMemo(() => {
     const manCards: V3StyleCard[] = [
-      { label: "Academic", exampleImageId: 1 },
-      { label: "Business", exampleImageId: 4 },
-      { label: "Casual", exampleImageId: 5 },
-      { label: "Energetic", exampleImageId: 20 },
-      { label: "ID Photo", exampleImageId: 23 },
-      { label: "Modern", exampleImageId: 17 },
-      { label: "Professional", exampleImageId: 7 },
-      { label: "Sepia", exampleImageId: 10 },
-      { label: "Sophisticated", exampleImageId: 13 },
+      { label: t("dashboardV3.create.styles.academic"), exampleImageId: 1 },
+      { label: t("dashboardV3.create.styles.business"), exampleImageId: 4 },
+      { label: t("dashboardV3.create.styles.casual"), exampleImageId: 5 },
+      { label: t("dashboardV3.create.styles.energetic"), exampleImageId: 20 },
+      { label: t("dashboardV3.create.styles.idPhoto"), exampleImageId: 23 },
+      { label: t("dashboardV3.create.styles.modern"), exampleImageId: 17 },
+      { label: t("dashboardV3.create.styles.professional"), exampleImageId: 7 },
+      { label: t("dashboardV3.create.styles.sepia"), exampleImageId: 10 },
+      { label: t("dashboardV3.create.styles.sophisticated"), exampleImageId: 13 },
     ];
 
     const womanCards: V3StyleCard[] = [
-      { label: "Academic", exampleImageId: 62 },
-      { label: "Business", exampleImageId: 56 },
-      { label: "Casual", exampleImageId: 64 },
-      { label: "Energetic", exampleImageId: 55 },
-      { label: "ID Photo", exampleImageId: 51 },
-      { label: "Modern", exampleImageId: 54 },
-      { label: "Professional", exampleImageId: 52 },
-      { label: "Sepia", exampleImageId: 61 },
-      { label: "Sophisticated", exampleImageId: 60 },
+      { label: t("dashboardV3.create.styles.academic"), exampleImageId: 62 },
+      { label: t("dashboardV3.create.styles.business"), exampleImageId: 56 },
+      { label: t("dashboardV3.create.styles.casual"), exampleImageId: 64 },
+      { label: t("dashboardV3.create.styles.professional"), exampleImageId: 52 },
+      { label: t("dashboardV3.create.styles.energetic"), exampleImageId: 55 },
+      { label: t("dashboardV3.create.styles.idPhoto"), exampleImageId: 51 },
+      { label: t("dashboardV3.create.styles.modern"), exampleImageId: 54 },
+      { label: t("dashboardV3.create.styles.sophisticated"), exampleImageId: 60 },
+      { label: t("dashboardV3.create.styles.sepia"), exampleImageId: 61 },
     ];
 
     return tab === "man" ? manCards : womanCards;
-  }, [tab]);
+  }, [tab, t]);
 
   const selectedExampleImage = useMemo(() => {
     if (tab === "custom") return null;
@@ -308,7 +308,7 @@ export default function DashboardV3() {
     
     const packId = getPackIdByPlan(selectedPlan);
     if (!packId) {
-      toast.error("Pack not found");
+      toast.error(t("dashboardV3.create.errors.packNotFound"));
       return;
     }
     
@@ -379,11 +379,11 @@ export default function DashboardV3() {
       if (result?.url) {
         window.location.href = result.url;
       } else {
-        toast.error("Failed to create checkout session");
+        toast.error(t("dashboardV3.create.errors.checkoutError"));
         setIsProcessingPayment(false);
       }
     } catch (error: any) {
-      toast.error(error?.message || "Failed to start checkout");
+      toast.error(error?.message || t("dashboardV3.create.errors.checkoutError"));
       setIsProcessingPayment(false);
     }
   };
@@ -395,23 +395,30 @@ export default function DashboardV3() {
       return;
     }
 
-    if (!uploadedFile) {
-      toast.error("Please upload an image first");
+    const isMissingImage = !uploadedFile;
+    const isMissingStyle = (tab === "custom" && !customPrompt.trim()) || (tab !== "custom" && !selectedExampleImage);
+
+    if (isMissingImage && isMissingStyle) {
+      toast.error(t("dashboardV3.create.errors.missingRequirements"));
+      return;
+    }
+
+    if (isMissingImage) {
+      toast.error(t("dashboardV3.create.errors.uploadFirst"));
       return;
     }
 
     if (!user) {
-      toast.error("Please login to continue");
+      toast.error(t("dashboardV3.create.errors.loginFirst"));
       return;
     }
 
-    if (tab === "custom" && !customPrompt.trim()) {
-      toast.error("Please enter a prompt");
-      return;
-    }
-
-    if (tab !== "custom" && !selectedExampleImage) {
-      toast.error("Please choose a style");
+    if (isMissingStyle) {
+      if (tab === "custom") {
+        toast.error(t("dashboardV3.create.errors.promptFirst"));
+      } else {
+        toast.error(t("dashboardV3.create.errors.styleFirst"));
+      }
       return;
     }
 
@@ -437,7 +444,7 @@ export default function DashboardV3() {
 
     let loadingToast: string | number | undefined;
     try {
-      loadingToast = toast.loading("Preparing generation...");
+      loadingToast = toast.loading(t("dashboardV3.create.preparing"));
 
       // 1) Upload image
       const reader = new FileReader();
@@ -510,7 +517,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
       toast.dismiss(loadingToast);
 
       if (result.batchId) {
-        toast.success("Generation started!");
+        toast.success(t("dashboardV3.create.success"));
         // Navigate to generate page with batchId - this will show the generation modal
         // When closed, it will redirect to gallery
         // Note: Component will unmount on redirect, so isGenerating doesn't need to be reset
@@ -520,7 +527,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
       if (loadingToast) {
         toast.dismiss(loadingToast);
       }
-      toast.error(error?.message || "Generation failed");
+      toast.error(error?.message || t("dashboardV3.create.errors.generationFailed"));
       setIsGenerating(false); // Allow retry on error
     }
   };
@@ -533,10 +540,10 @@ Output should be a vertical rectangle. Entire head should be visible`;
           {/* Hero Card */}
           <div className="w-full rounded-3xl border border-border bg-card/50 p-8 text-center">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              Create professional AI portraits
+              {t("dashboardV3.hero.title")}
             </h1>
             <p className="text-muted-foreground text-lg mb-8">
-              Transform your existing photos into realistic AI portrait photos for your resume, LinkedIn, and social media profiles.
+              {t("dashboardV3.hero.subtitle")}
             </p>
             
             {/* Example Images */}
@@ -561,7 +568,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
               className="w-full max-w-xs bg-primary hover:bg-primary/90 text-primary-foreground rounded-full h-14 text-lg font-semibold shadow-lg gap-2"
               onClick={() => setView("create")}
             >
-              Create headshots
+              {t("dashboardV3.hero.cta")}
               <ArrowRight className="h-5 w-5" />
             </Button>
           </div>
@@ -575,19 +582,19 @@ Output should be a vertical rectangle. Entire head should be visible`;
                 <button
                   onClick={() => setLocation("/dashboard/start?variant=page3")}
                   className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
-                  aria-label="Start Here"
+                  aria-label={t("dashboardV3.nav.start")}
                 >
                   <HelpCircle className="h-6 w-6 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Start</span>
+                  <span className="text-xs text-muted-foreground">{t("dashboardV3.nav.start")}</span>
                 </button>
 
                 <button
                   onClick={() => setLocation("/dashboard/gallery?variant=page3")}
                   className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
-                  aria-label="Gallery"
+                  aria-label={t("dashboardV3.nav.gallery")}
                 >
                   <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Gallery</span>
+                  <span className="text-xs text-muted-foreground">{t("dashboardV3.nav.gallery")}</span>
                 </button>
 
                 <button
@@ -601,19 +608,19 @@ Output should be a vertical rectangle. Entire head should be visible`;
                 <button
                   onClick={() => setLocation("/dashboard/credits/buy?variant=page3")}
                   className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
-                  aria-label="Buy Credits"
+                  aria-label={t("dashboardV3.nav.credits")}
                 >
                   <CreditCard className="h-6 w-6 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Credits</span>
+                  <span className="text-xs text-muted-foreground">{t("dashboardV3.nav.credits")}</span>
                 </button>
 
                 <button
                   onClick={() => setLocation("/dashboard/settings/general?variant=page3")}
                   className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
-                  aria-label="Settings"
+                  aria-label={t("dashboardV3.nav.settings")}
                 >
                   <Settings className="h-6 w-6 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Settings</span>
+                  <span className="text-xs text-muted-foreground">{t("dashboardV3.nav.settings")}</span>
                 </button>
               </div>
             </div>
@@ -634,7 +641,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
-            <span className="font-medium">Back</span>
+            <span className="font-medium">{t("dashboardV3.create.back")}</span>
           </button>
         </div>
       </div>
@@ -647,9 +654,9 @@ Output should be a vertical rectangle. Entire head should be visible`;
             <div className={cn(!isMobile && "sticky top-24")}>
               {!isMobile && (
                 <div className="mb-6">
-                  <h2 className="text-2xl font-bold">Upload Photo</h2>
+                  <h2 className="text-2xl font-bold">{t("dashboardV3.create.uploadTitle")}</h2>
                   <p className="text-muted-foreground mt-1">
-                    Upload a selfie to generate your professional headshots.
+                    {t("dashboardV3.create.uploadSubtitle")}
                   </p>
                 </div>
               )}
@@ -696,10 +703,10 @@ Output should be a vertical rectangle. Entire head should be visible`;
                       <Upload className={cn("text-primary", isMobile ? "h-5 w-5" : "h-8 w-8")} />
                     </div>
                     <h3 className={cn("font-semibold mb-1", isMobile ? "text-sm" : "text-lg")}>
-                      {isMobile ? "Drag or upload image" : "Drag & drop or click to upload"}
+                      {isMobile ? t("dashboardV3.create.dragUpload") : t("dashboardV3.create.dragDrop")}
                     </h3>
                     <p className="text-xs text-muted-foreground max-w-[200px]">
-                      Support jpg/jpeg/png/webp, up to 16MB
+                      {t("dashboardV3.create.supportInfo")}
                     </p>
                   </div>
                 )}
@@ -712,9 +719,9 @@ Output should be a vertical rectangle. Entire head should be visible`;
             <div>
               {!isMobile && (
                 <div className="mb-6">
-                  <h2 className="text-2xl font-bold">Customize</h2>
+                  <h2 className="text-2xl font-bold">{t("dashboardV3.create.customizeTitle")}</h2>
                   <p className="text-muted-foreground mt-1">
-                    Choose your style and preferences.
+                    {t("dashboardV3.create.customizeSubtitle")}
                   </p>
                 </div>
               )}
@@ -736,7 +743,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                   )}
                 >
                   <User className="h-4 w-4" />
-                  Female
+                  {t("dashboardV3.create.tabs.female")}
                 </button>
                 <button 
                   onClick={() => {
@@ -750,7 +757,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                   )}
                 >
                   <User className="h-4 w-4" />
-                  Male
+                  {t("dashboardV3.create.tabs.male")}
                 </button>
                 <button 
                   onClick={() => setTab("custom")}
@@ -760,7 +767,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                   )}
                 >
                   <Settings className="h-4 w-4" />
-                  Custom
+                  {t("dashboardV3.create.tabs.custom")}
                 </button>
               </div>
 
@@ -771,7 +778,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                     <Textarea 
                       value={customPrompt}
                       onChange={(e) => setCustomPrompt(e.target.value)}
-                      placeholder="Describe the image you want to generate..."
+                      placeholder={t("dashboardV3.create.customTab.placeholder")}
                       className={cn("resize-none text-base", isMobile ? "h-[150px]" : "min-h-[200px]")}
                     />
                     
@@ -782,7 +789,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                         onClick={() => setCustomPrompt(presets.professional.prompt)}
                         className={cn(customPrompt === presets.professional.prompt && "bg-primary/10 border-primary")}
                       >
-                        Professional
+                        {presets.professional.label}
                       </Button>
                       <Button 
                         variant="outline" 
@@ -790,7 +797,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                         onClick={() => setCustomPrompt(presets.business.prompt)}
                         className={cn(customPrompt === presets.business.prompt && "bg-primary/10 border-primary")}
                       >
-                        Business
+                        {presets.business.label}
                       </Button>
                       <Button 
                         variant="outline" 
@@ -798,7 +805,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                         onClick={() => setCustomPrompt(presets.id_photo.prompt)}
                         className={cn(customPrompt === presets.id_photo.prompt && "bg-primary/10 border-primary")}
                       >
-                        ID Photo
+                        {presets.id_photo.label}
                       </Button>
                     </div>
                   </div>
@@ -843,19 +850,20 @@ Output should be a vertical rectangle. Entire head should be visible`;
               <Button 
                 size="lg" 
                 className={cn(
-                  "w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-semibold shadow-lg", 
-                  isMobile ? "mt-6 h-12 text-base" : "mt-8 h-14 text-lg"
+                  "w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-semibold shadow-lg transition-all", 
+                  isMobile ? "mt-6 h-12 text-base" : "mt-8 h-14 text-lg",
+                  (!uploadedFile || (tab === "custom" && !customPrompt.trim()) || (tab !== "custom" && !selectedExampleImage)) && "opacity-50"
                 )}
                 onClick={handleGenerate}
-                disabled={isGenerating || !uploadedFile || (tab === "custom" && !customPrompt.trim()) || (tab !== "custom" && !selectedExampleImage)}
+                disabled={isGenerating}
               >
                 {isGenerating ? (
                   <>
                     <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    Generating...
+                    {t("dashboardV3.create.generating")}
                   </>
                 ) : (
-                  "Generate"
+                  t("dashboardV3.create.generate")
                 )}
               </Button>
             </div>
@@ -867,11 +875,11 @@ Output should be a vertical rectangle. Entire head should be visible`;
       <Dialog open={showPricingModal} onOpenChange={setShowPricingModal}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-center text-2xl">Get Credits</DialogTitle>
+            <DialogTitle className="text-center text-2xl">{t("dashboardV3.pricing.title")}</DialogTitle>
           </DialogHeader>
           
           <p className="text-center text-muted-foreground mb-4">
-            You need credits to generate images. Choose a plan below.
+            {t("dashboardV3.pricing.subtitle")}
           </p>
 
           <div className="space-y-3">
@@ -896,11 +904,11 @@ Output should be a vertical rectangle. Entire head should be visible`;
                         <span className="font-semibold">{plan.name}</span>
                         {plan.popular && (
                           <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-                            Popular
+                            {t("dashboardV3.pricing.popular")}
                           </span>
                         )}
                       </div>
-                      <div className="text-sm text-muted-foreground">{plan.credits} photos</div>
+                      <div className="text-sm text-muted-foreground">{plan.credits} {t("dashboardV3.pricing.photos")}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -918,7 +926,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
             onClick={handlePurchase}
             disabled={isProcessingPayment || isLoadingPacks}
           >
-            {isProcessingPayment ? "Processing..." : `Buy ${plans.find(p => p.id === selectedPlan)?.name} - ${plans.find(p => p.id === selectedPlan)?.price.formatted}`}
+            {isProcessingPayment ? t("dashboardV3.pricing.processing") : t("dashboardV3.pricing.buy", { plan: plans.find(p => p.id === selectedPlan)?.name, price: plans.find(p => p.id === selectedPlan)?.price.formatted })}
           </Button>
         </DialogContent>
       </Dialog>
