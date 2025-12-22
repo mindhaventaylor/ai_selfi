@@ -1117,8 +1117,8 @@
         "date": "Abr 3, 2025"
       },
       {
-        "name": "Elena Conti",
-        "title": "Consultora Financeira",
+        "name": "Matteo Conti",
+        "title": "Consultor Financeiro",
         "review": "Não pensei que a IA pudesse criar fotos tão realistas. Já tentei outros serviços similares, mas os resultados sempre eram um pouco artificiais. Aqui, no entanto, as fotos parecem completamente naturais. Já as usei no meu site profissional e os clientes realmente as apreciaram.",
         "date": "Mai 12, 2025"
       },
@@ -1664,5 +1664,88 @@
     "ctaTitle": "Encontre Seu Estilo Perfeito de Foto Profissional",
     "ctaDesc": "Explore mais de 100+ estilos de fotos profissionais e encontre a correspondência perfeita para sua marca pessoal.",
     "ctaButton": "Navegar Estilos de Fotos Profissionais"
+  },
+  "dashboardV3": {
+    "hero": {
+      "title": "Crie retratos profissionais com IA",
+      "subtitle": "Transforme suas fotos em retratos realistas com IA para seu currículo, LinkedIn e redes sociais.",
+      "cta": "Criar retratos"
+    },
+    "nav": {
+      "start": "Início",
+      "gallery": "Galeria",
+      "credits": "Créditos",
+      "settings": "Ajustes"
+    },
+    "create": {
+      "back": "Voltar",
+      "uploadTitle": "Enviar Foto",
+      "uploadSubtitle": "Envie uma selfie para gerar seus retratos profissionais.",
+      "dragDrop": "Arraste ou clique para enviar",
+      "dragUpload": "Arraste ou envie imagem",
+      "supportInfo": "Suporta jpg/jpeg/png/webp, até 16MB",
+      "customizeTitle": "Personalizar",
+      "customizeSubtitle": "Escolha seu estilo e preferências.",
+      "tabs": {
+        "female": "Mulher",
+        "male": "Homem",
+        "custom": "Personalizado"
+      },
+      "styles": {
+        "academic": "Acadêmico",
+        "business": "Negócios",
+        "casual": "Casual",
+        "energetic": "Enérgico",
+        "idPhoto": "Foto para documento",
+        "modern": "Moderno",
+        "professional": "Profissional",
+        "sepia": "Sépia",
+        "sophisticated": "Sofisticado"
+      },
+      "customTab": {
+        "placeholder": "Descreva a imagem que deseja gerar...",
+        "presets": {
+          "professional": {
+            "label": "Profissional",
+            "prompt": "Um close profissional formal com terno, fundo neutro e uma expressão confiante."
+          },
+          "business": {
+            "label": "Negócios",
+            "prompt": "Um close de negócios moderno com uma expressão amigável, mas autoritária, vestindo roupas de escritório elegantes (ex: blazer sem gravata ou blusa elegante), capturado em um ambiente interno iluminado, como um escritório ou espaço de coworking."
+          },
+          "idPhoto": {
+            "label": "Foto para documento",
+            "prompt": "Foto de documento padrão, de frente, expressão neutra, sem sorrir, fundo branco simples, bem iluminada, sem sombras, rosto totalmente visível, imagem nítida e clara, sem acessórios (ex: óculos, chapéus)."
+          }
+        }
+      },
+      "generate": "Gerar",
+      "generating": "Gerando...",
+      "preparing": "Preparando geração...",
+      "success": "Geração iniciada!",
+      "errors": {
+        "uploadFirst": "Por favor, envie uma imagem primeiro",
+        "loginFirst": "Por favor, faça login para continuar",
+        "promptFirst": "Por favor, insira uma descrição",
+        "styleFirst": "Por favor, escolha um estilo",
+        "missingRequirements": "Por favor, envie uma imagem e selecione um estilo",
+        "packNotFound": "Pacote não encontrado",
+        "checkoutError": "Falha ao criar sessão de checkout",
+        "generationFailed": "Falha na geração"
+      }
+    },
+    "pricing": {
+      "title": "Obter Créditos",
+      "subtitle": "Você precisa de créditos para gerar imagens. Escolha um plano abaixo.",
+      "plans": {
+        "basic": "Básico",
+        "standard": "Padrão",
+        "premium": "Premium"
+      },
+      "popular": "Popular",
+      "photos": "fotos",
+      "processing": "Processando...",
+      "buy": "Comprar {{plan}} - {{price}}"
+    }
   }
 }

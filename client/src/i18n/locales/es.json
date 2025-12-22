@@ -1125,8 +1125,8 @@
         "date": "Abr 3, 2025"
       },
       {
-        "name": "Elena Conti",
-        "title": "Consultora Financiera",
+        "name": "Matteo Conti",
+        "title": "Consultor Financiero",
         "review": "No pensé que la IA pudiera crear fotos tan realistas. He probado otros servicios similares pero los resultados siempre eran un poco artificiales. Aquí, sin embargo, las fotos se ven completamente naturales. Ya las he usado para mi sitio web profesional y los clientes las han apreciado mucho.",
         "date": "May 12, 2025"
       },
@@ -1672,5 +1672,88 @@
     "ctaTitle": "Encuentra tu Estilo Perfecto de Foto Profesional",
     "ctaDesc": "Explora más de 100+ estilos de fotos profesionales y encuentra la coincidencia perfecta para tu marca personal.",
     "ctaButton": "Explorar Estilos de Fotos Profesionales"
+  },
+  "dashboardV3": {
+    "hero": {
+      "title": "Crea retratos profesionales con IA",
+      "subtitle": "Transforma tus selfies en fotos profesionales realistas para tu currículum, LinkedIn y perfiles sociales.",
+      "cta": "Crear retratos"
+    },
+    "nav": {
+      "start": "Inicio",
+      "gallery": "Galería",
+      "credits": "Créditos",
+      "settings": "Ajustes"
+    },
+    "create": {
+      "back": "Atrás",
+      "uploadTitle": "Subir Foto",
+      "uploadSubtitle": "Sube un selfie para generar tus retratos profesionales.",
+      "dragDrop": "Arrastra o haz clic para subir",
+      "dragUpload": "Arrastra o sube imagen",
+      "supportInfo": "Soporta jpg/jpeg/png/webp, hasta 16MB",
+      "customizeTitle": "Personalizar",
+      "customizeSubtitle": "Elige tu estilo y preferencias.",
+      "tabs": {
+        "female": "Mujer",
+        "male": "Hombre",
+        "custom": "Personalizado"
+      },
+      "styles": {
+        "academic": "Académico",
+        "business": "Negocios",
+        "casual": "Casual",
+        "energetic": "Enérgico",
+        "idPhoto": "Foto de carné",
+        "modern": "Moderno",
+        "professional": "Profesional",
+        "sepia": "Sepia",
+        "sophisticated": "Sofisticado"
+      },
+      "customTab": {
+        "placeholder": "Describe la imagen que quieres generar...",
+        "presets": {
+          "professional": {
+            "label": "Profesional",
+            "prompt": "Un primer plano profesional formal con traje, fondo neutro y una expresión de confianza."
+          },
+          "business": {
+            "label": "Negocios",
+            "prompt": "Un primer plano de negocios moderno con una expresión amable pero autoritaria, vistiendo ropa de oficina elegante (por ejemplo, blazer sin corbata o blusa elegante), capturado en un entorno interior luminoso como una oficina o espacio de coworking."
+          },
+          "idPhoto": {
+            "label": "Foto de carné",
+            "prompt": "Foto de carné estándar, de frente, expresión neutra, sin sonrisa, fondo blanco liso, bien iluminada, sin sombras, rostro totalmente visible, imagen nítida y clara, sin accesorios (por ejemplo, gafas, sombreros)."
+          }
+        }
+      },
+      "generate": "Generar",
+      "generating": "Generando...",
+      "preparing": "Preparando generación...",
+      "success": "¡Generación iniciada!",
+      "errors": {
+        "uploadFirst": "Por favor, sube una imagen primero",
+        "loginFirst": "Por favor, inicia sesión para continuar",
+        "promptFirst": "Por favor, introduce una descripción",
+        "styleFirst": "Por favor, elige un estilo",
+        "missingRequirements": "Por favor, sube una imagen y selecciona un estilo",
+        "packNotFound": "Paquete no encontrado",
+        "checkoutError": "Error al crear la sesión de pago",
+        "generationFailed": "Error en la generación"
+      }
+    },
+    "pricing": {
+      "title": "Obtener Créditos",
+      "subtitle": "Necesitas créditos para generar imágenes. Elige un plan a continuación.",
+      "plans": {
+        "basic": "Básico",
+        "standard": "Estándar",
+        "premium": "Premium"
+      },
+      "popular": "Popular",
+      "photos": "fotos",
+      "processing": "Procesando...",
+      "buy": "Comprar {{plan}} - {{price}}"
+    }
   }
 }

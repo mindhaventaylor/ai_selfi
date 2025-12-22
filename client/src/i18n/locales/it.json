@@ -1125,8 +1125,8 @@
         "date": "Apr 3, 2025"
       },
       {
-        "name": "Elena Conti",
-        "title": "Consulente Finanziaria",
+        "name": "Matteo Conti",
+        "title": "Consulente Finanziario",
         "review": "Non pensavo che l'IA potesse creare foto così realistiche. Ho provato altri servizi simili ma i risultati erano sempre un po' artificiali. Qui invece le foto sembrano completamente naturali. Le ho già usate per il mio sito professionale e i clienti le hanno apprezzate molto.",
         "date": "Mag 12, 2025"
       },
@@ -1672,5 +1672,88 @@
     "ctaTitle": "Trova il Tuo Stile Perfetto di Foto Professionale",
     "ctaDesc": "Esplora oltre 100+ stili di foto professionali e trova la corrispondenza perfetta per il tuo personal brand.",
     "ctaButton": "Sfoglia Stili di Foto Professionali"
+  },
+  "dashboardV3": {
+    "hero": {
+      "title": "Crea ritratti professionali IA",
+      "subtitle": "Trasforma i tuoi selfie in foto professionali realistiche per il tuo curriculum, LinkedIn e profili social.",
+      "cta": "Crea headshot"
+    },
+    "nav": {
+      "start": "Inizia",
+      "gallery": "Galleria",
+      "credits": "Crediti",
+      "settings": "Impostazioni"
+    },
+    "create": {
+      "back": "Indietro",
+      "uploadTitle": "Carica Foto",
+      "uploadSubtitle": "Carica un selfie per generare i tuoi headshot professionali.",
+      "dragDrop": "Trascina o clicca per caricare",
+      "dragUpload": "Trascina o carica immagine",
+      "supportInfo": "Supporta jpg/jpeg/png/webp, fino a 16MB",
+      "customizeTitle": "Personalizza",
+      "customizeSubtitle": "Scegli il tuo stile e le tue preferenze.",
+      "tabs": {
+        "female": "Donna",
+        "male": "Uomo",
+        "custom": "Personalizzato"
+      },
+      "styles": {
+        "academic": "Accademico",
+        "business": "Business",
+        "casual": "Casual",
+        "energetic": "Energico",
+        "idPhoto": "Fototessera",
+        "modern": "Moderno",
+        "professional": "Professionale",
+        "sepia": "Seppia",
+        "sophisticated": "Sofisticato"
+      },
+      "customTab": {
+        "placeholder": "Descrivi l'immagine che vuoi generare...",
+        "presets": {
+          "professional": {
+            "label": "Professionale",
+            "prompt": "Un primo piano professionale formale con un abito, sfondo neutro e un'espressione sicura."
+          },
+          "business": {
+            "label": "Business",
+            "prompt": "Un primo piano business moderno con un'espressione amichevole ma autorevole, che indossa abbigliamento da ufficio elegante (es. blazer senza cravatta o camicetta elegante), scattato in un ambiente interno luminoso come un ufficio o uno spazio di co-working."
+          },
+          "idPhoto": {
+            "label": "Fototessera",
+            "prompt": "Fototessera standard, frontale, espressione neutra, senza sorriso, sfondo bianco semplice, ben illuminata, senza ombre, viso completamente visibile, immagine nitida e chiara, senza accessori (es. occhiali, cappelli)."
+          }
+        }
+      },
+      "generate": "Genera",
+      "generating": "Generazione...",
+      "preparing": "Preparazione generazione...",
+      "success": "Generazione avviata!",
+      "errors": {
+        "uploadFirst": "Per favore carica prima un'immagine",
+        "loginFirst": "Per favore accedi per continuare",
+        "promptFirst": "Per favore inserisci un prompt",
+        "styleFirst": "Per favore scegli uno stile",
+        "missingRequirements": "Per favore carica un'immagine e seleziona uno stile",
+        "packNotFound": "Pacchetto non trovato",
+        "checkoutError": "Impossibile creare la sessione di pagamento",
+        "generationFailed": "Generazione fallita"
+      }
+    },
+    "pricing": {
+      "title": "Ottieni Crediti",
+      "subtitle": "Hai bisogno di crediti per generare immagini. Scegli un piano qui sotto.",
+      "plans": {
+        "basic": "Base",
+        "standard": "Standard",
+        "premium": "Premium"
+      },
+      "popular": "Popolare",
+      "photos": "foto",
+      "processing": "Elaborazione...",
+      "buy": "Acquista {{plan}} - {{price}}"
+    }
   }
 }

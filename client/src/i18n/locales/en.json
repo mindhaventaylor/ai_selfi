@@ -1120,7 +1120,7 @@
         "date": "Apr 3, 2025"
       },
       {
-        "name": "Elena Conti",
+        "name": "Matteo Conti",
         "title": "Financial Consultant",
         "review": "I didn't think AI could create such realistic photos. I've tried other similar services but the results were always a bit artificial. Here, however, the photos look completely natural. I've already used them for my professional website and clients have really appreciated them.",
         "date": "May 12, 2025"
@@ -1998,5 +1998,88 @@
     "ctaTitle": "Start Your AI Professional Photography Journey",
     "ctaDesc": "Join thousands of professionals who have discovered the power of AI professional photography.",
     "ctaButton": "Get Started Today"
+  },
+  "dashboardV3": {
+    "hero": {
+      "title": "Create professional AI portraits",
+      "subtitle": "Transform your existing photos into realistic AI portrait photos for your resume, LinkedIn, and social media profiles.",
+      "cta": "Create headshots"
+    },
+    "nav": {
+      "start": "Start",
+      "gallery": "Gallery",
+      "credits": "Credits",
+      "settings": "Settings"
+    },
+    "create": {
+      "back": "Back",
+      "uploadTitle": "Upload Photo",
+      "uploadSubtitle": "Upload a selfie to generate your professional headshots.",
+      "dragDrop": "Drag & drop or click to upload",
+      "dragUpload": "Drag or upload image",
+      "supportInfo": "Support jpg/jpeg/png/webp, up to 16MB",
+      "customizeTitle": "Customize",
+      "customizeSubtitle": "Choose your style and preferences.",
+      "tabs": {
+        "female": "Female",
+        "male": "Male",
+        "custom": "Custom"
+      },
+      "styles": {
+        "academic": "Academic",
+        "business": "Business",
+        "casual": "Casual",
+        "energetic": "Energetic",
+        "idPhoto": "ID Photo",
+        "modern": "Modern",
+        "professional": "Professional",
+        "sepia": "Sepia",
+        "sophisticated": "Sophisticated"
+      },
+      "customTab": {
+        "placeholder": "Describe the image you want to generate...",
+        "presets": {
+          "professional": {
+            "label": "Professional",
+            "prompt": "A formal professional headshot with a suit, neutral background, and a confident expression."
+          },
+          "business": {
+            "label": "Business",
+            "prompt": "A modern business headshot with a friendly yet authoritative expression, wearing smart office attire (e.g., blazer without tie or elegant blouse), captured in a bright indoor setting such as an office or co-working space."
+          },
+          "idPhoto": {
+            "label": "ID Photo",
+            "prompt": "Standard ID photo, head-on, neutral expression, no smiling, plain white background, well-lit, no shadows, face fully visible, clear and sharp image, no accessories (e.g., glasses, hats)."
+          }
+        }
+      },
+      "generate": "Generate",
+      "generating": "Generating...",
+      "preparing": "Preparing generation...",
+      "success": "Generation started!",
+      "errors": {
+        "uploadFirst": "Please upload an image first",
+        "loginFirst": "Please login to continue",
+        "promptFirst": "Please enter a prompt",
+        "styleFirst": "Please choose a style",
+        "missingRequirements": "Please upload an image and select a style",
+        "packNotFound": "Pack not found",
+        "checkoutError": "Failed to create checkout session",
+        "generationFailed": "Generation failed"
+      }
+    },
+    "pricing": {
+      "title": "Get Credits",
+      "subtitle": "You need credits to generate images. Choose a plan below.",
+      "plans": {
+        "basic": "Basic",
+        "standard": "Standard",
+        "premium": "Premium"
+      },
+      "popular": "Popular",
+      "photos": "photos",
+      "processing": "Processing...",
+      "buy": "Buy {{plan}} - {{price}}"
+    }
   }
 }
