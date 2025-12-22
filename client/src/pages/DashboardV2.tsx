@@ -32,7 +32,8 @@ import {
   PlusCircle,
   CreditCard,
   Settings,
-  HelpCircle
+  HelpCircle,
+  ShieldCheck
 } from "lucide-react";
 
 type Step = "welcome" | "gender" | "age" | "hairColor" | "hairLength" | "hairStyle" | "ethnicity" | "bodyType" | "attire" | "background" | "pricing" | "upload";
@@ -1926,6 +1927,14 @@ function PricingStep({
             </button>
           );
         })}
+      </div>
+
+      {/* Money-Back Guarantee */}
+      <div className="flex items-center justify-center gap-2 pt-4 mt-4 border-t border-border">
+        <ShieldCheck className="w-5 h-5 text-green-500 shrink-0" />
+        <p className="text-sm font-medium text-green-600 dark:text-green-400">
+          {t("buyCredits.moneyBackGuarantee")}
+        </p>
       </div>
     </div>
   );

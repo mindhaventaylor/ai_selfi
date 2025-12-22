@@ -11,7 +11,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Check, Box, Star, Zap, Plus, CreditCard, Settings, HelpCircle, Image as ImageIcon } from "lucide-react";
+import { Check, Box, Star, Zap, Plus, CreditCard, Settings, HelpCircle, Image as ImageIcon, ShieldCheck } from "lucide-react";
 import { useIsMobile } from "@/hooks/useMobile";
 import { trpc } from "@/lib/trpc";
 import { useState, useEffect, useRef } from "react";
@@ -19,8 +19,30 @@ import { toast } from "sonner";
 import { safeLocalStorage } from "@/utils/localStorage";
 import { detectCurrency, getLocalizedPrice, getPage2Credits } from "@/utils/currency";
 
+// SEO Helper: Update meta tags
+const updateMetaTag = (name: string, content: string, attribute: string = "name") => {
+  let element = document.querySelector(`meta[${attribute}="${name}"]`) as HTMLMetaElement;
+  if (!element) {
+    element = document.createElement("meta");
+    element.setAttribute(attribute, name);
+    document.head.appendChild(element);
+  }
+  element.setAttribute("content", content);
+};
+
+// SEO Helper: Update or create link tag
+const updateLinkTag = (rel: string, href: string) => {
+  let element = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement;
+  if (!element) {
+    element = document.createElement("link");
+    element.setAttribute("rel", rel);
+    document.head.appendChild(element);
+  }
+  element.setAttribute("href", href);
+};
+
 export default function BuyCredits() {
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
   const [, setLocation] = useLocation();
   const isMobile = useIsMobile();
   const [loadingPackId, setLoadingPackId] = useState<number | null>(null);
@@ -360,20 +382,131 @@ export default function BuyCredits() {
     }
   }, [packs, isPage2Variant, planParam, starterPackId, proPackId, premiumPackId, isLoadingPacks]);
 
+  // SEO: Update meta tags and structured data
+  useEffect(() => {
+    const baseUrl = window.location.origin;
+    const currentUrl = `${baseUrl}/dashboard/credits/buy`;
+    const siteName = "AISelfie";
+    const title = `${t("buyCredits.title")} - ${siteName}`;
+    const description = t("buyCredits.subtitle") || "Buy credits to generate professional AI headshots. Choose from Starter, Pro, or Premium plans with 100% money-back guarantee.";
+    const imageUrl = `${baseUrl}/favicon.png`;
+
+    // Update document title
+    document.title = title;
+
+    // Basic meta tags
+    updateMetaTag("description", description);
+    updateMetaTag("keywords", "AI headshots, professional photos, buy credits, AI photography, headshot generator, professional portraits");
+    updateMetaTag("author", siteName);
+    updateMetaTag("robots", "index, follow");
+
+    // Open Graph tags
+    updateMetaTag("og:title", title, "property");
+    updateMetaTag("og:description", description, "property");
+    updateMetaTag("og:type", "website", "property");
+    updateMetaTag("og:url", currentUrl, "property");
+    updateMetaTag("og:image", imageUrl, "property");
+    updateMetaTag("og:site_name", siteName, "property");
+    
+    // Detect locale from current language
+    const localeMap: Record<string, string> = {
+      "en": "en_US",
+      "pt": "pt_BR",
+      "pt-BR": "pt_BR",
+      "es": "es_ES",
+      "es-ES": "es_ES",
+      "it": "it_IT",
+      "it-IT": "it_IT"
+    };
+    const locale = localeMap[currentLanguage] || localeMap[currentLanguage.split("-")[0]] || "en_US";
+    updateMetaTag("og:locale", locale, "property");
+
+    // Twitter Card tags
+    updateMetaTag("twitter:card", "summary_large_image");
+    updateMetaTag("twitter:title", title);
+    updateMetaTag("twitter:description", description);
+    updateMetaTag("twitter:image", imageUrl);
+
+    // Canonical URL
+    updateLinkTag("canonical", currentUrl);
+
+    // Structured Data (JSON-LD) for Product/Offer
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": t("buyCredits.title"),
+      "description": description,
+      "brand": {
+        "@type": "Brand",
+        "name": siteName
+      },
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": t("buyCredits.starterPack"),
+          "price": starterPrice.amount / 100,
+          "priceCurrency": currency.toUpperCase(),
+          "availability": "https://schema.org/InStock",
+          "url": `${currentUrl}?plan=basic`,
+          "description": `${starterCredits} ${t("buyCredits.photos") || "photos"}`
+        },
+        {
+          "@type": "Offer",
+          "name": t("buyCredits.proPack"),
+          "price": proPrice.amount / 100,
+          "priceCurrency": currency.toUpperCase(),
+          "availability": "https://schema.org/InStock",
+          "url": `${currentUrl}?plan=standard`,
+          "description": `${proCredits} ${t("buyCredits.photos") || "photos"}`
+        },
+        {
+          "@type": "Offer",
+          "name": t("buyCredits.premiumPack"),
+          "price": premiumPrice.amount / 100,
+          "priceCurrency": currency.toUpperCase(),
+          "availability": "https://schema.org/InStock",
+          "url": `${currentUrl}?plan=premium`,
+          "description": `${premiumCredits} ${t("buyCredits.photos") || "photos"}`
+        }
+      ]
+    };
+
+    // Remove existing structured data script if any
+    const existingScript = document.querySelector('script[type="application/ld+json"][data-buycredits-seo]');
+    if (existingScript) {
+      existingScript.remove();
+    }
+
+    // Add structured data
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.setAttribute("data-buycredits-seo", "true");
+    script.textContent = JSON.stringify(structuredData);
+    document.head.appendChild(script);
+
+    // Cleanup function
+    return () => {
+      const scriptToRemove = document.querySelector('script[type="application/ld+json"][data-buycredits-seo]');
+      if (scriptToRemove) {
+        scriptToRemove.remove();
+      }
+    };
+  }, [t, currentLanguage, currency, starterPrice, proPrice, premiumPrice, starterCredits, proCredits, premiumCredits]);
+
   return (
-    <div className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background">
       <div className={`max-w-7xl mx-auto px-6 py-8 ${isMobile ? "pb-20" : ""}`}>
         {/* Header */}
-        <div className="text-center mb-12">
+        <header className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">{t("buyCredits.title")}</h1>
           <p className="text-lg text-muted-foreground">
             {t("buyCredits.subtitle")}
           </p>
-        </div>
+        </header>
 
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16" aria-label="Pricing plans">
           {/* Starter Pack */}
           <Card className="bg-blue-500/10 border-blue-500/20">
             <CardContent className="p-8">
@@ -429,6 +562,14 @@ export default function BuyCredits() {
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {t("buyCredits.refundable")}
+                  </p>
+                </div>
+
+                {/* Money-Back Guarantee */}
+                <div className="flex items-center justify-center gap-2 pt-2 mt-2 border-t border-border">
+                  <ShieldCheck className="w-4 h-4 text-green-500 shrink-0" />
+                  <p className="text-xs font-medium text-green-600 dark:text-green-400">
+                    {t("buyCredits.moneyBackGuarantee")}
                   </p>
                 </div>
               </div>
@@ -509,6 +650,14 @@ export default function BuyCredits() {
                     {t("buyCredits.refundable")}
                   </p>
                 </div>
+
+                {/* Money-Back Guarantee */}
+                <div className="flex items-center justify-center gap-2 pt-2 mt-2 border-t border-border">
+                  <ShieldCheck className="w-4 h-4 text-green-500 shrink-0" />
+                  <p className="text-xs font-medium text-green-600 dark:text-green-400">
+                    {t("buyCredits.moneyBackGuarantee")}
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -584,13 +733,21 @@ export default function BuyCredits() {
                     {t("buyCredits.refundable")}
                   </p>
                 </div>
+
+                {/* Money-Back Guarantee */}
+                <div className="flex items-center justify-center gap-2 pt-2 mt-2 border-t border-border">
+                  <ShieldCheck className="w-4 h-4 text-green-500 shrink-0" />
+                  <p className="text-xs font-medium text-green-600 dark:text-green-400">
+                    {t("buyCredits.moneyBackGuarantee")}
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
-        </div>
+        </section>
 
         {/* FAQ Section */}
-        <div className="max-w-4xl mx-auto">
+        <section className="max-w-4xl mx-auto" itemScope itemType="https://schema.org/FAQPage">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
             {t("buyCredits.faqTitle")}
           </h2>
@@ -601,12 +758,16 @@ export default function BuyCredits() {
                 key={idx}
                 value={`item-${idx}`}
                 className="border-border bg-card/50 rounded-lg px-4"
+                itemScope
+                itemType="https://schema.org/Question"
               >
-                <AccordionTrigger className="text-left hover:no-underline py-4">
+                <AccordionTrigger className="text-left hover:no-underline py-4" itemProp="name">
                     {item.q}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-4">
+                <AccordionContent className="text-muted-foreground pb-4" itemScope itemType="https://schema.org/Answer">
+                  <div itemProp="text">
                     {item.a}
+                  </div>
                 </AccordionContent>
               </AccordionItem>
               ))
@@ -616,7 +777,7 @@ export default function BuyCredits() {
               </div>
             )}
           </Accordion>
-        </div>
+        </section>
       </div>
 
       {/* Bottom Navigation Bar - Mobile Only (Hidden for page1 variant) */}
@@ -679,7 +840,7 @@ export default function BuyCredits() {
         </div>
         );
       })()}
-    </div>
+    </main>
   );
 }
 

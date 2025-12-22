@@ -6,7 +6,7 @@ import type React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Check, X, Sparkles, ChevronLeft, ChevronRight, ArrowRight, ArrowDown, Quote } from "lucide-react";
+import { Star, Check, X, Sparkles, ChevronLeft, ChevronRight, ArrowRight, ArrowDown, Quote, ShieldCheck } from "lucide-react";
 import { FAQ } from "@/components/FAQ";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
@@ -630,7 +630,8 @@ export default function Home() {
 
               {/* Reviews - 3x5 Grid Layout (15 components, same as carousel card layout) */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-w-[90%] mx-auto">
-                {Array.from({ length: reviewsToShow }).map((_, idx) => {
+                {(() => {
+                  // Fetch reviews once outside the map
                   const reviews = t("supportReviews.reviews", {
                     returnObjects: true,
                   }) as Array<{
@@ -640,8 +641,16 @@ export default function Home() {
                     date: string;
                   }>;
                   
-                  // Cycle through reviews, reusing them if needed
-                  const review = reviews[idx % reviews.length];
+                  return Array.from({ length: reviewsToShow }).map((_, idx) => {
+                    // Use unique review for each image (we have 15 reviews for 15 images)
+                    // Use modulo to cycle if we ever show more than available reviews
+                    const reviewIndex = idx % reviews.length;
+                    const review = reviews[reviewIndex];
+                    
+                    // Debug log to verify correct review assignment
+                    if (process.env.NODE_ENV === 'development' && idx < 3) {
+                      console.log(`[Home] Review ${idx}: ${review.name} (index ${reviewIndex})`);
+                    }
                   
                   // Map each review index sequentially to examples 1-15
                   // All examples 1-15 now have complete files
@@ -812,7 +821,8 @@ export default function Home() {
                       </div>
                     </Card>
                   );
-                })}
+                  });
+                })()}
               </div>
 
               {/* See More / Show Less Button */}
@@ -1204,6 +1214,16 @@ export default function Home() {
                     );
                   })()}
                 </ul>
+              </div>
+            </AnimatedSection>
+
+            {/* Money-Back Guarantee */}
+            <AnimatedSection delay={500}>
+              <div className="flex items-center justify-center gap-2 pt-6 mt-6 border-t border-border max-w-2xl mx-auto">
+                <ShieldCheck className="w-5 h-5 text-green-500 shrink-0" />
+                <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                  {t("buyCredits.moneyBackGuarantee")}
+                </p>
               </div>
             </AnimatedSection>
           </div>

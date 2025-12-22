@@ -24,6 +24,7 @@ import {
   Zap,
   Check,
   Loader2,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { exampleImages } from "@/data/exampleImages";
@@ -920,6 +921,14 @@ Output should be a vertical rectangle. Entire head should be visible`;
           >
             {isProcessingPayment ? "Processing..." : `Buy ${plans.find(p => p.id === selectedPlan)?.name} - ${plans.find(p => p.id === selectedPlan)?.price.formatted}`}
           </Button>
+
+          {/* Money-Back Guarantee */}
+          <div className="flex items-center justify-center gap-2 pt-4 mt-4 border-t border-border">
+            <ShieldCheck className="w-4 h-4 text-green-500 shrink-0" />
+            <p className="text-xs font-medium text-green-600 dark:text-green-400">
+              {t("buyCredits.moneyBackGuarantee")}
+            </p>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

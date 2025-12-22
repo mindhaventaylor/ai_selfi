@@ -7,25 +7,26 @@ import { useLocation } from "wouter";
 import { Check } from "lucide-react";
 
 
-// Images for carousel - matching the 4 testimonials
+// COMMENTED OUT: Images for carousel - matching the 4 testimonials
 // Sofia Bianchi (example 1), Marco Rossi (example 2), Chiara Romano (example 4), Valentina Marchetti (example 6)
-const carouselImages = [
-  "/reviews/1_result.webp",
-  "/reviews/2_result.webp",
-  "/reviews/4_result.webp",
-  "/reviews/6_result.webp",
-];
+// const carouselImages = [
+//   "/reviews/1_result.webp",
+//   "/reviews/2_result.webp",
+//   "/reviews/4_result.webp",
+//   "/reviews/6_result.webp",
+// ];
 
 export default function Login() {
   const { t } = useTranslation();
   const { user, loading, signIn } = useAuth();
   const [, setLocation] = useLocation();
   const [isSigningIn, setIsSigningIn] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
+  // COMMENTED OUT: Reviews/testimonials section removed as they were distracting users
+  // const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  // const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
 
-  // Get testimonials early so they're available for useEffect
-  const testimonials = t("login.testimonials", { returnObjects: true }) as Array<{ text: string; author: string; stars: number }>;
+  // // Get testimonials early so they're available for useEffect
+  // const testimonials = t("login.testimonials", { returnObjects: true }) as Array<{ text: string; author: string; stars: number }>;
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
@@ -43,17 +44,17 @@ export default function Login() {
       }
   }, [user, loading, setLocation]);
 
-  // Sync image and testimonial rotation - rotate together every 6 seconds
-  useEffect(() => {
-    if (!testimonials || testimonials.length === 0) return;
-    
-    const rotationInterval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % carouselImages.length);
-      setCurrentTestimonialIndex((prev) => (prev + 1) % testimonials.length);
-    }, 6000);
+  // COMMENTED OUT: Sync image and testimonial rotation - rotate together every 6 seconds
+  // useEffect(() => {
+  //   if (!testimonials || testimonials.length === 0) return;
+  //   
+  //   const rotationInterval = setInterval(() => {
+  //     setCurrentImageIndex((prev) => (prev + 1) % carouselImages.length);
+  //     setCurrentTestimonialIndex((prev) => (prev + 1) % testimonials.length);
+  //   }, 6000);
 
-    return () => clearInterval(rotationInterval);
-  }, [testimonials]);
+  //   return () => clearInterval(rotationInterval);
+  // }, [testimonials]);
 
   // Don't render login page if user is already authenticated (prevents flash)
   // This must be after all hooks are called
@@ -81,15 +82,16 @@ export default function Login() {
   // No loading state needed - show login form immediately
   // The auth check happens in the background and redirects if already logged in
 
-  const currentTestimonial = testimonials && testimonials.length > 0 ? testimonials[currentTestimonialIndex] : null;
+  // COMMENTED OUT: Reviews/testimonials section removed as they were distracting users
+  // const currentTestimonial = testimonials && testimonials.length > 0 ? testimonials[currentTestimonialIndex] : null;
 
   return (
     <div className="min-h-screen flex items-start justify-center bg-background pt-6 lg:pt-24 px-4 lg:px-0">
       <div className="flex flex-col lg:flex-row w-full max-w-6xl items-center justify-center gap-8">
-        {/* Left Side - Image Carousel with Testimonial (moved to bottom on mobile) */}
-        <div className="flex flex-col items-center w-full max-w-[30.8rem] order-2 lg:order-1">
+        {/* COMMENTED OUT: Left Side - Image Carousel with Testimonial (moved to bottom on mobile) */}
+        {/* <div className="flex flex-col items-center w-full max-w-[30.8rem] order-2 lg:order-1">
           {/* Rotating Image with Overlay Testimonial */}
-          <div className="relative w-full h-[25rem] lg:h-[37.3rem]">
+          {/* <div className="relative w-full h-[25rem] lg:h-[37.3rem]">
             <div className="absolute inset-0 rounded-lg overflow-hidden shadow-2xl">
               {carouselImages.map((img, idx) => (
                 <img
@@ -104,7 +106,7 @@ export default function Login() {
             </div>
 
             {/* Testimonial Card Overlay */}
-            {currentTestimonial && (
+            {/* {currentTestimonial && (
               <div className="absolute bottom-4 left-4 right-4 bg-black/50 backdrop-blur-sm text-white rounded-xl p-6 shadow-xl">
                 <div className="flex gap-1 mb-3">
                   {Array.from({ length: currentTestimonial.stars }).map((_, i) => (
@@ -115,7 +117,7 @@ export default function Login() {
                 <p className="text-xs font-semibold text-white">- {currentTestimonial.author}</p>
                 
                 {/* Testimonial Indicators */}
-                {testimonials && testimonials.length > 0 && (
+                {/* {testimonials && testimonials.length > 0 && (
                   <div className="flex gap-2 justify-center mt-4">
                     {testimonials.map((_, idx) => (
                       <button
@@ -137,10 +139,10 @@ export default function Login() {
               </div>
             )}
           </div>
-        </div>
+        </div> */}
 
-        {/* Gap between panels */}
-        <div className="hidden lg:block w-8" aria-hidden="true"></div>
+        {/* COMMENTED OUT: Gap between panels */}
+        {/* <div className="hidden lg:block w-8" aria-hidden="true"></div> */}
 
         {/* Right Side - Login Form (moved to top on mobile) */}
         <div className="flex flex-col items-start w-full max-w-md order-1 lg:order-2">
