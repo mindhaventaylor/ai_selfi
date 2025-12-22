@@ -67,13 +67,6 @@ export function Header() {
               {t("nav.howItWorks")}
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
             </a>
-            <a 
-              href={getNavLink("#pricing")} 
-              className="text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-300 relative group py-2"
-            >
-              {t("nav.pricing")}
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
-            </a>
            
           </nav>
         )}

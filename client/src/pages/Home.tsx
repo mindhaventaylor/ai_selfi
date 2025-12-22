@@ -1,6 +1,5 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { usePostHogVariant } from "@/hooks/usePostHogVariant";
 import { useEffect, useState } from "react";
 import type React from "react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,6 @@ import { FAQ } from "@/components/FAQ";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { safeLocalStorage } from "@/utils/localStorage";
-import { detectCurrency, getLocalizedPrice } from "@/utils/currency";
 import {
   Carousel,
   CarouselContent,
@@ -51,27 +49,10 @@ export default function Home() {
   const [expandedReviewsGrid, setExpandedReviewsGrid] = useState<Set<number>>(new Set()); // For reviews grid section
   const [reviewsToShow, setReviewsToShow] = useState(6); // Start with 2 rows (6 items in 3-column grid)
 
-  // Use the variant hook to handle variant parameter from URL
-  // This ensures the variant is saved as the first variant when visiting /?variant=page2
-  // The hook will handle saving to localStorage and removing from URL
-  const { variant: posthogVariant } = usePostHogVariant(user?.id);
-  
-  // Check for page2 variant
-  const urlParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
-  const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
-  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
-  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
-  const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
-
   // Check for returnUrl in query params
+  const urlParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
   const returnUrl = urlParams.get("returnUrl");
   const loginUrl = returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : "/login";
-
-  // Get localized prices (with page2 variant support)
-  const currency = detectCurrency();
-  const starterPrice = getLocalizedPrice("starter", currency, isPage2Variant);
-  const proPrice = getLocalizedPrice("pro", currency, isPage2Variant);
-  const premiumPrice = getLocalizedPrice("premium", currency, isPage2Variant);
 
   // Redirect authenticated users to dashboard or returnUrl
   // If user is already authenticated, redirect immediately to avoid showing home page
@@ -599,175 +580,6 @@ export default function Home() {
                 <a href="/login">{t("howItWorks.cta")} →</a>
               </Button>
             </div>
-          </div>
-        </section>
-      </AnimatedSection>
-
-      {/* Pricing Section */}
-      <AnimatedSection>
-        <section id="pricing" className="py-20 bg-card">
-          <div className="container">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">
-                {(() => {
-                  const title = t("pricing.title");
-                  // Match "5x less", "5x menos", "5 volte meno", etc.
-                  const match = title.match(/(.*?)(5x?\s*(?:less|menos|volte\s+meno))(?:\s+than\s+|\s+que\s+|di\s+)(.*)/i);
-                  if (match) {
-                    return (
-                      <>
-                        {match[1]}
-                        <span className="text-green-700">{match[2]}</span>
-                        {match[3] ? ` ${match[3]}` : ""}
-                      </>
-                    );
-                  }
-                  // Fallback: try to find and highlight "5x" pattern
-                  const parts = title.split(/(5x?\s*(?:less|menos|volte\s+meno))/i);
-                  if (parts.length > 1) {
-                    return parts.map((part, idx) => 
-                      /5x?\s*(?:less|menos|volte\s+meno)/i.test(part) ? (
-                        <span key={idx} className="text-green-700">{part}</span>
-                      ) : (
-                        part
-                      )
-                    );
-                  }
-                  return title;
-                })()}
-              </h2>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                {t("pricing.subtitle")}
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {/* Starter Pack */}
-              <AnimatedSection delay={100}>
-                <Card className="p-8 h-full">
-                  <h3 className="text-2xl font-bold mb-2">{t("pricing.plans.starter.name")}</h3>
-                  <p className="text-muted-foreground mb-4">
-                    {isPage2Variant ? "40 photos" : t("pricing.plans.starter.photos")}
-                  </p>
-                  <div className={`text-5xl font-bold mb-2 ${isPage2Variant && starterPrice.oldFormatted ? "flex items-baseline gap-3" : ""}`}>
-                    <span>
-                      {isPage2Variant ? starterPrice.formatted : t("pricing.plans.starter.price")}
-                    </span>
-                    {isPage2Variant && starterPrice.oldFormatted && (
-                      <span className="text-2xl text-muted-foreground line-through font-normal">
-                        {starterPrice.oldFormatted}
-                      </span>
-                    )}
-                    <span className="text-lg text-muted-foreground ml-2">
-                      {t("pricing.plans.starter.currency")}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    {t("pricing.plans.starter.note")}
-                  </p>
-                  <Button asChild className="w-full rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light" size="lg">
-                    <a href="/login">{t("hero.cta")}</a>
-                  </Button>
-                </Card>
-              </AnimatedSection>
-
-              {/* Pro Pack */}
-              <AnimatedSection delay={200}>
-                <Card className="p-8 border-2 border-primary relative h-full">
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    {t("pricing.plans.pro.badge")}
-                  </Badge>
-                  <h3 className="text-2xl font-bold mb-2">{t("pricing.plans.pro.name")}</h3>
-                  <p className="text-muted-foreground mb-4">
-                    {isPage2Variant ? "60 photos" : t("pricing.plans.pro.photos")}
-                  </p>
-                  <div className="flex items-baseline gap-3 mb-2">
-                    <span className="text-5xl font-bold text-primary">
-                      {isPage2Variant ? proPrice.formatted : t("pricing.plans.pro.price")}
-                    </span>
-                    {isPage2Variant && proPrice.oldFormatted ? (
-                      <span className="text-2xl text-muted-foreground line-through font-normal">
-                        {proPrice.oldFormatted}
-                      </span>
-                    ) : !isPage2Variant && (
-                      <span className="text-2xl text-muted-foreground line-through">
-                        {t("pricing.plans.pro.oldPrice")}
-                      </span>
-                    )}
-                    <span className="text-lg text-muted-foreground">
-                      {t("pricing.plans.pro.currency")}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    {t("pricing.plans.pro.note")}
-                  </p>
-                  <Button asChild className="w-full rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light" size="lg">
-                    <a href="/login">{t("hero.cta")}</a>
-                  </Button>
-                </Card>
-              </AnimatedSection>
-
-              {/* Premium Pack */}
-              <AnimatedSection delay={300}>
-                <Card className="p-8 h-full">
-                  <h3 className="text-2xl font-bold mb-2">{t("pricing.plans.premium.name")}</h3>
-                  <p className="text-muted-foreground mb-4">
-                    {isPage2Variant ? "100 photos" : t("pricing.plans.premium.photos")}
-                  </p>
-                  <div className={`text-5xl font-bold mb-2 ${premiumPrice.oldFormatted ? "flex items-baseline gap-3" : ""}`}>
-                    <span>
-                      {premiumPrice.formatted}
-                    </span>
-                    {premiumPrice.oldFormatted && (
-                      <span className="text-2xl text-muted-foreground line-through font-normal">
-                        {premiumPrice.oldFormatted}
-                      </span>
-                    )}
-                    <span className="text-lg text-muted-foreground ml-2">
-                      {t("pricing.plans.premium.currency")}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    {t("pricing.plans.premium.note")}
-                  </p>
-                  <Button asChild className="w-full rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light" size="lg">
-                    <a href="/login">{t("hero.cta")}</a>
-                  </Button>
-                </Card>
-              </AnimatedSection>
-            </div>
-
-            <AnimatedSection delay={400}>
-              <div className="mt-12 max-w-2xl mx-auto">
-                <h3 className="text-2xl font-bold text-center mb-6">
-                  {t("pricing.features.title")}
-                </h3>
-                <ul className="grid md:grid-cols-2 gap-4">
-                  {(() => {
-                    const items = t("pricing.features.items", { returnObjects: true });
-                    const itemsArray = Array.isArray(items) ? items : (typeof items === 'string' ? [items] : []);
-                    return itemsArray.map(
-                      (item, idx) => (
-                        <li key={idx} className="flex gap-3">
-                          <Check className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                          <span>{item}</span>
-                        </li>
-                      )
-                    );
-                  })()}
-                </ul>
-              </div>
-            </AnimatedSection>
-
-            {/* Money-Back Guarantee */}
-            <AnimatedSection delay={500}>
-              <div className="flex items-center justify-center gap-2 pt-6 mt-6 border-t border-border max-w-2xl mx-auto">
-                <ShieldCheck className="w-5 h-5 text-green-500 shrink-0" />
-                <p className="text-sm font-medium text-green-600 dark:text-green-400">
-                  {t("buyCredits.moneyBackGuarantee")}
-                </p>
-              </div>
-            </AnimatedSection>
           </div>
         </section>
       </AnimatedSection>
