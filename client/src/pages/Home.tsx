@@ -9,7 +9,6 @@ import { Star, Check, X, Sparkles, ChevronLeft, ChevronRight, ArrowRight, ArrowD
 import { FAQ } from "@/components/FAQ";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
-import { safeLocalStorage } from "@/utils/localStorage";
 import {
   Carousel,
   CarouselContent,
