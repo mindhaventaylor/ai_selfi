@@ -950,7 +950,14 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
   const [, setLocation] = useLocation();
 
   // Get a mix of example images for display (3 images - top row only)
-  const displayImages = exampleImages.slice(0, 3);
+  // Include a woman in the middle to show the service works for everyone
+  // Man (left), Woman (middle), Man (right)
+  const womanImage = exampleImages.find(img => img.id === 47) || exampleImages.find(img => img.gender === "woman") || exampleImages[1];
+  const displayImages = [
+    exampleImages[0], // First man (id: 1) - left
+    womanImage, // Woman (id: 47) - middle
+    exampleImages[2], // Third man (id: 3) - right
+  ];
 
   return (
     <div className="text-center space-y-6">
@@ -1671,11 +1678,10 @@ function PricingStep({
     const basePriceCentsUSD = PAGE2_PRICES[plan];
     const oldBasePriceCentsUSD = PAGE2_OLD_PRICES[plan];
     
-    // Convert expected price to user's currency if needed
+    // Use same price for EUR as USD (no conversion)
     const currency = detectCurrency();
-    const exchangeRate = currency === "EUR" ? 0.92 : 1.0; // Same as in currency.ts
-    const expectedPriceInCurrencyUSD = Math.round(basePriceCentsUSD * exchangeRate);
-    const oldPriceInCurrencyUSD = Math.round(oldBasePriceCentsUSD * exchangeRate);
+    const expectedPriceInCurrencyUSD = basePriceCentsUSD;
+    const oldPriceInCurrencyUSD = oldBasePriceCentsUSD;
     
     // Removed console.log for production
     

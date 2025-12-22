@@ -404,16 +404,10 @@ export const appRouter = router({
           nodeEnv: process.env.NODE_ENV,
         });
 
-        // Convert price based on currency
-        // Base price is in USD, convert to EUR if needed
+        // Use same price for EUR as USD (no conversion)
         const basePriceUSD = parseFloat(pack.price.toString());
-        let finalPrice = basePriceUSD;
+        const finalPrice = basePriceUSD;
         const currency = input.currency.toLowerCase() as "usd" | "eur";
-        
-        if (currency === "eur") {
-          // Convert USD to EUR (approximate rate: 1 USD = 0.92 EUR)
-          finalPrice = basePriceUSD * 0.92;
-        }
 
         // Create Stripe Checkout Session
         const session = await stripe.checkout.sessions.create({

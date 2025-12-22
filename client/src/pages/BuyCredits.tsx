@@ -497,13 +497,22 @@ export default function BuyCredits() {
     <main className="min-h-screen bg-background">
       <div className={`max-w-7xl mx-auto px-6 py-8 ${isMobile ? "pb-20" : ""}`}>
         {/* Header */}
-        <header className="text-center mb-12">
+        <header className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">{t("buyCredits.title")}</h1>
           <p className="text-lg text-muted-foreground">
             {t("buyCredits.subtitle")}
           </p>
         </header>
 
+        {/* Money-Back Guarantee Banner - Prominent at Top */}
+        <div className="max-w-2xl mx-auto mb-12">
+          <div className="bg-green-500/10 border-2 border-green-500/30 rounded-lg p-4 md:p-6 flex items-center justify-center gap-3 shadow-lg">
+            <ShieldCheck className="w-6 h-6 md:w-8 md:h-8 text-green-500 shrink-0" />
+            <p className="text-base md:text-lg font-semibold text-green-600 dark:text-green-400 text-center">
+              {t("buyCredits.moneyBackGuarantee")}
+            </p>
+          </div>
+        </div>
 
         {/* Pricing Cards */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16" aria-label="Pricing plans">

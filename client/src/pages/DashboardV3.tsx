@@ -44,7 +44,7 @@ type V3StyleCard = {
 // Hero example images (3 images for the hero section)
 const heroExampleImages = [
   "/image_selection/Man/1_man_office_elegant.webp",
-  "/image_selection/Man/8_man_studio_casual.webp",
+  "/image_selection/Woman/2_woman_studio_casual.webp",
   "/image_selection/Man/21_man_city_professional.webp",
 ];
 

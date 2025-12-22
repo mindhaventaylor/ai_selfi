@@ -160,12 +160,8 @@ export function getPage2Price(plan: "basic" | "standard" | "premium", currency?:
 
 // Convert price from USD cents to target currency cents
 export function convertPrice(usdCents: number, currency: Currency): number {
-  if (currency === "USD") {
-    return usdCents;
-  }
-  
-  // Convert to EUR (multiply by exchange rate)
-  return Math.round(usdCents * EXCHANGE_RATES[currency]);
+  // Use same numeric value for EUR as USD (no conversion)
+  return usdCents;
 }
 
 // Format price for display

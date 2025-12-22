@@ -557,7 +557,7 @@
   },
   "buyCredits": {
     "title": "Credits",
-    "subtitle": "Buy credits to create your AI photos.",
+    "subtitle": "You need credits to generate images. Choose a package below. One-time payment.",
     "starterFeatures": [
       "40 photos",
       "Choose Styles and Outfits",

@@ -31,8 +31,8 @@ export default function DashboardV3Welcome() {
             </div>
             <div className="w-full sm:w-[calc(33.333%-0.67rem)] aspect-[3/4] rounded-lg overflow-hidden border border-border">
               <img
-                src="/image_selection/Man/2_man_studio_casual.webp"
-                alt="Professional portrait example 2"
+                src="/image_selection/Woman/2_woman_studio_casual.webp"
+                alt="Professional portrait example - woman"
                 className="w-full h-full object-cover"
               />
             </div>
