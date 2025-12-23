@@ -217,6 +217,122 @@ export default function DashboardV2() {
     }
   }, [user?.credits]); // Run when credits are loaded
 
+  // Restore state after login - check if we have a pending login action
+  const hasProcessedPendingLoginRef = useRef(false);
+  
+  useEffect(() => {
+    // Prevent running multiple times
+    if (hasProcessedPendingLoginRef.current) return;
+    
+    const pendingLogin = safeLocalStorage.getItem("dashboardV2_pendingLogin");
+    const savedFiles = safeLocalStorage.getItem("dashboardV2_uploadedFiles");
+    const savedData = safeLocalStorage.getItem("dashboardV2_formData");
+    
+    if (pendingLogin === "true" && user) {
+      // Mark as processed immediately to prevent re-runs
+      hasProcessedPendingLoginRef.current = true;
+      
+      // User just logged in - restore state and show pricing
+      console.log("[DashboardV2] Detected pending login, restoring state...", { 
+        hasSavedFiles: !!savedFiles, 
+        hasSavedData: !!savedData,
+        userCredits: user.credits 
+      });
+      
+      // Restore form data
+      let formDataParsed: any = {};
+      if (savedData) {
+        try {
+          formDataParsed = JSON.parse(savedData);
+          setFormData({
+            gender: formDataParsed.gender || "",
+            age: formDataParsed.age || "",
+            hairColor: formDataParsed.hairColor || "",
+            hairLength: formDataParsed.hairLength || "",
+            hairStyle: formDataParsed.hairStyle || "",
+            ethnicity: formDataParsed.ethnicity || "",
+            bodyType: formDataParsed.bodyType || "",
+            attire: Array.isArray(formDataParsed.attire) ? formDataParsed.attire : [],
+            backgrounds: Array.isArray(formDataParsed.backgrounds) ? formDataParsed.backgrounds : [],
+            selectedPrice: formDataParsed.selectedPrice || "standard",
+          });
+        } catch (e) {
+          console.error("[DashboardV2] Failed to restore form data:", e);
+        }
+      }
+      
+      // Restore uploaded files and save generation intent
+      if (savedFiles) {
+        try {
+          const parsed = JSON.parse(savedFiles);
+          const restoredFiles: UploadedFile[] = parsed.map((item: any) => {
+            // Convert base64 back to File object
+            const byteString = atob(item.base64.split(',')[1]);
+            const mimeString = item.base64.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+              ia[i] = byteString.charCodeAt(i);
+            }
+            const blob = new Blob([ab], { type: mimeString });
+            const file = new File([blob], item.fileName, { type: mimeString });
+            
+            return {
+              id: item.id,
+              file: file,
+              preview: item.preview || URL.createObjectURL(file),
+            };
+          });
+          
+          setUploadedFiles(restoredFiles);
+          
+          // Save generation intent for auto-generation after payment
+          const userImages = parsed.map((item: any) => ({
+            data: item.base64.split(',')[1], // Remove data:image/...;base64, prefix
+            fileName: item.fileName,
+            contentType: item.base64.split(',')[0].split(':')[1].split(';')[0],
+          }));
+          
+          const generationIntent = {
+            resumeStep: "generate",
+            userImages: userImages,
+            formData: formDataParsed,
+            selectedPrice: formDataParsed.selectedPrice || "standard",
+          };
+          safeLocalStorage.setItem("dashboardV2_generationIntent", JSON.stringify(generationIntent));
+          console.log("[DashboardV2] ✅ Saved generation intent with", userImages.length, "images");
+          
+          // Clear uploaded files from localStorage (now saved in generation intent)
+          safeLocalStorage.removeItem("dashboardV2_uploadedFiles");
+          
+        } catch (e) {
+          console.error("[DashboardV2] Failed to restore uploaded files:", e);
+        }
+      }
+      
+      // Clear the pending login flag
+      safeLocalStorage.removeItem("dashboardV2_pendingLogin");
+      
+      // Also update formData with resumeStep as a fallback
+      const updatedFormData = {
+        ...formDataParsed,
+        resumeStep: "upload",
+        currentStep: "pricing",
+      };
+      safeLocalStorage.setItem("dashboardV2_formData", JSON.stringify(updatedFormData));
+      
+      // If user has no credits, go to pricing step
+      if ((user.credits ?? 0) <= 0) {
+        console.log("[DashboardV2] User has no credits, going to pricing step");
+        setCurrentStep("pricing");
+      } else {
+        // User has credits - stay on upload step (will auto-generate via existing logic)
+        console.log("[DashboardV2] User has credits, staying on upload step");
+        setCurrentStep("upload");
+      }
+    }
+  }, [user]);
+
   // Save progress automatically whenever step or form data changes
   useEffect(() => {
     // Create object with current state
@@ -432,12 +548,24 @@ export default function DashboardV2() {
         // Save to localStorage
         safeLocalStorage.setItem("dashboardV2_uploadedFiles", JSON.stringify(filesToSave));
         
-        // Show login modal - files are already saved, will be restored in onSuccess
+        // Save form data with current step
+        const dataToSave = {
+          ...formData,
+          currentStep: "upload",
+          timestamp: Date.now()
+        };
+        safeLocalStorage.setItem("dashboardV2_formData", JSON.stringify(dataToSave));
+        
+        // Set pending login flag - this will be checked after login to restore state
+        safeLocalStorage.setItem("dashboardV2_pendingLogin", "true");
+        
+        // Show login modal - the useEffect watching `user` will handle restoration after login
         setPendingAction(() => () => handleUploadContinue());
         setShowLoginModal(true);
       } catch (error) {
         console.error("Failed to save uploaded files:", error);
         // Still show login modal even if save fails
+        safeLocalStorage.setItem("dashboardV2_pendingLogin", "true");
         setPendingAction(() => () => handleUploadContinue());
         setShowLoginModal(true);
       }
@@ -983,52 +1111,16 @@ export default function DashboardV2() {
       <LoginModal
         open={showLoginModal}
         onOpenChange={setShowLoginModal}
-        onSuccess={async () => {
-          // First restore uploaded files if they were saved
-          if (uploadedFiles.length === 0) {
-            const savedFiles = safeLocalStorage.getItem("dashboardV2_uploadedFiles");
-            if (savedFiles) {
-              try {
-                const parsed = JSON.parse(savedFiles);
-                const restoredFiles: UploadedFile[] = await Promise.all(
-                  parsed.map(async (item: any) => {
-                    // Convert base64 back to File object
-                    const byteString = atob(item.base64.split(',')[1]);
-                    const mimeString = item.base64.split(',')[0].split(':')[1].split(';')[0];
-                    const ab = new ArrayBuffer(byteString.length);
-                    const ia = new Uint8Array(ab);
-                    for (let i = 0; i < byteString.length; i++) {
-                      ia[i] = byteString.charCodeAt(i);
-                    }
-                    const blob = new Blob([ab], { type: mimeString });
-                    const file = new File([blob], item.fileName, { type: mimeString });
-                    
-                    return {
-                      id: item.id,
-                      file: file,
-                      preview: item.preview || URL.createObjectURL(file),
-                    };
-                  })
-                );
-                
-                setUploadedFiles(restoredFiles);
-                // Clean up localStorage
-                safeLocalStorage.removeItem("dashboardV2_uploadedFiles");
-                
-                // Wait a bit for state to update
-                await new Promise(resolve => setTimeout(resolve, 100));
-              } catch (e) {
-                console.error("Failed to restore uploaded files:", e);
-                safeLocalStorage.removeItem("dashboardV2_uploadedFiles");
-              }
-            }
-          }
+        onSuccess={() => {
+          // Clear pending action - the useEffect watching `user` will handle
+          // restoring files and navigating to pricing step
+          setPendingAction(null);
           
-          // Then execute pending action
-          if (pendingAction) {
-            await pendingAction();
-            setPendingAction(null);
-          }
+          // The useEffect that watches `user` and `dashboardV2_pendingLogin` will:
+          // 1. Restore form data
+          // 2. Restore uploaded files
+          // 3. Save generation intent
+          // 4. Navigate to pricing step if no credits
         }}
       />
     </div>

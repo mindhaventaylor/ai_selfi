@@ -88,6 +88,61 @@ export default function DashboardV3() {
     setCurrency(detectCurrency());
   }, [currentLanguage]);
 
+  // Restore state after login - check if we have a pending action saved
+  useEffect(() => {
+    const savedData = safeLocalStorage.getItem("dashboardV3_formData");
+    const pendingLogin = safeLocalStorage.getItem("dashboardV3_pendingLogin");
+    const generationIntent = safeLocalStorage.getItem("dashboardV3_generationIntent");
+    
+    if (savedData && pendingLogin === "true") {
+      try {
+        const parsed = JSON.parse(savedData);
+        if (parsed.tab) setTab(parsed.tab);
+        if (parsed.selectedExampleImageId) setSelectedExampleImageId(parsed.selectedExampleImageId);
+        if (parsed.customPrompt) setCustomPrompt(parsed.customPrompt);
+        if (parsed.selectedPlan) setSelectedPlan(parsed.selectedPlan);
+        // Restore to create view
+        setView("create");
+        
+        // Restore uploaded file preview from generation intent
+        if (generationIntent && !uploadedFile) {
+          try {
+            const intent = JSON.parse(generationIntent);
+            if (intent.userImageBase64 && intent.fileName) {
+              // Convert base64 back to File and create preview
+              const byteString = atob(intent.userImageBase64);
+              const ab = new ArrayBuffer(byteString.length);
+              const ia = new Uint8Array(ab);
+              for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+              }
+              const blob = new Blob([ab], { type: 'image/jpeg' });
+              const file = new File([blob], intent.fileName, { type: 'image/jpeg' });
+              const preview = URL.createObjectURL(blob);
+              setUploadedFile({ file, preview });
+            }
+          } catch (e) {
+            console.error("[DashboardV3] Failed to restore uploaded file:", e);
+          }
+        }
+        
+        // Clear the pending login flag
+        safeLocalStorage.removeItem("dashboardV3_pendingLogin");
+        
+        // If user is now logged in but has no credits, show pricing modal
+        if (user && (user.credits || 0) < 4) {
+          // Small delay to ensure state is set
+          setTimeout(() => {
+            setShowPricingModal(true);
+          }, 100);
+        }
+      } catch (e) {
+        console.error("[DashboardV3] Failed to restore state after login:", e);
+        safeLocalStorage.removeItem("dashboardV3_pendingLogin");
+      }
+    }
+  }, [user, uploadedFile]); // Re-run when user changes (after login)
+
   // Handle payment cancellation - show toast and restore state
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -462,7 +517,37 @@ export default function DashboardV3() {
     }
 
     if (!user) {
-      // Show login modal instead of toast
+      // Save current state before showing login modal
+      const dataToSave = {
+        variant: "page3",
+        tab,
+        selectedExampleImageId,
+        customPrompt,
+        selectedPlan,
+      };
+      safeLocalStorage.setItem("dashboardV3_formData", JSON.stringify(dataToSave));
+      safeLocalStorage.setItem("dashboardV3_pendingLogin", "true");
+      
+      // Save uploaded file for restoration after login
+      if (uploadedFile?.file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          const base64 = result.split(',')[1];
+          
+          const generationIntent = {
+            resumeStep: "generate",
+            userImageBase64: base64,
+            fileName: uploadedFile.file.name,
+            formData: dataToSave,
+            selectedPrice: selectedPlan,
+          };
+          safeLocalStorage.setItem("dashboardV3_generationIntent", JSON.stringify(generationIntent));
+        };
+        reader.readAsDataURL(uploadedFile.file);
+      }
+      
+      // Show login modal
       setPendingAction(() => () => handleGenerate());
       setShowLoginModal(true);
       return;
@@ -477,9 +562,43 @@ export default function DashboardV3() {
       return;
     }
 
-    // Check credits - if insufficient, show pricing modal
+    // Check credits - if insufficient, save data and show pricing modal
     const creditsNeeded = 4; // 4 images generated
     if ((user.credits || 0) < creditsNeeded) {
+      // Save form data for restoration after payment
+      const dataToSave = {
+        variant: "page3",
+        tab,
+        selectedExampleImageId,
+        customPrompt,
+        selectedPlan,
+      };
+      safeLocalStorage.setItem("dashboardV3_formData", JSON.stringify(dataToSave));
+      
+      // Save generation intent with uploaded file for auto-generation after payment
+      if (uploadedFile?.file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          const base64 = result.split(',')[1];
+          
+          const generationIntent = {
+            resumeStep: "generate",
+            userImageBase64: base64,
+            fileName: uploadedFile.file.name,
+            formData: {
+              tab,
+              selectedExampleImageId,
+              customPrompt,
+              selectedPlan,
+            },
+            selectedPrice: selectedPlan,
+          };
+          safeLocalStorage.setItem("dashboardV3_generationIntent", JSON.stringify(generationIntent));
+        };
+        reader.readAsDataURL(uploadedFile.file);
+      }
+      
       setShowPricingModal(true);
       return;
     }
@@ -999,10 +1118,15 @@ Output should be a vertical rectangle. Entire head should be visible`;
         open={showLoginModal}
         onOpenChange={setShowLoginModal}
         onSuccess={() => {
-          if (pendingAction) {
-            pendingAction();
-            setPendingAction(null);
-          }
+          // Clear pending action - the useEffect watching `user` will handle showing pricing modal
+          setPendingAction(null);
+          
+          // Ensure we stay on create view
+          setView("create");
+          
+          // The useEffect that watches `user` and `dashboardV3_pendingLogin` will:
+          // 1. Restore form state
+          // 2. Show pricing modal if user has no credits
         }}
       />
     </div>
