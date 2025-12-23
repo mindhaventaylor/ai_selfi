@@ -52,6 +52,7 @@ import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 import { safeLocalStorage } from "@/utils/localStorage";
+import { LoginModal } from "@/components/LoginModal";
 
 // menuItems will be created inside component to use translation
 
@@ -80,40 +81,8 @@ export default function DashboardLayout({
     return <DashboardLayoutSkeleton />
   }
 
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
-          <div className="flex flex-col items-center gap-6">
-            <div className="relative group">
-              <div className="relative">
-                <img
-                  src={APP_LOGO}
-                  alt={APP_TITLE}
-                  className="h-20 w-20 rounded-xl object-cover shadow"
-                />
-              </div>
-            </div>
-            <div className="text-center space-y-2">
-              <h1 className="text-2xl font-bold tracking-tight">{APP_TITLE}</h1>
-              <p className="text-sm text-muted-foreground">
-                {t("dashboardLayout.pleaseSignIn")}
-              </p>
-            </div>
-          </div>
-          <Button
-            onClick={() => {
-              window.location.href = "/login";
-            }}
-            size="lg"
-            className="w-full shadow-lg hover:shadow-xl transition-all"
-          >
-            {t("dashboardLayout.signIn")}
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // Allow rendering even without user - login will be required only for payment
+  // The actual dashboard pages will handle their own logic and redirect to login when needed
 
   return (
     <SidebarProvider
@@ -148,6 +117,7 @@ function DashboardLayoutContent({
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const [showLoginModal, setShowLoginModal] = useState(false);
   
   // Check for variant in URL and localStorage
   const urlParams = new URLSearchParams(window.location.search);
@@ -162,11 +132,12 @@ function DashboardLayoutContent({
   const isPage3Variant = variant === "page3" || urlVariant === "page3" || cachedVariant === "page3" || firstVariant === "page3";
   
   // Determine current variant to pass to generate page (normalized)
-  const currentVariant = urlVariant || firstVariant || cachedVariant || variant;
+  // Default to page2 if no variant is found
+  const currentVariant = urlVariant || firstVariant || cachedVariant || variant || "page2";
   const createPath =
     currentVariant === "page3"
       ? "/dashboard?variant=page3"
-      : `/dashboard/generate${currentVariant ? `?variant=${currentVariant}` : ""}`;
+      : `/dashboard/generate?variant=${currentVariant}`;
   
   const allMenuItems = [
     { icon: HelpCircle, label: t("dashboardLayout.startHere"), path: "/dashboard/start" },
@@ -342,29 +313,41 @@ function DashboardLayoutContent({
             {/* User Profile Section */}
             {!isCollapsed && (
               <div className="mt-6 space-y-3">
-                <div 
-                  className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => setLocation("/dashboard/settings/general")}
-                >
-                  <Avatar className="h-12 w-12 border-2 border-border">
-                    <AvatarImage src={user?.avatarUrl || undefined} alt={user?.name || "User"} />
-                    <AvatarFallback className="text-sm font-medium">
-                      {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-                <div 
-                  className="flex items-center gap-2 text-sm cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => {
-                    // If credits are 0, redirect to buy credits page
-                    if ((user?.credits ?? 0) <= 0) {
-                      setLocation("/dashboard/credits/buy");
-                    }
-                  }}
-                >
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">{user?.credits ?? 0} {t("dashboardLayout.creditsLabel")}</span>
-                </div>
+                {user ? (
+                  <>
+                    <div 
+                      className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => setLocation("/dashboard/settings/general")}
+                    >
+                      <Avatar className="h-12 w-12 border-2 border-border">
+                        <AvatarImage src={user?.avatarUrl || undefined} alt={user?.name || "User"} />
+                        <AvatarFallback className="text-sm font-medium">
+                          {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <div 
+                      className="flex items-center gap-2 text-sm cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => {
+                        // If credits are 0, redirect to buy credits page
+                        if ((user?.credits ?? 0) <= 0) {
+                          setLocation("/dashboard/credits/buy");
+                        }
+                      }}
+                    >
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">{user?.credits ?? 0} {t("dashboardLayout.creditsLabel")}</span>
+                    </div>
+                  </>
+                ) : (
+                  <Button
+                    onClick={() => setShowLoginModal(true)}
+                    className="w-full rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                    size="lg"
+                  >
+                    {t("header.signIn")}
+                  </Button>
+                )}
               </div>
             )}
           </SidebarHeader>
@@ -622,16 +605,27 @@ function DashboardLayoutContent({
               <span>{t("dashboardLayout.creditsLabel")}: {user?.credits ?? 0}</span>
             </Button>
 
-            {/* User Avatar */}
-            <Avatar 
-              className="h-9 w-9 border-2 border-border cursor-pointer hover:ring-2 hover:ring-primary transition-all"
-              onClick={() => setLocation("/dashboard/settings/general")}
-            >
-              <AvatarImage src={user?.avatarUrl || undefined} alt={user?.name || "User"} />
-              <AvatarFallback className="text-xs font-medium">
-                {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
-              </AvatarFallback>
-            </Avatar>
+            {/* User Avatar or Login Button */}
+            {user ? (
+              <Avatar 
+                className="h-9 w-9 border-2 border-border cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                onClick={() => setLocation("/dashboard/settings/general")}
+              >
+                <AvatarImage src={user?.avatarUrl || undefined} alt={user?.name || "User"} />
+                <AvatarFallback className="text-xs font-medium">
+                  {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <Button
+                onClick={() => setShowLoginModal(true)}
+                variant="default"
+                size="sm"
+                className="rounded-full shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 bg-gradient-to-r from-primary to-primary/90 hover:from-primary hover:to-primary border-0 px-6 font-semibold"
+              >
+                {t("header.signIn")}
+              </Button>
+            )}
             </div>
           </div>
         </div>
@@ -653,6 +647,12 @@ function DashboardLayoutContent({
         )}
         <main className="flex-1">{children}</main>
       </SidebarInset>
+
+      {/* Login Modal */}
+      <LoginModal
+        open={showLoginModal}
+        onOpenChange={setShowLoginModal}
+      />
     </>
   );
 }

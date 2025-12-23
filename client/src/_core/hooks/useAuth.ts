@@ -33,6 +33,8 @@ export function useAuth(options?: UseAuthOptions) {
     },
   });
 
+  const syncSessionMutation = trpc.auth.syncSession.useMutation();
+
   const logout = useCallback(async () => {
     try {
       // Sign out from Supabase first (this clears Supabase's localStorage items)
@@ -96,6 +98,71 @@ export function useAuth(options?: UseAuthOptions) {
     }
   }, []);
 
+  const signInWithEmail = useCallback(async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        console.error("[Auth] Sign in with email error:", error);
+        throw error;
+      }
+
+      if (data?.session?.access_token) {
+        // Sync session with server
+        await syncSessionMutation.mutateAsync({
+          accessToken: data.session.access_token,
+        });
+        
+        // Refresh user data
+        await utils.auth.me.invalidate();
+      }
+      
+      return data;
+    } catch (err) {
+      console.error("[Auth] Sign in with email failed:", err);
+      throw err;
+    }
+  }, [utils, syncSessionMutation]);
+
+  const signUpWithEmail = useCallback(async (email: string, password: string, name?: string) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/oauth/callback`,
+          data: {
+            name: name || email.split('@')[0],
+          },
+        },
+      });
+      
+      if (error) {
+        console.error("[Auth] Sign up with email error:", error);
+        throw error;
+      }
+
+      // If user is created and session is available (email confirmation disabled)
+      if (data?.session?.access_token) {
+        // Sync session with server
+        await syncSessionMutation.mutateAsync({
+          accessToken: data.session.access_token,
+        });
+        
+        // Refresh user data
+        await utils.auth.me.invalidate();
+      }
+      
+      return data;
+    } catch (err) {
+      console.error("[Auth] Sign up with email failed:", err);
+      throw err;
+    }
+  }, [utils, syncSessionMutation]);
+
   const state = useMemo(() => {
     // Safely write to localStorage with error handling
     // This prevents crashes when localStorage is full, disabled, or in private browsing
@@ -148,5 +215,7 @@ export function useAuth(options?: UseAuthOptions) {
     refresh: () => meQuery.refetch(),
     logout,
     signIn,
+    signInWithEmail,
+    signUpWithEmail,
   };
 }

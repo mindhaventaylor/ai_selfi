@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useIsMobile } from "@/hooks/useMobile";
+import { LoginModal } from "@/components/LoginModal";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -71,6 +72,8 @@ export default function DashboardV3() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [currency, setCurrency] = useState<Currency>(detectCurrency());
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
   // Mutations
   const uploadImagesMutation = trpc.model.uploadTrainingImages.useMutation();
@@ -307,6 +310,55 @@ export default function DashboardV3() {
   const handlePurchase = async () => {
     if (isProcessingPayment || isLoadingPacks) return;
     
+    // Check if user is authenticated before proceeding to payment
+    if (!user) {
+      // Save current state and redirect to login
+      const currentPath = window.location.pathname + window.location.search;
+      const params = new URLSearchParams(window.location.search);
+      const returnUrl = `${currentPath.split("?")[0]}?${params.toString()}`;
+      
+      // Save form data to resume after login
+      const dataToSave = {
+        variant: "page3",
+        tab,
+        selectedExampleImageId,
+        customPrompt,
+        selectedPlan,
+      };
+      safeLocalStorage.setItem("dashboardV3_formData", JSON.stringify(dataToSave));
+      
+      // Save uploaded file if exists
+      if (uploadedFile?.file) {
+        const reader = new FileReader();
+        const base64Data = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => {
+            const result = reader.result as string;
+            const base64 = result.split(',')[1];
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(uploadedFile.file);
+        });
+        
+        const generationIntent = {
+          resumeStep: "purchase",
+          userImageBase64: base64Data,
+          fileName: uploadedFile.file.name,
+          formData: {
+            tab,
+            selectedExampleImageId,
+            customPrompt,
+            selectedPlan,
+          },
+          selectedPrice: selectedPlan,
+        };
+        safeLocalStorage.setItem("dashboardV3_generationIntent", JSON.stringify(generationIntent));
+      }
+      
+      setLocation(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+      return;
+    }
+    
     const packId = getPackIdByPlan(selectedPlan);
     if (!packId) {
       toast.error(t("dashboardV3.create.errors.packNotFound"));
@@ -410,7 +462,9 @@ export default function DashboardV3() {
     }
 
     if (!user) {
-      toast.error(t("dashboardV3.create.errors.loginFirst"));
+      // Show login modal instead of toast
+      setPendingAction(() => () => handleGenerate());
+      setShowLoginModal(true);
       return;
     }
 
@@ -939,6 +993,18 @@ Output should be a vertical rectangle. Entire head should be visible`;
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Login Modal */}
+      <LoginModal
+        open={showLoginModal}
+        onOpenChange={setShowLoginModal}
+        onSuccess={() => {
+          if (pendingAction) {
+            pendingAction();
+            setPendingAction(null);
+          }
+        }}
+      />
     </div>
   );
 }

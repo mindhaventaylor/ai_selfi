@@ -60,6 +60,7 @@ import { safeLocalStorage } from "@/utils/localStorage";
 
 import DashboardV2 from "./DashboardV2";
 import DashboardV3 from "./DashboardV3";
+import { LoginModal } from "@/components/LoginModal";
 
 export default function GenerateImages() {
   // ALL HOOKS MUST BE CALLED FIRST, before any conditional returns
@@ -112,6 +113,8 @@ export default function GenerateImages() {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [completedImages, setCompletedImages] = useState(0);
   const [generatedImages, setGeneratedImages] = useState<Array<{ id: number; url: string; status: string }>>([]);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastBatchStatusRef = useRef<string | null>(null); // Track last batch status to avoid unnecessary updates
@@ -1597,7 +1600,9 @@ export default function GenerateImages() {
   // Handle generation with page2 data (auto-called)
   const handleGenerateWithPage2Data = async (data: any, exampleImage: any) => {
     if (!user?.id) {
-      toast.error(t("generateImages.userNotAuthenticated"));
+      // Show login modal instead of toast
+      setPendingAction(() => () => handleGenerateWithPage2Data(data, exampleImage));
+      setShowLoginModal(true);
       return;
     }
 
@@ -2852,6 +2857,18 @@ Output should be a vertical rectangle. Entire head should be visible`;
         </div>
         );
       })()}
+
+      {/* Login Modal */}
+      <LoginModal
+        open={showLoginModal}
+        onOpenChange={setShowLoginModal}
+        onSuccess={() => {
+          if (pendingAction) {
+            pendingAction();
+            setPendingAction(null);
+          }
+        }}
+      />
     </div>
   );
 }

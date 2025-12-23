@@ -42,11 +42,30 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
 
   if (!isUnauthorized) return;
 
-  const currentPath = window.location.pathname + window.location.search;
+  // Don't redirect if user is on public dashboard routes (they should be able to browse without login)
+  const currentPath = window.location.pathname;
+  const publicDashboardRoutes = [
+    "/dashboard",
+    "/dashboard/generate",
+    "/dashboard/start",
+    "/dashboard/pro",
+    "/dashboard/credits/buy",
+  ];
+  
+  const isPublicRoute = publicDashboardRoutes.some(route => 
+    currentPath === route || currentPath.startsWith(route + "/") || currentPath.startsWith(route + "?")
+  );
+  
+  if (isPublicRoute) {
+    // Don't redirect from public dashboard routes - user can browse without login
+    return;
+  }
+
+  const fullPath = window.location.pathname + window.location.search;
   const params = new URLSearchParams(window.location.search);
   const variant = params.get("variant");
   
-  let redirectUrl = `/?returnUrl=${encodeURIComponent(currentPath)}`;
+  let redirectUrl = `/?returnUrl=${encodeURIComponent(fullPath)}`;
   if (variant) {
     redirectUrl += `&variant=${variant}`;
   }

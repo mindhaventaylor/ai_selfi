@@ -93,6 +93,14 @@ export default function BuyCredits() {
       return;
     }
 
+    // Check if user is authenticated before proceeding to payment
+    if (!user) {
+      // Redirect to login with returnUrl
+      const currentPath = window.location.pathname + window.location.search;
+      setLocation(`/login?returnUrl=${encodeURIComponent(currentPath)}`);
+      return;
+    }
+
     try {
       setLoadingPackId(packId);
       
@@ -334,6 +342,14 @@ export default function BuyCredits() {
   // Auto-buy when plan parameter is present and packs are loaded
   useEffect(() => {
     if (planParam && !isLoadingPacks && packs && packs.length > 0 && !autoBuyRef.current) {
+      // Check if user is authenticated before proceeding to payment
+      if (!user) {
+        // Redirect to login with returnUrl
+        const currentPath = window.location.pathname + window.location.search;
+        setLocation(`/login?returnUrl=${encodeURIComponent(currentPath)}`);
+        return;
+      }
+      
       const targetPackId = getPackIdByPlan(planParam);
       
       if (targetPackId) {
@@ -371,7 +387,7 @@ export default function BuyCredits() {
         toast.error(t("buyCredits.packNotFound"));
       }
     }
-  }, [planParam, isLoadingPacks, packs, starterPackId, proPackId, premiumPackId, currency, createCheckoutMutation, t]);
+  }, [planParam, isLoadingPacks, packs, starterPackId, proPackId, premiumPackId, currency, createCheckoutMutation, t, user, setLocation]);
 
   // Debug: log packs with detailed information (AFTER fallback mapping)
   useEffect(() => {
