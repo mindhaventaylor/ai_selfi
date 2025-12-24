@@ -87,6 +87,9 @@ export default function Home() {
   const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
   const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
   const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
+  
+  // Get the active variant value for dashboard navigation
+  const activeVariant = urlVariant || posthogVariant || cachedVariant || firstVariant;
 
   // Check for returnUrl in query params
   const returnUrl = urlParams.get("returnUrl");
@@ -313,7 +316,11 @@ export default function Home() {
                 size="lg"
                 className="text-lg px-10 py-7 bg-primary hover:bg-primary/90 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow"
               >
-                <a href="/login">{t("hero.cta")}</a>
+                <a href={
+                  isPage2Variant 
+                    ? (activeVariant ? `/dashboard?variant=${activeVariant}` : "/dashboard")
+                    : "/login"
+                }>{t("hero.cta")}</a>
               </Button>
             </div>
 
