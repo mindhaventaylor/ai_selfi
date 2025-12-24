@@ -11,9 +11,10 @@ interface LoginModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  variant?: "page2" | "page3";
 }
 
-export function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
+export function LoginModal({ open, onOpenChange, onSuccess, variant }: LoginModalProps) {
   const { t } = useTranslation();
   const { user, loading, signIn, signInWithFacebook, signInWithEmail, signUpWithEmail } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
@@ -26,11 +27,18 @@ export function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
   const [emailError, setEmailError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Check for variant in URL if not provided as prop
+  const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const urlVariant = urlParams.get("variant") as "page2" | "page3" | null;
+  const effectiveVariant = variant || urlVariant;
+  const isVariant2Or3 = effectiveVariant === "page2" || effectiveVariant === "page3";
+
   // Close modal and call onSuccess when user is authenticated
   useEffect(() => {
     if (!loading && user && open) {
       // Reset form state
-      setIsEmailMode(false);
+      // For variant 2/3, keep email mode enabled, otherwise reset
+      setIsEmailMode(isVariant2Or3);
       setIsSignUp(false);
       setEmail("");
       setPassword("");
@@ -50,7 +58,7 @@ export function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
         }, 200);
       }
     }
-  }, [user, loading, open, onOpenChange, onSuccess]);
+  }, [user, loading, open, onOpenChange, onSuccess, isVariant2Or3]);
 
   const handleSignIn = async () => {
     try {
@@ -82,23 +90,62 @@ export function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
       return;
     }
 
-    if (isSignUp && !name.trim()) {
+    // For variants 2 and 3, don't require name field
+    if (isSignUp && !isVariant2Or3 && !name.trim()) {
       setEmailError(t("login.nameRequired"));
       return;
     }
 
     setIsProcessing(true);
-    try {
-      if (isSignUp) {
-        await signUpWithEmail(email, password, name.trim() || undefined);
-      } else {
+    
+    // For variants 2 and 3: try sign in first, if fails try sign up (auto-create)
+    if (isVariant2Or3) {
+      try {
         await signInWithEmail(email, password);
+        // Sign in succeeded, onSuccess will be called via useEffect when user is set
+        // Don't set isProcessing to false here - let useEffect handle it when user is set
+      } catch (signInError: any) {
+        // If sign in fails, try to create account (user might not exist)
+        console.log("Sign in failed, attempting to create account:", signInError);
+        try {
+          // Try sign up without name (name will be derived from email)
+          await signUpWithEmail(email, password);
+          // Sign up succeeded, onSuccess will be called via useEffect when user is set
+          // Don't set isProcessing to false here - let useEffect handle it when user is set
+        } catch (signUpError: any) {
+          // Sign up failed - this could mean:
+          // 1. User already exists (password was wrong)
+          // 2. Some other error
+          const errorMessage = signUpError?.message || signInError?.message || t("login.signInError");
+          // Check if error indicates user already exists
+          const isUserExistsError = errorMessage.toLowerCase().includes("already") || 
+                                   errorMessage.toLowerCase().includes("registered") ||
+                                   errorMessage.toLowerCase().includes("exists");
+          
+          if (isUserExistsError) {
+            // User exists but password was wrong - show appropriate error
+            setEmailError(t("login.signInError") || "Invalid email or password");
+          } else {
+            // Other error from sign up
+            setEmailError(errorMessage);
+          }
+          setIsProcessing(false);
+        }
       }
-      // onSuccess will be called via useEffect when user is set
-    } catch (error: any) {
-      console.error("Email auth error:", error);
-      setEmailError(error?.message || (isSignUp ? t("login.signUpError") : t("login.signInError")));
-      setIsProcessing(false);
+    } else {
+      // Original behavior for other variants
+      try {
+        if (isSignUp) {
+          await signUpWithEmail(email, password, name.trim() || undefined);
+        } else {
+          await signInWithEmail(email, password);
+        }
+        // onSuccess will be called via useEffect when user is set
+      } catch (error: any) {
+        console.error("Email auth error:", error);
+        setEmailError(error?.message || (isSignUp ? t("login.signUpError") : t("login.signInError")));
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -116,7 +163,7 @@ export function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
         </DialogHeader>
 
         <div className="space-y-4 mt-4">
-          {!isEmailMode ? (
+          {!isEmailMode && !isVariant2Or3 ? (
             <>
               <Button
                 onClick={handleSignIn}
@@ -189,7 +236,8 @@ export function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
             </>
           ) : (
             <form onSubmit={handleEmailAuth} className="space-y-4">
-              {isSignUp && (
+              {/* Only show name field for sign up in non-variant 2/3 flows */}
+              {isSignUp && !isVariant2Or3 && (
                 <div className="space-y-2">
                   <label htmlFor="name" className="text-sm font-medium">
                     {t("login.name")}
@@ -248,36 +296,42 @@ export function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
               >
                 {isProcessing
                   ? t("login.processing")
-                  : isSignUp
+                  : isSignUp && !isVariant2Or3
                   ? t("login.signUp")
                   : t("login.signIn")}
               </Button>
-              <div className="flex items-center justify-center gap-2">
-                <button
+              {/* Only show sign up toggle for non-variant 2/3 flows */}
+              {!isVariant2Or3 && (
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSignUp(!isSignUp);
+                      setEmailError("");
+                    }}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {isSignUp ? t("login.alreadyHaveAccount") : t("login.dontHaveAccount")}
+                  </button>
+                </div>
+              )}
+              {/* Only show back button for non-variant 2/3 flows */}
+              {!isVariant2Or3 && (
+                <Button
                   type="button"
                   onClick={() => {
-                    setIsSignUp(!isSignUp);
+                    setIsEmailMode(false);
                     setEmailError("");
+                    setEmail("");
+                    setPassword("");
+                    setName("");
                   }}
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  variant="ghost"
+                  className="w-full text-sm"
                 >
-                  {isSignUp ? t("login.alreadyHaveAccount") : t("login.dontHaveAccount")}
-                </button>
-              </div>
-              <Button
-                type="button"
-                onClick={() => {
-                  setIsEmailMode(false);
-                  setEmailError("");
-                  setEmail("");
-                  setPassword("");
-                  setName("");
-                }}
-                variant="ghost"
-                className="w-full text-sm"
-              >
-                {t("login.backToGoogle") || "Back to sign in options"}
-              </Button>
+                  {t("login.backToGoogle") || "Back to sign in options"}
+                </Button>
+              )}
             </form>
           )}
         </div>

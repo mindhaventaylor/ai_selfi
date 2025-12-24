@@ -1128,6 +1128,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
           // 1. Restore form state
           // 2. Show pricing modal if user has no credits
         }}
+        variant="page3"
       />
     </div>
   );

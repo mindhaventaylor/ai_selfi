@@ -2868,6 +2868,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
             setPendingAction(null);
           }
         }}
+        variant={isPage2Variant ? "page2" : isPage3Variant ? "page3" : undefined}
       />
     </div>
   );

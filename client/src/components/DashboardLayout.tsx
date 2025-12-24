@@ -652,6 +652,7 @@ function DashboardLayoutContent({
       <LoginModal
         open={showLoginModal}
         onOpenChange={setShowLoginModal}
+        variant={isPage2Variant ? "page2" : isPage3Variant ? "page3" : undefined}
       />
     </>
   );

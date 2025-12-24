@@ -1122,6 +1122,7 @@ export default function DashboardV2() {
           // 3. Save generation intent
           // 4. Navigate to pricing step if no credits
         }}
+        variant="page2"
       />
     </div>
   );
