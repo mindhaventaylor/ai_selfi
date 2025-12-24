@@ -636,7 +636,7 @@ export default function Home() {
 
             <div className="text-center">
               <Button asChild size="lg" className="text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">
-                <a href="/login">{t("howItWorks.cta")} →</a>
+                <a href="/dashboard">{t("howItWorks.cta")} →</a>
               </Button>
             </div>
           </div>
@@ -706,7 +706,7 @@ export default function Home() {
                     {t("pricing.plans.starter.note")}
                   </p>
                   <Button asChild className="w-full rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light" size="lg">
-                    <a href="/login">{t("hero.cta")}</a>
+                    <a href="/dashboard">{t("hero.cta")}</a>
                   </Button>
                 </Card>
               </AnimatedSection>
@@ -742,7 +742,7 @@ export default function Home() {
                     {t("pricing.plans.pro.note")}
                   </p>
                   <Button asChild className="w-full rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light" size="lg">
-                    <a href="/login">{t("hero.cta")}</a>
+                    <a href="/dashboard">{t("hero.cta")}</a>
                   </Button>
                 </Card>
               </AnimatedSection>
@@ -771,7 +771,7 @@ export default function Home() {
                     {t("pricing.plans.premium.note")}
                   </p>
                   <Button asChild className="w-full rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light" size="lg">
-                    <a href="/login">{t("hero.cta")}</a>
+                    <a href="/dashboard">{t("hero.cta")}</a>
                   </Button>
                 </Card>
               </AnimatedSection>
@@ -847,7 +847,7 @@ export default function Home() {
                   size="lg"
                   className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
-                  <a href={loginUrl}>
+                  <a href="/dashboard">
                     {t("ctaSection.button")}
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </a>

@@ -8,15 +8,16 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { exampleImages } from "@/data/exampleImages";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { safeLocalStorage } from "@/utils/localStorage";
 
 export default function PaymentSuccess() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
-  const { refresh: refreshUser } = useAuth();
+  const { refresh: refreshUser, user, loading: authLoading } = useAuth();
   
   // Check for generation intent immediately
-  const hasV2Intent = typeof window !== "undefined" && !!localStorage.getItem("dashboardV2_generationIntent");
-  const hasV3Intent = typeof window !== "undefined" && !!localStorage.getItem("dashboardV3_generationIntent");
+  const hasV2Intent = typeof window !== "undefined" && !!safeLocalStorage.getItem("dashboardV2_generationIntent");
+  const hasV3Intent = typeof window !== "undefined" && !!safeLocalStorage.getItem("dashboardV3_generationIntent");
   const hasAnyGenerationIntent = hasV2Intent || hasV3Intent;
   
   const [hasPage2FormData, setHasPage2FormData] = useState(false);
@@ -57,24 +58,55 @@ export default function PaymentSuccess() {
   useEffect(() => {
     if (hasProcessedGeneration.current) return;
     
-    const generationIntentV2 = localStorage.getItem("dashboardV2_generationIntent");
-    const generationIntentV3 = localStorage.getItem("dashboardV3_generationIntent");
+    // Wait for auth to load before processing
+    if (authLoading) {
+      console.log("[PaymentSuccess] Waiting for auth to load...");
+      return;
+    }
+    
+    // If user is not authenticated, wait a bit and refresh
+    if (!user) {
+      console.log("[PaymentSuccess] User not authenticated, refreshing...");
+      refreshUser();
+      // Wait a bit and try again
+      const timeout = setTimeout(() => {
+        if (!user) {
+          console.error("[PaymentSuccess] User still not authenticated after refresh");
+          setIsProcessing(false);
+        }
+      }, 2000);
+      return () => clearTimeout(timeout);
+    }
+    
+    const generationIntentV2 = safeLocalStorage.getItem("dashboardV2_generationIntent");
+    const generationIntentV3 = safeLocalStorage.getItem("dashboardV3_generationIntent");
+    
+    console.log("[PaymentSuccess] Checking for generation intents:", {
+      hasV2Intent: !!generationIntentV2,
+      hasV3Intent: !!generationIntentV3,
+      sessionId,
+      userId: user?.id,
+      userCredits: user?.credits,
+    });
     
     // If no generation intent, just show normal success page
     if (!generationIntentV2 && !generationIntentV3) {
+      console.log("[PaymentSuccess] No generation intent found, showing normal success page");
       setIsProcessing(false);
       
-      const savedData = localStorage.getItem("dashboardV2_formData");
+      const savedData = safeLocalStorage.getItem("dashboardV2_formData");
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData);
           if (parsed.resumeStep === "upload") {
             setHasPage2FormData(true);
           }
-        } catch (e) {}
+        } catch (e) {
+          console.error("[PaymentSuccess] Failed to parse V2 form data:", e);
+        }
       }
       
-      const savedDataV3 = localStorage.getItem("dashboardV3_formData");
+      const savedDataV3 = safeLocalStorage.getItem("dashboardV3_formData");
       if (savedDataV3) {
         setHasPage3FormData(true);
       }
@@ -224,8 +256,8 @@ Output should be a vertical rectangle. Entire head should be visible`;
           });
 
           // Clear saved data
-          localStorage.removeItem("dashboardV3_generationIntent");
-          localStorage.removeItem("dashboardV3_formData");
+          safeLocalStorage.removeItem("dashboardV3_generationIntent");
+          safeLocalStorage.removeItem("dashboardV3_formData");
           
           if (result.batchId) {
             window.location.href = `/dashboard/generate?variant=page3&batchId=${result.batchId}`;
@@ -282,8 +314,8 @@ Output should be a vertical rectangle. Entire head should be visible`;
           });
 
           // Clear saved data
-          localStorage.removeItem("dashboardV2_generationIntent");
-          localStorage.removeItem("dashboardV2_formData");
+          safeLocalStorage.removeItem("dashboardV2_generationIntent");
+          safeLocalStorage.removeItem("dashboardV2_formData");
           
           if (result.batchId) {
             window.location.href = `/dashboard/generate?variant=page2&batchId=${result.batchId}`;
@@ -306,7 +338,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
     };
     
     processPaymentAndGenerate();
-  }, [sessionId, verifyPaymentMutation, generateFromPage2Mutation, uploadPage2ImagesMutation, uploadImagesMutation, generateMutation, setLocation, t, refreshUser]);
+  }, [sessionId, verifyPaymentMutation, generateFromPage2Mutation, uploadPage2ImagesMutation, uploadImagesMutation, generateMutation, setLocation, t, refreshUser, user, authLoading]);
 
   const handleContinue = () => {
     if (isProcessing) return;
