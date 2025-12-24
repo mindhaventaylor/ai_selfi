@@ -81,12 +81,14 @@ export default function Home() {
   // The hook will handle saving to localStorage and removing from URL
   const { variant: posthogVariant } = usePostHogVariant(user?.id);
   
-  // Check for page2 variant
+  // Check for page2 and page3 variants
   const urlParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
-  const urlVariant = urlParams.get("variant") as "page1" | "page2" | null;
-  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | null;
-  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | null;
+  const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
+  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
+  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | null;
   const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
+  const isPage3Variant = posthogVariant === "page3" || urlVariant === "page3" || cachedVariant === "page3" || firstVariant === "page3";
+  const isPage2Or3Variant = isPage2Variant || isPage3Variant;
   
   // Get the active variant value for dashboard navigation
   const activeVariant = urlVariant || posthogVariant || cachedVariant || firstVariant;
@@ -317,7 +319,7 @@ export default function Home() {
                 className="text-lg px-10 py-7 bg-primary hover:bg-primary/90 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow"
               >
                 <a href={
-                  isPage2Variant 
+                  isPage2Or3Variant 
                     ? (activeVariant ? `/dashboard?variant=${activeVariant}` : "/dashboard")
                     : "/login"
                 }>{t("hero.cta")}</a>
