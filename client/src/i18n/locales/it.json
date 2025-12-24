@@ -10,10 +10,13 @@
     "tools": "Strumenti"
   },
   "hero": {
-    "badge": "+25k foto generate",
-    "title": "Foto professionali in minuti, non giorni",
-    "subtitle": "Dimentica il fotografo. Carica i tuoi selfie e ricevi ritratti pronti per LinkedIn, CV o il tuo brand personale.",
-    "cta": "Crea le tue foto ora",
+    "badge": "1.2 milioni+ foto generate",
+    "checkmark1": "Pagamento unico. Nessun abbonamento",
+    "checkmark2": "Risultati in 5 minuti",
+    "checkmark3": "Garanzia di rimborso al 100%",
+    "title": "Risparmia la tariffa studio di $500. Headshot professionali in minuti.",
+    "subtitle": "Trasformiamo i tuoi selfie casuali in **headshot professionali di alta qualità** utilizzando IA specializzata. Ottieni il look da studio senza appuntamento: **un pagamento semplice**, consegna istantanea e foto che ti assomigliano autenticamente.",
+    "cta": "Ottieni i miei headshot professionali",
     "guarantee": "Garanzia di rimborso completo"
   },
   "examples": {

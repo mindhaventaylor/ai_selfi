@@ -42,6 +42,31 @@ function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; d
   );
 }
 
+function parseMarkdownBold(text: string): React.ReactNode {
+  const parts: React.ReactNode[] = [];
+  const regex = /\*\*(.*?)\*\*/g;
+  let lastIndex = 0;
+  let match;
+  let key = 0;
+
+  while ((match = regex.exec(text)) !== null) {
+    // Add text before the match
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index));
+    }
+    // Add the bold text
+    parts.push(<strong key={key++}>{match[1]}</strong>);
+    lastIndex = regex.lastIndex;
+  }
+
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : text;
+}
+
 export default function Home() {
   const { t } = useTranslation();
   const { user, loading } = useAuth();
@@ -126,7 +151,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Hero Section */}
-      <section className="relative min-h-screen overflow-hidden pt-7 pb-20 lg:py-20">
+      <section className="relative min-h-screen overflow-hidden pt-7 pb-20 lg:py-20 px-4 sm:px-6">
         {/* Floating Images Container - Desktop */}
         <div className="absolute inset-0 w-full h-full hidden lg:block pointer-events-none">
           {/* Left Side Images */}
@@ -278,7 +303,7 @@ export default function Home() {
 
             {/* Subtitle */}
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
-              {t("hero.subtitle")}
+              {parseMarkdownBold(t("hero.subtitle"))}
             </p>
 
             {/* CTA Button */}
@@ -288,20 +313,35 @@ export default function Home() {
                 size="lg"
                 className="text-lg px-10 py-7 bg-primary hover:bg-primary/90 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow"
               >
-                <a href="/dashboard">{t("hero.cta")} ✨</a>
+                <a href="/login">{t("hero.cta")}</a>
               </Button>
-              <p className="text-sm text-muted-foreground">{t("hero.guarantee")}</p>
+            </div>
+
+            {/* Checkmarks - Single Component */}
+            <div className="flex items-center justify-center gap-4 md:gap-6 lg:gap-8 mt-8 md:mt-10 bg-secondary/30 backdrop-blur-sm px-6 py-6 md:py-8 rounded-2xl border border-border/50">
+              <div className="flex items-center gap-2">
+                <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                <span className="text-sm md:text-base font-medium">{t("hero.checkmark1")}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                <span className="text-sm md:text-base font-medium">{t("hero.checkmark2")}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                <span className="text-sm md:text-base font-medium">{t("hero.checkmark3")}</span>
+              </div>
             </div>
           </div>
 
           {/* Mobile - Simple Grid */}
-          <div className="grid grid-cols-2 gap-4 lg:hidden max-w-md mx-auto mt-12">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:hidden max-w-md mx-auto mt-12 px-4">
             {["/image.webp", "/image_1.webp", "/image_10.webp", "/image_100.webp"].map((img, idx) => (
               <div
                 key={idx}
                 className="aspect-[3/4] rounded-2xl overflow-hidden shadow-xl"
                 style={{
-                  transform: `rotate(${idx % 2 === 0 ? "-3deg" : "3deg"})`,
+                  transform: `rotate(${idx % 2 === 0 ? "-2deg" : "2deg"})`,
                 }}
               >
                 <OptimizedImage src={img} alt={t("home.altText.aiProfessionalPhoto")} className="w-full h-full object-cover" />
@@ -777,6 +817,16 @@ export default function Home() {
 
       {/* CTA Section - Boost Personal Brand */}
       <AnimatedSection>
+        <style>{`
+          @media (min-width: 768px) {
+            .cta-image-left {
+              transform: rotate(-6deg);
+            }
+            .cta-image-right {
+              transform: rotate(6deg);
+            }
+          }
+        `}</style>
         <section className="py-14 bg-gray-900">
           <div className="container max-w-7xl mx-auto px-4">
             <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -832,49 +882,52 @@ export default function Home() {
               </div>
 
               {/* Right Side - Overlapping Photos in Arc Pattern (Symmetrical) */}
-              <div className="relative h-[480px] md:h-[560px]">
-                {/* Left Photo - Man in Suit (Bottom, Left, With Increased Negative Angle) */}
-                <div
-                  className="absolute bottom-0 left-0 md:bottom-0 md:left-0 w-64 md:w-80 h-80 md:h-[480px] rounded-2xl overflow-hidden shadow-2xl"
-                  style={{
-                    transform: "rotate(-6deg)",
-                    zIndex: 1,
-                  }}
-                >
-                  <OptimizedImage
-                    src="/similar_human2.webp"
-                    alt={t("home.altText.professionalPhotoNumber", { number: 1 })}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+              {/* Mobile: Stack vertically as single component */}
+              {/* Desktop: Overlapping arc pattern */}
+              <div className="flex flex-col md:relative md:h-[560px] items-center md:items-start">
+                {/* Container for images - works as single component */}
+                <div className="flex flex-col md:absolute md:inset-0 gap-4 md:gap-0 w-full max-w-sm md:max-w-none">
+                  {/* Left Photo - Man in Suit (Bottom, Left, With Increased Negative Angle) */}
+                  <div
+                    className="cta-image-left w-full md:w-64 lg:w-80 aspect-[3/4] md:aspect-auto md:h-80 lg:h-[480px] rounded-2xl overflow-hidden shadow-2xl md:absolute md:bottom-0 md:left-0"
+                    style={{
+                      zIndex: 1,
+                    }}
+                  >
+                    <OptimizedImage
+                      src="/similar_human2.webp"
+                      alt={t("home.altText.professionalPhotoNumber", { number: 1 })}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
 
-                {/* Center Photo - Woman (Higher Up, On Top of Left, Middle, No Angle, Straight) */}
-                <div
-                  className="absolute -top-4 left-40 md:-top-8 md:left-56 w-64 md:w-80 h-80 md:h-[480px] rounded-2xl overflow-hidden shadow-2xl"
-                  style={{
-                    zIndex: 2,
-                  }}
-                >
-                  <OptimizedImage
-                    src="/image_1.webp"
-                    alt={t("home.altText.professionalPhotoNumber", { number: 2 })}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                  {/* Center Photo - Woman (Higher Up, On Top of Left, Middle, No Angle, Straight) */}
+                  <div
+                    className="w-full md:w-64 lg:w-80 aspect-[3/4] md:aspect-auto md:h-80 lg:h-[480px] rounded-2xl overflow-hidden shadow-2xl md:absolute md:-top-8 md:left-56"
+                    style={{
+                      zIndex: 2,
+                    }}
+                  >
+                    <OptimizedImage
+                      src="/image_1.webp"
+                      alt={t("home.altText.professionalPhotoNumber", { number: 2 })}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
 
-                {/* Right Photo - Third Image (Foreground, Right, With Increased Positive Angle - Mirrored) */}
-                <div
-                  className="absolute bottom-0 -right-20 md:bottom-0 md:-right-32 w-64 md:w-80 h-80 md:h-[480px] rounded-2xl overflow-hidden shadow-2xl"
-                  style={{
-                    transform: "rotate(6deg)",
-                    zIndex: 3,
-                  }}
-                >
-                  <OptimizedImage
-                    src="/image_10.webp"
-                    alt={t("home.altText.professionalPhotoNumber", { number: 3 })}
-                    className="w-full h-full object-cover"
-                  />
+                  {/* Right Photo - Third Image (Foreground, Right, With Increased Positive Angle - Mirrored) */}
+                  <div
+                    className="cta-image-right w-full md:w-64 lg:w-80 aspect-[3/4] md:aspect-auto md:h-80 lg:h-[480px] rounded-2xl overflow-hidden shadow-2xl md:absolute md:bottom-0 md:-right-32"
+                    style={{
+                      zIndex: 3,
+                    }}
+                  >
+                    <OptimizedImage
+                      src="/image_10.webp"
+                      alt={t("home.altText.professionalPhotoNumber", { number: 3 })}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
