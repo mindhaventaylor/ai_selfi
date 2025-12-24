@@ -62,15 +62,16 @@ export function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
     }
   };
 
-  const handleSignInWithFacebook = async () => {
-    try {
-      setIsSigningInWithFacebook(true);
-      await signInWithFacebook();
-    } catch (error) {
-      console.error("Facebook sign in error:", error);
-      setIsSigningInWithFacebook(false);
-    }
-  };
+  // COMMENTED OUT: Facebook authentication pending Meta approval
+  // const handleSignInWithFacebook = async () => {
+  //   try {
+  //     setIsSigningInWithFacebook(true);
+  //     await signInWithFacebook();
+  //   } catch (error) {
+  //     console.error("Facebook sign in error:", error);
+  //     setIsSigningInWithFacebook(false);
+  //   }
+  // };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,7 +150,8 @@ export function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
                   </>
                 )}
               </Button>
-              <Button
+              {/* COMMENTED OUT: Facebook button - pending Meta approval for 2FA */}
+              {/* <Button
                 onClick={handleSignInWithFacebook}
                 disabled={isSigningIn || isSigningInWithFacebook}
                 className="w-full h-12 text-base font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-[#1877F2] hover:bg-[#166FE5] text-white"
@@ -165,7 +167,7 @@ export function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
                     {t("login.signInWithFacebook")}
                   </>
                 )}
-              </Button>
+              </Button> */}
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
