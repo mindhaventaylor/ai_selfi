@@ -1,7 +1,7 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { usePostHogVariant } from "@/hooks/usePostHogVariant";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Fragment } from "react";
 import type React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -156,7 +156,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Hero Section */}
-      <section className="relative min-h-screen overflow-hidden pt-7 pb-20 lg:py-20 px-4 sm:px-6">
+      <section className="relative min-h-[85vh] lg:min-h-[80vh] overflow-hidden pt-7 pb-20 lg:py-20 px-4 sm:px-6">
         {/* Floating Images Container - Desktop */}
         <div className="absolute inset-0 w-full h-full hidden lg:block pointer-events-none">
           {/* Left Side Images */}
@@ -360,11 +360,66 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Stats Bar */}
+      <section className="py-8 md:py-12 bg-gray-50 dark:bg-gray-900 border-y border-border">
+        <div className="container max-w-7xl mx-auto px-4">
+          <div className="flex flex-wrap justify-center items-center gap-6 md:gap-8">
+            {/* Stat 1: Photos Generated */}
+            <div className="text-center flex-1 min-w-[140px] md:min-w-0 md:flex-none">
+              <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-2">
+                1.2M+
+              </div>
+              <div className="text-sm md:text-base text-muted-foreground">
+                Photos generated
+              </div>
+            </div>
+
+            {/* Vertical Separator */}
+            <div className="hidden md:block w-px h-16 bg-border"></div>
+
+            {/* Stat 2: LinkedIn Profile Views */}
+            <div className="text-center flex-1 min-w-[140px] md:min-w-0 md:flex-none">
+              <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-2">
+                21x
+              </div>
+              <div className="text-sm md:text-base text-muted-foreground">
+                More LinkedIn profile views
+              </div>
+            </div>
+
+            {/* Vertical Separator */}
+            <div className="hidden md:block w-px h-16 bg-border"></div>
+
+            {/* Stat 3: Saved in Studio Fees */}
+            <div className="text-center flex-1 min-w-[140px] md:min-w-0 md:flex-none">
+              <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-2">
+                $10M+
+              </div>
+              <div className="text-sm md:text-base text-muted-foreground">
+                Saved in studio fees
+              </div>
+            </div>
+
+            {/* Vertical Separator */}
+            <div className="hidden md:block w-px h-16 bg-border"></div>
+
+            {/* Stat 4: Average Delivery Time */}
+            <div className="text-center flex-1 min-w-[140px] md:min-w-0 md:flex-none">
+              <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-2">
+                &lt; 6 Min
+              </div>
+              <div className="text-sm md:text-base text-muted-foreground">
+                Average delivery time
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
             {/* Reviews Section */}
-            <div id="testimonials" className="mb-16 max-w-7xl mx-auto scroll-mt-20">
+            <div id="testimonials" className="pt-12 md:pt-16 lg:pt-20 mb-16 md:mb-20 lg:mb-24 max-w-7xl mx-auto scroll-mt-20">
                   {/* Section Title */}
-              <div className="text-center mb-8">
+              <div className="text-center mb-8 md:mb-12">
                     <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
                       {t("home.testimonialsTitlePart1")}{" "}
                       <span className="text-blue-400">{t("home.testimonialsTitleProfessional")}</span>{" "}
@@ -597,6 +652,99 @@ export default function Home() {
 
 
 
+
+      {/* As Seen On Company Carousel */}
+      <div className="py-10 md:py-14 overflow-hidden bg-gradient-to-b from-gray-50/50 to-gray-100/30 dark:from-gray-900/50 dark:to-gray-800/30 border-y border-border/50">
+        <div className="container">
+          <style>{`
+            @keyframes scroll {
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(-50%);
+              }
+            }
+            .animate-scroll {
+              animation: scroll 30s linear infinite;
+            }
+            .animate-scroll:hover {
+              animation-play-state: paused;
+            }
+          `}</style>
+          <div className="flex items-center gap-4 md:gap-6 lg:gap-8 pb-2">
+            {/* As seen on text */}
+            <div className="flex items-center gap-3 flex-shrink-0 px-4 py-2 rounded-lg bg-background/80 backdrop-blur-sm border border-border/50 shadow-sm">
+              <span className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+                As seen on
+              </span>
+            </div>
+            
+            {/* Scrolling Companies Container */}
+            <div className="flex-1 overflow-hidden relative">
+              {/* Gradient fade effects on edges */}
+              <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-gray-50/50 dark:from-gray-900/50 to-transparent z-10 pointer-events-none"></div>
+              <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-gray-50/50 dark:from-gray-900/50 to-transparent z-10 pointer-events-none"></div>
+              <div className="flex items-center gap-4 md:gap-6 lg:gap-8 animate-scroll opacity-70 hover:opacity-100 transition-opacity duration-300">
+                {/* First set of companies */}
+                {[
+                  { name: "LinkedIn", icon: Linkedin, iconColor: "text-[#0077b5]" },
+                  { name: "TechCrunch" },
+                  { name: "Forbes" },
+                  { name: "The Verge" },
+                  { name: "Product Hunt" },
+                  { name: "Wired" },
+                  { name: "Fast Company" },
+                  { name: "Inc." },
+                  { name: "Entrepreneur" },
+                  { name: "Business Insider" },
+                ].map((company, idx) => (
+                  <Fragment key={`first-${idx}`}>
+                    {idx > 0 && <div className="w-px h-8 bg-border/60 flex-shrink-0"></div>}
+                    <div className="flex items-center gap-2 flex-shrink-0 px-3 py-1.5 rounded-md hover:bg-background/50 transition-colors duration-200">
+                      {company.icon && (
+                        <company.icon className={`w-5 h-5 md:w-6 md:h-6 ${company.iconColor || 'text-foreground/80'} transition-colors duration-200`} />
+                      )}
+                      <span className="text-sm md:text-base font-semibold text-foreground/80 hover:text-foreground whitespace-nowrap transition-colors duration-200">
+                        {company.name}
+                      </span>
+                    </div>
+                  </Fragment>
+                ))}
+                
+                {/* Divider between sets */}
+                <div className="w-px h-8 bg-border/60 flex-shrink-0"></div>
+                
+                {/* Duplicate set for seamless loop */}
+                {[
+                  { name: "LinkedIn", icon: Linkedin, iconColor: "text-[#0077b5]" },
+                  { name: "TechCrunch" },
+                  { name: "Forbes" },
+                  { name: "The Verge" },
+                  { name: "Product Hunt" },
+                  { name: "Wired" },
+                  { name: "Fast Company" },
+                  { name: "Inc." },
+                  { name: "Entrepreneur" },
+                  { name: "Business Insider" },
+                ].map((company, idx) => (
+                  <Fragment key={`second-${idx}`}>
+                    {idx > 0 && <div className="w-px h-8 bg-border/60 flex-shrink-0"></div>}
+                    <div className="flex items-center gap-2 flex-shrink-0 px-3 py-1.5 rounded-md hover:bg-background/50 transition-colors duration-200">
+                      {company.icon && (
+                        <company.icon className={`w-5 h-5 md:w-6 md:h-6 ${company.iconColor || 'text-foreground/80'} transition-colors duration-200`} />
+                      )}
+                      <span className="text-sm md:text-base font-semibold text-foreground/80 hover:text-foreground whitespace-nowrap transition-colors duration-200">
+                        {company.name}
+                      </span>
+                    </div>
+                  </Fragment>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* How It Works Section */}
       <AnimatedSection>
