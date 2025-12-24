@@ -650,70 +650,70 @@ Output should be a vertical rectangle. Entire head should be visible`;
       <div className={cn("mx-auto w-full px-4", isMobile ? "max-w-md pt-4 pb-8" : "max-w-6xl py-8")}>
         <div className={cn(!isMobile && "grid grid-cols-12 gap-10")}>
           
-          {/* LEFT COLUMN: Upload */}
-          <div className={cn(!isMobile && "col-span-5 lg:col-span-4")}>
-            <div className={cn(!isMobile && "sticky top-24")}>
-              {!isMobile && (
+          {/* LEFT COLUMN: Upload (Desktop only, or Mobile after controls) */}
+          {!isMobile && (
+            <div className={cn("col-span-5 lg:col-span-4")}>
+              <div className={cn("sticky top-24")}>
                 <div className="mb-6">
                   <h2 className="text-2xl font-bold">{t("dashboardV3.create.uploadTitle")}</h2>
                   <p className="text-muted-foreground mt-1">
                     {t("dashboardV3.create.uploadSubtitle")}
                   </p>
                 </div>
-              )}
-              
-              {/* Upload Section */}
-              <div 
-                className={cn(
-                  "relative w-full rounded-2xl border-2 border-dashed transition-all overflow-hidden cursor-pointer",
-                  isDragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
-                  isMobile ? "h-[16svh] min-h-[100px] max-h-[140px]" : "aspect-[3/4] max-h-[500px]"
-                )}
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => handleFileSelect(e.target.files)}
-                />
+                
+                {/* Upload Section */}
+                <div 
+                  className={cn(
+                    "relative w-full rounded-2xl border-2 border-dashed transition-all overflow-hidden cursor-pointer",
+                    isDragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
+                    "aspect-[3/4] max-h-[500px]"
+                  )}
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleFileSelect(e.target.files)}
+                  />
 
-                {uploadedFile ? (
-                  <div className="relative w-full h-full flex items-center justify-center p-2">
-                    <img
-                      src={uploadedFile.preview}
-                      alt="Upload"
-                      className="h-full max-h-full w-auto max-w-full object-cover rounded-xl"
-                    />
-                    <button
-                      type="button"
-                      onClick={removeFile}
-                      className="absolute top-2 right-2 h-8 w-8 rounded-full bg-background/90 border border-border shadow flex items-center justify-center hover:bg-background transition-colors"
-                      aria-label="Remove image"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-                    <div className={cn("rounded-full bg-primary/10 flex items-center justify-center mb-4", isMobile ? "w-10 h-10" : "w-16 h-16")}>
-                      <Upload className={cn("text-primary", isMobile ? "h-5 w-5" : "h-8 w-8")} />
+                  {uploadedFile ? (
+                    <div className="relative w-full h-full flex items-center justify-center p-2">
+                      <img
+                        src={uploadedFile.preview}
+                        alt="Upload"
+                        className="h-full max-h-full w-auto max-w-full object-cover rounded-xl"
+                      />
+                      <button
+                        type="button"
+                        onClick={removeFile}
+                        className="absolute top-2 right-2 h-8 w-8 rounded-full bg-background/90 border border-border shadow flex items-center justify-center hover:bg-background transition-colors"
+                        aria-label="Remove image"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
                     </div>
-                    <h3 className={cn("font-semibold mb-1", isMobile ? "text-sm" : "text-lg")}>
-                      {isMobile ? t("dashboardV3.create.dragUpload") : t("dashboardV3.create.dragDrop")}
-                    </h3>
-                    <p className="text-xs text-muted-foreground max-w-[200px]">
-                      {t("dashboardV3.create.supportInfo")}
-                    </p>
-                  </div>
-                )}
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
+                      <div className={cn("rounded-full bg-primary/10 flex items-center justify-center mb-4", "w-16 h-16")}>
+                        <Upload className={cn("text-primary", "h-8 w-8")} />
+                      </div>
+                      <h3 className={cn("font-semibold mb-1", "text-lg")}>
+                        {t("dashboardV3.create.dragDrop")}
+                      </h3>
+                      <p className="text-xs text-muted-foreground max-w-[200px]">
+                        {t("dashboardV3.create.supportInfo")}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* RIGHT COLUMN: Controls */}
           <div className={cn(!isMobile && "col-span-7 lg:col-span-8 space-y-8")}>
@@ -847,6 +847,62 @@ Output should be a vertical rectangle. Entire head should be visible`;
                   </div>
                 )}
               </div>
+
+              {/* Mobile Upload Section - appears above generate button */}
+              {isMobile && (
+                <div className="mt-6">
+                  {/* Upload Section */}
+                  <div 
+                    className={cn(
+                      "relative w-full rounded-2xl border-2 border-dashed transition-all overflow-hidden cursor-pointer",
+                      isDragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
+                      "h-[16svh] min-h-[100px] max-h-[140px]"
+                    )}
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleFileSelect(e.target.files)}
+                    />
+
+                    {uploadedFile ? (
+                      <div className="relative w-full h-full flex items-center justify-center p-2">
+                        <img
+                          src={uploadedFile.preview}
+                          alt="Upload"
+                          className="h-full max-h-full w-auto max-w-full object-cover rounded-xl"
+                        />
+                        <button
+                          type="button"
+                          onClick={removeFile}
+                          className="absolute top-2 right-2 h-8 w-8 rounded-full bg-background/90 border border-border shadow flex items-center justify-center hover:bg-background transition-colors"
+                          aria-label="Remove image"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
+                        <div className={cn("rounded-full bg-primary/10 flex items-center justify-center mb-4", "w-10 h-10")}>
+                          <Upload className={cn("text-primary", "h-5 w-5")} />
+                        </div>
+                        <h3 className={cn("font-semibold mb-1", "text-sm")}>
+                          {t("dashboardV3.create.dragDrop")}
+                        </h3>
+                        <p className="text-xs text-muted-foreground max-w-[200px]">
+                          {t("dashboardV3.create.supportInfo")}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <Button 
                 size="lg" 
