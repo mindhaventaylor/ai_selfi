@@ -42,6 +42,31 @@ function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; d
   );
 }
 
+function parseMarkdownBold(text: string): React.ReactNode {
+  const parts: React.ReactNode[] = [];
+  const regex = /\*\*(.*?)\*\*/g;
+  let lastIndex = 0;
+  let match;
+  let key = 0;
+
+  while ((match = regex.exec(text)) !== null) {
+    // Add text before the match
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index));
+    }
+    // Add the bold text
+    parts.push(<strong key={key++}>{match[1]}</strong>);
+    lastIndex = regex.lastIndex;
+  }
+
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : text;
+}
+
 export default function Home() {
   const { t } = useTranslation();
   const { user, loading } = useAuth();
@@ -278,7 +303,7 @@ export default function Home() {
 
             {/* Subtitle */}
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
-              {t("hero.subtitle")}
+              {parseMarkdownBold(t("hero.subtitle"))}
             </p>
 
             {/* CTA Button */}
@@ -288,7 +313,7 @@ export default function Home() {
                 size="lg"
                 className="text-lg px-10 py-7 bg-primary hover:bg-primary/90 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow"
               >
-                <a href="/login">{t("hero.cta")} ✨</a>
+                <a href="/login">{t("hero.cta")}</a>
               </Button>
               <p className="text-sm text-muted-foreground">{t("hero.guarantee")}</p>
             </div>
