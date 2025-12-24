@@ -98,6 +98,30 @@ export function useAuth(options?: UseAuthOptions) {
     }
   }, []);
 
+  const signInWithFacebook = useCallback(async () => {
+    // Use the current origin to ensure we redirect back to localhost in development
+    const redirectUrl = `${window.location.origin}/oauth/callback`;
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'facebook',
+        options: {
+          redirectTo: redirectUrl,
+          // Skip browser redirect and handle it manually if needed
+          skipBrowserRedirect: false,
+        },
+      });
+      
+      if (error) {
+        console.error("[Auth] Facebook sign in error:", error);
+        throw error;
+      }
+    } catch (err) {
+      console.error("[Auth] Facebook sign in failed:", err);
+      throw err;
+    }
+  }, []);
+
   const signInWithEmail = useCallback(async (email: string, password: string) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -215,6 +239,7 @@ export function useAuth(options?: UseAuthOptions) {
     refresh: () => meQuery.refetch(),
     logout,
     signIn,
+    signInWithFacebook,
     signInWithEmail,
     signUpWithEmail,
   };

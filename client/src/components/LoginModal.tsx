@@ -15,8 +15,9 @@ interface LoginModalProps {
 
 export function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
   const { t } = useTranslation();
-  const { user, loading, signIn, signInWithEmail, signUpWithEmail } = useAuth();
+  const { user, loading, signIn, signInWithFacebook, signInWithEmail, signUpWithEmail } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isSigningInWithFacebook, setIsSigningInWithFacebook] = useState(false);
   const [isEmailMode, setIsEmailMode] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
@@ -37,6 +38,7 @@ export function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
       setEmailError("");
       setIsProcessing(false);
       setIsSigningIn(false);
+      setIsSigningInWithFacebook(false);
       
       // Close modal
       onOpenChange(false);
@@ -57,6 +59,16 @@ export function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
     } catch (error) {
       console.error("Sign in error:", error);
       setIsSigningIn(false);
+    }
+  };
+
+  const handleSignInWithFacebook = async () => {
+    try {
+      setIsSigningInWithFacebook(true);
+      await signInWithFacebook();
+    } catch (error) {
+      console.error("Facebook sign in error:", error);
+      setIsSigningInWithFacebook(false);
     }
   };
 
@@ -107,7 +119,7 @@ export function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
             <>
               <Button
                 onClick={handleSignIn}
-                disabled={isSigningIn}
+                disabled={isSigningIn || isSigningInWithFacebook}
                 className="w-full h-12 text-base font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
                 size="lg"
               >
@@ -134,6 +146,23 @@ export function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
                       />
                     </svg>
                     {t("login.signInWithGoogle")}
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={handleSignInWithFacebook}
+                disabled={isSigningIn || isSigningInWithFacebook}
+                className="w-full h-12 text-base font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-[#1877F2] hover:bg-[#166FE5] text-white"
+                size="lg"
+              >
+                {isSigningInWithFacebook ? (
+                  t("login.redirecting")
+                ) : (
+                  <>
+                    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                    {t("login.signInWithFacebook")}
                   </>
                 )}
               </Button>
@@ -245,7 +274,7 @@ export function LoginModal({ open, onOpenChange, onSuccess }: LoginModalProps) {
                 variant="ghost"
                 className="w-full text-sm"
               >
-                {t("login.backToGoogle")}
+                {t("login.backToGoogle") || "Back to sign in options"}
               </Button>
             </form>
           )}

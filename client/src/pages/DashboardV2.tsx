@@ -1983,7 +1983,44 @@ function PricingStep({
     try {
       // Check if we have a generation intent (user came from upload step with no credits)
       // If so, ensure it's preserved and updated with selected price before redirecting to checkout
-      const existingIntent = safeLocalStorage.getItem("dashboardV2_generationIntent");
+      let existingIntent = safeLocalStorage.getItem("dashboardV2_generationIntent");
+      
+      // If no generation intent exists, try to create one from saved files in localStorage
+      if (!existingIntent) {
+        console.log("[DashboardV2 PricingStep] No generation intent found, checking for saved files...");
+        const savedFiles = safeLocalStorage.getItem("dashboardV2_uploadedFiles");
+        
+        if (savedFiles) {
+          try {
+            const parsed = JSON.parse(savedFiles);
+            // Convert saved files to userImages format for generation intent
+            const userImages = parsed.map((item: any) => ({
+              data: item.base64.split(',')[1], // Remove data:image/...;base64, prefix
+              fileName: item.fileName,
+              contentType: item.base64.split(',')[0].split(':')[1].split(';')[0],
+            }));
+            
+            const newIntent = {
+              resumeStep: "generate",
+              userImages: userImages,
+              formData: {
+                ...formData,
+                selectedPrice: plan,
+              },
+              selectedPrice: plan,
+            };
+            safeLocalStorage.setItem("dashboardV2_generationIntent", JSON.stringify(newIntent));
+            existingIntent = JSON.stringify(newIntent);
+            console.log("[DashboardV2 PricingStep] ✅ Created generation intent from saved files with", userImages.length, "images");
+          } catch (e) {
+            console.error("[DashboardV2 PricingStep] Failed to create generation intent from saved files:", e);
+          }
+        } else {
+          console.warn("[DashboardV2 PricingStep] ⚠️ No generation intent and no saved files found!");
+        }
+      }
+      
+      // Update existing intent with selected price
       if (existingIntent) {
         try {
           const intent = JSON.parse(existingIntent);
@@ -1997,14 +2034,18 @@ function PricingStep({
             },
           };
           safeLocalStorage.setItem("dashboardV2_generationIntent", JSON.stringify(updatedIntent));
-          console.log("[DashboardV2 PricingStep] Updated generation intent with selected price:", plan);
+          console.log("[DashboardV2 PricingStep] ✅ Updated generation intent with selected price:", plan);
         } catch (e) {
           console.error("[DashboardV2 PricingStep] Failed to update generation intent:", e);
         }
+      } else {
+        console.error("[DashboardV2 PricingStep] ❌ Cannot proceed without generation intent!");
+        toast.error("Failed to save image data. Please try uploading again.");
+        setIsProcessing(false);
+        return;
       }
       
       // Save form data to localStorage so we can resume after purchase
-      // User will continue to upload step after payment (not generate, since files aren't uploaded yet)
       const dataToSave = {
         ...formData,
         selectedPrice: plan,
