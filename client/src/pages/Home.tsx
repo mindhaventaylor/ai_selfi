@@ -1296,7 +1296,7 @@ export default function Home() {
                 <ul className="space-y-3 text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span>{t("comparison.aiselfie.item1") || "Starting at $29 - 5x cheaper"}</span>
+                    <span>{t("comparison.aiselfie.item1") || "Starting at $5 - 100x cheaper"}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
