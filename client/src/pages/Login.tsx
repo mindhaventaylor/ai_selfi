@@ -23,7 +23,7 @@ export default function Login() {
   const [, setLocation] = useLocation(); // Only need setLocation, not location
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [isEmailMode, setIsEmailMode] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(true); // Default to sign up since most users won't have an account
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -427,6 +427,7 @@ export default function Login() {
                     type="button"
                     onClick={() => {
                       setIsEmailMode(false);
+                      setIsSignUp(true); // Reset to sign up mode when going back
                       setEmailError("");
                       setEmail("");
                       setPassword("");
@@ -455,7 +456,10 @@ export default function Login() {
                   </div>
                 </div>
                 <Button
-                  onClick={() => setIsEmailMode(true)}
+                  onClick={() => {
+                    setIsEmailMode(true);
+                    setIsSignUp(true); // Default to sign up mode
+                  }}
                   variant="outline"
                   className="w-full h-12 text-base font-semibold rounded-full"
                   size="lg"
