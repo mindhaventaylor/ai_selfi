@@ -5,7 +5,7 @@ import React, { useEffect, useState, Fragment, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Check, X, Sparkles, ChevronLeft, ChevronRight, ArrowRight, ArrowDown, Quote, ShieldCheck, Lock, Zap, Users, Award, Clock, TrendingUp, Eye, LockKeyhole, BadgeCheck } from "lucide-react";
+import { Star, Check, X, Sparkles, ChevronLeft, ChevronRight, ArrowRight, ArrowDown, Quote, ShieldCheck, Lock, Zap, Users, Award, Clock, TrendingUp, Eye, LockKeyhole, BadgeCheck, Globe, Rocket, Cpu, Building, Lightbulb, Briefcase, Newspaper } from "lucide-react";
 import { FAQ } from "@/components/FAQ";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
@@ -238,7 +238,7 @@ export default function Home() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative min-h-[70vh] sm:min-h-[75vh] lg:min-h-[80vh] overflow-hidden pt-7 pb-24 lg:pb-20 px-4 sm:px-6">
+      <section className="relative min-h-0 sm:min-h-[75vh] lg:min-h-[80vh] overflow-hidden pt-7 pb-8 sm:pb-24 lg:pb-20 px-4 sm:px-6">
         {/* Floating Images Container - Desktop */}
         <div className="absolute inset-0 w-full h-full hidden lg:block pointer-events-none">
           {/* Left Side Images */}
@@ -424,9 +424,112 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Choose Us Section - Trust Building */}
+      {/* As Seen On Company Carousel */}
+      <div className="py-3 md:py-4 overflow-hidden bg-gradient-to-b from-gray-50/50 to-gray-100/30 dark:from-gray-900/50 dark:to-gray-800/30 border-y border-border/50">
+        <div className="container">
+          {/* Section Title */}
+          <div className="text-center mb-4 md:mb-8">
+            <h2 className="text-lg md:text-xl font-semibold text-muted-foreground uppercase tracking-wider">
+              As seen on
+            </h2>
+          </div>
+          
+          <style>{`
+            @keyframes scroll {
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(-50%);
+              }
+            }
+            .animate-scroll {
+              animation: scroll 15s linear infinite;
+            }
+            .animate-scroll:hover {
+              animation-play-state: paused;
+            }
+            .animate-scroll.paused {
+              animation-play-state: paused;
+            }
+          `}</style>
+          
+          {/* Scrolling Companies Container */}
+          <div className="overflow-hidden relative">
+            {/* Gradient fade effects on edges */}
+            <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-gray-50/50 dark:from-gray-900/50 to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-gray-50/50 dark:from-gray-900/50 to-transparent z-10 pointer-events-none"></div>
+            <div 
+              className="flex items-center gap-4 md:gap-6 lg:gap-8 animate-scroll opacity-70 hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+              onClick={(e) => {
+                const target = e.currentTarget;
+                target.classList.toggle('paused');
+              }}
+              title="Click to pause/resume"
+            >
+                {/* First set of companies */}
+                {[
+                  { name: "LinkedIn", icon: Linkedin, iconColor: "text-[#0077b5]" },
+                  { name: "TechCrunch", icon: Zap, iconColor: "text-[#02b350]" },
+                  { name: "Forbes", icon: TrendingUp, iconColor: "text-foreground" },
+                  { name: "The Verge", icon: Globe, iconColor: "text-[#ff005a]" },
+                  { name: "Product Hunt", icon: Rocket, iconColor: "text-[#da552f]" },
+                  { name: "Wired", icon: Cpu, iconColor: "text-foreground" },
+                  { name: "Fast Company", icon: Zap, iconColor: "text-foreground" },
+                  { name: "Inc.", icon: Building, iconColor: "text-foreground" },
+                  { name: "Entrepreneur", icon: Lightbulb, iconColor: "text-foreground" },
+                  { name: "Business Insider", icon: Briefcase, iconColor: "text-foreground" },
+                ].map((company, idx) => (
+                  <Fragment key={`first-${idx}`}>
+                    {idx > 0 && <div className="w-px h-8 bg-border/60 flex-shrink-0"></div>}
+                    <div className="flex items-center gap-2 flex-shrink-0 px-3 py-1.5 rounded-md hover:bg-background/50 transition-colors duration-200">
+                      {company.icon && (
+                        <company.icon className={`w-5 h-5 md:w-6 md:h-6 ${company.iconColor || 'text-foreground/80'} transition-colors duration-200`} />
+                      )}
+                      <span className="text-sm md:text-base font-semibold text-foreground/80 hover:text-foreground whitespace-nowrap transition-colors duration-200">
+                        {company.name}
+                      </span>
+                    </div>
+                  </Fragment>
+                ))}
+                
+                {/* Divider between sets */}
+                <div className="w-px h-8 bg-border/60 flex-shrink-0"></div>
+                
+                {/* Duplicate set for seamless loop */}
+                {[
+                  { name: "LinkedIn", icon: Linkedin, iconColor: "text-[#0077b5]" },
+                  { name: "TechCrunch", icon: Zap, iconColor: "text-[#02b350]" },
+                  { name: "Forbes", icon: TrendingUp, iconColor: "text-foreground" },
+                  { name: "The Verge", icon: Globe, iconColor: "text-[#ff005a]" },
+                  { name: "Product Hunt", icon: Rocket, iconColor: "text-[#da552f]" },
+                  { name: "Wired", icon: Cpu, iconColor: "text-foreground" },
+                  { name: "Fast Company", icon: Zap, iconColor: "text-foreground" },
+                  { name: "Inc.", icon: Building, iconColor: "text-foreground" },
+                  { name: "Entrepreneur", icon: Lightbulb, iconColor: "text-foreground" },
+                  { name: "Business Insider", icon: Briefcase, iconColor: "text-foreground" },
+                ].map((company, idx) => (
+                  <Fragment key={`second-${idx}`}>
+                    {idx > 0 && <div className="w-px h-8 bg-border/60 flex-shrink-0"></div>}
+                    <div className="flex items-center gap-2 flex-shrink-0 px-3 py-1.5 rounded-md hover:bg-background/50 transition-colors duration-200">
+                      {company.icon && (
+                        <company.icon className={`w-5 h-5 md:w-6 md:h-6 ${company.iconColor || 'text-foreground/80'} transition-colors duration-200`} />
+                      )}
+                      <span className="text-sm md:text-base font-semibold text-foreground/80 hover:text-foreground whitespace-nowrap transition-colors duration-200">
+                        {company.name}
+                      </span>
+                    </div>
+                  </Fragment>
+                ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 
+      Why Choose Us Section - Trust Building
       <AnimatedSection>
-        <section className="py-12 sm:py-16 md:py-20 pb-20 sm:pb-16 md:pb-20 bg-background">
+        <section className="py-8 sm:py-16 md:py-20 pb-8 sm:pb-16 md:pb-20 bg-background">
           <div className="container max-w-7xl mx-auto px-4">
             <div className="text-center mb-10 sm:mb-12 md:mb-16">
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4">
@@ -438,7 +541,6 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-              {/* Feature 1: Fast Delivery */}
               <AnimatedSection delay={100}>
                 <Card className="p-6 h-full text-center border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
@@ -453,7 +555,6 @@ export default function Home() {
                 </Card>
               </AnimatedSection>
 
-              {/* Feature 2: Privacy & Security */}
               <AnimatedSection delay={200}>
                 <Card className="p-6 h-full text-center border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
@@ -468,7 +569,6 @@ export default function Home() {
                 </Card>
               </AnimatedSection>
 
-              {/* Feature 3: Quality Guarantee */}
               <AnimatedSection delay={300}>
                 <Card className="p-6 h-full text-center border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
@@ -483,7 +583,6 @@ export default function Home() {
                 </Card>
               </AnimatedSection>
 
-              {/* Feature 4: Money Back */}
               <AnimatedSection delay={400}>
                 <Card className="p-6 h-full text-center border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
@@ -501,6 +600,7 @@ export default function Home() {
           </div>
         </section>
       </AnimatedSection>
+      */}
 
             {/* Reviews Section - Reduced padding on mobile */}
             <div id="testimonials" className="pt-8 sm:pt-12 md:pt-16 lg:pt-20 mb-12 sm:mb-16 md:mb-20 lg:mb-24 pb-20 sm:pb-16 md:pb-20 lg:pb-24 max-w-7xl mx-auto px-4 scroll-mt-20">
@@ -736,111 +836,6 @@ export default function Home() {
               </div>
                     </div>
 
-
-
-
-      {/* As Seen On Company Carousel */}
-      <div className="py-12 md:py-16 overflow-hidden bg-gradient-to-b from-gray-50/50 to-gray-100/30 dark:from-gray-900/50 dark:to-gray-800/30 border-y border-border/50">
-        <div className="container">
-          {/* Section Title */}
-          <div className="text-center mb-6 md:mb-8">
-            <h2 className="text-lg md:text-xl font-semibold text-muted-foreground uppercase tracking-wider">
-              As seen on
-            </h2>
-          </div>
-          
-          <style>{`
-            @keyframes scroll {
-              0% {
-                transform: translateX(0);
-              }
-              100% {
-                transform: translateX(-50%);
-              }
-            }
-            .animate-scroll {
-              animation: scroll 15s linear infinite;
-            }
-            .animate-scroll:hover {
-              animation-play-state: paused;
-            }
-            .animate-scroll.paused {
-              animation-play-state: paused;
-            }
-          `}</style>
-          
-          {/* Scrolling Companies Container */}
-          <div className="overflow-hidden relative">
-            {/* Gradient fade effects on edges */}
-            <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-gray-50/50 dark:from-gray-900/50 to-transparent z-10 pointer-events-none"></div>
-            <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-gray-50/50 dark:from-gray-900/50 to-transparent z-10 pointer-events-none"></div>
-            <div 
-              className="flex items-center gap-4 md:gap-6 lg:gap-8 animate-scroll opacity-70 hover:opacity-100 transition-opacity duration-300 cursor-pointer"
-              onClick={(e) => {
-                const target = e.currentTarget;
-                target.classList.toggle('paused');
-              }}
-              title="Click to pause/resume"
-            >
-                {/* First set of companies */}
-                {[
-                  { name: "LinkedIn", icon: Linkedin, iconColor: "text-[#0077b5]" },
-                  { name: "TechCrunch" },
-                  { name: "Forbes" },
-                  { name: "The Verge" },
-                  { name: "Product Hunt" },
-                  { name: "Wired" },
-                  { name: "Fast Company" },
-                  { name: "Inc." },
-                  { name: "Entrepreneur" },
-                  { name: "Business Insider" },
-                ].map((company, idx) => (
-                  <Fragment key={`first-${idx}`}>
-                    {idx > 0 && <div className="w-px h-8 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center gap-2 flex-shrink-0 px-3 py-1.5 rounded-md hover:bg-background/50 transition-colors duration-200">
-                      {company.icon && (
-                        <company.icon className={`w-5 h-5 md:w-6 md:h-6 ${company.iconColor || 'text-foreground/80'} transition-colors duration-200`} />
-                      )}
-                      <span className="text-sm md:text-base font-semibold text-foreground/80 hover:text-foreground whitespace-nowrap transition-colors duration-200">
-                        {company.name}
-                      </span>
-                    </div>
-                  </Fragment>
-                ))}
-                
-                {/* Divider between sets */}
-                <div className="w-px h-8 bg-border/60 flex-shrink-0"></div>
-                
-                {/* Duplicate set for seamless loop */}
-                {[
-                  { name: "LinkedIn", icon: Linkedin, iconColor: "text-[#0077b5]" },
-                  { name: "TechCrunch" },
-                  { name: "Forbes" },
-                  { name: "The Verge" },
-                  { name: "Product Hunt" },
-                  { name: "Wired" },
-                  { name: "Fast Company" },
-                  { name: "Inc." },
-                  { name: "Entrepreneur" },
-                  { name: "Business Insider" },
-                ].map((company, idx) => (
-                  <Fragment key={`second-${idx}`}>
-                    {idx > 0 && <div className="w-px h-8 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center gap-2 flex-shrink-0 px-3 py-1.5 rounded-md hover:bg-background/50 transition-colors duration-200">
-                      {company.icon && (
-                        <company.icon className={`w-5 h-5 md:w-6 md:h-6 ${company.iconColor || 'text-foreground/80'} transition-colors duration-200`} />
-                      )}
-                      <span className="text-sm md:text-base font-semibold text-foreground/80 hover:text-foreground whitespace-nowrap transition-colors duration-200">
-                        {company.name}
-                      </span>
-                    </div>
-                  </Fragment>
-                ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* How It Works Section - Reduced padding on mobile */}
       <AnimatedSection>
         <section id="how-it-works" className="py-8 sm:py-16 md:py-20 pb-20 sm:pb-16 md:pb-20">
@@ -874,9 +869,9 @@ export default function Home() {
 
                 // Time estimates
                 const timeEstimates = [
-                  "~2 min",
                   "~1 min",
-                  "~3 min",
+                  "~1 min",
+                  "~1 min",
                   "Instant"
                 ];
                 
@@ -929,7 +924,7 @@ export default function Home() {
                   </div>
                   <div className="flex-1 text-center sm:text-left">
                     <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">
-                      {t("howItWorks.totalTime.title") || "Total Time: Less Than 6 Minutes"}
+                      {t("howItWorks.totalTime.title") || "Total Time: Less Than 3 Minutes"}
                     </h3>
                     <p className="text-sm sm:text-base text-muted-foreground">
                       {t("howItWorks.totalTime.description") || "From upload to download, get professional headshots faster than ordering coffee. No appointments, no waiting."}
