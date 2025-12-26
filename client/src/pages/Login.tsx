@@ -277,11 +277,6 @@ export default function Login() {
             <span className="text-xl font-bold">{t("login.brandName")}</span>
           </div>
 
-          {/* Stats Banner */}
-          <div className="mb-6 text-left">
-            <p className="text-sm font-semibold text-primary">{t("login.stats")}</p>
-          </div>
-
           {/* Main Heading */}
           <div className="space-y-4 mb-8 text-left">
             <h1 className="text-4xl lg:text-5xl font-bold">

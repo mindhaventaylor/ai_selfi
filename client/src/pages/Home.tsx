@@ -502,62 +502,6 @@ export default function Home() {
         </section>
       </AnimatedSection>
 
-      {/* Stats Bar - More compact on mobile */}
-      <section className="py-10 sm:py-8 md:py-12 pb-20 sm:pb-8 md:pb-12 bg-gray-50 dark:bg-gray-900 border-y border-border">
-        <div className="container max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 sm:flex sm:flex-wrap justify-center items-center gap-6 sm:gap-6 md:gap-8">
-            {/* Stat 1: Photos Generated */}
-            <div className="text-center py-2">
-              <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-2 sm:mb-2">
-                1.2M+
-              </div>
-              <div className="text-xs sm:text-sm md:text-base text-muted-foreground leading-tight">
-                Photos generated
-              </div>
-            </div>
-
-            {/* Vertical Separator */}
-            <div className="hidden sm:block w-px h-12 sm:h-16 bg-border"></div>
-
-            {/* Stat 2: LinkedIn Profile Views */}
-            <div className="text-center py-2">
-              <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-2 sm:mb-2">
-                21x
-              </div>
-              <div className="text-xs sm:text-sm md:text-base text-muted-foreground leading-tight">
-                More LinkedIn views
-              </div>
-            </div>
-
-            {/* Vertical Separator */}
-            <div className="hidden sm:block w-px h-12 sm:h-16 bg-border"></div>
-
-            {/* Stat 3: Saved in Studio Fees */}
-            <div className="text-center py-2">
-              <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-2 sm:mb-2">
-                $10M+
-              </div>
-              <div className="text-xs sm:text-sm md:text-base text-muted-foreground leading-tight">
-                Saved in fees
-              </div>
-            </div>
-
-            {/* Vertical Separator */}
-            <div className="hidden sm:block w-px h-12 sm:h-16 bg-border"></div>
-
-            {/* Stat 4: Average Delivery Time */}
-            <div className="text-center py-2">
-              <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-2 sm:mb-2">
-                &lt; 6 Min
-              </div>
-              <div className="text-xs sm:text-sm md:text-base text-muted-foreground leading-tight">
-                Delivery time
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
             {/* Reviews Section - Reduced padding on mobile */}
             <div id="testimonials" className="pt-8 sm:pt-12 md:pt-16 lg:pt-20 mb-12 sm:mb-16 md:mb-20 lg:mb-24 pb-20 sm:pb-16 md:pb-20 lg:pb-24 max-w-7xl mx-auto px-4 scroll-mt-20">
                   {/* Section Title */}
