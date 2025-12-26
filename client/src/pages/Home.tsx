@@ -469,24 +469,34 @@ export default function Home() {
             >
                 {/* First set of companies */}
                 {[
-                  { name: "LinkedIn", icon: Linkedin, iconColor: "text-[#0077b5]" },
-                  { name: "TechCrunch", icon: Zap, iconColor: "text-[#02b350]" },
-                  { name: "Forbes", icon: TrendingUp, iconColor: "text-foreground" },
-                  { name: "The Verge", icon: Globe, iconColor: "text-[#ff005a]" },
-                  { name: "Product Hunt", icon: Rocket, iconColor: "text-[#da552f]" },
-                  { name: "Wired", icon: Cpu, iconColor: "text-foreground" },
-                  { name: "Fast Company", icon: Zap, iconColor: "text-foreground" },
-                  { name: "Inc.", icon: Building, iconColor: "text-foreground" },
-                  { name: "Entrepreneur", icon: Lightbulb, iconColor: "text-foreground" },
-                  { name: "Business Insider", icon: Briefcase, iconColor: "text-foreground" },
+                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_Microsoft.png" },
+                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_J.P.Morgan.png" },
+                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_Deloitte.png" },
+                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_amazon.png" },
+                  { name: "Salesforce", image: "/logos/trusted_by_professionals/6_salesforce.png" },
+                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/7_goldman_sachs.png" },
+                  { name: "LinkedIn", image: "/logos/trusted_by_professionals/8_lnkedin.png" },
+                  { name: "Century 21", image: "/logos/trusted_by_professionals/9_century21.png" },
+                  { name: "IBM", image: "/logos/trusted_by_professionals/10_ibm.png" },
+                  { name: "American Express", image: "/logos/trusted_by_professionals/11_american_express.png" },
+                  { name: "Accenture", image: "/logos/trusted_by_professionals/12_accenture.png" },
+                  { name: "Nike", image: "/logos/trusted_by_professionals/13_nike.png" },
+                  { name: "PwC", image: "/logos/trusted_by_professionals/14_pwc.png" },
+                  { name: "Disney", image: "/logos/trusted_by_professionals/15_Disney.png" },
+                  { name: "KPMG", image: "/logos/trusted_by_professionals/16_KPMG.png" },
+                  { name: "Coca Cola", image: "/logos/trusted_by_professionals/17_cocacola.png" },
                 ].map((company, idx) => (
                   <Fragment key={`first-${idx}`}>
-                    {idx > 0 && <div className="w-px h-8 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center gap-2 flex-shrink-0 px-3 py-1.5 rounded-md hover:bg-background/50 transition-colors duration-200">
-                      {company.icon && (
-                        <company.icon className={`w-5 h-5 md:w-6 md:h-6 ${company.iconColor || 'text-foreground/80'} transition-colors duration-200`} />
-                      )}
-                      <span className="text-sm md:text-base font-semibold text-foreground/80 hover:text-foreground whitespace-nowrap transition-colors duration-200">
+                    {idx > 0 && <div className="w-px h-10 bg-border/60 flex-shrink-0"></div>}
+                    <div className="flex items-center gap-3 flex-shrink-0 px-4 py-2 rounded-md hover:bg-background/50 transition-colors duration-200">
+                      <OptimizedImage 
+                        src={company.image} 
+                        alt={company.name}
+                        width={32}
+                        height={32}
+                        className="w-7 h-7 md:w-8 md:h-8 object-contain grayscale hover:grayscale-0 transition-all duration-200"
+                      />
+                      <span className="text-base md:text-lg font-semibold text-foreground/80 hover:text-foreground whitespace-nowrap transition-colors duration-200">
                         {company.name}
                       </span>
                     </div>
@@ -498,24 +508,34 @@ export default function Home() {
                 
                 {/* Duplicate set for seamless loop */}
                 {[
-                  { name: "LinkedIn", icon: Linkedin, iconColor: "text-[#0077b5]" },
-                  { name: "TechCrunch", icon: Zap, iconColor: "text-[#02b350]" },
-                  { name: "Forbes", icon: TrendingUp, iconColor: "text-foreground" },
-                  { name: "The Verge", icon: Globe, iconColor: "text-[#ff005a]" },
-                  { name: "Product Hunt", icon: Rocket, iconColor: "text-[#da552f]" },
-                  { name: "Wired", icon: Cpu, iconColor: "text-foreground" },
-                  { name: "Fast Company", icon: Zap, iconColor: "text-foreground" },
-                  { name: "Inc.", icon: Building, iconColor: "text-foreground" },
-                  { name: "Entrepreneur", icon: Lightbulb, iconColor: "text-foreground" },
-                  { name: "Business Insider", icon: Briefcase, iconColor: "text-foreground" },
+                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_Microsoft.png" },
+                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_J.P.Morgan.png" },
+                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_Deloitte.png" },
+                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_amazon.png" },
+                  { name: "Salesforce", image: "/logos/trusted_by_professionals/6_salesforce.png" },
+                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/7_goldman_sachs.png" },
+                  { name: "LinkedIn", image: "/logos/trusted_by_professionals/8_lnkedin.png" },
+                  { name: "Century 21", image: "/logos/trusted_by_professionals/9_century21.png" },
+                  { name: "IBM", image: "/logos/trusted_by_professionals/10_ibm.png" },
+                  { name: "American Express", image: "/logos/trusted_by_professionals/11_american_express.png" },
+                  { name: "Accenture", image: "/logos/trusted_by_professionals/12_accenture.png" },
+                  { name: "Nike", image: "/logos/trusted_by_professionals/13_nike.png" },
+                  { name: "PwC", image: "/logos/trusted_by_professionals/14_pwc.png" },
+                  { name: "Disney", image: "/logos/trusted_by_professionals/15_Disney.png" },
+                  { name: "KPMG", image: "/logos/trusted_by_professionals/16_KPMG.png" },
+                  { name: "Coca Cola", image: "/logos/trusted_by_professionals/17_cocacola.png" },
                 ].map((company, idx) => (
                   <Fragment key={`second-${idx}`}>
-                    {idx > 0 && <div className="w-px h-8 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center gap-2 flex-shrink-0 px-3 py-1.5 rounded-md hover:bg-background/50 transition-colors duration-200">
-                      {company.icon && (
-                        <company.icon className={`w-5 h-5 md:w-6 md:h-6 ${company.iconColor || 'text-foreground/80'} transition-colors duration-200`} />
-                      )}
-                      <span className="text-sm md:text-base font-semibold text-foreground/80 hover:text-foreground whitespace-nowrap transition-colors duration-200">
+                    {idx > 0 && <div className="w-px h-10 bg-border/60 flex-shrink-0"></div>}
+                    <div className="flex items-center gap-3 flex-shrink-0 px-4 py-2 rounded-md hover:bg-background/50 transition-colors duration-200">
+                      <OptimizedImage 
+                        src={company.image} 
+                        alt={company.name}
+                        width={32}
+                        height={32}
+                        className="w-7 h-7 md:w-8 md:h-8 object-contain grayscale hover:grayscale-0 transition-all duration-200"
+                      />
+                      <span className="text-base md:text-lg font-semibold text-foreground/80 hover:text-foreground whitespace-nowrap transition-colors duration-200">
                         {company.name}
                       </span>
                     </div>
