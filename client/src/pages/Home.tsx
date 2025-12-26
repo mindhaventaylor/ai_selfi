@@ -740,8 +740,15 @@ export default function Home() {
 
 
       {/* As Seen On Company Carousel */}
-      <div className="py-10 md:py-14 overflow-hidden bg-gradient-to-b from-gray-50/50 to-gray-100/30 dark:from-gray-900/50 dark:to-gray-800/30 border-y border-border/50">
+      <div className="py-12 md:py-16 overflow-hidden bg-gradient-to-b from-gray-50/50 to-gray-100/30 dark:from-gray-900/50 dark:to-gray-800/30 border-y border-border/50">
         <div className="container">
+          {/* Section Title */}
+          <div className="text-center mb-6 md:mb-8">
+            <h2 className="text-lg md:text-xl font-semibold text-muted-foreground uppercase tracking-wider">
+              As seen on
+            </h2>
+          </div>
+          
           <style>{`
             @keyframes scroll {
               0% {
@@ -752,26 +759,29 @@ export default function Home() {
               }
             }
             .animate-scroll {
-              animation: scroll 30s linear infinite;
+              animation: scroll 15s linear infinite;
             }
             .animate-scroll:hover {
               animation-play-state: paused;
             }
+            .animate-scroll.paused {
+              animation-play-state: paused;
+            }
           `}</style>
-          <div className="flex items-center gap-4 md:gap-6 lg:gap-8 pb-2">
-            {/* As seen on text */}
-            <div className="flex items-center gap-3 flex-shrink-0 px-4 py-2 rounded-lg bg-background/80 backdrop-blur-sm border border-border/50 shadow-sm">
-              <span className="text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
-                As seen on
-              </span>
-            </div>
-            
-            {/* Scrolling Companies Container */}
-            <div className="flex-1 overflow-hidden relative">
-              {/* Gradient fade effects on edges */}
-              <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-gray-50/50 dark:from-gray-900/50 to-transparent z-10 pointer-events-none"></div>
-              <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-gray-50/50 dark:from-gray-900/50 to-transparent z-10 pointer-events-none"></div>
-              <div className="flex items-center gap-4 md:gap-6 lg:gap-8 animate-scroll opacity-70 hover:opacity-100 transition-opacity duration-300">
+          
+          {/* Scrolling Companies Container */}
+          <div className="overflow-hidden relative">
+            {/* Gradient fade effects on edges */}
+            <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-gray-50/50 dark:from-gray-900/50 to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-gray-50/50 dark:from-gray-900/50 to-transparent z-10 pointer-events-none"></div>
+            <div 
+              className="flex items-center gap-4 md:gap-6 lg:gap-8 animate-scroll opacity-70 hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+              onClick={(e) => {
+                const target = e.currentTarget;
+                target.classList.toggle('paused');
+              }}
+              title="Click to pause/resume"
+            >
                 {/* First set of companies */}
                 {[
                   { name: "LinkedIn", icon: Linkedin, iconColor: "text-[#0077b5]" },
@@ -826,7 +836,6 @@ export default function Home() {
                     </div>
                   </Fragment>
                 ))}
-              </div>
             </div>
           </div>
         </div>
