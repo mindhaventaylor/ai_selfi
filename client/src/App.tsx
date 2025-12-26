@@ -80,24 +80,32 @@ function Router() {
           <Route path={"/blog/how-to-create-multiple-professional-photo-styles-with-ai"} component={BlogPost8} />
           <Route path={"/blog/complete-guide-ai-professional-photography-2024"} component={BlogPost9} />
           <Route path={"/dashboard"}>
-            <DashboardLayout>
-              <Dashboard />
-            </DashboardLayout>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Dashboard />
+              </DashboardLayout>
+            </ProtectedRoute>
           </Route>
           <Route path={"/dashboard/generate"}>
-            <DashboardLayout>
-              <GenerateImages />
-            </DashboardLayout>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <GenerateImages />
+              </DashboardLayout>
+            </ProtectedRoute>
           </Route>
           <Route path={"/dashboard/pro"}>
-            <DashboardLayout>
-              <Pro />
-            </DashboardLayout>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Pro />
+              </DashboardLayout>
+            </ProtectedRoute>
           </Route>
           <Route path={"/dashboard/pro/under-construction"}>
-            <DashboardLayout>
-              <UnderConstruction />
-            </DashboardLayout>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <UnderConstruction />
+              </DashboardLayout>
+            </ProtectedRoute>
           </Route>
           <Route path={"/dashboard/gallery"}>
             <ProtectedRoute>
@@ -128,9 +136,11 @@ function Router() {
             </ProtectedRoute>
           </Route>
           <Route path={"/dashboard/start"}>
-            <DashboardLayout>
-              <StartHere />
-            </DashboardLayout>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <StartHere />
+              </DashboardLayout>
+            </ProtectedRoute>
           </Route>
           <Route path={"/dashboard/settings/general"}>
             <ProtectedRoute>
@@ -154,9 +164,11 @@ function Router() {
             </ProtectedRoute>
           </Route>
           <Route path={"/dashboard/credits/buy"}>
-            <DashboardLayout>
-              <BuyCredits />
-            </DashboardLayout>
+            <ProtectedRoute>
+              <DashboardLayout>
+                <BuyCredits />
+              </DashboardLayout>
+            </ProtectedRoute>
           </Route>
           <Route path={"/payment/success"} component={PaymentSuccess} />
           <Route path={"/payment/cancel"} component={PaymentCancel} />

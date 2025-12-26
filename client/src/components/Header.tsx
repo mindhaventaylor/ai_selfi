@@ -89,7 +89,7 @@ export function Header() {
                 size="sm" 
                 className="rounded-full shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 bg-gradient-to-r from-primary to-primary/90 hover:from-primary hover:to-primary border-0 px-6 font-semibold"
               >
-                <a href="/dashboard">{t("header.signIn")}</a>
+                <a href={loginUrl}>{t("header.signIn")}</a>
               </Button>
             ) : (
               <Button 

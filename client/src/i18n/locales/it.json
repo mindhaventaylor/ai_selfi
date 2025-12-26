@@ -152,6 +152,115 @@
     "button": "Crea le mie foto professionali",
     "stats": "Più di 25.256 foto professionali create"
   },
+  "guaranteeBanner": {
+    "title": "Garanzia di Rimborso al 100%",
+    "description": "Non sei soddisfatto delle tue foto? Ottieni un rimborso completo entro 30 giorni. Senza domande. Siamo sicuri che amerai i tuoi risultati.",
+    "badge": "Senza Rischi"
+  },
+  "whyChooseUs": {
+    "title": "Perché scegliere AISelfie?",
+    "subtitle": "Foto professionali fatte in modo semplice, veloce e conveniente",
+    "fast": {
+      "title": "Super Veloce",
+      "description": "Ottieni le tue foto professionali in meno di 6 minuti. Nessuna attesa, nessun appuntamento."
+    },
+    "privacy": {
+      "title": "100% Privato",
+      "description": "Le tue foto sono crittografate ed eliminate dopo 30 giorni. La tua privacy è la nostra priorità."
+    },
+    "quality": {
+      "title": "Qualità da Studio",
+      "description": "Tecnologia IA addestrata su migliaia di foto professionali per risultati autentici."
+    },
+    "guarantee": {
+      "title": "Garanzia di Rimborso",
+      "description": "Non sei soddisfatto? Ottieni un rimborso completo, senza domande."
+    }
+  },
+  "security": {
+    "title": "La Tua Privacy è Protetta",
+    "subtitle": "Usiamo crittografia di livello bancario per proteggere le tue foto. Le tue immagini vengono eliminate automaticamente dopo 30 giorni.",
+    "feature1": {
+      "title": "Crittografia End-to-End",
+      "description": "Tutti i caricamenti e le elaborazioni sono crittografati utilizzando protocolli standard del settore"
+    },
+    "feature2": {
+      "title": "Eliminazione Automatica",
+      "description": "Le tue foto vengono eliminate automaticamente dopo 30 giorni. Non le conserviamo mai permanentemente."
+    },
+    "feature3": {
+      "title": "Nessuna Condivisione di Dati",
+      "description": "Non condividiamo mai le tue foto con terze parti. I tuoi dati rimangono privati."
+    }
+  },
+  "comparison": {
+    "badge": "Foto professionale con IA senza perdere tempo",
+    "title": "Studio Tradizionale vs. AISelfie",
+    "subtitle": "Scopri perché migliaia scelgono l'IA invece di costose sessioni in studio",
+    "bestValue": "Miglior Rapporto Qualità-Prezzo",
+    "traditional": {
+      "title": "Studio Tradizionale",
+      "item1": "$500+ per sessione",
+      "item2": "Settimane di attesa per l'appuntamento",
+      "item3": "Riprese limitate",
+      "item4": "Tempo di viaggio richiesto",
+      "item5": "Nessun rimborso se non soddisfatto"
+    },
+    "aiselfie": {
+      "title": "AISelfie",
+      "item1": "A partire da $29 - 5 volte più economico",
+      "item2": "Pronto in meno di 6 minuti",
+      "item3": "Riprese illimitate incluse",
+      "item4": "Da qualsiasi luogo, in qualsiasi momento",
+      "item5": "Garanzia di rimborso al 100%"
+    },
+    "mainTitle": {
+      "part1": "Le sessioni fotografiche tradizionali sono fatte per",
+      "models": "modelli",
+      "part2": ", non per professionisti impegnati."
+    },
+    "items": [
+      "Trovare un fotografo, programmare un appuntamento, aspettare settimane per la disponibilità",
+      "Viaggiare fino allo studio (tempo + benzina + stress del traffico)",
+      "2-3 ore della tua giornata per la sessione fotografica",
+      "Pagare $150-$500 per sessione (nessuna garanzia di buoni risultati)",
+      "Sentirsi a disagio posando (la maggior parte di noi non sono modelli)",
+      "Aspettare 7-14 giorni per ricevere foto modificate"
+    ],
+    "cost": "Costo medio: $150-$500"
+  },
+  "trust": {
+    "badge1": "Crittografato SSL",
+    "badge2": "Garanzia di Rimborso",
+    "badge3": "1,2M+ Clienti Soddisfatti",
+    "badge4": "Qualità da Studio"
+  },
+  "howItWorks": {
+    "title": "Come funziona AISelfie",
+    "totalTime": {
+      "title": "Tempo Totale: Meno di 6 Minuti",
+      "description": "Dal caricamento al download, ottieni foto professionali più velocemente di ordinare un caffè. Nessun appuntamento, nessuna attesa."
+    },
+    "steps": [
+      {
+        "title": "Carica i Tuoi Selfie",
+        "description": "Semplicemente carica alcune tue foto in modo che l'IA possa imparare il tuo viso."
+      },
+      {
+        "title": "Scegli il Tuo Stile",
+        "description": "Esplora più di 100+ look e scegli quello che si adatta al tuo stile unico."
+      },
+      {
+        "title": "Lascia che l'IA Faccia la Sua Magia",
+        "description": "La nostra tecnologia IA crea le tue foto, regolando illuminazione, sfondo e look per darti foto professionali che generano fiducia."
+      },
+      {
+        "title": "Scarica e Condividi",
+        "description": "In minuti, scarica le tue foto di alta qualità (4K), pronte per essere usate e iniziare a mostrare la tua migliore versione!"
+      }
+    ],
+    "cta": "Crea le Tue Foto Ora"
+  },
   "pricing": {
     "title": "La tua foto professionale a 5 volte meno di una sessione in studio",
     "subtitle": "Trasforma i tuoi selfie in foto professionali IA di alta qualità. Paga una volta e ricevi tra 40 e 100 immagini pronte in minuti - nessuno studio, nessun fotografo, nessun costo nascosto.",

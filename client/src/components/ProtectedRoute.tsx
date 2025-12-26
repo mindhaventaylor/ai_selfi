@@ -1,5 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 
 interface ProtectedRouteProps {
@@ -9,18 +9,18 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
+  const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
-    if (!loading && !user) {
-      // Redirect to landing page with returnUrl and variant params
-      const currentPath = window.location.pathname + window.location.search;
-      const params = new URLSearchParams(window.location.search);
-      const variant = params.get("variant");
+    // Only redirect if user is not authenticated, not loading, and we haven't redirected yet
+    if (!loading && !user && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true; // Set immediately to prevent multiple calls
       
-      let redirectUrl = `/?returnUrl=${encodeURIComponent(currentPath)}`;
-      if (variant) {
-        redirectUrl += `&variant=${variant}`;
-      }
+      // Redirect to login page instead of home to avoid loops
+      const currentPath = window.location.pathname + window.location.search;
+      
+      // Use login page with returnUrl to avoid redirect loops
+      const redirectUrl = `/login?returnUrl=${encodeURIComponent(currentPath)}`;
       
       setLocation(redirectUrl);
     }

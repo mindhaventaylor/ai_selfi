@@ -152,6 +152,115 @@
     "button": "Create my professional photos",
     "stats": "More than 25.256 professional photos created"
   },
+  "guaranteeBanner": {
+    "title": "100% Money-Back Guarantee",
+    "description": "Not satisfied with your photos? Get a full refund within 30 days. No questions asked. We're confident you'll love your results.",
+    "badge": "Risk-Free"
+  },
+  "whyChooseUs": {
+    "title": "Why Choose AISelfie?",
+    "subtitle": "Professional headshots made simple, fast, and affordable",
+    "fast": {
+      "title": "Lightning Fast",
+      "description": "Get your professional photos in under 6 minutes. No waiting, no appointments."
+    },
+    "privacy": {
+      "title": "100% Private",
+      "description": "Your photos are encrypted and deleted after 30 days. Your privacy is our priority."
+    },
+    "quality": {
+      "title": "Studio Quality",
+      "description": "AI-powered technology trained on thousands of professional photos for authentic results."
+    },
+    "guarantee": {
+      "title": "Money-Back Guarantee",
+      "description": "Not satisfied? Get a full refund, no questions asked."
+    }
+  },
+  "security": {
+    "title": "Your Privacy is Protected",
+    "subtitle": "We use bank-level encryption to protect your photos. Your images are automatically deleted after 30 days.",
+    "feature1": {
+      "title": "End-to-End Encryption",
+      "description": "All uploads and processing are encrypted using industry-standard protocols"
+    },
+    "feature2": {
+      "title": "Auto-Deletion",
+      "description": "Your photos are automatically deleted after 30 days. We never store them permanently."
+    },
+    "feature3": {
+      "title": "No Data Sharing",
+      "description": "We never share your photos with third parties. Your data stays private."
+    }
+  },
+  "comparison": {
+    "badge": "Professional AI photo without wasting time",
+    "title": "Traditional Studio vs. AISelfie",
+    "subtitle": "See why thousands choose AI over expensive studio sessions",
+    "bestValue": "Best Value",
+    "traditional": {
+      "title": "Traditional Studio",
+      "item1": "$500+ per session",
+      "item2": "Weeks of waiting for appointment",
+      "item3": "Limited retakes",
+      "item4": "Travel time required",
+      "item5": "No refunds if unsatisfied"
+    },
+    "aiselfie": {
+      "title": "AISelfie",
+      "item1": "Starting at $29 - 5x cheaper",
+      "item2": "Ready in under 6 minutes",
+      "item3": "Unlimited retakes included",
+      "item4": "From anywhere, anytime",
+      "item5": "100% money-back guarantee"
+    },
+    "mainTitle": {
+      "part1": "Traditional photo shoots are made for",
+      "models": "models",
+      "part2": ", not for busy professionals."
+    },
+    "items": [
+      "Find photographer, schedule appointment, wait weeks for availability",
+      "Travel to the studio (time + gas + traffic stress)",
+      "2-3 hours of your day for the photo session",
+      "Pay $150-$500 per session (no guarantee of good results)",
+      "Feel uncomfortable posing (most of us aren't models)",
+      "Wait 7-14 days to receive edited photos"
+    ],
+    "cost": "Average cost: $150-$500"
+  },
+  "trust": {
+    "badge1": "SSL Encrypted",
+    "badge2": "Money-Back Guarantee",
+    "badge3": "1.2M+ Happy Customers",
+    "badge4": "Studio Quality"
+  },
+  "howItWorks": {
+    "title": "How AISelfie works",
+    "totalTime": {
+      "title": "Total Time: Less Than 6 Minutes",
+      "description": "From upload to download, get professional headshots faster than ordering coffee. No appointments, no waiting."
+    },
+    "steps": [
+      {
+        "title": "Upload your Selfies",
+        "description": "Simply upload some photos of yourself so the AI can learn your face."
+      },
+      {
+        "title": "Choose your Style",
+        "description": "Explore over 100+ outfits and choose the one that fits your unique style."
+      },
+      {
+        "title": "Let AI Do Its Magic",
+        "description": "Our AI technology creates your photos, adjusting lighting, background and outfit to give you professional photos that build trust."
+      },
+      {
+        "title": "Download and Share",
+        "description": "In minutes, download your high-quality (4K) photos, ready to use and start showing your best version!"
+      }
+    ],
+    "cta": "Create Your Photos Now"
+  },
   "pricing": {
     "title": "Your professional photo for 5x less than a studio session",
     "subtitle": "Transform your selfies into high-quality AI professional photos. Pay once and receive between 40 and 100 ready images in minutes - no studios, no photographers, no hidden costs.",

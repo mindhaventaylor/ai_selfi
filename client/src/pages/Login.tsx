@@ -3,7 +3,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { APP_LOGO } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Check } from "lucide-react";
 
@@ -20,7 +20,7 @@ import { Check } from "lucide-react";
 export default function Login() {
   const { t } = useTranslation();
   const { user, loading, signIn, signInWithEmail, signUpWithEmail } = useAuth();
-  const [, setLocation] = useLocation();
+  const [, setLocation] = useLocation(); // Only need setLocation, not location
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [isEmailMode, setIsEmailMode] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
@@ -31,14 +31,21 @@ export default function Login() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Check for variant in URL to determine if we should auto-create accounts
-  const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
-  const variant = urlParams.get("variant");
-  const isVariant2Or3 = variant === "page2" || variant === "page3";
+  // Use useRef to store initial values and prevent recalculation on every render
+  // This prevents infinite loops when location changes trigger re-renders
+  const variantRef = useRef<string | null>(null);
+  const isVariant2Or3Ref = useRef<boolean>(false);
   
-  // Debug logging
-  useEffect(() => {
-    console.log("[Login] URL variant:", variant, "isVariant2Or3:", isVariant2Or3);
-  }, [variant, isVariant2Or3]);
+  // Initialize once on mount
+  if (variantRef.current === null && typeof window !== "undefined") {
+    const urlParams = new URLSearchParams(window.location.search);
+    const variantValue = urlParams.get("variant");
+    variantRef.current = variantValue;
+    isVariant2Or3Ref.current = variantValue === "page2" || variantValue === "page3";
+  }
+  
+  const variant = variantRef.current;
+  const isVariant2Or3 = isVariant2Or3Ref.current;
   // COMMENTED OUT: Reviews/testimonials section removed as they were distracting users
   // const [currentImageIndex, setCurrentImageIndex] = useState(0);
   // const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
@@ -47,20 +54,45 @@ export default function Login() {
   // const testimonials = t("login.testimonials", { returnObjects: true }) as Array<{ text: string; author: string; stars: number }>;
 
   // Redirect to dashboard if already authenticated
+  // Use useRef to prevent multiple redirects without causing re-renders
+  const hasRedirectedRef = useRef(false);
+  const isRedirectingRef = useRef(false);
+  
   useEffect(() => {
-      if (!loading && user) {
+    // Skip if already redirected or currently redirecting
+    if (hasRedirectedRef.current || isRedirectingRef.current) {
+      return;
+    }
+
+    // Only redirect if user is authenticated, not loading, and we haven't redirected yet
+    // Also check that we're actually on the login page to prevent redirect loops
+    if (!loading && user && typeof window !== "undefined" && window.location.pathname === "/login") {
+      isRedirectingRef.current = true; // Set immediately to prevent multiple calls
+      hasRedirectedRef.current = true; // Mark as redirected
+      
+      // Use requestAnimationFrame to ensure redirect happens after render cycle completes
+      requestAnimationFrame(() => {
         const params = new URLSearchParams(window.location.search);
         const returnUrl = params.get("returnUrl");
-        if (returnUrl) {
+        
+        // Prevent redirect loop - don't redirect back to login
+        if (returnUrl && returnUrl !== "/login" && !returnUrl.startsWith("/login")) {
           setLocation(returnUrl);
-        } else {
+        } else if (!returnUrl) {
           // Preserve variant parameter if present
-          const variant = params.get("variant");
-          const dashboardUrl = variant ? `/dashboard?variant=${variant}` : "/dashboard";
+          const variantParam = params.get("variant");
+          const dashboardUrl = variantParam ? `/dashboard?variant=${variantParam}` : "/dashboard";
           setLocation(dashboardUrl);
+        } else {
+          // If returnUrl is /login, just go to dashboard
+          setLocation("/dashboard");
         }
-      }
-  }, [user, loading, setLocation]);
+        
+        isRedirectingRef.current = false;
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading]); // Removed setLocation from deps - it's stable from wouter
 
   // COMMENTED OUT: Sync image and testimonial rotation - rotate together every 6 seconds
   // useEffect(() => {
@@ -76,7 +108,8 @@ export default function Login() {
 
   // Don't render login page if user is already authenticated (prevents flash)
   // This must be after all hooks are called
-  if (!loading && user) {
+  // Also check hasRedirectedRef to prevent rendering during redirect
+  if ((!loading && user) || hasRedirectedRef.current) {
     return null;
   }
 
