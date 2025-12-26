@@ -425,12 +425,11 @@ export default function Home() {
       </section>
 
       {/* As Seen On Company Carousel */}
-      <div className="py-3 md:py-4 overflow-hidden bg-gradient-to-b from-gray-50/50 to-gray-100/30 dark:from-gray-900/50 dark:to-gray-800/30 border-y border-border/50">
-        <div className="container">
+      <div className="py-3 md:py-4 overflow-hidden bg-gradient-to-b from-gray-50/50 to-gray-100/30 dark:from-gray-900/50 dark:to-gray-800/30 border-y border-border/50">        <div className="container">
           {/* Section Title */}
           <div className="text-center mb-4 md:mb-8">
             <h2 className="text-lg md:text-xl font-semibold text-muted-foreground uppercase tracking-wider">
-              As seen on
+              Trusted by Professionals
             </h2>
           </div>
           
@@ -456,9 +455,6 @@ export default function Home() {
           
           {/* Scrolling Companies Container */}
           <div className="overflow-hidden relative">
-            {/* Gradient fade effects on edges */}
-            <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-gray-50/50 dark:from-gray-900/50 to-transparent z-10 pointer-events-none"></div>
-            <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-gray-50/50 dark:from-gray-900/50 to-transparent z-10 pointer-events-none"></div>
             <div 
               className="flex items-center gap-12 md:gap-20 lg:gap-24 animate-scroll transition-opacity duration-300 cursor-pointer"
               onClick={(e) => {
@@ -488,10 +484,7 @@ export default function Home() {
                 ].map((company, idx) => (
                   <Fragment key={`first-${idx}`}>
                     {idx > 0 && <div className="w-px h-16 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex flex-col items-center gap-4 flex-shrink-0 px-6 py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[180px]">
-                      <span className="text-xs md:text-sm font-bold text-foreground/60 uppercase tracking-widest">
-                        {company.name}
-                      </span>
+                    <div className="flex items-center flex-shrink-0 px-6 py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[150px]">
                       <OptimizedImage 
                         src={company.image} 
                         alt={company.name}
@@ -527,10 +520,7 @@ export default function Home() {
                 ].map((company, idx) => (
                   <Fragment key={`second-${idx}`}>
                     {idx > 0 && <div className="w-px h-16 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex flex-col items-center gap-4 flex-shrink-0 px-6 py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[180px]">
-                      <span className="text-xs md:text-sm font-bold text-foreground/60 uppercase tracking-widest">
-                        {company.name}
-                      </span>
+                    <div className="flex items-center flex-shrink-0 px-6 py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[150px]">
                       <OptimizedImage 
                         src={company.image} 
                         alt={company.name}
