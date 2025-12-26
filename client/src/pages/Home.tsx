@@ -460,7 +460,7 @@ export default function Home() {
             <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-gray-50/50 dark:from-gray-900/50 to-transparent z-10 pointer-events-none"></div>
             <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-gray-50/50 dark:from-gray-900/50 to-transparent z-10 pointer-events-none"></div>
             <div 
-              className="flex items-center gap-4 md:gap-6 lg:gap-8 animate-scroll opacity-70 hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+              className="flex items-center gap-12 md:gap-20 lg:gap-24 animate-scroll transition-opacity duration-300 cursor-pointer"
               onClick={(e) => {
                 const target = e.currentTarget;
                 target.classList.toggle('paused');
@@ -487,24 +487,24 @@ export default function Home() {
                   { name: "Coca Cola", image: "/logos/trusted_by_professionals/17_cocacola.png" },
                 ].map((company, idx) => (
                   <Fragment key={`first-${idx}`}>
-                    {idx > 0 && <div className="w-px h-10 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center gap-3 flex-shrink-0 px-4 py-2 rounded-md hover:bg-background/50 transition-colors duration-200">
+                    {idx > 0 && <div className="w-px h-16 bg-border/60 flex-shrink-0"></div>}
+                    <div className="flex flex-col items-center gap-4 flex-shrink-0 px-6 py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[180px]">
+                      <span className="text-xs md:text-sm font-bold text-foreground/60 uppercase tracking-widest">
+                        {company.name}
+                      </span>
                       <OptimizedImage 
                         src={company.image} 
                         alt={company.name}
-                        width={32}
-                        height={32}
-                        className="w-7 h-7 md:w-8 md:h-8 object-contain grayscale hover:grayscale-0 transition-all duration-200"
+                        width={120}
+                        height={60}
+                        className="w-24 h-12 md:w-32 md:h-16 object-contain md:hover:grayscale transition-all duration-200"
                       />
-                      <span className="text-base md:text-lg font-semibold text-foreground/80 hover:text-foreground whitespace-nowrap transition-colors duration-200">
-                        {company.name}
-                      </span>
                     </div>
                   </Fragment>
                 ))}
                 
                 {/* Divider between sets */}
-                <div className="w-px h-8 bg-border/60 flex-shrink-0"></div>
+                <div className="w-px h-16 bg-border/60 flex-shrink-0"></div>
                 
                 {/* Duplicate set for seamless loop */}
                 {[
@@ -526,18 +526,18 @@ export default function Home() {
                   { name: "Coca Cola", image: "/logos/trusted_by_professionals/17_cocacola.png" },
                 ].map((company, idx) => (
                   <Fragment key={`second-${idx}`}>
-                    {idx > 0 && <div className="w-px h-10 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center gap-3 flex-shrink-0 px-4 py-2 rounded-md hover:bg-background/50 transition-colors duration-200">
+                    {idx > 0 && <div className="w-px h-16 bg-border/60 flex-shrink-0"></div>}
+                    <div className="flex flex-col items-center gap-4 flex-shrink-0 px-6 py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[180px]">
+                      <span className="text-xs md:text-sm font-bold text-foreground/60 uppercase tracking-widest">
+                        {company.name}
+                      </span>
                       <OptimizedImage 
                         src={company.image} 
                         alt={company.name}
-                        width={32}
-                        height={32}
-                        className="w-7 h-7 md:w-8 md:h-8 object-contain grayscale hover:grayscale-0 transition-all duration-200"
+                        width={120}
+                        height={60}
+                        className="w-24 h-12 md:w-32 md:h-16 object-contain md:hover:grayscale transition-all duration-200"
                       />
-                      <span className="text-base md:text-lg font-semibold text-foreground/80 hover:text-foreground whitespace-nowrap transition-colors duration-200">
-                        {company.name}
-                      </span>
                     </div>
                   </Fragment>
                 ))}
