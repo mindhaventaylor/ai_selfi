@@ -429,7 +429,7 @@ export default function Home() {
           {/* Section Title */}
           <div className="text-center mb-4 md:mb-8">
             <h2 className="text-lg md:text-xl font-semibold text-muted-foreground uppercase tracking-wider">
-              Trusted by Professionals
+              {t("home.trustedBy")}
             </h2>
           </div>
           
@@ -465,22 +465,17 @@ export default function Home() {
             >
                 {/* First set of companies */}
                 {[
-                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_Microsoft.png" },
-                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_J.P.Morgan.png" },
-                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_Deloitte.png" },
-                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_amazon.png" },
-                  { name: "Salesforce", image: "/logos/trusted_by_professionals/6_salesforce.png" },
-                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/7_goldman_sachs.png" },
-                  { name: "LinkedIn", image: "/logos/trusted_by_professionals/8_lnkedin.png" },
-                  { name: "Century 21", image: "/logos/trusted_by_professionals/9_century21.png" },
-                  { name: "IBM", image: "/logos/trusted_by_professionals/10_ibm.png" },
-                  { name: "American Express", image: "/logos/trusted_by_professionals/11_american_express.png" },
-                  { name: "Accenture", image: "/logos/trusted_by_professionals/12_accenture.png" },
-                  { name: "Nike", image: "/logos/trusted_by_professionals/13_nike.png" },
-                  { name: "PwC", image: "/logos/trusted_by_professionals/14_pwc.png" },
-                  { name: "Disney", image: "/logos/trusted_by_professionals/15_Disney.png" },
-                  { name: "KPMG", image: "/logos/trusted_by_professionals/16_KPMG.png" },
-                  { name: "Coca Cola", image: "/logos/trusted_by_professionals/17_cocacola.png" },
+                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_white_microsoft.png" },
+                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_white_jpmorgan.png" },
+                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_white_deloitte.png" },
+                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_white_amazon.png" },
+                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/5_white_goldmansachs.png" },
+                  { name: "LinkedIn", image: "/logos/trusted_by_professionals/6_white_linkedin.png" },
+                  { name: "Accenture", image: "/logos/trusted_by_professionals/7_white_accenture.png" },
+                  { name: "Nike", image: "/logos/trusted_by_professionals/8_white_nike.png" },
+                  { name: "PwC", image: "/logos/trusted_by_professionals/9_white_pwc.png" },
+                  { name: "Disney", image: "/logos/trusted_by_professionals/10_white_disney.png" },
+                  { name: "KPMG", image: "/logos/trusted_by_professionals/11_white_kpmg.png" },
                 ].map((company, idx) => (
                   <Fragment key={`first-${idx}`}>
                     {idx > 0 && <div className="w-px h-16 bg-border/60 flex-shrink-0"></div>}
@@ -501,22 +496,17 @@ export default function Home() {
                 
                 {/* Duplicate set for seamless loop */}
                 {[
-                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_Microsoft.png" },
-                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_J.P.Morgan.png" },
-                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_Deloitte.png" },
-                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_amazon.png" },
-                  { name: "Salesforce", image: "/logos/trusted_by_professionals/6_salesforce.png" },
-                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/7_goldman_sachs.png" },
-                  { name: "LinkedIn", image: "/logos/trusted_by_professionals/8_lnkedin.png" },
-                  { name: "Century 21", image: "/logos/trusted_by_professionals/9_century21.png" },
-                  { name: "IBM", image: "/logos/trusted_by_professionals/10_ibm.png" },
-                  { name: "American Express", image: "/logos/trusted_by_professionals/11_american_express.png" },
-                  { name: "Accenture", image: "/logos/trusted_by_professionals/12_accenture.png" },
-                  { name: "Nike", image: "/logos/trusted_by_professionals/13_nike.png" },
-                  { name: "PwC", image: "/logos/trusted_by_professionals/14_pwc.png" },
-                  { name: "Disney", image: "/logos/trusted_by_professionals/15_Disney.png" },
-                  { name: "KPMG", image: "/logos/trusted_by_professionals/16_KPMG.png" },
-                  { name: "Coca Cola", image: "/logos/trusted_by_professionals/17_cocacola.png" },
+                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_white_microsoft.png" },
+                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_white_jpmorgan.png" },
+                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_white_deloitte.png" },
+                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_white_amazon.png" },
+                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/5_white_goldmansachs.png" },
+                  { name: "LinkedIn", image: "/logos/trusted_by_professionals/6_white_linkedin.png" },
+                  { name: "Accenture", image: "/logos/trusted_by_professionals/7_white_accenture.png" },
+                  { name: "Nike", image: "/logos/trusted_by_professionals/8_white_nike.png" },
+                  { name: "PwC", image: "/logos/trusted_by_professionals/9_white_pwc.png" },
+                  { name: "Disney", image: "/logos/trusted_by_professionals/10_white_disney.png" },
+                  { name: "KPMG", image: "/logos/trusted_by_professionals/11_white_kpmg.png" },
                 ].map((company, idx) => (
                   <Fragment key={`second-${idx}`}>
                     {idx > 0 && <div className="w-px h-16 bg-border/60 flex-shrink-0"></div>}
