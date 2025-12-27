@@ -439,11 +439,13 @@ export default function Home() {
                 transform: translateX(0);
               }
               100% {
-                transform: translateX(-50%);
+                transform: translateX(calc(-50% - 0px));
               }
             }
             .animate-scroll {
-              animation: scroll 40s linear infinite;
+              animation: scroll 60s linear infinite;
+              display: flex;
+              width: max-content;
             }
             .animate-scroll:hover {
               animation-play-state: paused;
@@ -453,7 +455,7 @@ export default function Home() {
             }
             @media (max-width: 768px) {
               .animate-scroll {
-                animation: scroll 25s linear infinite;
+                animation: scroll 22s linear infinite;
               }
             }
           `}</style>
@@ -461,7 +463,7 @@ export default function Home() {
           {/* Scrolling Companies Container */}
           <div className="overflow-hidden relative">
             <div 
-              className="flex items-center gap-8 sm:gap-12 md:gap-16 lg:gap-20 animate-scroll transition-opacity duration-300 cursor-pointer"
+              className="flex items-center flex-nowrap gap-2 sm:gap-8 md:gap-12 lg:gap-16 animate-scroll transition-opacity duration-300 cursor-pointer will-change-transform"
               onClick={(e) => {
                 const target = e.currentTarget;
                 target.classList.toggle('paused');
@@ -483,21 +485,21 @@ export default function Home() {
                   { name: "KPMG", image: "/logos/trusted_by_professionals/11_white_kpmg.png" },
                 ].map((company, idx) => (
                   <Fragment key={`first-${idx}`}>
-                    {idx > 0 && <div className="w-px h-16 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center flex-shrink-0 px-6 py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[150px]">
+                    {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
+                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
                       <OptimizedImage 
                         src={company.image} 
                         alt={company.name}
                         width={120}
                         height={60}
-                        className="w-24 h-12 md:w-32 md:h-16 object-contain md:hover:grayscale transition-all duration-200"
+                        className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain md:hover:grayscale transition-all duration-200"
                       />
                     </div>
                   </Fragment>
                 ))}
                 
                 {/* Divider between sets */}
-                <div className="w-px h-16 bg-border/60 flex-shrink-0"></div>
+                <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>
                 
                 {/* Duplicate set for seamless loop */}
                 {[
@@ -514,14 +516,14 @@ export default function Home() {
                   { name: "KPMG", image: "/logos/trusted_by_professionals/11_white_kpmg.png" },
                 ].map((company, idx) => (
                   <Fragment key={`second-${idx}`}>
-                    {idx > 0 && <div className="w-px h-16 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center flex-shrink-0 px-6 py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[150px]">
+                    {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
+                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
                       <OptimizedImage 
                         src={company.image} 
                         alt={company.name}
                         width={120}
                         height={60}
-                        className="w-24 h-12 md:w-32 md:h-16 object-contain md:hover:grayscale transition-all duration-200"
+                        className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain md:hover:grayscale transition-all duration-200"
                       />
                     </div>
                   </Fragment>
