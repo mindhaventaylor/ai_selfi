@@ -1,6 +1,7 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { usePostHogVariant } from "@/hooks/usePostHogVariant";
+import { useIsMobile } from "@/hooks/useMobile";
 import React, { useEffect, useState, Fragment, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -79,11 +80,23 @@ export default function Home() {
   const { t } = useTranslation();
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
+  const isMobile = useIsMobile();
   const [scrollY, setScrollY] = useState(0);
   const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
   const [expandedReviewsGrid, setExpandedReviewsGrid] = useState<Set<number>>(new Set()); // For reviews grid section
-  const [reviewsToShow, setReviewsToShow] = useState(6); // Start with 2 rows (6 items in 3-column grid)
+  const [reviewsToShow, setReviewsToShow] = useState(isMobile ? 3 : 6); // Start with 3 items on mobile, 6 on desktop
   const hasRedirectedRef = useRef(false); // Prevent multiple redirects without causing re-renders
+
+  // Update reviewsToShow when screen size changes
+  useEffect(() => {
+    const initialCount = isMobile ? 3 : 6;
+    // Only reset if currently showing the initial count for the previous screen size
+    if (reviewsToShow === 3 && !isMobile) {
+      setReviewsToShow(6);
+    } else if (reviewsToShow === 6 && isMobile) {
+      setReviewsToShow(3);
+    }
+  }, [isMobile]);
 
   // Use the variant hook to handle variant parameter from URL
   // This ensures the variant is saved as the first variant when visiting /?variant=page2
@@ -131,7 +144,7 @@ export default function Home() {
     };
   }, [posthogVariant]); // Only recalculate when posthogVariant changes
 
-  const { isPage2Variant, isPage2Or3Variant, activeVariant, loginUrl } = variantData;
+  const { isPage2Variant, isPage3Variant, isPage2Or3Variant, activeVariant, loginUrl } = variantData;
 
   // Memoize price calculations to prevent recalculation on every render
   const prices = useMemo(() => {
@@ -424,7 +437,100 @@ export default function Home() {
         </div>
       </section>
 
-      {/* As Seen On Company Carousel */}
+      {/* Why Choose Us Section - For Variants 1 and 2 only, right after Hero */}
+      {!isPage3Variant && (
+        <AnimatedSection>
+          <section className="py-12 sm:py-20 md:py-24 bg-gradient-to-b from-background via-background to-muted/20">
+            <div className="container max-w-6xl mx-auto px-4">
+              <div className="text-center mb-12 sm:mb-16">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 tracking-tight">
+                  {t("whyChooseUs.title") || "Why Choose AISelfie?"}
+                </h2>
+                <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                  {t("whyChooseUs.subtitle") || "Professional headshots made simple, fast, and affordable"}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                <AnimatedSection delay={100}>
+                  <div className="group relative p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-600/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
+                          {t("whyChooseUs.fast.title") || "Lightning Fast"}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {t("whyChooseUs.fast.description") || "Get your professional photos in under 6 minutes. No waiting, no appointments."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </AnimatedSection>
+
+                <AnimatedSection delay={200}>
+                  <div className="group relative p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/10 to-green-600/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <Lock className="w-6 h-6 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
+                          {t("whyChooseUs.privacy.title") || "100% Private"}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {t("whyChooseUs.privacy.description") || "Your photos are encrypted and deleted after 30 days. Your privacy is our priority."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </AnimatedSection>
+
+                <AnimatedSection delay={300}>
+                  <div className="group relative p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/10 to-purple-600/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
+                          {t("whyChooseUs.quality.title") || "Studio Quality"}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {t("whyChooseUs.quality.description") || "AI-powered technology trained on thousands of professional photos for authentic results."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </AnimatedSection>
+
+                <AnimatedSection delay={400}>
+                  <div className="group relative p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/10 to-orange-600/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <ShieldCheck className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
+                          {t("whyChooseUs.guarantee.title") || "Money-Back Guarantee"}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {t("whyChooseUs.guarantee.description") || "Not satisfied? Get a full refund, no questions asked."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </AnimatedSection>
+              </div>
+            </div>
+          </section>
+        </AnimatedSection>
+      )}
+
+      {/* As Seen On Company Carousel - For Variant 1 only, after Why Choose Us */}
+      {!isPage2Variant && !isPage3Variant && (
       <div className="py-3 md:py-4 overflow-hidden bg-gradient-to-b from-gray-50/50 to-gray-100/30 dark:from-gray-900/50 dark:to-gray-800/30 border-y border-border/50">        <div className="container">
           {/* Section Title */}
           <div className="text-center mb-4 md:mb-8">
@@ -532,82 +638,118 @@ export default function Home() {
           </div>
         </div>
       </div>
+      )}
 
-      {/* 
-      Why Choose Us Section - Trust Building
-      <AnimatedSection>
-        <section className="py-8 sm:py-16 md:py-20 pb-8 sm:pb-16 md:pb-20 bg-background">
-          <div className="container max-w-7xl mx-auto px-4">
-            <div className="text-center mb-10 sm:mb-12 md:mb-16">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4">
-                {t("whyChooseUs.title") || "Why Choose AISelfie?"}
-              </h2>
-              <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-                {t("whyChooseUs.subtitle") || "Professional headshots made simple, fast, and affordable"}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-              <AnimatedSection delay={100}>
-                <Card className="p-6 h-full text-center border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Clock className="w-8 h-8 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">
-                    {t("whyChooseUs.fast.title") || "Lightning Fast"}
-                  </h3>
-                  <p className="text-muted-foreground text-sm sm:text-base">
-                    {t("whyChooseUs.fast.description") || "Get your professional photos in under 6 minutes. No waiting, no appointments."}
-                  </p>
-                </Card>
-              </AnimatedSection>
-
-              <AnimatedSection delay={200}>
-                <Card className="p-6 h-full text-center border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Lock className="w-8 h-8 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">
-                    {t("whyChooseUs.privacy.title") || "100% Private"}
-                  </h3>
-                  <p className="text-muted-foreground text-sm sm:text-base">
-                    {t("whyChooseUs.privacy.description") || "Your photos are encrypted and deleted after 30 days. Your privacy is our priority."}
-                  </p>
-                </Card>
-              </AnimatedSection>
-
-              <AnimatedSection delay={300}>
-                <Card className="p-6 h-full text-center border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Award className="w-8 h-8 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">
-                    {t("whyChooseUs.quality.title") || "Studio Quality"}
-                  </h3>
-                  <p className="text-muted-foreground text-sm sm:text-base">
-                    {t("whyChooseUs.quality.description") || "AI-powered technology trained on thousands of professional photos for authentic results."}
-                  </p>
-                </Card>
-              </AnimatedSection>
-
-              <AnimatedSection delay={400}>
-                <Card className="p-6 h-full text-center border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                    <ShieldCheck className="w-8 h-8 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">
-                    {t("whyChooseUs.guarantee.title") || "Money-Back Guarantee"}
-                  </h3>
-                  <p className="text-muted-foreground text-sm sm:text-base">
-                    {t("whyChooseUs.guarantee.description") || "Not satisfied? Get a full refund, no questions asked."}
-                  </p>
-                </Card>
-              </AnimatedSection>
+      {/* As Seen On Company Carousel - For Variant 3, stays in original position */}
+      {isPage3Variant && (
+      <div className="py-3 md:py-4 overflow-hidden bg-gradient-to-b from-gray-50/50 to-gray-100/30 dark:from-gray-900/50 dark:to-gray-800/30 border-y border-border/50">        <div className="container">
+          {/* Section Title */}
+          <div className="text-center mb-4 md:mb-8">
+            <h2 className="text-lg md:text-xl font-semibold text-muted-foreground uppercase tracking-wider">
+              {t("home.trustedBy")}
+            </h2>
+          </div>
+          
+          <style>{`
+            @keyframes scroll {
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(calc(-50% - 0px));
+              }
+            }
+            .animate-scroll {
+              animation: scroll 60s linear infinite;
+              display: flex;
+              width: max-content;
+            }
+            .animate-scroll:hover {
+              animation-play-state: paused;
+            }
+            .animate-scroll.paused {
+              animation-play-state: paused;
+            }
+            @media (max-width: 768px) {
+              .animate-scroll {
+                animation: scroll 22s linear infinite;
+              }
+            }
+          `}</style>
+          
+          {/* Scrolling Companies Container */}
+          <div className="overflow-hidden relative">
+            <div 
+              className="flex items-center flex-nowrap gap-2 sm:gap-8 md:gap-12 lg:gap-16 animate-scroll transition-opacity duration-300 cursor-pointer will-change-transform"
+              onClick={(e) => {
+                const target = e.currentTarget;
+                target.classList.toggle('paused');
+              }}
+              title="Click to pause/resume"
+            >
+                {/* First set of companies */}
+                {[
+                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_white_microsoft.png" },
+                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_white_jpmorgan.png" },
+                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_white_deloitte.png" },
+                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_white_amazon.png" },
+                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/5_white_goldmansachs.png" },
+                  { name: "LinkedIn", image: "/logos/trusted_by_professionals/6_white_linkedin.png" },
+                  { name: "Accenture", image: "/logos/trusted_by_professionals/7_white_accenture.png" },
+                  { name: "Nike", image: "/logos/trusted_by_professionals/8_white_nike.png" },
+                  { name: "PwC", image: "/logos/trusted_by_professionals/9_white_pwc.png" },
+                  { name: "Disney", image: "/logos/trusted_by_professionals/10_white_disney.png" },
+                  { name: "KPMG", image: "/logos/trusted_by_professionals/11_white_kpmg.png" },
+                ].map((company, idx) => (
+                  <Fragment key={`first-${idx}`}>
+                    {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
+                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
+                      <OptimizedImage 
+                        src={company.image} 
+                        alt={company.name}
+                        width={120}
+                        height={60}
+                        className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain md:hover:grayscale transition-all duration-200"
+                      />
+                    </div>
+                  </Fragment>
+                ))}
+                
+                {/* Divider between sets */}
+                <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>
+                
+                {/* Duplicate set for seamless loop */}
+                {[
+                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_white_microsoft.png" },
+                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_white_jpmorgan.png" },
+                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_white_deloitte.png" },
+                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_white_amazon.png" },
+                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/5_white_goldmansachs.png" },
+                  { name: "LinkedIn", image: "/logos/trusted_by_professionals/6_white_linkedin.png" },
+                  { name: "Accenture", image: "/logos/trusted_by_professionals/7_white_accenture.png" },
+                  { name: "Nike", image: "/logos/trusted_by_professionals/8_white_nike.png" },
+                  { name: "PwC", image: "/logos/trusted_by_professionals/9_white_pwc.png" },
+                  { name: "Disney", image: "/logos/trusted_by_professionals/10_white_disney.png" },
+                  { name: "KPMG", image: "/logos/trusted_by_professionals/11_white_kpmg.png" },
+                ].map((company, idx) => (
+                  <Fragment key={`second-${idx}`}>
+                    {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
+                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
+                      <OptimizedImage 
+                        src={company.image} 
+                        alt={company.name}
+                        width={120}
+                        height={60}
+                        className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain md:hover:grayscale transition-all duration-200"
+                      />
+                    </div>
+                  </Fragment>
+                ))}
             </div>
           </div>
-        </section>
-      </AnimatedSection>
-      */}
+        </div>
+      </div>
+      )}
 
             {/* Reviews Section - Reduced padding on mobile */}
             <div id="testimonials" className="pt-8 sm:pt-12 md:pt-16 lg:pt-20 mb-12 sm:mb-16 md:mb-20 lg:mb-24 pb-20 sm:pb-16 md:pb-20 lg:pb-24 max-w-7xl mx-auto px-4 scroll-mt-20">
@@ -806,7 +948,7 @@ export default function Home() {
                           </div>
                         ) : (
                           // Single image for others
-                          <div className="aspect-[4/5] overflow-hidden bg-gray-100 rounded-[20px]">
+                          <div className={`${isMobile ? 'aspect-[3/4]' : 'aspect-[4/5]'} overflow-hidden bg-gray-100 rounded-[20px]`}>
                             <OptimizedImage
                               src={resultImages[0]}
                               alt={t("home.altText.reviewProfessionalPhoto", { name: review.name })}
@@ -825,12 +967,16 @@ export default function Home() {
               <div className="flex justify-center mt-8">
                 <Button
                   onClick={() => {
-                    if (reviewsToShow === 6) {
-                      setReviewsToShow(12); // Show 2 more rows (4 rows total)
-                    } else if (reviewsToShow === 12) {
-                      setReviewsToShow(15); // Show last row (all 15)
-                    } else if (reviewsToShow === 15) {
-                      setReviewsToShow(6); // Collapse back to initial state
+                    const initialCount = isMobile ? 3 : 6;
+                    const secondCount = isMobile ? 6 : 12;
+                    const maxCount = 15;
+                    
+                    if (reviewsToShow === initialCount) {
+                      setReviewsToShow(secondCount); // Show more items
+                    } else if (reviewsToShow === secondCount) {
+                      setReviewsToShow(maxCount); // Show all items
+                    } else if (reviewsToShow === maxCount) {
+                      setReviewsToShow(initialCount); // Collapse back to initial state
                     }
                   }}
                   className="bg-gray-800 hover:bg-gray-700 text-white px-8 py-6 rounded-full text-base font-medium transition-all duration-300 hover:scale-105"
@@ -951,6 +1097,209 @@ export default function Home() {
           </div>
         </section>
       </AnimatedSection>
+
+      {/* As Seen On Company Carousel - For Variant 2 only, after How It Works */}
+      {isPage2Variant && (
+      <div className="py-3 md:py-4 overflow-hidden bg-gradient-to-b from-gray-50/50 to-gray-100/30 dark:from-gray-900/50 dark:to-gray-800/30 border-y border-border/50">        <div className="container">
+          {/* Section Title */}
+          <div className="text-center mb-4 md:mb-8">
+            <h2 className="text-lg md:text-xl font-semibold text-muted-foreground uppercase tracking-wider">
+              {t("home.trustedBy")}
+            </h2>
+          </div>
+          
+          <style>{`
+            @keyframes scroll {
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(calc(-50% - 0px));
+              }
+            }
+            .animate-scroll {
+              animation: scroll 60s linear infinite;
+              display: flex;
+              width: max-content;
+            }
+            .animate-scroll:hover {
+              animation-play-state: paused;
+            }
+            .animate-scroll.paused {
+              animation-play-state: paused;
+            }
+            @media (max-width: 768px) {
+              .animate-scroll {
+                animation: scroll 22s linear infinite;
+              }
+            }
+          `}</style>
+          
+          {/* Scrolling Companies Container */}
+          <div className="overflow-hidden relative">
+            <div 
+              className="flex items-center flex-nowrap gap-2 sm:gap-8 md:gap-12 lg:gap-16 animate-scroll transition-opacity duration-300 cursor-pointer will-change-transform"
+              onClick={(e) => {
+                const target = e.currentTarget;
+                target.classList.toggle('paused');
+              }}
+              title="Click to pause/resume"
+            >
+                {/* First set of companies */}
+                {[
+                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_white_microsoft.png" },
+                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_white_jpmorgan.png" },
+                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_white_deloitte.png" },
+                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_white_amazon.png" },
+                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/5_white_goldmansachs.png" },
+                  { name: "LinkedIn", image: "/logos/trusted_by_professionals/6_white_linkedin.png" },
+                  { name: "Accenture", image: "/logos/trusted_by_professionals/7_white_accenture.png" },
+                  { name: "Nike", image: "/logos/trusted_by_professionals/8_white_nike.png" },
+                  { name: "PwC", image: "/logos/trusted_by_professionals/9_white_pwc.png" },
+                  { name: "Disney", image: "/logos/trusted_by_professionals/10_white_disney.png" },
+                  { name: "KPMG", image: "/logos/trusted_by_professionals/11_white_kpmg.png" },
+                ].map((company, idx) => (
+                  <Fragment key={`first-v2-${idx}`}>
+                    {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
+                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
+                      <OptimizedImage 
+                        src={company.image} 
+                        alt={company.name}
+                        width={120}
+                        height={60}
+                        className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain md:hover:grayscale transition-all duration-200"
+                      />
+                    </div>
+                  </Fragment>
+                ))}
+                
+                {/* Divider between sets */}
+                <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>
+                
+                {/* Duplicate set for seamless loop */}
+                {[
+                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_white_microsoft.png" },
+                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_white_jpmorgan.png" },
+                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_white_deloitte.png" },
+                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_white_amazon.png" },
+                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/5_white_goldmansachs.png" },
+                  { name: "LinkedIn", image: "/logos/trusted_by_professionals/6_white_linkedin.png" },
+                  { name: "Accenture", image: "/logos/trusted_by_professionals/7_white_accenture.png" },
+                  { name: "Nike", image: "/logos/trusted_by_professionals/8_white_nike.png" },
+                  { name: "PwC", image: "/logos/trusted_by_professionals/9_white_pwc.png" },
+                  { name: "Disney", image: "/logos/trusted_by_professionals/10_white_disney.png" },
+                  { name: "KPMG", image: "/logos/trusted_by_professionals/11_white_kpmg.png" },
+                ].map((company, idx) => (
+                  <Fragment key={`second-v2-${idx}`}>
+                    {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
+                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
+                      <OptimizedImage 
+                        src={company.image} 
+                        alt={company.name}
+                        width={120}
+                        height={60}
+                        className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain md:hover:grayscale transition-all duration-200"
+                      />
+                    </div>
+                  </Fragment>
+                ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      )}
+
+      {/* Why Choose Us Section - For Variant 3 only, after How It Works */}
+      {isPage3Variant && (
+        <AnimatedSection>
+          <section className="py-12 sm:py-20 md:py-24 bg-gradient-to-b from-background via-background to-muted/20">
+            <div className="container max-w-6xl mx-auto px-4">
+              <div className="text-center mb-12 sm:mb-16">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 tracking-tight">
+                  {t("whyChooseUs.title") || "Why Choose AISelfie?"}
+                </h2>
+                <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                  {t("whyChooseUs.subtitle") || "Professional headshots made simple, fast, and affordable"}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                <AnimatedSection delay={100}>
+                  <div className="group relative p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-600/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
+                          {t("whyChooseUs.fast.title") || "Lightning Fast"}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {t("whyChooseUs.fast.description") || "Get your professional photos in under 6 minutes. No waiting, no appointments."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </AnimatedSection>
+
+                <AnimatedSection delay={200}>
+                  <div className="group relative p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/10 to-green-600/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <Lock className="w-6 h-6 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
+                          {t("whyChooseUs.privacy.title") || "100% Private"}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {t("whyChooseUs.privacy.description") || "Your photos are encrypted and deleted after 30 days. Your privacy is our priority."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </AnimatedSection>
+
+                <AnimatedSection delay={300}>
+                  <div className="group relative p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/10 to-purple-600/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
+                          {t("whyChooseUs.quality.title") || "Studio Quality"}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {t("whyChooseUs.quality.description") || "AI-powered technology trained on thousands of professional photos for authentic results."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </AnimatedSection>
+
+                <AnimatedSection delay={400}>
+                  <div className="group relative p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/10 to-orange-600/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <ShieldCheck className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
+                          {t("whyChooseUs.guarantee.title") || "Money-Back Guarantee"}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {t("whyChooseUs.guarantee.description") || "Not satisfied? Get a full refund, no questions asked."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </AnimatedSection>
+              </div>
+            </div>
+          </section>
+        </AnimatedSection>
+      )}
 
       {/* Money-Back Guarantee Banner */}
       <AnimatedSection>
