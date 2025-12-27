@@ -443,7 +443,7 @@ export default function Home() {
               }
             }
             .animate-scroll {
-              animation: scroll 15s linear infinite;
+              animation: scroll 40s linear infinite;
             }
             .animate-scroll:hover {
               animation-play-state: paused;
@@ -451,12 +451,17 @@ export default function Home() {
             .animate-scroll.paused {
               animation-play-state: paused;
             }
+            @media (max-width: 768px) {
+              .animate-scroll {
+                animation: scroll 25s linear infinite;
+              }
+            }
           `}</style>
           
           {/* Scrolling Companies Container */}
           <div className="overflow-hidden relative">
             <div 
-              className="flex items-center gap-12 md:gap-20 lg:gap-24 animate-scroll transition-opacity duration-300 cursor-pointer"
+              className="flex items-center gap-8 sm:gap-12 md:gap-16 lg:gap-20 animate-scroll transition-opacity duration-300 cursor-pointer"
               onClick={(e) => {
                 const target = e.currentTarget;
                 target.classList.toggle('paused');
