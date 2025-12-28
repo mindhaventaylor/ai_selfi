@@ -43,33 +43,35 @@
 }
 
 :root {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-600);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
+  /* Aragon.ai exact colors */
+  --primary: #F97316; /* Exact orange from Aragon.ai CTA button */
+  --primary-foreground: #FFFFFF; /* White text on orange */
+  --sidebar-primary: #F97316;
+  --sidebar-primary-foreground: #FFFFFF;
+  --chart-1: #F97316;
+  --chart-2: #F97316;
+  --chart-3: #F97316;
+  --chart-4: #F97316;
+  --chart-5: #F97316;
   --radius: 0.65rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.235 0.015 65);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.235 0.015 65);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.235 0.015 65);
-  --secondary: oklch(0.98 0.001 286.375);
-  --secondary-foreground: oklch(0.4 0.015 65);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.141 0.005 285.823);
+  /* Aragon.ai background - pure white */
+  --background: #FFFFFF; /* Pure white like Aragon.ai */
+  --foreground: #111111; /* Almost black text like Aragon.ai */
+  --card: #FFFFFF; /* White cards */
+  --card-foreground: #111111;
+  --popover: #FFFFFF;
+  --popover-foreground: #111111;
+  --secondary: #FCF3ED; /* Badge background color from Aragon */
+  --secondary-foreground: #111111;
+  --muted: #FCF3ED; /* Light beige for muted backgrounds */
+  --muted-foreground: #666666;
+  --accent: #FCF3ED;
+  --accent-foreground: #111111;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.623 0.214 259.815);
+  --border: #E5E5E5; /* Light grey border */
+  --input: #E5E5E5;
+  --ring: #F97316; /* Orange ring for focus */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.235 0.015 65);
   --sidebar-accent: oklch(0.967 0.001 286.375);
@@ -244,4 +246,13 @@
 
 .animate-glow-light {
   animation: glow-light 2s ease-in-out infinite;
+}
+
+/* Hide scrollbar for before/after slider */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

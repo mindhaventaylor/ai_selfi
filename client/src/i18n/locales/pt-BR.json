@@ -15,9 +15,12 @@
     "checkmark2": "Resultados em 5 minutos",
     "checkmark3": "Garantia de 100% de reembolso",
     "title": "Pule a taxa de estúdio de $500. Headshots profissionais em minutos.",
+    "titleLine1": "O mais popular",
+    "titleLine2": "gerador de fotos de retratos da IA",
     "subtitle": "Transformamos suas selfies casuais em **headshots profissionais de alta qualidade** usando IA especializada. Obtenha o visual de estúdio sem agendamento: **um pagamento simples**, entrega instantânea e fotos que parecem autenticamente você.",
     "cta": "Obter meus headshots profissionais",
-    "guarantee": "Garantia de reembolso total"
+    "guarantee": "Garantia de reembolso total",
+    "rankingBadge": "A EMPRESA DE HEADSHOTS COM IA #1 CLASSIFICADA"
   },
   "examples": {
     "title": "Exemplos de fotos profissionais com IA",
@@ -195,7 +198,7 @@
   },
   "comparison": {
     "badge": "Foto profissional com IA sem perder tempo",
-    "title": "Estúdio Tradicional vs. AISelfie",
+    "title": "Compare AISelfie com contratar um fotógrafo corporativo",
     "subtitle": "Veja por que milhares escolhem IA em vez de sessões caras de estúdio",
     "bestValue": "Melhor Custo-Benefício",
     "traditional": {
@@ -227,7 +230,24 @@
       "Sentir-se desconfortável posando (a maioria de nós não são modelos)",
       "Esperar 7-14 dias para receber fotos editadas"
     ],
-    "cost": "Custo médio: $150-$500"
+    "cost": "Custo médio: $150-$500",
+    "doItFromHome": "Fazer de casa",
+    "onLocation": "Não, sessão no local",
+    "time": "Tempo",
+    "quickTime": "Tão rápido quanto 30 min",
+    "photographerTime": "2-3 dias úteis",
+    "numberOfHeadshots": "Número de headshots",
+    "upTo100": "Até 100",
+    "photographerHeadshots": "5-10 por pessoa",
+    "outfits": "Roupas",
+    "manyOutfits": "20+ roupas",
+    "photographerOutfits": "1-2 roupas",
+    "backgrounds": "Fundos",
+    "yourChoice": "Sua escolha",
+    "oneBackground": "1 fundo",
+    "visualConsistency": "Consistência Visual",
+    "presetsAvailable": "Sim, presets disponíveis",
+    "manualEdits": "Edições manuais necessárias"
   },
   "trust": {
     "badge1": "Criptografado SSL",
@@ -262,7 +282,8 @@
     "cta": "Crie Suas Fotos Agora"
   },
   "pricing": {
-    "title": "Sua foto profissional por 5x menos que uma sessão de estúdio",
+    "discountBadge": "20% de desconto em todos os pacotes - tempo limitado!",
+    "title": "Sua foto profissional por 100x menos que uma sessão de estúdio",
     "subtitle": "Transforme suas selfies em fotos profissionais de alta qualidade com IA. Pague uma única vez e receba entre 40 e 100 imagens prontas em minutos - sem estúdios, sem fotógrafos, sem custos ocultos.",
     "features": {
       "title": "Destaque sua marca pessoal",
@@ -1428,6 +1449,10 @@
     "lastUpdated": "Última atualização:"
   },
   "home": {
+    "beforeAfterSubtitle": "Fotos reais geradas para nossos clientes reais. Veja nossos resultados e avaliações por si mesmo.",
+    "beforeAfterDisclaimer": "Estas fotos não são reais. 100% Geradas por IA.",
+    "beforeLabel": "Antes",
+    "afterLabel": "Depois",
     "examples": [
       {
         "name": "Alba Ripoll Cucó",
@@ -1446,6 +1471,8 @@
       }
     ],
     "altText": {
+      "beforePhoto": "Foto antes",
+      "afterPhoto": "Foto depois",
       "professionalPhoto": "Foto Profissional de IA",
       "style": "Estilo",
       "aiProfessionalPhoto": "Foto Profissional de IA",
@@ -1481,7 +1508,28 @@
       "subtitle": "Obtenha suas fotos profissionais em minutos.",
       "cta": "Criar minhas fotos profissionais"
     },
-    "trustedBy": "CONFIADO POR PROFISSIONAIS EM"
+    "trustedBy": "CONFIADO POR PROFISSIONAIS EM",
+    "trustedByText": "Confiado por mais de 2.312.000 profissionais e equipes. 40.011.000+ fotos de retrato geradas até o momento.",
+    "getYourPhotos": {
+      "title": "Obtenha as suas fotografias de retrato em minutos, não em dias",
+      "subtitle": "É tão fácil como 1-2-3-4!",
+      "step1": {
+        "title": "Carregue algumas fotografias suas",
+        "description": "As selfies funcionam muito bem. Seis carregamentos é tudo o que precisa - concentre-se na qualidade em vez da quantidade para obter os melhores resultados"
+      },
+      "step2": {
+        "title": "Selecionar o vestuário e os fundos",
+        "description": "Escolha a partir da nossa seleção de roupas e fundos selecionados."
+      },
+      "step3": {
+        "title": "Criamos um modelo de IA personalizado só para si",
+        "description": "O nosso modelo de IA começa a trabalhar. Basta aguardar os resultados e enviar-lhe-emos um e-mail quando as suas fotografias de retrato estiverem prontas!"
+      },
+      "step4": {
+        "title": "Veja, edite e transfira os seus favoritos!",
+        "description": "Receberá até 100 fotografias de alta qualidade para utilizar como quiser."
+      }
+    }
   },
   "dashboardV2": {
     "welcome": "Bem-vindo",
@@ -1879,5 +1927,14 @@
       "processing": "Processando...",
       "buy": "Comprar {{plan}} - {{price}}"
     }
+  },
+  "discountModal": {
+    "title": "Obtenha 15% de desconto",
+    "description": "Obtenha sua foto de retrato gerada por IA hoje. Como oferta de Ano Novo, obtenha 15% de desconto na sua compra.",
+    "emailLabel": "Endereço de correio eletrónico",
+    "emailPlaceholder": "Endereço de correio eletrónico",
+    "cta": "Obter desconto",
+    "testimonial": "\"Tecnologia fantástica. Utilize esta aplicação! O resultado são fotografias que se parecem mesmo comigo. A interface do utilizador é muito fácil de utilizar.\"",
+    "testimonialAuthor": "Douglass Davidoff"
   }
 }

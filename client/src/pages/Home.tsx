@@ -23,6 +23,196 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Linkedin } from "lucide-react";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import { initPostHog, trackPageView } from "@/lib/posthog";
+import { DiscountModal } from "@/components/DiscountModal";
+
+// Before/After Image Comparison Component with Automatic Horizontal Scroll
+function BeforeAfterSliderScroll({ 
+  imagePairs,
+  beforeLabel, 
+  afterLabel 
+}: { 
+  imagePairs: { before: string; after: string }[];
+  beforeLabel: string; 
+  afterLabel: string;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const beforeScrollRef = useRef<HTMLDivElement>(null);
+  const afterScrollRef = useRef<HTMLDivElement>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const scrollSpeedRef = useRef(1.5); // pixels per frame - increased for visibility
+
+  // Sync scroll between before and after containers
+  useEffect(() => {
+    const beforeContainer = beforeScrollRef.current;
+    const afterContainer = afterScrollRef.current;
+
+    if (!beforeContainer || !afterContainer) return;
+
+    const beforeScrollHandler = () => {
+      if (beforeContainer && afterContainer) {
+        afterContainer.scrollLeft = beforeContainer.scrollLeft;
+      }
+    };
+
+    const afterScrollHandler = () => {
+      if (beforeContainer && afterContainer) {
+        beforeContainer.scrollLeft = afterContainer.scrollLeft;
+      }
+    };
+
+    beforeContainer.addEventListener('scroll', beforeScrollHandler);
+    afterContainer.addEventListener('scroll', afterScrollHandler);
+
+    return () => {
+      beforeContainer.removeEventListener('scroll', beforeScrollHandler);
+      afterContainer.removeEventListener('scroll', afterScrollHandler);
+    };
+  }, []);
+
+  // Automatic scroll animation
+  useEffect(() => {
+    const beforeContainer = beforeScrollRef.current;
+    const afterContainer = afterScrollRef.current;
+
+    if (!beforeContainer || !afterContainer) return;
+
+    let isScrolling = true;
+
+    const scroll = () => {
+      if (!isScrolling || !beforeContainer || !afterContainer) return;
+      
+      const maxScroll = beforeContainer.scrollWidth - beforeContainer.clientWidth;
+      
+      // Wait for content to load
+      if (maxScroll <= 0 || beforeContainer.scrollWidth === beforeContainer.clientWidth) {
+        animationFrameRef.current = requestAnimationFrame(scroll);
+        return;
+      }
+      
+      if (beforeContainer.scrollLeft >= maxScroll - 1) {
+        // Reset to start for seamless loop
+        beforeContainer.scrollLeft = 0;
+        afterContainer.scrollLeft = 0;
+      } else {
+        beforeContainer.scrollLeft += scrollSpeedRef.current;
+        afterContainer.scrollLeft += scrollSpeedRef.current;
+      }
+
+      animationFrameRef.current = requestAnimationFrame(scroll);
+    };
+
+    // Start scrolling after a short delay to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      animationFrameRef.current = requestAnimationFrame(scroll);
+    }, 200);
+
+    return () => {
+      isScrolling = false;
+      clearTimeout(timeoutId);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [imagePairs]); // Re-run when imagePairs change
+
+
+  // Duplicate images for seamless loop
+  const duplicatedPairs = [...imagePairs, ...imagePairs];
+
+  return (
+    <div 
+      className="relative w-full" 
+      ref={containerRef}
+    >
+      {/* Before Images Container (Left side) */}
+      <div 
+        ref={beforeScrollRef}
+        className="overflow-x-auto overflow-y-hidden scrollbar-hide"
+        style={{ 
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
+        <div className="flex gap-4 sm:gap-6 md:gap-8" style={{ width: 'max-content' }}>
+          {duplicatedPairs.map((pair, idx) => (
+            <div
+              key={`before-${idx}`}
+              className="flex-shrink-0 relative"
+              style={{ width: '280px', height: '373px' }}
+            >
+              <OptimizedImage
+                src={pair.before}
+                alt={`${beforeLabel} ${idx + 1}`}
+                className="w-full h-full object-cover rounded-2xl"
+              />
+              {/* Before Label */}
+              <div className="absolute top-4 left-4 z-20 bg-black/70 text-white text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg">
+                {beforeLabel}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* After Images Container (Right side, clipped) - fixed at 50% */}
+      <div 
+        ref={afterScrollRef}
+        className="absolute top-0 left-0 w-full overflow-x-auto overflow-y-hidden scrollbar-hide"
+        style={{ 
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch',
+          clipPath: 'inset(0 50% 0 0)',
+          pointerEvents: 'none'
+        }}
+      >
+        <div className="flex gap-4 sm:gap-6 md:gap-8" style={{ width: 'max-content' }}>
+          {duplicatedPairs.map((pair, idx) => (
+            <div
+              key={`after-${idx}`}
+              className="flex-shrink-0 relative"
+              style={{ width: '280px', height: '373px' }}
+            >
+              <OptimizedImage
+                src={pair.after}
+                alt={`${afterLabel} ${idx + 1}`}
+                className="w-full h-full object-cover rounded-2xl"
+              />
+              {/* After Label */}
+              <div className="absolute top-4 right-4 z-20 bg-primary text-white text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg">
+                {afterLabel}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Fixed Slider Divider in the middle - always at 50% */}
+      <div
+        className="absolute top-0 bottom-0 w-1 bg-white shadow-lg z-30 pointer-events-none"
+        style={{ 
+          left: '50%', 
+          transform: 'translateX(-50%)',
+          height: '373px'
+        }}
+      >
+        {/* Slider Handle */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white shadow-xl flex items-center justify-center border-2 border-primary">
+          <div className="flex gap-1">
+            <svg className="w-3 h-3 sm:w-4 sm:h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <svg className="w-3 h-3 sm:w-4 sm:h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
+}
 
 function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const { ref, isVisible } = useScrollAnimation();
@@ -86,6 +276,8 @@ export default function Home() {
   const [expandedReviewsGrid, setExpandedReviewsGrid] = useState<Set<number>>(new Set()); // For reviews grid section
   const [reviewsToShow, setReviewsToShow] = useState(isMobile ? 3 : 6); // Start with 3 items on mobile, 6 on desktop
   const hasRedirectedRef = useRef(false); // Prevent multiple redirects without causing re-renders
+  const [showDiscountModal, setShowDiscountModal] = useState(false);
+  const discountModalShownRef = useRef(false);
 
   // Update reviewsToShow when screen size changes
   useEffect(() => {
@@ -250,8 +442,8 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Hero Section */}
-      <section className="relative min-h-0 sm:min-h-[75vh] lg:min-h-[80vh] overflow-hidden pt-7 pb-8 sm:pb-24 lg:pb-20 px-4 sm:px-6">
+      {/* Hero Section - Aragon.ai style background */}
+      <section className="relative min-h-0 sm:min-h-[50vh] lg:min-h-[55vh] overflow-hidden pt-4 pb-4 sm:pb-8 lg:pb-6 px-4 sm:px-6 bg-background">
         {/* Floating Images Container - Desktop */}
         <div className="absolute inset-0 w-full h-full hidden lg:block pointer-events-none">
           {/* Left Side Images */}
@@ -372,70 +564,401 @@ export default function Home() {
         </div>
 
         {/* Center Content */}
-        <div className="container relative z-10 pt-2 lg:pt-6">
-          <div className="flex flex-col items-center text-center space-y-4 sm:space-y-6 max-w-3xl mx-auto">
-            {/* Badge with avatars - Smaller on mobile */}
-            <div className="flex items-center gap-2 sm:gap-3 bg-secondary/50 backdrop-blur-sm px-4 sm:px-6 py-2 sm:py-3 rounded-full">
-              <div className="flex -space-x-1.5 sm:-space-x-2">
-                {["/image.webp", "/image_1.webp", "/image_10.webp", "/image_100.webp", "/image_101.webp"].map(
-                  (img, idx) => (
-                    <div
-                      key={idx}
-                      className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-background overflow-hidden"
-                    >
-                      <OptimizedImage src={img} alt="" className="w-full h-full object-cover" />
-                    </div>
-                  )
-                )}
-              </div>
-              <div className="flex items-center gap-1 sm:gap-2">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <span className="text-xs sm:text-sm font-medium">{t("hero.badge")}</span>
+        <div className="container relative z-10 pt-4 lg:pt-6">
+          <div className="flex flex-col items-center text-center space-y-3 sm:space-y-4 max-w-4xl mx-auto">
+            {/* Ranking Badge - Aragon style */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FCF3ED] border border-[#F97316]/20 rounded-full">
+              <BadgeCheck className="w-4 h-4 text-[#F97316]" />
+              <span className="text-xs sm:text-sm font-semibold text-[#111111] uppercase tracking-wide">
+                {t("hero.rankingBadge") || "THE #1 RANKED AI HEADSHOT COMPANY"}
+              </span>
             </div>
 
-            {/* Main Title - Larger and more impactful on mobile */}
-            <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold leading-tight px-2">
-              {t("hero.title")}
+            {/* Main Title - Aragon style large and bold */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] tracking-tight px-4">
+              <span className="block">{t("hero.titleLine1") || "The Most Popular"}</span>
+              <span className="block bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                {t("hero.titleLine2") || "AI Headshot Generator"}
+              </span>
             </h1>
 
-            {/* Subtitle - More concise on mobile */}
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl px-2">
-              {parseMarkdownBold(t("hero.subtitle"))}
+            {/* Subtitle - Aragon style */}
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl px-4 leading-relaxed">
+              {parseMarkdownBold(t("hero.subtitle") || "Turn your selfies into studio-quality headshots in minutes. Save hundreds of dollars and hours of your time.")}
             </p>
 
-            {/* CTA Button - Hidden on mobile (shown in sticky bar) */}
-            <div className="hidden lg:flex flex-col items-center gap-3">
+            {/* CTA Button - Large and prominent */}
+            <div className="pt-2">
               <Button
                 asChild
                 size="lg"
-                className="text-lg px-10 py-7 bg-primary hover:bg-primary/90 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow"
+                className="text-base sm:text-lg px-8 sm:px-12 py-5 sm:py-6 bg-primary hover:bg-primary/90 text-white rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 font-semibold"
               >
-                <a href="/login">{t("hero.cta")}</a>
+                <a href="/login">{t("hero.cta") || "Create your headshots now"}</a>
               </Button>
             </div>
 
-            {/* Checkmarks - Better mobile layout */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 mt-4 sm:mt-6 md:mt-8 md:mt-10 bg-secondary/30 backdrop-blur-sm px-4 sm:px-6 py-4 sm:py-6 md:py-8 rounded-2xl border border-border/50 w-full max-w-lg sm:max-w-none">
+            {/* Reviews Badge - Aragon style */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 pt-2">
               <div className="flex items-center gap-2">
-                <Check className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
-                <span className="text-sm sm:text-base font-medium">{t("hero.checkmark1")}</span>
+                <div className="flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  ))}
               </div>
+                <span className="text-sm sm:text-base font-semibold">4.8</span>
+              </div>
+              <span className="text-sm text-muted-foreground">
+                {t("hero.reviewsText") || "total reviews on"}
+              </span>
               <div className="flex items-center gap-2">
-                <Check className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
-                <span className="text-sm sm:text-base font-medium">{t("hero.checkmark2")}</span>
+                <div className="flex -space-x-2">
+                  {["/image.webp", "/image_1.webp", "/image_10.webp"].map(
+                    (img, idx) => (
+                      <div
+                        key={idx}
+                        className="w-8 h-8 rounded-full border-2 border-background overflow-hidden"
+                      >
+                        <OptimizedImage src={img} alt="" className="w-full h-full object-cover" />
               </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
-                <span className="text-sm sm:text-base font-medium">{t("hero.checkmark3")}</span>
-              </div>
+                    )
+                  )}
+            </div>
+                <span className="text-sm sm:text-base font-semibold">4.8</span>
+          </div>
             </div>
           </div>
-
         </div>
       </section>
+
+      {/* Before/After Image Comparison Section - Aragon.ai style */}
+      <AnimatedSection>
+        <section className="py-8 sm:py-12 md:py-16 bg-background overflow-hidden">
+          <div className="container max-w-7xl mx-auto px-4">
+            <div className="text-center mb-8 sm:mb-12">
+              <p className="text-sm sm:text-base text-muted-foreground mb-2">
+                {t("home.beforeAfterSubtitle") || "Real photos generated for our real customers. See our results and reviews for yourself."}
+              </p>
+              <p className="text-xs text-muted-foreground italic">
+                {t("home.beforeAfterDisclaimer") || "These photos are not real. 100% AI Generated."}
+              </p>
+          </div>
+          
+            {/* Horizontal Scroll Container with Fixed Middle Slider */}
+            <div className="relative max-w-7xl mx-auto">
+              <BeforeAfterSliderScroll
+                imagePairs={[
+                  { before: "/image.webp", after: "/image_1.webp" },
+                  { before: "/image_10.webp", after: "/image_100.webp" },
+                  { before: "/image_101.webp", after: "/image_101_last.webp" },
+                  { before: "/image.webp", after: "/image_1.webp" },
+                  { before: "/image_10.webp", after: "/image_100.webp" },
+                  { before: "/image_101.webp", after: "/image_101_last.webp" },
+                ]}
+                beforeLabel={t("home.beforeLabel") || "Before"}
+                afterLabel={t("home.afterLabel") || "After"}
+              />
+            </div>
+
+            {/* Trusted By Section - Below images */}
+            <div className="mt-12 sm:mt-16">
+              <div className="text-center mb-6 sm:mb-8">
+                <p className="text-base sm:text-lg md:text-xl font-semibold text-foreground mb-2 leading-relaxed">
+                  {(() => {
+                    const text = t("home.trustedByText") || "Confiado por mais de 2.312.000 profissionais e equipes. 40.011.000+ fotos de retrato geradas até o momento.";
+                    // Split text to highlight "profissionais" and "equipes" (or "professionals" and "teams")
+                    const parts = text.split(/(profissionais|equipes|professionals|teams)/i);
+                    return (
+                      <>
+                        {parts.map((part, idx) => {
+                          const isHighlighted = /^(profissionais|equipes|professionals|teams)$/i.test(part);
+                          return isHighlighted ? (
+                            <span key={idx} className="text-primary font-semibold">{part}</span>
+                          ) : (
+                            <span key={idx}>{part}</span>
+                          );
+                        })}
+                      </>
+                    );
+                  })()}
+                </p>
+              </div>
+              
+              <div className="py-3 md:py-4 overflow-hidden bg-white border-y border-border/50 rounded-lg">
+                <div className="container">
+          <style>{`
+            @keyframes scroll {
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(calc(-50% - 0px));
+              }
+            }
+            .animate-scroll {
+              animation: scroll 60s linear infinite;
+              display: flex;
+              width: max-content;
+            }
+            .animate-scroll:hover {
+              animation-play-state: paused;
+            }
+            .animate-scroll.paused {
+              animation-play-state: paused;
+            }
+            @media (max-width: 768px) {
+              .animate-scroll {
+                animation: scroll 22s linear infinite;
+              }
+            }
+          `}</style>
+          
+          {/* Scrolling Companies Container */}
+          <div className="overflow-hidden relative">
+            <div 
+              className="flex items-center flex-nowrap gap-2 sm:gap-8 md:gap-12 lg:gap-16 animate-scroll transition-opacity duration-300 cursor-pointer will-change-transform"
+              onClick={(e) => {
+                const target = e.currentTarget;
+                target.classList.toggle('paused');
+              }}
+              title="Click to pause/resume"
+            >
+                {/* First set of companies */}
+                {[
+                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_white_microsoft.png" },
+                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_white_jpmorgan.png" },
+                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_white_deloitte.png" },
+                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_white_amazon.png" },
+                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/5_white_goldmansachs.png" },
+                  { name: "LinkedIn", image: "/logos/trusted_by_professionals/6_white_linkedin.png" },
+                  { name: "Accenture", image: "/logos/trusted_by_professionals/7_white_accenture.png" },
+                  { name: "Nike", image: "/logos/trusted_by_professionals/8_white_nike.png" },
+                  { name: "PwC", image: "/logos/trusted_by_professionals/9_white_pwc.png" },
+                  { name: "Disney", image: "/logos/trusted_by_professionals/10_white_disney.png" },
+                  { name: "KPMG", image: "/logos/trusted_by_professionals/11_white_kpmg.png" },
+                ].map((company, idx) => (
+                        <Fragment key={`first-trusted-${idx}`}>
+                    {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
+                          <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-gray-200 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
+                      <OptimizedImage 
+                        src={company.image} 
+                        alt={company.name}
+                        width={120}
+                        height={60}
+                              className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain opacity-90 hover:opacity-100 transition-all duration-200 brightness-0 hover:brightness-100"
+                      />
+                    </div>
+                  </Fragment>
+                ))}
+                
+                {/* Divider between sets */}
+                <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>
+                
+                {/* Duplicate set for seamless loop */}
+                {[
+                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_white_microsoft.png" },
+                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_white_jpmorgan.png" },
+                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_white_deloitte.png" },
+                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_white_amazon.png" },
+                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/5_white_goldmansachs.png" },
+                  { name: "LinkedIn", image: "/logos/trusted_by_professionals/6_white_linkedin.png" },
+                  { name: "Accenture", image: "/logos/trusted_by_professionals/7_white_accenture.png" },
+                  { name: "Nike", image: "/logos/trusted_by_professionals/8_white_nike.png" },
+                  { name: "PwC", image: "/logos/trusted_by_professionals/9_white_pwc.png" },
+                  { name: "Disney", image: "/logos/trusted_by_professionals/10_white_disney.png" },
+                  { name: "KPMG", image: "/logos/trusted_by_professionals/11_white_kpmg.png" },
+                ].map((company, idx) => (
+                        <Fragment key={`second-trusted-${idx}`}>
+                    {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
+                          <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-gray-200 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
+                      <OptimizedImage 
+                        src={company.image} 
+                        alt={company.name}
+                        width={120}
+                        height={60}
+                              className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain opacity-90 hover:opacity-100 transition-all duration-200 brightness-0 hover:brightness-100"
+                      />
+                    </div>
+                  </Fragment>
+                ))}
+            </div>
+          </div>
+        </div>
+      </div>
+            </div>
+          </div>
+        </section>
+      </AnimatedSection>
+
+      {/* New How It Works Section - Based on reference image */}
+      <AnimatedSection>
+        <section className="py-8 sm:py-12 md:py-16 bg-background">
+          <div className="container max-w-7xl mx-auto px-4">
+            <div className="text-center mb-8 sm:mb-12">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 tracking-tight text-foreground">
+                {t("home.getYourPhotos.title") || "Obtenha as suas fotografias de retrato em minutos, não em dias"}
+              </h2>
+              <p className="text-lg sm:text-xl text-muted-foreground font-medium">
+                {t("home.getYourPhotos.subtitle") || "É tão fácil como 1-2-3-4!"}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 max-w-7xl mx-auto">
+              {[
+                {
+                  number: 1,
+                  title: t("home.getYourPhotos.step1.title") || "Carregue algumas fotografias suas",
+                  description: t("home.getYourPhotos.step1.description") || "As selfies funcionam muito bem. Seis carregamentos é tudo o que precisa - concentre-se na qualidade em vez da quantidade para obter os melhores resultados",
+                  image: "/howAISelfieWorks1.webp"
+                },
+                {
+                  number: 2,
+                  title: t("home.getYourPhotos.step2.title") || "Selecionar o vestuário e os fundos",
+                  description: t("home.getYourPhotos.step2.description") || "Escolha a partir da nossa seleção de roupas e fundos selecionados.",
+                  image: "/howAISelfieWorks2.webp"
+                },
+                {
+                  number: 3,
+                  title: t("home.getYourPhotos.step3.title") || "Criamos um modelo de IA personalizado só para si",
+                  description: t("home.getYourPhotos.step3.description") || "O nosso modelo de IA começa a trabalhar. Basta aguardar os resultados e enviar-lhe-emos um e-mail quando as suas fotografias de retrato estiverem prontas!",
+                  image: "/howAISelfieWorks3.webp"
+                },
+                {
+                  number: 4,
+                  title: t("home.getYourPhotos.step4.title") || "Veja, edite e transfira os seus favoritos!",
+                  description: t("home.getYourPhotos.step4.description") || "Receberá até 100 fotografias de alta qualidade para utilizar como quiser.",
+                  image: "/howAISelfieWorks4.webp"
+                }
+              ].map((step, idx) => (
+                <AnimatedSection key={idx} delay={idx * 120}>
+                  <div className="flex flex-col h-full">
+                    {/* Step Image - White background with subtle shadow */}
+                    <div className="w-full mb-4 rounded-xl overflow-hidden bg-white border-2 border-gray-100 shadow-md hover:shadow-lg transition-all duration-300">
+                      <OptimizedImage
+                        src={step.image}
+                        alt={step.title}
+                        className="w-full h-48 sm:h-56 md:h-64 object-cover"
+                      />
+                    </div>
+                    
+                    {/* Step Number and Title - Horizontal layout */}
+                    <div className="flex items-start gap-3 mb-3">
+                      {/* Step Number in Orange Circle - Smaller, on the left */}
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary flex items-center justify-center shadow-md hover:scale-105 transition-transform duration-300">
+                          <span className="text-lg sm:text-xl font-bold text-white">{step.number}</span>
+                        </div>
+                      </div>
+                      
+                      {/* Step Title - Next to the number */}
+                      <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground leading-tight pt-1">
+                        {step.title}
+                      </h3>
+                    </div>
+                    
+                    {/* Step Description */}
+                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed text-left">
+                      {step.description}
+                    </p>
+                  </div>
+                </AnimatedSection>
+              ))}
+            </div>
+          </div>
+        </section>
+      </AnimatedSection>
+
+      {/* How It Works Section - After Trusted By */}
+      <AnimatedSection>
+        <section id="how-it-works" className="py-12 sm:py-20 md:py-24 bg-background">
+          <div className="container max-w-6xl mx-auto px-4">
+            <div className="text-center mb-12 sm:mb-16">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 tracking-tight">
+                {t("howItWorks.title") || "Get your headshots in minutes, not days"}
+              </h2>
+              <p className="text-lg sm:text-xl text-muted-foreground">
+                {t("howItWorks.subtitle") || "It's as easy as 1-2-3-4!"}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 max-w-7xl mx-auto">
+              {(
+                t("howItWorks.steps", { returnObjects: true }) as Array<{
+                  title: string;
+                  description: string;
+                }>
+              ).map((step, idx) => {
+                // Images for each step
+                const stepImages = [
+                  "/howAISelfieWorks1.webp", // Step 1: Upload selfies
+                  "/howAISelfieWorks2.webp", // Step 2: Choose style
+                  "/howAISelfieWorks3.webp", // Step 3: AI magic
+                  "/howAISelfieWorks4.webp", // Step 4: Download and share
+                ];
+                
+                return (
+                  <AnimatedSection key={idx} delay={idx * 100}>
+                    <div className="flex flex-col items-start text-left">
+                      {/* Large Step Number - Aragon style */}
+                      <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-primary/20 mb-4 leading-none">
+                        {idx + 1}
+                      </div>
+                      
+                      {/* Step Title */}
+                      <h3 className="text-xl sm:text-2xl font-bold mb-3 text-foreground">
+                        {step.title}
+                      </h3>
+                      
+                      {/* Step Description */}
+                      <p className="text-muted-foreground text-base sm:text-lg leading-relaxed mb-6">
+                        {step.description}
+                      </p>
+                      
+                      {/* Step Image */}
+                      <div className="w-full aspect-square rounded-xl overflow-hidden bg-muted/50 shadow-lg">
+                        <OptimizedImage
+                          src={stepImages[idx] || stepImages[0]}
+                          alt={step.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                  </AnimatedSection>
+                );
+              })}
+            </div>
+
+            {/* Additional Info Box */}
+            <AnimatedSection delay={200}>
+              <Card className="max-w-4xl mx-auto p-4 sm:p-6 md:p-8 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/20">
+                <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 md:gap-6">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-primary flex items-center justify-center">
+                      <Clock className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1 text-center sm:text-left">
+                    <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">
+                      {t("howItWorks.totalTime.title") || "Total Time: Less Than 3 Minutes"}
+                    </h3>
+                    <p className="text-sm sm:text-base text-muted-foreground">
+                      {t("howItWorks.totalTime.description") || "From upload to download, get professional headshots faster than ordering coffee. No appointments, no waiting."}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </AnimatedSection>
+
+            <div className="text-center">
+              <Button asChild size="lg" className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">
+                <a href={isPage2Or3Variant 
+                    ? (activeVariant ? `/dashboard?variant=${activeVariant}` : "/dashboard")
+                    : "/login"}>{t("howItWorks.cta")} →</a>
+              </Button>
+            </div>
+          </div>
+        </section>
+      </AnimatedSection>
 
       {/* Why Choose Us Section - For Variants 1 and 2 only, right after Hero */}
       {!isPage3Variant && (
@@ -444,94 +967,94 @@ export default function Home() {
             <div className="container max-w-6xl mx-auto px-4">
               <div className="text-center mb-12 sm:mb-16">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 tracking-tight">
-                  {t("whyChooseUs.title") || "Why Choose AISelfie?"}
-                </h2>
+                {t("whyChooseUs.title") || "Why Choose AISelfie?"}
+              </h2>
                 <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                  {t("whyChooseUs.subtitle") || "Professional headshots made simple, fast, and affordable"}
-                </p>
-              </div>
+                {t("whyChooseUs.subtitle") || "Professional headshots made simple, fast, and affordable"}
+              </p>
+            </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-                <AnimatedSection delay={100}>
+              <AnimatedSection delay={100}>
                   <div className="group relative p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
                     <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-600/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                      </div>
+                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <Clock className="w-6 h-6 text-primary" />
+                  </div>
                       <div className="flex-1">
                         <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
-                          {t("whyChooseUs.fast.title") || "Lightning Fast"}
-                        </h3>
+                    {t("whyChooseUs.fast.title") || "Lightning Fast"}
+                  </h3>
                         <p className="text-muted-foreground leading-relaxed">
-                          {t("whyChooseUs.fast.description") || "Get your professional photos in under 6 minutes. No waiting, no appointments."}
-                        </p>
+                    {t("whyChooseUs.fast.description") || "Get your professional photos in under 6 minutes. No waiting, no appointments."}
+                  </p>
                       </div>
                     </div>
                   </div>
-                </AnimatedSection>
+              </AnimatedSection>
 
-                <AnimatedSection delay={200}>
+              <AnimatedSection delay={200}>
                   <div className="group relative p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/10 to-green-600/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                         <Lock className="w-6 h-6 text-green-600 dark:text-green-400" />
-                      </div>
+                  </div>
                       <div className="flex-1">
                         <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
-                          {t("whyChooseUs.privacy.title") || "100% Private"}
-                        </h3>
+                    {t("whyChooseUs.privacy.title") || "100% Private"}
+                  </h3>
                         <p className="text-muted-foreground leading-relaxed">
-                          {t("whyChooseUs.privacy.description") || "Your photos are encrypted and deleted after 30 days. Your privacy is our priority."}
-                        </p>
+                    {t("whyChooseUs.privacy.description") || "Your photos are encrypted and deleted after 30 days. Your privacy is our priority."}
+                  </p>
                       </div>
                     </div>
                   </div>
-                </AnimatedSection>
+              </AnimatedSection>
 
-                <AnimatedSection delay={300}>
+              <AnimatedSection delay={300}>
                   <div className="group relative p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/10 to-purple-600/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                         <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                      </div>
+                  </div>
                       <div className="flex-1">
                         <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
-                          {t("whyChooseUs.quality.title") || "Studio Quality"}
-                        </h3>
+                    {t("whyChooseUs.quality.title") || "Studio Quality"}
+                  </h3>
                         <p className="text-muted-foreground leading-relaxed">
-                          {t("whyChooseUs.quality.description") || "AI-powered technology trained on thousands of professional photos for authentic results."}
-                        </p>
+                    {t("whyChooseUs.quality.description") || "AI-powered technology trained on thousands of professional photos for authentic results."}
+                  </p>
                       </div>
                     </div>
                   </div>
-                </AnimatedSection>
+              </AnimatedSection>
 
-                <AnimatedSection delay={400}>
+              <AnimatedSection delay={400}>
                   <div className="group relative p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/10 to-orange-600/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                         <ShieldCheck className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-                      </div>
+                  </div>
                       <div className="flex-1">
                         <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
-                          {t("whyChooseUs.guarantee.title") || "Money-Back Guarantee"}
-                        </h3>
+                    {t("whyChooseUs.guarantee.title") || "Money-Back Guarantee"}
+                  </h3>
                         <p className="text-muted-foreground leading-relaxed">
-                          {t("whyChooseUs.guarantee.description") || "Not satisfied? Get a full refund, no questions asked."}
-                        </p>
+                    {t("whyChooseUs.guarantee.description") || "Not satisfied? Get a full refund, no questions asked."}
+                  </p>
                       </div>
                     </div>
                   </div>
-                </AnimatedSection>
-              </div>
+              </AnimatedSection>
             </div>
-          </section>
-        </AnimatedSection>
+          </div>
+        </section>
+      </AnimatedSection>
       )}
 
       {/* As Seen On Company Carousel - For Variant 1 only, after Why Choose Us */}
       {!isPage2Variant && !isPage3Variant && (
-      <div className="py-3 md:py-4 overflow-hidden bg-gradient-to-b from-gray-50/50 to-gray-100/30 dark:from-gray-900/50 dark:to-gray-800/30 border-y border-border/50">        <div className="container">
+      <div className="py-3 md:py-4 overflow-hidden bg-gray-50 border-y border-border/50">        <div className="container">
           {/* Section Title */}
           <div className="text-center mb-4 md:mb-8">
             <h2 className="text-lg md:text-xl font-semibold text-muted-foreground uppercase tracking-wider">
@@ -592,13 +1115,13 @@ export default function Home() {
                 ].map((company, idx) => (
                   <Fragment key={`first-${idx}`}>
                     {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
+                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-gray-100 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
                       <OptimizedImage 
                         src={company.image} 
                         alt={company.name}
                         width={120}
                         height={60}
-                        className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain md:hover:grayscale transition-all duration-200"
+                              className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain opacity-90 hover:opacity-100 transition-all duration-200 brightness-0 hover:brightness-100"
                       />
                     </div>
                   </Fragment>
@@ -623,13 +1146,13 @@ export default function Home() {
                 ].map((company, idx) => (
                   <Fragment key={`second-${idx}`}>
                     {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
+                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-gray-100 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
                       <OptimizedImage 
                         src={company.image} 
                         alt={company.name}
                         width={120}
                         height={60}
-                        className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain md:hover:grayscale transition-all duration-200"
+                              className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain opacity-90 hover:opacity-100 transition-all duration-200 brightness-0 hover:brightness-100"
                       />
                     </div>
                   </Fragment>
@@ -642,7 +1165,7 @@ export default function Home() {
 
       {/* As Seen On Company Carousel - For Variant 3, stays in original position */}
       {isPage3Variant && (
-      <div className="py-3 md:py-4 overflow-hidden bg-gradient-to-b from-gray-50/50 to-gray-100/30 dark:from-gray-900/50 dark:to-gray-800/30 border-y border-border/50">        <div className="container">
+      <div className="py-3 md:py-4 overflow-hidden bg-gray-50 border-y border-border/50">        <div className="container">
           {/* Section Title */}
           <div className="text-center mb-4 md:mb-8">
             <h2 className="text-lg md:text-xl font-semibold text-muted-foreground uppercase tracking-wider">
@@ -703,13 +1226,13 @@ export default function Home() {
                 ].map((company, idx) => (
                   <Fragment key={`first-${idx}`}>
                     {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
+                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-gray-100 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
                       <OptimizedImage 
                         src={company.image} 
                         alt={company.name}
                         width={120}
                         height={60}
-                        className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain md:hover:grayscale transition-all duration-200"
+                              className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain opacity-90 hover:opacity-100 transition-all duration-200 brightness-0 hover:brightness-100"
                       />
                     </div>
                   </Fragment>
@@ -734,13 +1257,13 @@ export default function Home() {
                 ].map((company, idx) => (
                   <Fragment key={`second-${idx}`}>
                     {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
+                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-gray-100 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
                       <OptimizedImage 
                         src={company.image} 
                         alt={company.name}
                         width={120}
                         height={60}
-                        className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain md:hover:grayscale transition-all duration-200"
+                              className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain opacity-90 hover:opacity-100 transition-all duration-200 brightness-0 hover:brightness-100"
                       />
                     </div>
                   </Fragment>
@@ -752,14 +1275,15 @@ export default function Home() {
       )}
 
             {/* Reviews Section - Reduced padding on mobile */}
-            <div id="testimonials" className="pt-8 sm:pt-12 md:pt-16 lg:pt-20 mb-12 sm:mb-16 md:mb-20 lg:mb-24 pb-20 sm:pb-16 md:pb-20 lg:pb-24 max-w-7xl mx-auto px-4 scroll-mt-20">
+            <section className="pt-8 sm:pt-12 md:pt-16 lg:pt-20 mb-12 sm:mb-16 md:mb-20 lg:mb-24 pb-20 sm:pb-16 md:pb-20 lg:pb-24 bg-background">
+            <div id="testimonials" className="max-w-7xl mx-auto px-4 scroll-mt-20">
                   {/* Section Title */}
               <div className="text-center mb-6 sm:mb-8 md:mb-12">
                     <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 leading-tight px-2">
                       {t("home.testimonialsTitlePart1")}{" "}
-                      <span className="text-blue-400">{t("home.testimonialsTitleProfessional")}</span>{" "}
+                      <span className="text-primary">{t("home.testimonialsTitleProfessional")}</span>{" "}
                       {t("home.testimonialsTitlePart2")}{" "}
-                      <span className="text-blue-400">{t("home.testimonialsTitleAI")}</span>? {t("home.testimonialsTitlePart3")}
+                      <span className="text-primary">{t("home.testimonialsTitleAI")}</span>? {t("home.testimonialsTitlePart3")}
                     </h2>
                     <p className="text-base sm:text-lg text-muted-foreground px-2">
                       {t("home.testimonialsSubtitle")}
@@ -988,119 +1512,11 @@ export default function Home() {
                 </Button>
               </div>
                     </div>
-
-      {/* How It Works Section - Reduced padding on mobile */}
-      <AnimatedSection>
-        <section id="how-it-works" className="py-8 sm:py-16 md:py-20 pb-20 sm:pb-16 md:pb-20">
-          <div className="container px-4">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-6 sm:mb-12 md:mb-16">
-              {t("howItWorks.title")}
-            </h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 max-w-6xl mx-auto mb-6 sm:mb-8 md:mb-12">
-              {(
-                t("howItWorks.steps", { returnObjects: true }) as Array<{
-                  title: string;
-                  description: string;
-                }>
-              ).map((step, idx) => {
-                // Images for each step
-                const stepImages = [
-                  "/howAISelfieWorks1.webp", // Step 1: Upload selfies
-                  "/howAISelfieWorks2.webp", // Step 2: Choose style
-                  "/howAISelfieWorks3.webp", // Step 3: AI magic
-                  "/howAISelfieWorks4.webp", // Step 4: Download and share
-                ];
-
-                // Icons for each step
-                const stepIcons = [
-                  <ArrowDown key="upload" className="w-6 h-6" />,
-                  <Sparkles key="style" className="w-6 h-6" />,
-                  <Zap key="ai" className="w-6 h-6" />,
-                  <Check key="done" className="w-6 h-6" />,
-                ];
-
-                // Time estimates
-                const timeEstimates = [
-                  "~1 min",
-                  "~1 min",
-                  "~1 min",
-                  "Instant"
-                ];
-                
-                return (
-                  <AnimatedSection key={idx} delay={idx * 50}>
-                    <Card className="p-4 sm:p-6 text-center h-full border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-xl group">
-                      {/* Step Number Badge */}
-                      <div className="relative mb-3 sm:mb-4">
-                        <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-xl sm:text-2xl md:text-3xl font-bold text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
-                          {idx + 1}
-                        </div>
-                        {/* Time badge */}
-                        <Badge className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-background border-2 border-primary text-xs font-semibold">
-                          {timeEstimates[idx]}
-                        </Badge>
-                      </div>
-
-                      {/* Step Image */}
-                      <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 mx-auto mb-3 sm:mb-4 rounded-lg overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                        <OptimizedImage
-                          src={stepImages[idx] || stepImages[0]}
-                          alt={step.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-
-                      {/* Icon */}
-                      <div className="mb-2 sm:mb-3 flex justify-center">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                          {stepIcons[idx]}
-                        </div>
-                      </div>
-
-                      <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">{step.title}</h3>
-                      <p className="text-muted-foreground text-xs sm:text-sm md:text-base leading-relaxed">{step.description}</p>
-                    </Card>
-                  </AnimatedSection>
-                );
-              })}
-            </div>
-
-            {/* Additional Info Box */}
-            <AnimatedSection delay={200}>
-              <Card className="max-w-4xl mx-auto p-4 sm:p-6 md:p-8 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/20">
-                <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 md:gap-6">
-                  <div className="flex-shrink-0">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-primary flex items-center justify-center">
-                      <Clock className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
-                    </div>
-                  </div>
-                  <div className="flex-1 text-center sm:text-left">
-                    <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">
-                      {t("howItWorks.totalTime.title") || "Total Time: Less Than 3 Minutes"}
-                    </h3>
-                    <p className="text-sm sm:text-base text-muted-foreground">
-                      {t("howItWorks.totalTime.description") || "From upload to download, get professional headshots faster than ordering coffee. No appointments, no waiting."}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            </AnimatedSection>
-
-            <div className="text-center">
-              <Button asChild size="lg" className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">
-                <a href={isPage2Or3Variant 
-                    ? (activeVariant ? `/dashboard?variant=${activeVariant}` : "/dashboard")
-                    : "/login"}>{t("howItWorks.cta")} →</a>
-              </Button>
-            </div>
-          </div>
-        </section>
-      </AnimatedSection>
+            </section>
 
       {/* As Seen On Company Carousel - For Variant 2 only, after How It Works */}
       {isPage2Variant && (
-      <div className="py-3 md:py-4 overflow-hidden bg-gradient-to-b from-gray-50/50 to-gray-100/30 dark:from-gray-900/50 dark:to-gray-800/30 border-y border-border/50">        <div className="container">
+      <div className="py-3 md:py-4 overflow-hidden bg-gray-50 border-y border-border/50">        <div className="container">
           {/* Section Title */}
           <div className="text-center mb-4 md:mb-8">
             <h2 className="text-lg md:text-xl font-semibold text-muted-foreground uppercase tracking-wider">
@@ -1161,13 +1577,13 @@ export default function Home() {
                 ].map((company, idx) => (
                   <Fragment key={`first-v2-${idx}`}>
                     {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
+                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-gray-100 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
                       <OptimizedImage 
                         src={company.image} 
                         alt={company.name}
                         width={120}
                         height={60}
-                        className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain md:hover:grayscale transition-all duration-200"
+                              className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain opacity-90 hover:opacity-100 transition-all duration-200 brightness-0 hover:brightness-100"
                       />
                     </div>
                   </Fragment>
@@ -1192,18 +1608,18 @@ export default function Home() {
                 ].map((company, idx) => (
                   <Fragment key={`second-v2-${idx}`}>
                     {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-background/50 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
+                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-gray-100 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
                       <OptimizedImage 
                         src={company.image} 
                         alt={company.name}
                         width={120}
                         height={60}
-                        className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain md:hover:grayscale transition-all duration-200"
+                              className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain opacity-90 hover:opacity-100 transition-all duration-200 brightness-0 hover:brightness-100"
                       />
-                    </div>
+                        </div>
                   </Fragment>
                 ))}
-            </div>
+                      </div>
           </div>
         </div>
       </div>
@@ -1221,15 +1637,15 @@ export default function Home() {
                 <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                   {t("whyChooseUs.subtitle") || "Professional headshots made simple, fast, and affordable"}
                 </p>
-              </div>
+                      </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                 <AnimatedSection delay={100}>
                   <div className="group relative p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
                     <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-600/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                      </div>
+                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <Clock className="w-6 h-6 text-primary" />
+                        </div>
                       <div className="flex-1">
                         <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
                           {t("whyChooseUs.fast.title") || "Lightning Fast"}
@@ -1238,16 +1654,16 @@ export default function Home() {
                           {t("whyChooseUs.fast.description") || "Get your professional photos in under 6 minutes. No waiting, no appointments."}
                         </p>
                       </div>
-                    </div>
+            </div>
                   </div>
                 </AnimatedSection>
 
-                <AnimatedSection delay={200}>
+            <AnimatedSection delay={200}>
                   <div className="group relative p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/10 to-green-600/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                         <Lock className="w-6 h-6 text-green-600 dark:text-green-400" />
-                      </div>
+                    </div>
                       <div className="flex-1">
                         <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
                           {t("whyChooseUs.privacy.title") || "100% Private"}
@@ -1255,7 +1671,7 @@ export default function Home() {
                         <p className="text-muted-foreground leading-relaxed">
                           {t("whyChooseUs.privacy.description") || "Your photos are encrypted and deleted after 30 days. Your privacy is our priority."}
                         </p>
-                      </div>
+                  </div>
                     </div>
                   </div>
                 </AnimatedSection>
@@ -1269,14 +1685,14 @@ export default function Home() {
                       <div className="flex-1">
                         <h3 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
                           {t("whyChooseUs.quality.title") || "Studio Quality"}
-                        </h3>
+                    </h3>
                         <p className="text-muted-foreground leading-relaxed">
                           {t("whyChooseUs.quality.description") || "AI-powered technology trained on thousands of professional photos for authentic results."}
-                        </p>
-                      </div>
-                    </div>
+                    </p>
                   </div>
-                </AnimatedSection>
+                </div>
+                  </div>
+            </AnimatedSection>
 
                 <AnimatedSection delay={400}>
                   <div className="group relative p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
@@ -1295,19 +1711,19 @@ export default function Home() {
                     </div>
                   </div>
                 </AnimatedSection>
-              </div>
             </div>
-          </section>
-        </AnimatedSection>
+          </div>
+        </section>
+      </AnimatedSection>
       )}
 
       {/* Money-Back Guarantee Banner */}
       <AnimatedSection>
-        <section className="py-8 sm:py-10 md:py-12 bg-gradient-to-r from-green-500/10 via-primary/10 to-green-500/10 border-y-2 border-green-500/20">
+        <section className="py-8 sm:py-10 md:py-12 bg-background border-y border-border/50">
           <div className="container max-w-5xl mx-auto px-4">
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left">
               <div className="flex-shrink-0">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary flex items-center justify-center shadow-lg">
                   <ShieldCheck className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
                 </div>
               </div>
@@ -1320,7 +1736,7 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex-shrink-0">
-                <Badge className="bg-green-500 text-white text-sm sm:text-base px-4 py-2">
+                <Badge className="bg-primary text-white text-sm sm:text-base px-4 py-2">
                   {t("guaranteeBanner.badge") || "Risk-Free"}
                 </Badge>
               </div>
@@ -1329,16 +1745,108 @@ export default function Home() {
         </section>
       </AnimatedSection>
 
-      {/* Pricing Section - Reduced padding on mobile */}
+      {/* Comparison Section - Aragon style */}
       <AnimatedSection>
-        <section id="pricing" className="py-12 sm:py-16 md:py-20 pb-20 sm:pb-16 md:pb-20 bg-card">
-          <div className="container px-4">
-            <div className="text-center mb-8 sm:mb-10 md:mb-12">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4">
+          <section className="py-12 sm:py-20 md:py-24 bg-background">
+          <div className="container max-w-5xl mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+                {t("comparison.title") || "Compare AISelfie to hiring a corporate photographer"}
+              </h2>
+            </div>
+            
+            <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-xl">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/50">
+                      <th className="text-left p-4 sm:p-6 font-semibold text-foreground"></th>
+                      <th className="text-center p-4 sm:p-6 font-semibold text-primary">With AISelfie</th>
+                      <th className="text-center p-4 sm:p-6 font-semibold text-muted-foreground">Hiring a photographer</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-border/50">
+                      <td className="p-4 sm:p-6 font-medium">{t("comparison.doItFromHome") || "Do it from home"}</td>
+                      <td className="p-4 sm:p-6 text-center">
+                        <Check className="w-5 h-5 mx-auto text-green-600" />
+                      </td>
+                      <td className="p-4 sm:p-6 text-center">
+                        <X className="w-5 h-5 mx-auto text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground block mt-1">{t("comparison.onLocation") || "No, on-location shoot"}</span>
+                      </td>
+                    </tr>
+                    <tr className="border-b border-border/50">
+                      <td className="p-4 sm:p-6 font-medium">{t("comparison.time") || "Time"}</td>
+                      <td className="p-4 sm:p-6 text-center font-semibold text-primary">
+                        {t("comparison.quickTime") || "As quick as 30 min"}
+                      </td>
+                      <td className="p-4 sm:p-6 text-center text-muted-foreground">
+                        {t("comparison.photographerTime") || "2–3 work days"}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-border/50">
+                      <td className="p-4 sm:p-6 font-medium">{t("comparison.numberOfHeadshots") || "Number of headshots"}</td>
+                      <td className="p-4 sm:p-6 text-center font-semibold text-primary">
+                        {t("comparison.upTo100") || "Up to 100"}
+                      </td>
+                      <td className="p-4 sm:p-6 text-center text-muted-foreground">
+                        {t("comparison.photographerHeadshots") || "5-10 per person"}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-border/50">
+                      <td className="p-4 sm:p-6 font-medium">{t("comparison.outfits") || "Outfits"}</td>
+                      <td className="p-4 sm:p-6 text-center font-semibold text-primary">
+                        {t("comparison.manyOutfits") || "20+ outfits"}
+                      </td>
+                      <td className="p-4 sm:p-6 text-center text-muted-foreground">
+                        {t("comparison.photographerOutfits") || "1–2 outfits"}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-border/50">
+                      <td className="p-4 sm:p-6 font-medium">{t("comparison.backgrounds") || "Backgrounds"}</td>
+                      <td className="p-4 sm:p-6 text-center font-semibold text-primary">
+                        {t("comparison.yourChoice") || "Your choice"}
+                      </td>
+                      <td className="p-4 sm:p-6 text-center text-muted-foreground">
+                        {t("comparison.oneBackground") || "1 background"}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 sm:p-6 font-medium">{t("comparison.visualConsistency") || "Visual Consistency"}</td>
+                      <td className="p-4 sm:p-6 text-center">
+                        <Check className="w-5 h-5 mx-auto text-green-600" />
+                        <span className="text-xs text-muted-foreground block mt-1">{t("comparison.presetsAvailable") || "Yes, presets available"}</span>
+                      </td>
+                      <td className="p-4 sm:p-6 text-center text-muted-foreground">
+                        {t("comparison.manualEdits") || "Manual edits needed"}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+      </AnimatedSection>
+
+      {/* Pricing Section - Aragon style */}
+      <AnimatedSection>
+        <section id="pricing" className="py-12 sm:py-20 md:py-24 bg-background">
+          <div className="container max-w-6xl mx-auto px-4">
+            {/* Discount Badge - Aragon style */}
+            <div className="text-center mb-6">
+              <Badge className="px-4 py-2 text-base font-semibold bg-primary/10 text-primary border-primary/20">
+                {t("pricing.discountBadge") || "20% off all packages limited time only!"}
+              </Badge>
+            </div>
+            
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 tracking-tight">
                 {(() => {
                   const title = t("pricing.title");
-                  // Match "5x less", "5x menos", "5 volte meno", etc.
-                  const match = title.match(/(.*?)(5x?\s*(?:less|menos|volte\s+meno))(?:\s+than\s+|\s+que\s+|di\s+)(.*)/i);
+                  // Match "100x less", "100x menos", "100 volte meno", etc.
+                  const match = title.match(/(.*?)(100x?\s*(?:less|menos|volte\s+meno))(?:\s+than\s+|\s+que\s+|di\s+)(.*)/i);
                   if (match) {
                     return (
                       <>
@@ -1348,11 +1856,11 @@ export default function Home() {
                       </>
                     );
                   }
-                  // Fallback: try to find and highlight "5x" pattern
-                  const parts = title.split(/(5x?\s*(?:less|menos|volte\s+meno))/i);
+                  // Fallback: try to find and highlight "100x" pattern
+                  const parts = title.split(/(100x?\s*(?:less|menos|volte\s+meno))/i);
                   if (parts.length > 1) {
                     return parts.map((part, idx) => 
-                      /5x?\s*(?:less|menos|volte\s+meno)/i.test(part) ? (
+                      /100x?\s*(?:less|menos|volte\s+meno)/i.test(part) ? (
                         <span key={idx} className="text-green-700">{part}</span>
                       ) : (
                         part
@@ -1362,12 +1870,12 @@ export default function Home() {
                   return title;
                 })()}
               </h2>
-              <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-2">
-                {t("pricing.subtitle")}
+              <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
+                {t("pricing.subtitle") || "Professional photoshoots in the US cost an average of $250 for a one-hour session — save time and money with our high-tech solution."}
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
               {/* Starter Pack */}
               <AnimatedSection delay={100}>
                 <Card className="p-8 h-full">
@@ -1488,8 +1996,8 @@ export default function Home() {
             {/* Money-Back Guarantee */}
             <AnimatedSection delay={500}>
               <div className="flex items-center justify-center gap-2 pt-6 mt-6 border-t border-border max-w-2xl mx-auto">
-                <ShieldCheck className="w-5 h-5 text-green-500 shrink-0" />
-                <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                <ShieldCheck className="w-5 h-5 text-primary shrink-0" />
+                <p className="text-sm font-medium text-primary">
                   {t("buyCredits.moneyBackGuarantee")}
                 </p>
               </div>
@@ -1503,7 +2011,7 @@ export default function Home() {
 
       {/* Security & Privacy Section */}
       <AnimatedSection>
-        <section className="py-12 sm:py-16 md:py-20 pb-20 sm:pb-16 md:pb-20 bg-gray-50 dark:bg-gray-900/50">
+        <section className="py-12 sm:py-16 md:py-20 pb-20 sm:pb-16 md:pb-20 bg-background">
           <div className="container max-w-6xl mx-auto px-4">
             <div className="grid md:grid-cols-2 gap-8 sm:gap-12 items-center">
               {/* Left: Image */}
@@ -1723,16 +2231,16 @@ export default function Home() {
             }
           }
         `}</style>
-        <section className="py-10 sm:py-12 md:py-14 pb-20 sm:pb-12 md:pb-14 bg-gray-900">
+        <section className="py-10 sm:py-12 md:py-14 pb-20 sm:pb-12 md:pb-14 bg-background">
           <div className="container max-w-7xl mx-auto px-4">
             <div className="grid md:grid-cols-2 gap-8 sm:gap-12 items-center">
               {/* Left Side - Text and CTA */}
-              <div className="space-y-4 sm:space-y-6 text-white text-center md:text-left">
+              <div className="space-y-4 sm:space-y-6 text-foreground text-center md:text-left">
                 <div>
                   <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4">
                     {t("ctaSection.title")}
                   </h2>
-                  <p className="text-lg sm:text-xl md:text-2xl text-gray-200">
+                  <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground">
                     {t("ctaSection.subtitle")}
                   </p>
                 </div>
@@ -1834,6 +2342,9 @@ export default function Home() {
           </div>
         </section>
       </AnimatedSection>
+
+      {/* Discount Modal */}
+      <DiscountModal open={showDiscountModal} onOpenChange={setShowDiscountModal} />
     </div>
   );
 }

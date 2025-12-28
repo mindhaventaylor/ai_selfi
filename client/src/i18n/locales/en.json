@@ -15,9 +15,12 @@
     "checkmark2": "Results in 5 minutes",
     "checkmark3": "100% money back guarantee",
     "title": "Skip the $500 studio fee. Professional headshots in minutes.",
+    "titleLine1": "The Most Popular",
+    "titleLine2": "AI Headshot Generator",
     "subtitle": "We turn your casual selfies into **high-quality professional headshots** using specialized AI. Get the studio look without the appointment: **one simple payment**, instant delivery, and photos that look authentically like you.",
     "cta": "Get my professional headshots",
-    "guarantee": "Full refund guarantee"
+    "guarantee": "Full refund guarantee",
+    "rankingBadge": "THE #1 RANKED AI HEADSHOT COMPANY"
   },
   "examples": {
     "title": "Examples of professional AI photos",
@@ -88,13 +91,21 @@
   },
   "comparison": {
     "badge": "Professional AI photo without wasting time",
+    "title": "Compare AISelfie to hiring a corporate photographer",
+    "subtitle": "See why thousands choose AI over expensive studio sessions",
+    "bestValue": "Best Value",
     "mainTitle": {
       "part1": "Traditional photo shoots are made for",
       "models": "models",
       "part2": ", not for busy professionals."
     },
     "traditional": {
-      "title": "Traditional Photo Sessions",
+      "title": "Traditional Studio",
+      "item1": "$500+ per session",
+      "item2": "Weeks of waiting for appointment",
+      "item3": "Limited retakes",
+      "item4": "Travel time required",
+      "item5": "No refunds if unsatisfied",
       "items": [
         "Find photographer, schedule appointment, wait weeks for availability",
         "Travel to the studio (time + gas + traffic stress)",
@@ -104,6 +115,14 @@
         "Wait 7-14 days to receive edited photos"
       ],
       "cost": "Average cost: $150-$500"
+    },
+    "aiselfie": {
+      "title": "AISelfie",
+      "item1": "Starting at $5 - 100x cheaper",
+      "item2": "Ready in under 6 minutes",
+      "item3": "Unlimited retakes included",
+      "item4": "From anywhere, anytime",
+      "item5": "100% money-back guarantee"
     },
     "ai": {
       "title": "Your Photo Session with AISelfie",
@@ -116,7 +135,33 @@
         "Instant results, immediate download"
       ],
       "stats": "Over 25.256 professional photos created"
-    }
+    },
+    "items": [
+      "Find photographer, schedule appointment, wait weeks for availability",
+      "Travel to the studio (time + gas + traffic stress)",
+      "2-3 hours of your day for the photo session",
+      "Pay $150-$500 per session (no guarantee of good results)",
+      "Feel uncomfortable posing (most of us aren't models)",
+      "Wait 7-14 days to receive edited photos"
+    ],
+    "cost": "Average cost: $150-$500",
+    "doItFromHome": "Do it from home",
+    "onLocation": "No, on-location session",
+    "time": "Time",
+    "quickTime": "As quick as 30 min",
+    "photographerTime": "2-3 business days",
+    "numberOfHeadshots": "Number of headshots",
+    "upTo100": "Up to 100",
+    "photographerHeadshots": "5-10 per person",
+    "outfits": "Outfits",
+    "manyOutfits": "20+ outfits",
+    "photographerOutfits": "1-2 outfits",
+    "backgrounds": "Backgrounds",
+    "yourChoice": "Your choice",
+    "oneBackground": "1 background",
+    "visualConsistency": "Visual Consistency",
+    "presetsAvailable": "Yes, presets available",
+    "manualEdits": "Manual edits needed"
   },
   "styles": {
     "title": "Over 100 Styles That Capture Who You Are",
@@ -193,42 +238,6 @@
       "description": "We never share your photos with third parties. Your data stays private."
     }
   },
-  "comparison": {
-    "badge": "Professional AI photo without wasting time",
-    "title": "Traditional Studio vs. AISelfie",
-    "subtitle": "See why thousands choose AI over expensive studio sessions",
-    "bestValue": "Best Value",
-    "traditional": {
-      "title": "Traditional Studio",
-      "item1": "$500+ per session",
-      "item2": "Weeks of waiting for appointment",
-      "item3": "Limited retakes",
-      "item4": "Travel time required",
-      "item5": "No refunds if unsatisfied"
-    },
-    "aiselfie": {
-      "title": "AISelfie",
-      "item1": "Starting at $5 - 100x cheaper",
-      "item2": "Ready in under 6 minutes",
-      "item3": "Unlimited retakes included",
-      "item4": "From anywhere, anytime",
-      "item5": "100% money-back guarantee"
-    },
-    "mainTitle": {
-      "part1": "Traditional photo shoots are made for",
-      "models": "models",
-      "part2": ", not for busy professionals."
-    },
-    "items": [
-      "Find photographer, schedule appointment, wait weeks for availability",
-      "Travel to the studio (time + gas + traffic stress)",
-      "2-3 hours of your day for the photo session",
-      "Pay $150-$500 per session (no guarantee of good results)",
-      "Feel uncomfortable posing (most of us aren't models)",
-      "Wait 7-14 days to receive edited photos"
-    ],
-    "cost": "Average cost: $150-$500"
-  },
   "trust": {
     "badge1": "SSL Encrypted",
     "badge2": "Money-Back Guarantee",
@@ -262,7 +271,8 @@
     "cta": "Create Your Photos Now"
   },
   "pricing": {
-    "title": "Your professional photo for 5x less than a studio session",
+    "discountBadge": "20% off all packages - limited time only!",
+    "title": "Your professional photo for 100x less than a studio session",
     "subtitle": "Transform your selfies into high-quality AI professional photos. Pay once and receive between 40 and 100 ready images in minutes - no studios, no photographers, no hidden costs.",
     "features": {
       "title": "Highlight your personal brand",
@@ -1431,6 +1441,10 @@
     "lastUpdated": "Last updated:"
   },
   "home": {
+    "beforeAfterSubtitle": "Real photos generated for our real customers. See our results and reviews for yourself.",
+    "beforeAfterDisclaimer": "These photos are not real. 100% AI Generated.",
+    "beforeLabel": "Before",
+    "afterLabel": "After",
     "examples": [
       {
         "name": "Alba Ripoll Cucó",
@@ -1449,6 +1463,8 @@
       }
     ],
     "altText": {
+      "beforePhoto": "Before photo",
+      "afterPhoto": "After photo",
       "professionalPhoto": "Professional AI Photo",
       "style": "Style",
       "aiProfessionalPhoto": "AI Professional Photo",
@@ -1484,7 +1500,28 @@
       "subtitle": "Get your professional photos in minutes.",
       "cta": "Create my professional photos"
     },
-    "trustedBy": "TRUSTED BY PROFESSIONALS AT"
+    "trustedBy": "TRUSTED BY PROFESSIONALS AT",
+    "trustedByText": "Trusted by over 2,312,000 professionals and teams. 40,011,000+ headshots generated to date.",
+    "getYourPhotos": {
+      "title": "Get your portrait photos in minutes, not days",
+      "subtitle": "It's as easy as 1-2-3-4!",
+      "step1": {
+        "title": "Upload some of your photos",
+        "description": "Selfies work very well. Six uploads are all you need - focus on quality instead of quantity to get the best results"
+      },
+      "step2": {
+        "title": "Select clothing and backgrounds",
+        "description": "Choose from our selection of selected clothes and backgrounds."
+      },
+      "step3": {
+        "title": "We create a personalized AI model just for you",
+        "description": "Our AI model starts working. Just wait for the results and we will send you an email when your portrait photos are ready!"
+      },
+      "step4": {
+        "title": "View, edit and download your favorites!",
+        "description": "You will receive up to 100 high-quality photos to use as you wish."
+      }
+    }
   },
   "dashboardV2": {
     "welcome": "Welcome",
@@ -2213,5 +2250,14 @@
       "processing": "Processing...",
       "buy": "Buy {{plan}} - {{price}}"
     }
+  },
+  "discountModal": {
+    "title": "Get 15% off",
+    "description": "Get your AI generated headshot today. As a New Year's Eve offer, get 15% off on your purchase.",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "Email address",
+    "cta": "Get discount",
+    "testimonial": "\"Fantastic technology. Use this application! The result is photos that look just like me. The user interface is very easy to use.\"",
+    "testimonialAuthor": "Douglass Davidoff"
   }
 }
