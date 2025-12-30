@@ -64,33 +64,39 @@ export default function SettingsGeneral() {
     return flags[code] || "🌐";
   };
 
+  const bgClass = isPage3Variant ? "bg-gray-900" : "bg-background";
+  const textClass = isPage3Variant ? "text-white" : "";
+  const textMutedClass = isPage3Variant ? "text-gray-300" : "text-muted-foreground";
+  const cardBgClass = isPage3Variant ? "bg-gray-800" : "bg-card";
+  const cardBorderClass = isPage3Variant ? "border-gray-700" : "border-border";
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen ${bgClass}`}>
       <div className={`max-w-4xl mx-auto px-6 py-8 ${isMobile ? "pb-20" : ""}`}>
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold">{t("settingsGeneral.title")}</h1>
+          <h1 className={`text-3xl md:text-4xl font-bold ${textClass}`}>{t("settingsGeneral.title")}</h1>
         </div>
 
         <div className="space-y-6">
           {/* Language Section */}
-          <Card className="bg-purple-500/10 border-purple-500/20">
+          <Card className={`${isPage3Variant ? 'bg-gray-800 border-gray-700' : 'bg-purple-500/10 border-purple-500/20'}`}>
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <div className={`w-10 h-10 rounded-lg ${isPage3Variant ? 'bg-primary/20' : 'bg-primary/20'} flex items-center justify-center`}>
                     <Globe className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold">{t("settingsGeneral.language")}</h2>
-                    <p className="text-sm text-muted-foreground">
+                    <h2 className={`text-xl font-semibold ${textClass}`}>{t("settingsGeneral.language")}</h2>
+                    <p className={`text-sm ${textMutedClass}`}>
                       {t("settingsGeneral.languageDesc")}
                     </p>
                   </div>
                 </div>
 
                 <Select value={language} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className="w-full max-w-xs">
+                  <SelectTrigger className={`w-full max-w-xs ${isPage3Variant ? 'bg-gray-700 border-gray-600 text-white' : ''}`}>
                     <SelectValue>
                       <div className="flex items-center gap-2">
                         <span>{getLanguageFlag(language)}</span>
@@ -98,26 +104,26 @@ export default function SettingsGeneral() {
                       </div>
                     </SelectValue>
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="es">
+                  <SelectContent className={isPage3Variant ? 'bg-gray-800 border-gray-700' : ''}>
+                    <SelectItem value="es" className={isPage3Variant ? 'text-white hover:bg-gray-700' : ''}>
                       <div className="flex items-center gap-2">
                         <span>🇪🇸</span>
                         <span>{t("settingsGeneral.spanish")}</span>
                       </div>
                     </SelectItem>
-                    <SelectItem value="pt-BR">
+                    <SelectItem value="pt-BR" className={isPage3Variant ? 'text-white hover:bg-gray-700' : ''}>
                       <div className="flex items-center gap-2">
                         <span>🇧🇷</span>
                         <span>{t("settingsGeneral.portuguese")}</span>
                       </div>
                     </SelectItem>
-                    <SelectItem value="en">
+                    <SelectItem value="en" className={isPage3Variant ? 'text-white hover:bg-gray-700' : ''}>
                       <div className="flex items-center gap-2">
                         <span>🇬🇧</span>
                         <span>{t("settingsGeneral.english")}</span>
                       </div>
                     </SelectItem>
-                    <SelectItem value="it">
+                    <SelectItem value="it" className={isPage3Variant ? 'text-white hover:bg-gray-700' : ''}>
                       <div className="flex items-center gap-2">
                         <span>🇮🇹</span>
                         <span>{t("settingsGeneral.italian")}</span>
@@ -130,16 +136,16 @@ export default function SettingsGeneral() {
           </Card>
 
           {/* Account Section */}
-          <Card className="bg-red-500/10 border-red-500/20">
+          <Card className={`${isPage3Variant ? 'bg-gray-800 border-gray-700' : 'bg-red-500/10 border-red-500/20'}`}>
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+                  <div className={`w-10 h-10 rounded-lg ${isPage3Variant ? 'bg-red-500/20' : 'bg-red-500/20'} flex items-center justify-center`}>
                     <LogOut className="w-5 h-5 text-red-400" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold">{t("settingsGeneral.account")}</h2>
-                    <p className="text-sm text-muted-foreground">
+                    <h2 className={`text-xl font-semibold ${textClass}`}>{t("settingsGeneral.account")}</h2>
+                    <p className={`text-sm ${textMutedClass}`}>
                       {t("settingsGeneral.accountDesc")}
                     </p>
                   </div>
@@ -162,28 +168,32 @@ export default function SettingsGeneral() {
       {/* Bottom Navigation Bar - Mobile Only (Hidden for page1 variant) */}
       {isMobile && (isPage2Variant || isPage3Variant) && (() => {
         const variantParam = isPage3Variant ? "?variant=page3" : "?variant=page2";
+        const navBgClass = isPage3Variant ? "bg-gray-900" : "bg-background";
+        const navBorderClass = isPage3Variant ? "border-gray-700" : "border-border";
+        const navHoverClass = isPage3Variant ? "hover:bg-gray-800" : "hover:bg-accent";
+        const navTextClass = isPage3Variant ? "text-gray-300" : "text-muted-foreground";
         return (
-        <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 shadow-lg">
+        <div className={`fixed bottom-0 left-0 right-0 ${navBgClass} border-t ${navBorderClass} z-50 shadow-lg`}>
           <div className="max-w-4xl mx-auto px-4 py-3">
             <div className="flex items-end justify-around relative">
               {/* Start Here */}
               <button
                 onClick={() => setLocation(`/dashboard/start${variantParam}`)}
-                className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                className={`flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg ${navHoverClass} transition-colors min-w-[50px]`}
                 aria-label="Start Here"
               >
-                <HelpCircle className="h-6 w-6 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">Start</span>
+                <HelpCircle className={`h-6 w-6 ${navTextClass}`} />
+                <span className={`text-xs ${navTextClass}`}>Start</span>
               </button>
 
               {/* Gallery */}
               <button
                 onClick={() => setLocation(`/dashboard/gallery${variantParam}`)}
-                className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                className={`flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg ${navHoverClass} transition-colors min-w-[50px]`}
                 aria-label="Gallery"
               >
-                <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">Gallery</span>
+                <ImageIcon className={`h-6 w-6 ${navTextClass}`} />
+                <span className={`text-xs ${navTextClass}`}>Gallery</span>
               </button>
 
               {/* Create - Centered, Prominent Button */}
@@ -198,17 +208,17 @@ export default function SettingsGeneral() {
               {/* Buy Credits */}
               <button
                 onClick={() => setLocation(`/dashboard/credits/buy${variantParam}`)}
-                className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                className={`flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg ${navHoverClass} transition-colors min-w-[50px]`}
                 aria-label="Buy Credits"
               >
-                <CreditCard className="h-6 w-6 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">Credits</span>
+                <CreditCard className={`h-6 w-6 ${navTextClass}`} />
+                <span className={`text-xs ${navTextClass}`}>Credits</span>
               </button>
 
               {/* Settings */}
               <button
                 onClick={() => setLocation(`/dashboard/settings/general${variantParam}`)}
-                className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                className={`flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg ${navHoverClass} transition-colors min-w-[50px]`}
                 aria-label="Settings"
               >
                 <Settings className="h-6 w-6 text-primary" />

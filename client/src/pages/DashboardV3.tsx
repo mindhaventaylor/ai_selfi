@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
+import { APP_LOGO } from "@/const";
 import { 
   Upload,
   X,
@@ -26,6 +27,7 @@ import {
   Check,
   Loader2,
   ShieldCheck,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { exampleImages } from "@/data/exampleImages";
@@ -709,14 +711,56 @@ Output should be a vertical rectangle. Entire head should be visible`;
   // ============ HERO VIEW ============
   if (view === "hero") {
     return (
-      <div className="bg-background min-h-[calc(100vh-56px)]">
+      <div className="bg-gray-900 min-h-[calc(100vh-56px)]">
+        {/* Desktop Header with Credits */}
+        {!isMobile && (
+          <div className="sticky top-0 z-40 border-b border-gray-700 bg-gray-900/95 backdrop-blur">
+            <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img src={APP_LOGO} alt="AISelfie" className="h-8 w-8 rounded-lg" />
+                <span className="font-bold text-lg bg-gradient-to-r from-pink-400 to-orange-500 bg-clip-text text-transparent">
+                  Alselfie
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-9 rounded-full px-4 gap-2 border-gray-700 bg-gray-800 text-white hover:bg-gray-700 hover:text-white"
+                  onClick={() => setLocation("/dashboard/credits/buy?variant=page3")}
+                >
+                  <Clock className="h-4 w-4 text-white" />
+                  <span>{t("dashboardLayout.creditsLabel")}: {user?.credits ?? 0}</span>
+                </Button>
+                {user && (
+                  <button
+                    onClick={() => setLocation("/dashboard/settings/general?variant=page3")}
+                    className="h-9 w-9 rounded-full border-2 border-gray-700 hover:ring-2 hover:ring-primary transition-all overflow-hidden bg-gray-800 flex items-center justify-center"
+                  >
+                    {user?.avatarUrl ? (
+                      <img 
+                        src={user.avatarUrl} 
+                        alt={user?.name || "User"} 
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-xs font-medium text-white">
+                        {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
+                      </span>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
         <div className={cn("mx-auto w-full max-w-lg px-6 flex flex-col items-center", isMobile ? "pt-8 pb-32" : "py-16")}>
           {/* Hero Card */}
-          <div className="w-full rounded-3xl border border-border bg-card/50 p-8 text-center">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">
+          <div className="w-full rounded-3xl border border-gray-700 bg-gray-800 p-8 text-center">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4 text-white">
               {t("dashboardV3.hero.title")}
             </h1>
-            <p className="text-muted-foreground text-lg mb-8">
+            <p className="text-gray-300 text-lg mb-8">
               {t("dashboardV3.hero.subtitle")}
             </p>
             
@@ -725,7 +769,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
               {heroExampleImages.map((src, idx) => (
                 <div 
                   key={idx} 
-                  className="w-28 h-36 md:w-32 md:h-44 rounded-2xl overflow-hidden border border-border shadow-lg"
+                  className="w-28 h-36 md:w-32 md:h-44 rounded-2xl overflow-hidden border border-gray-700 shadow-lg"
                 >
                   <img 
                     src={src} 
@@ -750,25 +794,25 @@ Output should be a vertical rectangle. Entire head should be visible`;
 
         {/* Bottom Navigation (Mobile) */}
         {isMobile && (
-          <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 shadow-lg">
+          <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 z-50 shadow-lg">
             <div className="max-w-4xl mx-auto px-4 py-3">
               <div className="flex items-end justify-around relative">
                 <button
                   onClick={() => setLocation("/dashboard/start?variant=page3")}
-                  className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                  className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-gray-800 transition-colors min-w-[50px]"
                   aria-label={t("dashboardV3.nav.start")}
                 >
-                  <HelpCircle className="h-6 w-6 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">{t("dashboardV3.nav.start")}</span>
+                  <HelpCircle className="h-6 w-6 text-gray-300" />
+                  <span className="text-xs text-gray-300">{t("dashboardV3.nav.start")}</span>
                 </button>
 
                 <button
                   onClick={() => setLocation("/dashboard/gallery?variant=page3")}
-                  className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                  className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-gray-800 transition-colors min-w-[50px]"
                   aria-label={t("dashboardV3.nav.gallery")}
                 >
-                  <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">{t("dashboardV3.nav.gallery")}</span>
+                  <ImageIcon className="h-6 w-6 text-gray-300" />
+                  <span className="text-xs text-gray-300">{t("dashboardV3.nav.gallery")}</span>
                 </button>
 
                 <button
@@ -781,20 +825,20 @@ Output should be a vertical rectangle. Entire head should be visible`;
 
                 <button
                   onClick={() => setLocation("/dashboard/credits/buy?variant=page3")}
-                  className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                  className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-gray-800 transition-colors min-w-[50px]"
                   aria-label={t("dashboardV3.nav.credits")}
                 >
-                  <CreditCard className="h-6 w-6 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">{t("dashboardV3.nav.credits")}</span>
+                  <CreditCard className="h-6 w-6 text-gray-300" />
+                  <span className="text-xs text-gray-300">{t("dashboardV3.nav.credits")}</span>
                 </button>
 
                 <button
                   onClick={() => setLocation("/dashboard/settings/general?variant=page3")}
-                  className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-accent transition-colors min-w-[50px]"
+                  className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-gray-800 transition-colors min-w-[50px]"
                   aria-label={t("dashboardV3.nav.settings")}
                 >
-                  <Settings className="h-6 w-6 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">{t("dashboardV3.nav.settings")}</span>
+                  <Settings className="h-6 w-6 text-gray-300" />
+                  <span className="text-xs text-gray-300">{t("dashboardV3.nav.settings")}</span>
                 </button>
               </div>
             </div>
@@ -806,13 +850,13 @@ Output should be a vertical rectangle. Entire head should be visible`;
 
   // ============ CREATE VIEW (no header/navbar) ============
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-gray-900 min-h-screen">
       {/* Back Button */}
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border">
+      <div className="sticky top-0 z-40 bg-gray-900/95 backdrop-blur border-b border-gray-700">
         <div className={cn("mx-auto px-4 py-3 flex items-center", isMobile ? "max-w-md" : "max-w-6xl")}>
           <button
             onClick={() => setView("hero")}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
             <span className="font-medium">{t("dashboardV3.create.back")}</span>
@@ -828,8 +872,8 @@ Output should be a vertical rectangle. Entire head should be visible`;
             <div className={cn("col-span-5 lg:col-span-4")}>
               <div className={cn("sticky top-24")}>
                 <div className="mb-6">
-                  <h2 className="text-2xl font-bold">{t("dashboardV3.create.uploadTitle")}</h2>
-                  <p className="text-muted-foreground mt-1">
+                  <h2 className="text-2xl font-bold text-white">{t("dashboardV3.create.uploadTitle")}</h2>
+                  <p className="text-gray-300 mt-1">
                     {t("dashboardV3.create.uploadSubtitle")}
                   </p>
                 </div>
@@ -838,7 +882,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                 <div 
                   className={cn(
                     "relative w-full rounded-2xl border-2 border-dashed transition-all overflow-hidden cursor-pointer",
-                    isDragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
+                    isDragging ? "border-primary bg-primary/5" : "border-gray-700 hover:border-primary/50",
                     "aspect-[3/4] max-h-[500px]"
                   )}
                   onDrop={handleDrop}
@@ -864,7 +908,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                       <button
                         type="button"
                         onClick={removeFile}
-                        className="absolute top-2 right-2 h-8 w-8 rounded-full bg-background/90 border border-border shadow flex items-center justify-center hover:bg-background transition-colors"
+                        className="absolute top-2 right-2 h-8 w-8 rounded-full bg-gray-800/90 border border-gray-700 shadow flex items-center justify-center hover:bg-gray-800 transition-colors"
                         aria-label="Remove image"
                       >
                         <X className="h-4 w-4" />
@@ -875,10 +919,10 @@ Output should be a vertical rectangle. Entire head should be visible`;
                       <div className={cn("rounded-full bg-primary/10 flex items-center justify-center mb-4", "w-16 h-16")}>
                         <Upload className={cn("text-primary", "h-8 w-8")} />
                       </div>
-                      <h3 className={cn("font-semibold mb-1", "text-lg")}>
+                      <h3 className={cn("font-semibold mb-1 text-white", "text-lg")}>
                         {t("dashboardV3.create.dragDrop")}
                       </h3>
-                      <p className="text-xs text-muted-foreground max-w-[200px]">
+                      <p className="text-xs text-gray-300 max-w-[200px]">
                         {t("dashboardV3.create.supportInfo")}
                       </p>
                     </div>
@@ -893,8 +937,8 @@ Output should be a vertical rectangle. Entire head should be visible`;
             <div>
               {!isMobile && (
                 <div className="mb-6">
-                  <h2 className="text-2xl font-bold">{t("dashboardV3.create.customizeTitle")}</h2>
-                  <p className="text-muted-foreground mt-1">
+                  <h2 className="text-2xl font-bold text-white">{t("dashboardV3.create.customizeTitle")}</h2>
+                  <p className="text-gray-300 mt-1">
                     {t("dashboardV3.create.customizeSubtitle")}
                   </p>
                 </div>
@@ -902,7 +946,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
 
               {/* Tabs */}
               <div className={cn(
-                "flex items-center gap-8 border-b border-border pb-1", 
+                "flex items-center gap-8 border-b border-gray-700 pb-1", 
                 isMobile ? "justify-center mt-4" : "justify-start mb-8"
               )}>
                 <button 
@@ -913,7 +957,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                   }}
                   className={cn(
                     "flex items-center gap-2 pb-2 -mb-2.5 transition-colors",
-                    tab === "woman" ? "text-primary border-b-2 border-primary font-medium" : "text-muted-foreground hover:text-foreground"
+                    tab === "woman" ? "text-primary border-b-2 border-primary font-medium" : "text-gray-300 hover:text-white"
                   )}
                 >
                   <User className="h-4 w-4" />
@@ -927,7 +971,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                   }}
                   className={cn(
                     "flex items-center gap-2 pb-2 -mb-2.5 transition-colors",
-                    tab === "man" ? "text-primary border-b-2 border-primary font-medium" : "text-muted-foreground hover:text-foreground"
+                    tab === "man" ? "text-primary border-b-2 border-primary font-medium" : "text-gray-300 hover:text-white"
                   )}
                 >
                   <User className="h-4 w-4" />
@@ -937,7 +981,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                   onClick={() => setTab("custom")}
                   className={cn(
                     "flex items-center gap-2 pb-2 -mb-2.5 transition-colors",
-                    tab === "custom" ? "text-primary border-b-2 border-primary font-medium" : "text-muted-foreground hover:text-foreground"
+                    tab === "custom" ? "text-primary border-b-2 border-primary font-medium" : "text-gray-300 hover:text-white"
                   )}
                 >
                   <Settings className="h-4 w-4" />
@@ -961,7 +1005,10 @@ Output should be a vertical rectangle. Entire head should be visible`;
                         variant="outline" 
                         size="sm"
                         onClick={() => setCustomPrompt(presets.professional.prompt)}
-                        className={cn(customPrompt === presets.professional.prompt && "bg-primary/10 border-primary")}
+                        className={cn(
+                          customPrompt === presets.professional.prompt && "bg-primary/10 border-primary text-white",
+                          "border-gray-700 text-white hover:bg-gray-800"
+                        )}
                       >
                         {presets.professional.label}
                       </Button>
@@ -969,7 +1016,10 @@ Output should be a vertical rectangle. Entire head should be visible`;
                         variant="outline" 
                         size="sm"
                         onClick={() => setCustomPrompt(presets.business.prompt)}
-                        className={cn(customPrompt === presets.business.prompt && "bg-primary/10 border-primary")}
+                        className={cn(
+                          customPrompt === presets.business.prompt && "bg-primary/10 border-primary text-white",
+                          "border-gray-700 text-white hover:bg-gray-800"
+                        )}
                       >
                         {presets.business.label}
                       </Button>
@@ -977,7 +1027,10 @@ Output should be a vertical rectangle. Entire head should be visible`;
                         variant="outline" 
                         size="sm"
                         onClick={() => setCustomPrompt(presets.id_photo.prompt)}
-                        className={cn(customPrompt === presets.id_photo.prompt && "bg-primary/10 border-primary")}
+                        className={cn(
+                          customPrompt === presets.id_photo.prompt && "bg-primary/10 border-primary text-white",
+                          "border-gray-700 text-white hover:bg-gray-800"
+                        )}
                       >
                         {presets.id_photo.label}
                       </Button>
@@ -995,8 +1048,8 @@ Output should be a vertical rectangle. Entire head should be visible`;
                           type="button"
                           onClick={() => setSelectedExampleImageId(card.exampleImageId)}
                           className={cn(
-                            "rounded-2xl overflow-hidden border transition-all bg-card/40 group",
-                            isSelected ? "border-primary ring-2 ring-primary/20" : "border-border hover:border-primary/50"
+                            "rounded-2xl overflow-hidden border transition-all bg-gray-800/40 group",
+                            isSelected ? "border-primary ring-2 ring-primary/20" : "border-gray-700 hover:border-primary/50"
                           )}
                           aria-label={card.label}
                         >
@@ -1011,7 +1064,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                               loading="lazy"
                             />
                           </div>
-                          <div className={cn("text-center font-medium text-foreground/90", isMobile ? "py-2 text-sm" : "py-3 text-sm")}>
+                          <div className={cn("text-center font-medium text-white", isMobile ? "py-2 text-sm" : "py-3 text-sm")}>
                             {card.label}
                           </div>
                         </button>
@@ -1054,7 +1107,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                         <button
                           type="button"
                           onClick={removeFile}
-                          className="absolute top-2 right-2 h-8 w-8 rounded-full bg-background/90 border border-border shadow flex items-center justify-center hover:bg-background transition-colors"
+                          className="absolute top-2 right-2 h-8 w-8 rounded-full bg-gray-800/90 border border-gray-700 shadow flex items-center justify-center hover:bg-gray-800 transition-colors"
                           aria-label="Remove image"
                         >
                           <X className="h-4 w-4" />
@@ -1065,10 +1118,10 @@ Output should be a vertical rectangle. Entire head should be visible`;
                         <div className={cn("rounded-full bg-primary/10 flex items-center justify-center mb-4", "w-10 h-10")}>
                           <Upload className={cn("text-primary", "h-5 w-5")} />
                         </div>
-                        <h3 className={cn("font-semibold mb-1", "text-sm")}>
+                        <h3 className={cn("font-semibold mb-1 text-white", "text-sm")}>
                           {t("dashboardV3.create.dragDrop")}
                         </h3>
-                        <p className="text-xs text-muted-foreground max-w-[200px]">
+                        <p className="text-xs text-gray-300 max-w-[200px]">
                           {t("dashboardV3.create.supportInfo")}
                         </p>
                       </div>
@@ -1103,12 +1156,12 @@ Output should be a vertical rectangle. Entire head should be visible`;
 
       {/* Pricing Modal */}
       <Dialog open={showPricingModal} onOpenChange={setShowPricingModal}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-gray-800 border-gray-700">
           <DialogHeader>
-            <DialogTitle className="text-center text-2xl">{t("dashboardV3.pricing.title")}</DialogTitle>
+            <DialogTitle className="text-center text-2xl text-white">{t("dashboardV3.pricing.title")}</DialogTitle>
           </DialogHeader>
           
-          <p className="text-center text-muted-foreground mb-4">
+          <p className="text-center text-gray-300 mb-4">
             {t("dashboardV3.pricing.subtitle")}
           </p>
 
@@ -1121,7 +1174,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
                   onClick={() => setSelectedPlan(plan.id)}
                   className={cn(
                     "w-full p-4 rounded-xl border-2 transition-all text-left flex items-center justify-between",
-                    isSelected ? "border-primary bg-primary/10" : "border-border hover:border-primary/50",
+                    isSelected ? "border-primary bg-primary/10" : "border-gray-700 hover:border-primary/50 bg-gray-800",
                     plan.popular && "ring-2 ring-primary/20"
                   )}
                 >
@@ -1131,18 +1184,18 @@ Output should be a vertical rectangle. Entire head should be visible`;
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold">{plan.name}</span>
+                        <span className="font-semibold text-white">{plan.name}</span>
                         {plan.popular && (
                           <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
                             {t("dashboardV3.pricing.popular")}
                           </span>
                         )}
                       </div>
-                      <div className="text-sm text-muted-foreground">{plan.credits} {t("dashboardV3.pricing.photos")}</div>
+                      <div className="text-sm text-gray-300">{plan.credits} {t("dashboardV3.pricing.photos")}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold">{plan.price.formatted}</span>
+                    <span className="text-xl font-bold text-white">{plan.price.formatted}</span>
                     {isSelected && <Check className="h-5 w-5 text-primary" />}
                   </div>
                 </button>
@@ -1160,9 +1213,9 @@ Output should be a vertical rectangle. Entire head should be visible`;
           </Button>
 
           {/* Money-Back Guarantee */}
-          <div className="flex items-center justify-center gap-2 pt-4 mt-4 border-t border-border">
+          <div className="flex items-center justify-center gap-2 pt-4 mt-4 border-t border-gray-700">
             <ShieldCheck className="w-4 h-4 text-green-500 shrink-0" />
-            <p className="text-xs font-medium text-green-600 dark:text-green-400">
+            <p className="text-xs font-medium text-green-400">
               {t("buyCredits.moneyBackGuarantee")}
             </p>
           </div>

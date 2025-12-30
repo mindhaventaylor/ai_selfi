@@ -53,6 +53,7 @@ export default function DashboardV2() {
   const [currentStep, setCurrentStep] = useState<Step>("welcome");
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [paymentCancelled, setPaymentCancelled] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     gender: "",
@@ -79,17 +80,25 @@ export default function DashboardV2() {
     { key: "attire", number: 8, title: t("dashboardV2.attire") },
     { key: "background", number: 9, title: t("dashboardV2.background") },
     { key: "upload", number: 10, title: t("dashboardV2.upload") },
+    // Pricing step is hidden from the flow - it auto-redirects to checkout
     { key: "pricing", number: 11, title: t("dashboardV2.pricing") },
   ], [t]);
 
+  // Filter out pricing step from visible steps for progress calculation
+  const visibleSteps = useMemo(() => steps.filter(s => s.key !== "pricing"), [steps]);
+
   const currentStepIndex = useMemo(() => {
-    const index = steps.findIndex(s => s.key === currentStep);
+    // If on pricing step, use upload step index for progress (since pricing is hidden)
+    if (currentStep === "pricing") {
+      return visibleSteps.findIndex(s => s.key === "upload");
+    }
+    const index = visibleSteps.findIndex(s => s.key === currentStep);
     return index >= 0 ? index : 0; // Fallback to 0 if step not found
-  }, [steps, currentStep]);
+  }, [visibleSteps, currentStep]);
   
   const progress = useMemo(() => {
-    return ((currentStepIndex + 1) / steps.length) * 100;
-  }, [currentStepIndex, steps.length]);
+    return ((currentStepIndex + 1) / visibleSteps.length) * 100;
+  }, [currentStepIndex, visibleSteps.length]);
 
   // Control layout visibility based on current step
   // Show full layout (sidebar + header) only on welcome step
@@ -140,22 +149,75 @@ export default function DashboardV2() {
 
     let shouldCleanUrl = false;
 
-    // If Stripe/checkout flow reports a status, always bring user back to plans
+    // If Stripe/checkout flow reports a status, restore previous step or go to background step
     if (paymentParam === "cancelled") {
-      setCurrentStep("pricing");
+      // Set flag to prevent auto-redirect
+      setPaymentCancelled(true);
+      
+      // Try to restore the previous step from saved form data
+      const savedData = safeLocalStorage.getItem("dashboardV2_formData");
+      let stepToRestore: Step = "background"; // Default to background step
+      
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          // If there's a resumeStep, use it; otherwise check if we have uploaded files
+          if (parsed.resumeStep && validSteps.includes(parsed.resumeStep)) {
+            stepToRestore = parsed.resumeStep as Step;
+          } else if (parsed.currentStep && validSteps.includes(parsed.currentStep) && parsed.currentStep !== "pricing") {
+            stepToRestore = parsed.currentStep as Step;
+          } else {
+            // Check if we have uploaded files - if so, go to upload step
+            const savedFiles = safeLocalStorage.getItem("dashboardV2_uploadedFiles");
+            if (savedFiles) {
+              stepToRestore = "upload";
+            }
+          }
+        } catch (e) {
+          console.error("[DashboardV2] Failed to parse saved form data:", e);
+        }
+      }
+      
+      setCurrentStep(stepToRestore);
       toast.error(t("payment.cancel.title") || "Payment Cancelled", {
         description: t("payment.cancel.message") || "You cancelled the payment process. No charges were made.",
         duration: 5000,
       });
       urlParams.delete("payment");
+      urlParams.delete("step");
       shouldCleanUrl = true;
     } else if (paymentParam === "error") {
-      setCurrentStep("pricing");
+      // Set flag to prevent auto-redirect
+      setPaymentCancelled(true);
+      // Same logic for error - restore previous step
+      const savedData = safeLocalStorage.getItem("dashboardV2_formData");
+      let stepToRestore: Step = "background";
+      
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          if (parsed.resumeStep && validSteps.includes(parsed.resumeStep)) {
+            stepToRestore = parsed.resumeStep as Step;
+          } else if (parsed.currentStep && validSteps.includes(parsed.currentStep) && parsed.currentStep !== "pricing") {
+            stepToRestore = parsed.currentStep as Step;
+          } else {
+            const savedFiles = safeLocalStorage.getItem("dashboardV2_uploadedFiles");
+            if (savedFiles) {
+              stepToRestore = "upload";
+            }
+          }
+        } catch (e) {
+          console.error("[DashboardV2] Failed to parse saved form data:", e);
+        }
+      }
+      
+      setCurrentStep(stepToRestore);
       toast.error(t("buyCredits.checkoutStartFailed") || "Payment error", {
         description: t("buyCredits.checkoutFailed") || "Please try again.",
         duration: 5000,
       });
       urlParams.delete("payment");
+      urlParams.delete("step");
       shouldCleanUrl = true;
     }
 
@@ -727,9 +789,9 @@ export default function DashboardV2() {
 
   // Handle purchase for pricing step
   const handlePricingPurchase = async () => {
-    if (!formData.selectedPrice || isLoadingPacks || createCheckoutMutation.isPending) return;
+    const plan = (formData.selectedPrice || "basic") as "basic" | "standard" | "premium";
     
-    const plan = formData.selectedPrice as "basic" | "standard" | "premium";
+    if (isLoadingPacks || createCheckoutMutation.isPending) return;
     
     // Check if we have a generation intent (user came from upload step with no credits)
     // If so, ensure it's preserved before redirecting to checkout
@@ -832,6 +894,36 @@ export default function DashboardV2() {
     }
   };
 
+  // Reset paymentCancelled flag when moving away from pricing step
+  useEffect(() => {
+    if (currentStep !== "pricing" && paymentCancelled) {
+      setPaymentCancelled(false);
+    }
+  }, [currentStep, paymentCancelled]);
+
+  // Auto-redirect to cheapest plan when pricing step is reached
+  useEffect(() => {
+    // Don't auto-redirect if payment was cancelled
+    if (paymentCancelled) {
+      return;
+    }
+    
+    // Only auto-redirect if we're on pricing step, packs are loaded, user is authenticated
+    if (currentStep === "pricing" && !isLoadingPacks && packs && packs.length > 0 && user) {
+      // Set basic plan if not already set
+      if (!formData.selectedPrice) {
+        updateFormData("selectedPrice", "basic");
+        return; // Wait for state update
+      }
+      
+      // If basic plan is selected and not already processing, auto-redirect
+      if (formData.selectedPrice === "basic" && !createCheckoutMutation.isPending) {
+        handlePricingPurchase();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, isLoadingPacks, packs, user, formData.selectedPrice, createCheckoutMutation.isPending, paymentCancelled]);
+
   // Get the handler for Continue button based on current step
   const getContinueHandler = () => {
     if (currentStep === "upload") {
@@ -872,7 +964,7 @@ export default function DashboardV2() {
               <Progress value={progress} className="h-2" />
             </div>
             <div className="text-xs sm:text-sm text-muted-foreground shrink-0 whitespace-nowrap">
-              {currentStepIndex + 1} / {steps.length}
+              {currentStepIndex + 1} / {visibleSteps.length}
             </div>
           </div>
         </div>
@@ -990,17 +1082,14 @@ export default function DashboardV2() {
             )}
 
             {currentStep === "pricing" && (
-              <PricingStep
-                value={formData.selectedPrice}
-                onChange={(value) => updateFormData("selectedPrice", value)}
-                onNext={handleNext}
-                formData={formData}
-                createCheckoutMutation={createCheckoutMutation}
-                packs={packs}
-                isLoadingPacks={isLoadingPacks}
-                setShowLoginModal={setShowLoginModal}
-                setPendingAction={setPendingAction}
-              />
+              <div className="space-y-6 flex items-center justify-center min-h-[400px]">
+                <div className="text-center space-y-4">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                  <p className="text-muted-foreground">
+                    {t("dashboardV2.pricing.processing") || "Redirecting to checkout..."}
+                  </p>
+                </div>
+              </div>
             )}
 
             {currentStep === "upload" && (
@@ -1801,6 +1890,7 @@ function PricingStep({
   const [, setLocation] = useLocation();
   const [currency, setCurrency] = useState<Currency>(detectCurrency());
   const [isProcessing, setIsProcessing] = useState(false);
+  const [hasAutoRedirected, setHasAutoRedirected] = useState(false);
   
   // Update currency when language changes
   useEffect(() => {
@@ -1811,6 +1901,8 @@ function PricingStep({
   const basicPrice = getPage2Price("basic", currency);
   const standardPrice = getPage2Price("standard", currency);
   const premiumPrice = getPage2Price("premium", currency);
+  
+  // Auto-redirect to cheapest plan for variation 2 - this will be handled after handlePurchase is defined
 
   const plans = [
     {
@@ -2078,6 +2170,43 @@ function PricingStep({
       setIsProcessing(false);
     }
   };
+
+  // Set basic plan as default when component mounts
+  useEffect(() => {
+    if (!value) {
+      onChange("basic");
+    }
+  }, [value, onChange]);
+
+  // Auto-redirect to cheapest plan for variation 2
+  useEffect(() => {
+    // Only auto-redirect once, when packs are loaded, user is authenticated, and we haven't redirected yet
+    if (!hasAutoRedirected && !isLoadingPacks && packs && packs.length > 0 && user && !isProcessing && value === "basic") {
+      setHasAutoRedirected(true);
+      
+      // Small delay to ensure state is set, then auto-purchase
+      const timer = setTimeout(() => {
+        handlePurchase();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasAutoRedirected, isLoadingPacks, packs, user, isProcessing, value]);
+
+  // Show loading state while auto-redirecting
+  if (!hasAutoRedirected && !isLoadingPacks && packs && packs.length > 0 && user && value === "basic") {
+    return (
+      <div className="space-y-6 flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">
+            {t("dashboardV2.pricing.processing") || "Processing..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -496,10 +496,13 @@ function DashboardLayoutContent({
       </div>
       )}
 
-      <SidebarInset style={!showFullLayout || isPage3Variant ? { marginLeft: 0 } : undefined}>
-        {/* Top Header Bar - only show when full layout is enabled */}
-        {showFullLayout && (
-        <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:backdrop-blur">
+      <SidebarInset 
+        style={!showFullLayout || isPage3Variant ? { marginLeft: 0 } : undefined}
+        className={isPage3Variant ? 'bg-gray-900' : ''}
+      >
+        {/* Top Header Bar - only show when full layout is enabled and NOT variant 3 */}
+        {showFullLayout && !isPage3Variant && (
+        <div className={`sticky top-0 z-40 border-b ${isPage3Variant ? 'border-gray-700 bg-gray-900/95' : 'border-border bg-background/95'} backdrop-blur supports-[backdrop-filter]:backdrop-blur`}>
           <div className="flex h-14 items-center justify-between gap-3 px-6">
             {/* Left side: Logo/Name for page3, empty for others */}
             {isPage3Variant ? (
@@ -525,7 +528,7 @@ function DashboardLayoutContent({
             {/* Language Selector */}
             <DropdownMenu open={languageOpen} onOpenChange={setLanguageOpen}>
               <DropdownMenuTrigger asChild>
-                <button className="h-9 w-9 rounded-full border border-border hover:bg-accent transition-colors flex items-center justify-center">
+                <button className={`h-9 w-9 rounded-full border ${isPage3Variant ? 'border-gray-700 hover:bg-gray-800' : 'border-border hover:bg-accent'} transition-colors flex items-center justify-center`}>
                   <span className="text-lg">
                     {currentLanguage === "es" ? "🇪🇸" : 
                      currentLanguage === "pt-BR" ? "🇧🇷" : 
@@ -533,7 +536,7 @@ function DashboardLayoutContent({
                   </span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className={isPage3Variant ? 'bg-gray-800 border-gray-700' : ''}>
                 <DropdownMenuItem 
                   onClick={() => {
                     changeLanguage("es");
@@ -576,7 +579,7 @@ function DashboardLayoutContent({
             {/* Help/Book Icon - hidden for page3 */}
             {!isPage3Variant && (
               <button 
-                className="h-9 w-9 rounded-full border border-border hover:bg-accent transition-colors flex items-center justify-center"
+                className={`h-9 w-9 rounded-full border ${isPage3Variant ? 'border-gray-700 hover:bg-gray-800' : 'border-border hover:bg-accent'} transition-colors flex items-center justify-center`}
                 onClick={() => setLocation("/dashboard/start")}
               >
                 <BookOpen className="h-4 w-4" />
@@ -587,7 +590,7 @@ function DashboardLayoutContent({
             <Button
               type="button"
               variant="outline"
-              className="h-9 rounded-full px-4 gap-2 cursor-pointer"
+              className={`h-9 rounded-full px-4 gap-2 cursor-pointer ${isPage3Variant ? 'border-gray-700 bg-gray-800 text-white hover:bg-gray-700 hover:text-white' : ''}`}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -601,18 +604,18 @@ function DashboardLayoutContent({
                 }
               }}
             >
-              <Clock className="h-4 w-4" />
+              <Clock className={`h-4 w-4 ${isPage3Variant ? 'text-white' : ''}`} />
               <span>{t("dashboardLayout.creditsLabel")}: {user?.credits ?? 0}</span>
             </Button>
 
             {/* User Avatar or Login Button */}
             {user ? (
               <Avatar 
-                className="h-9 w-9 border-2 border-border cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                className={`h-9 w-9 border-2 ${isPage3Variant ? 'border-gray-700' : 'border-border'} cursor-pointer hover:ring-2 hover:ring-primary transition-all`}
                 onClick={() => setLocation("/dashboard/settings/general")}
               >
                 <AvatarImage src={user?.avatarUrl || undefined} alt={user?.name || "User"} />
-                <AvatarFallback className="text-xs font-medium">
+                <AvatarFallback className={`text-xs font-medium ${isPage3Variant ? 'bg-gray-800 text-white' : ''}`}>
                   {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
@@ -645,7 +648,7 @@ function DashboardLayoutContent({
             </div>
           </div>
         )}
-        <main className="flex-1">{children}</main>
+        <main className={`flex-1 ${isPage3Variant ? 'bg-gray-900' : ''}`}>{children}</main>
       </SidebarInset>
 
       {/* Login Modal */}

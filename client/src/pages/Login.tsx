@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Check } from "lucide-react";
+import { usePostHogVariant } from "@/hooks/usePostHogVariant";
+import { safeLocalStorage } from "@/utils/localStorage";
 
 
 // COMMENTED OUT: Images for carousel - matching the 4 testimonials
@@ -21,6 +23,7 @@ export default function Login() {
   const { t } = useTranslation();
   const { user, loading, signIn, signInWithEmail, signUpWithEmail } = useAuth();
   const [, setLocation] = useLocation(); // Only need setLocation, not location
+  const { variant: posthogVariant } = usePostHogVariant(user?.id);
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [isEmailMode, setIsEmailMode] = useState(false);
   const [isSignUp, setIsSignUp] = useState(true); // Default to sign up since most users won't have an account
@@ -30,22 +33,40 @@ export default function Login() {
   const [emailError, setEmailError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Check for variant in URL to determine if we should auto-create accounts
-  // Use useRef to store initial values and prevent recalculation on every render
-  // This prevents infinite loops when location changes trigger re-renders
-  const variantRef = useRef<string | null>(null);
-  const isVariant2Or3Ref = useRef<boolean>(false);
-  
-  // Initialize once on mount
-  if (variantRef.current === null && typeof window !== "undefined") {
+  // Detect variant using the same logic as other pages
+  const variantData = useMemo(() => {
+    if (typeof window === "undefined") {
+      return {
+        urlVariant: null,
+        cachedVariant: null,
+        firstVariant: null,
+        isPage2Variant: false,
+        isPage3Variant: false,
+        isPage2Or3Variant: false,
+      };
+    }
+    
     const urlParams = new URLSearchParams(window.location.search);
-    const variantValue = urlParams.get("variant");
-    variantRef.current = variantValue;
-    isVariant2Or3Ref.current = variantValue === "page2" || variantValue === "page3";
-  }
-  
-  const variant = variantRef.current;
-  const isVariant2Or3 = isVariant2Or3Ref.current;
+    const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
+    const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
+    const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | null;
+    const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
+    const isPage3Variant = posthogVariant === "page3" || urlVariant === "page3" || cachedVariant === "page3" || firstVariant === "page3";
+    const isPage2Or3Variant = isPage2Variant || isPage3Variant;
+    
+    return {
+      urlVariant,
+      cachedVariant,
+      firstVariant,
+      isPage2Variant,
+      isPage3Variant,
+      isPage2Or3Variant,
+    };
+  }, [posthogVariant]);
+
+  const { isPage2Variant, isPage3Variant, isPage2Or3Variant } = variantData;
+  const isVariant2Or3 = isPage2Or3Variant;
+  const isVariant3 = isPage3Variant;
   // COMMENTED OUT: Reviews/testimonials section removed as they were distracting users
   // const [currentImageIndex, setCurrentImageIndex] = useState(0);
   // const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
@@ -210,8 +231,13 @@ export default function Login() {
   // COMMENTED OUT: Reviews/testimonials section removed as they were distracting users
   // const currentTestimonial = testimonials && testimonials.length > 0 ? testimonials[currentTestimonialIndex] : null;
 
+  const bgClass = isVariant3 ? "bg-gray-900" : "bg-background";
+  const textClass = isVariant3 ? "text-white" : "";
+  const textMutedClass = isVariant3 ? "text-gray-300" : "text-muted-foreground";
+  const dividerBgClass = isVariant3 ? "bg-gray-900" : "bg-background";
+
   return (
-    <div className="min-h-screen flex items-start justify-center bg-background pt-6 lg:pt-24 px-4 lg:px-0">
+    <div className={`min-h-screen flex items-start justify-center ${bgClass} pt-6 lg:pt-24 px-4 lg:px-0`}>
       <div className="flex flex-col lg:flex-row w-full max-w-6xl items-center justify-center gap-8">
         {/* COMMENTED OUT: Left Side - Image Carousel with Testimonial (moved to bottom on mobile) */}
         {/* <div className="flex flex-col items-center w-full max-w-[30.8rem] order-2 lg:order-1">
@@ -279,10 +305,10 @@ export default function Login() {
 
           {/* Main Heading */}
           <div className="space-y-4 mb-8 text-left">
-            <h1 className="text-4xl lg:text-5xl font-bold">
+            <h1 className={`text-4xl lg:text-5xl font-bold ${textClass}`}>
               {t("login.title")}
             </h1>
-            <p className="text-lg text-muted-foreground">
+            <p className={`text-lg ${textMutedClass}`}>
               {t("login.subtitle")}
             </p>
           </div>
@@ -331,7 +357,7 @@ export default function Login() {
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
+                    <span className={`${dividerBgClass} px-2 ${textMutedClass}`}>
                       {t("login.or")}
                     </span>
                   </div>
@@ -340,7 +366,7 @@ export default function Login() {
                 {/* Only show name field for sign up in non-variant 2/3 flows */}
                 {isSignUp && !isVariant2Or3 && (
                   <div className="space-y-2">
-                    <label htmlFor="name" className="text-sm font-medium">
+                    <label htmlFor="name" className={`text-sm font-medium ${textClass}`}>
                       {t("login.name")}
                     </label>
                     <Input
@@ -355,7 +381,7 @@ export default function Login() {
                   </div>
                 )}
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium">
+                  <label htmlFor="email" className={`text-sm font-medium ${textClass}`}>
                     {t("login.email")}
                   </label>
                   <Input
@@ -370,7 +396,7 @@ export default function Login() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="password" className="text-sm font-medium">
+                  <label htmlFor="password" className={`text-sm font-medium ${textClass}`}>
                     {t("login.password")}
                   </label>
                   <Input
@@ -410,7 +436,7 @@ export default function Login() {
                         setIsSignUp(!isSignUp);
                         setEmailError("");
                       }}
-                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                      className={`text-sm ${textMutedClass} hover:text-primary transition-colors`}
                     >
                       {isSignUp ? t("login.alreadyHaveAccount") : t("login.dontHaveAccount")}
                     </button>
@@ -445,7 +471,7 @@ export default function Login() {
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
+                    <span className={`${dividerBgClass} px-2 ${textMutedClass}`}>
                       {t("login.or")}
                     </span>
                   </div>
@@ -469,28 +495,28 @@ export default function Login() {
           <div className="space-y-3 mb-8">
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5 text-primary flex-shrink-0" />
-              <span className="text-sm">{t("login.moneyBackGuarantee")}</span>
+              <span className={`text-sm ${textClass}`}>{t("login.moneyBackGuarantee")}</span>
             </div>
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5 text-primary flex-shrink-0" />
-              <span className="text-sm">{t("login.photosUnder30Minutes")}</span>
+              <span className={`text-sm ${textClass}`}>{t("login.photosUnder30Minutes")}</span>
             </div>
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5 text-primary flex-shrink-0" />
-              <span className="text-sm">{t("login.foundedInEurope")}</span>
+              <span className={`text-sm ${textClass}`}>{t("login.foundedInEurope")}</span>
             </div>
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5 text-primary flex-shrink-0" />
-              <span className="text-sm">{t("login.thousandsHappyCustomers")}</span>
+              <span className={`text-sm ${textClass}`}>{t("login.thousandsHappyCustomers")}</span>
             </div>
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5 text-primary flex-shrink-0" />
-              <span className="text-sm">{t("login.bootstrapped")}</span>
+              <span className={`text-sm ${textClass}`}>{t("login.bootstrapped")}</span>
             </div>
           </div>
 
           {/* Terms */}
-          <p className="text-xs text-left text-muted-foreground">
+          <p className={`text-xs text-left ${textMutedClass}`}>
             {t("login.termsAgreement")}{" "}
             <a href="/terms" className="underline hover:text-primary">{t("login.termsOfService")}</a>
             {" "}{t("login.and")}{" "}

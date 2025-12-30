@@ -1618,6 +1618,7 @@
     "pricing": {
       "title": "Choose Your Plan",
       "description": "Select the plan that best fits your needs. All plans include professional AI-generated photos.",
+      "processing": "Redirecting to checkout...",
       "popular": "POPULAR",
       "discounted": "Discounted",
       "basic": "Basic",

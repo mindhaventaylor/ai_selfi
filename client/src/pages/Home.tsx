@@ -279,24 +279,12 @@ export default function Home() {
   const [showDiscountModal, setShowDiscountModal] = useState(false);
   const discountModalShownRef = useRef(false);
 
-  // Update reviewsToShow when screen size changes
-  useEffect(() => {
-    const initialCount = isMobile ? 3 : 6;
-    // Only reset if currently showing the initial count for the previous screen size
-    if (reviewsToShow === 3 && !isMobile) {
-      setReviewsToShow(6);
-    } else if (reviewsToShow === 6 && isMobile) {
-      setReviewsToShow(3);
-    }
-  }, [isMobile]);
-
   // Use the variant hook to handle variant parameter from URL
   // This ensures the variant is saved as the first variant when visiting /?variant=page2
   // The hook will handle saving to localStorage and removing from URL
   const { variant: posthogVariant } = usePostHogVariant(user?.id);
   
   // Memoize variant calculations to prevent recalculation on every render
-  // This is critical for mobile performance
   const variantData = useMemo(() => {
     if (typeof window === "undefined") {
       return {
@@ -338,7 +326,27 @@ export default function Home() {
 
   const { isPage2Variant, isPage3Variant, isPage2Or3Variant, activeVariant, loginUrl } = variantData;
 
-  // Extract "How AISelfie works" section for conditional rendering
+  // Update reviewsToShow when screen size changes or variant changes
+  useEffect(() => {
+    // For variant 3, always start with 6 reviews
+    if (isPage3Variant && reviewsToShow < 6) {
+      setReviewsToShow(6);
+      return;
+    }
+    
+    // For other variants, adjust based on mobile
+    if (!isPage3Variant) {
+      const initialCount = isMobile ? 3 : 6;
+      // Only reset if currently showing the initial count for the previous screen size
+      if (reviewsToShow === 3 && !isMobile) {
+        setReviewsToShow(6);
+      } else if (reviewsToShow === 6 && isMobile) {
+        setReviewsToShow(3);
+      }
+    }
+  }, [isMobile, isPage3Variant]);
+
+  // Extract "How AISelfie works" section for conditional rendering (new version)
   const howItWorksSection = (
     <AnimatedSection>
       <section id="how-it-works" className="py-12 sm:py-20 md:py-24 bg-background">
@@ -425,6 +433,62 @@ export default function Home() {
               <a href={isPage2Or3Variant 
                   ? (activeVariant ? `/dashboard?variant=${activeVariant}` : "/dashboard")
                   : "/login"}>{t("howItWorks.cta")} →</a>
+            </Button>
+          </div>
+        </div>
+      </section>
+    </AnimatedSection>
+  );
+
+  // Old version of "How AISelfie works" section for page3 variant (from commit a0678e5c6dce3c492411ddefdc209579abfa1d5b)
+  const howItWorksSectionOld = (
+    <AnimatedSection>
+      <section id="how-it-works" className="py-20">
+        <div className="container">
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
+            {t("howItWorks.title")}
+          </h2>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto mb-12">
+            {(
+              t("howItWorks.steps", { returnObjects: true }) as Array<{
+                title: string;
+                description: string;
+              }>
+            ).map((step, idx) => {
+              // Images for each step
+              const stepImages = [
+                "/howAISelfieWorks1.webp", // Step 1: Upload selfies
+                "/howAISelfieWorks2.webp", // Step 2: Choose style
+                "/howAISelfieWorks3.webp", // Step 3: AI magic
+                "/howAISelfieWorks4.webp", // Step 4: Download and share
+              ];
+              
+              return (
+                <AnimatedSection key={idx} delay={idx * 100}>
+                  <Card className="p-6 text-center h-full">
+                    {/* Step Image */}
+                    <div className="w-32 h-32 md:w-40 md:h-40 mx-auto mb-4 rounded-lg overflow-hidden shadow-lg">
+                      <OptimizedImage
+                        src={stepImages[idx] || stepImages[0]}
+                        alt={step.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                      {idx + 1}
+                    </div>
+                    <h3 className="text-xl font-bold mb-3">{step.title}</h3>
+                    <p className="text-muted-foreground">{step.description}</p>
+                  </Card>
+                </AnimatedSection>
+              );
+            })}
+          </div>
+
+          <div className="text-center">
+            <Button asChild size="lg" className="text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light">
+              <a href="/dashboard">{t("howItWorks.cta")} →</a>
             </Button>
           </div>
         </div>
@@ -520,6 +584,1123 @@ export default function Home() {
   // Scroll transforms for floating effect
   const scrollTransformLeft = `translateX(-${scrollY * 0.8}px) translateY(-${scrollY * 0.1}px) scale(${heroImageScale})`;
   const scrollTransformRight = `translateX(${scrollY * 0.8}px) translateY(-${scrollY * 0.1}px) scale(${heroImageScale})`;
+
+  // Variant 3 landing page (from finished_variant3 branch)
+  if (isPage3Variant) {
+    // Calculate opacity and transformation based on scroll for variant 3
+    const heroImageOpacity = Math.max(0, 1 - scrollY / 400);
+    const heroImageScale = Math.max(0.8, 1 + scrollY / 500);
+    const scrollTransformLeftV3 = `translateX(-${scrollY * 0.8}px) translateY(-${scrollY * 0.1}px) scale(${heroImageScale})`;
+    const scrollTransformRightV3 = `translateX(${scrollY * 0.8}px) translateY(-${scrollY * 0.1}px) scale(${heroImageScale})`;
+
+    return (
+      <div className="min-h-screen bg-gray-900 text-white">
+        {/* Hero Section */}
+        <section className="relative min-h-screen overflow-hidden pt-7 pb-20 lg:py-20">
+          {/* Floating Images Container - Desktop */}
+          <div className="absolute inset-0 w-full h-full hidden lg:block pointer-events-none">
+            {/* Left Side Images */}
+            {/* Top Left */}
+            <div
+              className="absolute w-60 h-80 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50 pointer-events-auto"
+              style={{
+                top: "10%",
+                left: "9%",
+                transform: `rotate(-15deg) ${scrollTransformLeftV3}`,
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+                opacity: heroImageOpacity,
+              }}
+            >
+              <OptimizedImage
+                src="/image.webp"
+                alt={t("home.altText.professionalPhoto")}
+                className="w-full h-full object-cover"
+                priority
+              />
+            </div>
+
+            {/* Middle Left */}
+            <div
+              className="absolute w-60 h-80 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50 pointer-events-auto"
+              style={{
+                top: "50%",
+                left: "6%",
+                transform: `translateY(-50%) rotate(5deg) ${scrollTransformLeftV3}`,
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+                backgroundColor: "#E9D5FF",
+                opacity: heroImageOpacity,
+              }}
+            >
+              <OptimizedImage
+                src="/image_1.webp"
+                alt={t("home.altText.professionalPhoto")}
+                className="w-full h-full object-cover"
+                priority
+              />
+            </div>
+
+            {/* Bottom Left */}
+            <div
+              className="absolute w-60 h-80 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50 pointer-events-auto"
+              style={{
+                bottom: "5%",
+                left: "14%",
+                transform: `rotate(-10deg) ${scrollTransformLeftV3}`,
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+                opacity: heroImageOpacity,
+              }}
+            >
+              <OptimizedImage
+                src="/image_100.webp"
+                alt={t("home.altText.professionalPhoto")}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            {/* Right Side Images */}
+            {/* Top Right */}
+            <div
+              className="absolute w-60 h-80 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50 pointer-events-auto"
+              style={{
+                top: "10%",
+                right: "9%",
+                transform: `rotate(15deg) ${scrollTransformRightV3}`,
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+                opacity: heroImageOpacity,
+              }}
+            >
+              <OptimizedImage
+                src="/image_10.webp"
+                alt={t("home.altText.professionalPhoto")}
+                className="w-full h-full object-cover"
+                priority
+              />
+            </div>
+
+            {/* Middle Right */}
+            <div
+              className="absolute w-60 h-80 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50 pointer-events-auto"
+              style={{
+                top: "50%",
+                right: "6%",
+                transform: `translateY(-50%) rotate(-5deg) ${scrollTransformRightV3}`,
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+                backgroundColor: "#E9D5FF",
+                opacity: heroImageOpacity,
+              }}
+            >
+              <OptimizedImage
+                src="/image_101_last.webp"
+                alt={t("home.altText.professionalPhoto")}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            {/* Bottom Right */}
+            <div
+              className="absolute w-60 h-80 rounded-3xl overflow-hidden shadow-2xl transition-transform duration-300 hover:scale-105 hover:z-50 pointer-events-auto"
+              style={{
+                bottom: "5%",
+                right: "14%",
+                transform: `rotate(5deg) ${scrollTransformRightV3}`,
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+                backgroundColor: "#BFDBFE",
+                opacity: heroImageOpacity,
+              }}
+            >
+              <OptimizedImage
+                src="/image_101.webp"
+                alt={t("home.altText.professionalPhoto")}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
+          {/* Center Content */}
+          <div className="container relative z-10 pt-2 lg:pt-6">
+            <div className="flex flex-col items-center text-center space-y-6 max-w-3xl mx-auto">
+              {/* Badge with avatars */}
+              <div className="flex items-center gap-3 bg-gray-800/80 backdrop-blur-sm px-6 py-3 rounded-full border border-gray-700">
+                <div className="flex -space-x-2">
+                  {["/image.webp", "/image_1.webp", "/image_10.webp", "/image_100.webp", "/image_101.webp"].map(
+                    (img, idx) => (
+                      <div
+                        key={idx}
+                        className="w-8 h-8 rounded-full border-2 border-gray-700 overflow-hidden"
+                      >
+                        <OptimizedImage src={img} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    )
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <span className="text-sm font-medium text-gray-200">{t("hero.badge")}</span>
+              </div>
+
+              {/* Main Title */}
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight text-white">
+                {t("hero.title")}
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-lg md:text-xl text-gray-300 max-w-2xl">
+                {t("hero.subtitle")}
+              </p>
+
+              {/* CTA Button */}
+              <div className="flex flex-col items-center gap-3">
+                <Button
+                  asChild
+                  size="lg"
+                  className="text-lg px-10 py-7 bg-primary hover:bg-primary/90 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow"
+                >
+                  <a href={loginUrl}>{t("hero.cta")} ✨</a>
+                </Button>
+                <p className="text-sm text-gray-300">{t("hero.guarantee")}</p>
+              </div>
+            </div>
+
+            {/* Mobile - Simple Grid */}
+            <div className="grid grid-cols-2 gap-4 lg:hidden max-w-md mx-auto mt-12">
+              {["/image.webp", "/image_1.webp", "/image_10.webp", "/image_100.webp"].map((img, idx) => (
+                <div
+                  key={idx}
+                  className="aspect-[3/4] rounded-2xl overflow-hidden shadow-xl"
+                  style={{
+                    transform: `rotate(${idx % 2 === 0 ? "-3deg" : "3deg"})`,
+                  }}
+                >
+                  <OptimizedImage src={img} alt={t("home.altText.aiProfessionalPhoto")} className="w-full h-full object-cover" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Examples Section - Reviews Carousel */}
+        <AnimatedSection>
+          <section id="examples" className="py-20 bg-gray-800">
+            <div className="container">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">{t("examples.title")}</h2>
+                <p className="text-xl text-gray-300 flex items-center justify-center gap-2">
+                  <Check className="w-5 h-5 text-green-500" />
+                  {t("examples.subtitle")}
+                </p>
+              </div>
+
+              <div className="max-w-6xl mx-auto relative px-12 md:px-16">
+                <Carousel
+                  opts={{
+                    align: "start",
+                    loop: true,
+                    slidesToScroll: 1,
+                  }}
+                  className="w-full"
+                >
+                  <CarouselContent className="-ml-2 md:-ml-4">
+                    {(
+                      t("examples.reviews", {
+                        returnObjects: true,
+                      }) as Array<{
+                        name: string;
+                        title: string;
+                        review: string;
+                        date: string;
+                      }>
+                    ).map((review, idx) => {
+                      const isExpanded = expandedReviews.has(idx);
+                      const reviewText = review.review;
+                      const shouldTruncate = reviewText.length > 150;
+                      const displayText = shouldTruncate && !isExpanded
+                        ? reviewText.substring(0, 150) + "..."
+                        : reviewText;
+
+                      // Map reviews to images
+                      const exampleMapping = [1, 2, 9, 3, 4, 5, 6, 7, 8];
+                      const exampleNumber = exampleMapping[idx] || (idx + 1);
+                      const isJorge = review.name.includes("Jorge") || (exampleNumber === 9 && !review.name.includes("Andrea"));
+                      const isAndreaMarino = review.name.includes("Andrea Marino");
+                      const isElisa = review.name.includes("Elisa De Luca");
+                      const isMarco = review.name.includes("Marco Ferri");
+                      const isLuca = review.name.includes("Luca Neri");
+                      
+                      let profileImage: string;
+                      let resultImages: string[];
+                      
+                      if (isAndreaMarino) {
+                        profileImage = "/andrea_marino_profile.webp";
+                        resultImages = [
+                          "/andrea_marino1.webp",
+                          "/andrea_marino2.webp",
+                          "/andrea_marino3.webp",
+                          "/andrea_marino4.webp",
+                          "/andrea_marino5.webp",
+                          "/andrea_marino6.webp",
+                        ];
+                      } else if (isJorge) {
+                        profileImage = "/9_profile.webp";
+                        resultImages = [
+                          "/9_result1.webp",
+                          "/9_result2.webp",
+                          "/9_result3.webp",
+                          "/9_result4.webp",
+                          "/9_result5.webp",
+                          "/9_result6.webp",
+                        ];
+                      } else if (isElisa) {
+                        profileImage = "/elisa_profile.webp";
+                        resultImages = ["/elisa_AI_image.webp"];
+                      } else if (isMarco) {
+                        profileImage = "/caterina_profile.webp";
+                        resultImages = ["/caterina_ai_image.webp"];
+                      } else if (isLuca) {
+                        profileImage = "/silvia_profile.webp";
+                        resultImages = ["/silvia_ai_image.webp"];
+                      } else {
+                        profileImage = `/${exampleNumber}_profile.webp`;
+                        resultImages = [`/${exampleNumber}_result.webp`];
+                      }
+
+                      return (
+                        <CarouselItem
+                          key={idx}
+                          className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3"
+                        >
+                          <Card className="bg-gray-800 border border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+                            <CardContent className="px-6 pt-0 pb-0">
+                              <div className="flex items-center gap-3 mb-4">
+                                <Avatar className="w-12 h-12 border-2 border-primary/30">
+                                  <AvatarImage src={profileImage} alt={review.name} />
+                                  <AvatarFallback className="bg-primary/10 text-primary">
+                                    {review.name
+                                      .split(" ")
+                                      .map((n) => n[0])
+                                      .join("")
+                                      .toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-bold text-base leading-tight truncate text-white">
+                                    {review.name}
+                                  </h3>
+                                  <p className="text-sm text-gray-300 truncate">
+                                    {review.title}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="mb-1">
+                                <p className="text-sm text-gray-200 leading-relaxed">
+                                  {displayText}
+                                </p>
+                                {shouldTruncate && (
+                                  <button
+                                    onClick={() => {
+                                      const newExpanded = new Set(expandedReviews);
+                                      if (isExpanded) {
+                                        newExpanded.delete(idx);
+                                      } else {
+                                        newExpanded.add(idx);
+                                      }
+                                      setExpandedReviews(newExpanded);
+                                    }}
+                                    className="text-sm text-primary hover:underline mt-2 font-medium"
+                                  >
+                                    {isExpanded ? t("supportReviews.seeMore") : t("supportReviews.readMore")}
+                                  </button>
+                                )}
+                              </div>
+                            </CardContent>
+
+                            <div className="w-full px-4 -mt-4">
+                              {isJorge || isAndreaMarino ? (
+                                <div className="grid grid-cols-3 gap-1">
+                                  {resultImages.map((imgSrc, imgIdx) => (
+                                    <div
+                                      key={imgIdx}
+                                      className="aspect-square overflow-hidden bg-gray-100 rounded-[24px]"
+                                    >
+                                      <OptimizedImage
+                                        src={imgSrc}
+                                        alt={t("home.altText.reviewPhoto", { name: review.name, number: imgIdx + 1 })}
+                                        className="w-full h-full object-cover rounded-[24px]"
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="aspect-[4/5] overflow-hidden bg-gray-100 rounded-[24px]">
+                                  <OptimizedImage
+                                    src={resultImages[0]}
+                                    alt={t("home.altText.reviewProfessionalPhoto", { name: review.name })}
+                                    className="w-full h-full object-cover rounded-[24px]"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </Card>
+                        </CarouselItem>
+                      );
+                    })}
+                  </CarouselContent>
+                  <CarouselPrevious 
+                    variant="ghost"
+                    className="!left-[calc(-3rem)] md:!left-[calc(-4rem)] top-1/2 -translate-y-1/2 !bg-gray-800 hover:!bg-gray-700 !border-0 !shadow-none z-10 !text-white !rounded-full !size-12"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </CarouselPrevious>
+                  <CarouselNext 
+                    variant="ghost"
+                    className="!right-[calc(-3rem)] md:!right-[calc(-4rem)] top-1/2 -translate-y-1/2 !bg-gray-800 hover:!bg-gray-700 !border-0 !shadow-none z-10 !text-white !rounded-full !size-12"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </CarouselNext>
+                </Carousel>
+              </div>
+            </div>
+          </section>
+        </AnimatedSection>
+
+        {/* Comparison Section */}
+        <AnimatedSection>
+          <section className="py-20 relative overflow-hidden bg-gray-800">
+            <div className="absolute inset-0 bg-gradient-to-b from-gray-800 via-gray-800/50 to-gray-800 pointer-events-none" />
+            <div className="container relative z-10">
+              <div className="flex justify-center mb-8">
+                <Badge variant="secondary" className="px-6 py-3 text-base gap-2">
+                  <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                  <span>{t("comparison.badge")}</span>
+                </Badge>
+              </div>
+              <div className="text-center mb-16 max-w-5xl mx-auto">
+                <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold leading-tight text-white">
+                  {t("comparison.mainTitle.part1")}{" "}
+                  <span className="italic text-primary">{t("comparison.mainTitle.models")}</span>
+                  {t("comparison.mainTitle.part2")}
+                </h2>
+              </div>
+              <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+                <div className="relative rounded-3xl border-2 border-red-500/50 bg-gray-700/30 backdrop-blur-sm p-8 hover:border-red-500 transition-colors">
+                  <div className="absolute -top-4 -right-4 w-12 h-12 rounded-full bg-red-500 flex items-center justify-center">
+                    <X className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-6 text-red-400">
+                    {t("comparison.traditional.title")}
+                  </h3>
+                  <ul className="space-y-4">
+                    {(() => {
+                      const items = t("comparison.traditional.items", { returnObjects: true });
+                      const itemsArray = Array.isArray(items) ? items : (typeof items === 'string' ? [items] : []);
+                      return itemsArray.map((item, idx) => (
+                        <li key={idx} className="flex gap-3 text-muted-foreground">
+                          <span className="text-red-400 flex-shrink-0">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ));
+                    })()}
+                  </ul>
+                  <p className="mt-8 text-xl font-bold text-red-400">
+                    {t("comparison.traditional.cost")}
+                  </p>
+                </div>
+                <div className="relative rounded-3xl border-2 border-green-500/50 bg-gray-700/30 backdrop-blur-sm p-8 hover:border-green-500 transition-colors">
+                  <div className="absolute -top-4 -right-4 w-12 h-12 rounded-full bg-green-500 flex items-center justify-center">
+                    <Check className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-6 text-green-400">{t("comparison.ai.title")}</h3>
+                  <ul className="space-y-4">
+                    {(() => {
+                      const items = isPage2Variant 
+                        ? t("comparison.ai.itemsPage2", { returnObjects: true })
+                        : t("comparison.ai.items", { returnObjects: true });
+                      const itemsArray = Array.isArray(items) ? items : (typeof items === 'string' ? [items] : []);
+                      return itemsArray.map((item, idx) => (
+                        <li key={idx} className="flex gap-3">
+                          <span className="text-green-400 flex-shrink-0">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ));
+                    })()}
+                  </ul>
+                  <p className="mt-8 text-xl font-bold text-green-400">{t("comparison.ai.stats")}</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </AnimatedSection>
+
+        {/* Reviews Section */}
+        <div id="testimonials" className="mb-16 max-w-7xl mx-auto scroll-mt-20">
+          <div className="text-center mb-8">
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight text-white">
+                      {t("home.testimonialsTitlePart1")}{" "}
+                      <span className="text-primary">{t("home.testimonialsTitleProfessional")}</span>{" "}
+                      {t("home.testimonialsTitlePart2")}{" "}
+                      <span className="text-primary">{t("home.testimonialsTitleAI")}</span>? {t("home.testimonialsTitlePart3")}
+                    </h2>
+                    <p className="text-lg text-gray-300">
+                      {t("home.testimonialsSubtitle")}
+                    </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-w-[90%] mx-auto">
+            {Array.from({ length: reviewsToShow }).map((_, idx) => {
+              const reviews = t("supportReviews.reviews", {
+                returnObjects: true,
+              }) as Array<{
+                name: string;
+                title: string;
+                review: string;
+                date: string;
+              }>;
+              
+              const review = reviews[idx % reviews.length];
+              const exampleNumber = idx + 1;
+              const hasMultipleResults = exampleNumber === 14 || exampleNumber === 15;
+              
+              let profileImage: string;
+              let resultImages: string[];
+              
+              if (hasMultipleResults) {
+                profileImage = `/reviews/${exampleNumber}_profile.webp`;
+                if (exampleNumber === 14) {
+                  resultImages = [
+                    `/reviews/14_result.webp`,
+                    `/reviews/14_result_1.webp`,
+                    `/reviews/14_result_2.webp`,
+                    `/reviews/14_result_3.webp`,
+                    `/reviews/14_result_4.webp`,
+                    `/reviews/14_result_5.webp`,
+                  ];
+                } else {
+                  resultImages = [
+                    `/reviews/15_result.webp`,
+                    `/reviews/15_result_1.webp`,
+                    `/reviews/15_result_2.webp`,
+                    `/reviews/15_result_3.webp`,
+                    `/reviews/15_result_4.webp`,
+                    `/reviews/15_result_5.webp`,
+                  ];
+                }
+              } else {
+                profileImage = `/reviews/${exampleNumber}_profile.webp`;
+                resultImages = [`/reviews/${exampleNumber}_result.webp`];
+              }
+              
+              const isExpanded = expandedReviewsGrid.has(idx);
+              const reviewText = review.review;
+              const shouldTruncate = reviewText.length > 200;
+              const displayText = shouldTruncate && !isExpanded
+                ? reviewText.substring(0, 200) + "..."
+                : reviewText;
+
+              return (
+                <Card 
+                  key={idx} 
+                  className="bg-white border border-border shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+                >
+                  <CardContent className="px-5 pt-0 pb-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Avatar className="w-9 h-9 border-2 border-primary/30">
+                        <AvatarImage src={profileImage} alt={review.name} />
+                        <AvatarFallback className="bg-primary/10 text-primary">
+                          {review.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-sm leading-tight truncate text-foreground">
+                              {review.name}
+                            </h3>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {review.title}
+                            </p>
+                      </div>
+                    </div>
+                    <div className="mb-0">
+                      <p className={`text-xs text-foreground leading-tight ${shouldTruncate && !isExpanded ? 'line-clamp-4' : ''}`}>
+                        {displayText}
+                      </p>
+                      {shouldTruncate && (
+                        <button
+                          onClick={() => {
+                            const newExpanded = new Set(expandedReviewsGrid);
+                            if (isExpanded) {
+                              newExpanded.delete(idx);
+                            } else {
+                              newExpanded.add(idx);
+                            }
+                            setExpandedReviewsGrid(newExpanded);
+                          }}
+                          className="text-xs text-primary hover:underline mt-1 font-medium"
+                        >
+                          {isExpanded ? t("supportReviews.showLess") : t("supportReviews.readMore")}
+                        </button>
+                      )}
+                    </div>
+                  </CardContent>
+                  <div className="w-full px-3 -mt-2">
+                    {hasMultipleResults ? (
+                      <div className="grid grid-cols-3 gap-1">
+                        {resultImages.map((imgSrc, imgIdx) => (
+                          <div
+                            key={imgIdx}
+                            className="aspect-square overflow-hidden bg-gray-100 rounded-[20px]"
+                          >
+                            <OptimizedImage
+                              src={imgSrc}
+                              alt={t("home.altText.reviewPhoto", { name: review.name, number: imgIdx + 1 })}
+                              className="w-full h-full object-cover rounded-[20px]"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="aspect-[4/5] overflow-hidden bg-gray-100 rounded-[20px]">
+                        <OptimizedImage
+                          src={resultImages[0]}
+                          alt={t("home.altText.reviewProfessionalPhoto", { name: review.name })}
+                          className="w-full h-full object-cover rounded-[20px]"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+
+          <div className="flex justify-center mt-8">
+            <Button
+              onClick={() => {
+                if (reviewsToShow === 6) {
+                  setReviewsToShow(12);
+                } else if (reviewsToShow === 12) {
+                  setReviewsToShow(15);
+                } else if (reviewsToShow === 15) {
+                  setReviewsToShow(6);
+                }
+              }}
+              className="bg-gray-800 hover:bg-gray-700 text-white px-8 py-6 rounded-full text-base font-medium transition-all duration-300 hover:scale-105"
+            >
+              {reviewsToShow === 15 
+                ? t("supportReviews.showLess")
+                : t("supportReviews.seeMore")
+              }
+            </Button>
+          </div>
+        </div>
+
+        {/* Testimonial Card Section */}
+        <AnimatedSection>
+          <section className="py-20 bg-gray-900">
+            <div className="container max-w-4xl mx-auto px-4">
+              <div className="relative flex items-start">
+                <div className="relative z-20 flex-shrink-0 -mr-6 md:-mr-8">
+                  <div className="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-gray-900">
+                    <OptimizedImage
+                      src="/image_101.webp"
+                      alt={t("home.altText.danielaMora")}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+                <div className="flex-1 relative ml-2">
+                  <div className="absolute -left-5 top-8 md:top-10 z-10">
+                    <div className="relative">
+                      <div
+                        className="w-0 h-0"
+                        style={{
+                          borderTop: "14px solid transparent",
+                          borderRight: "22px solid #F97316",
+                          borderBottom: "14px solid transparent",
+                        }}
+                      />
+                      <div
+                        className="absolute left-[2px] top-0 w-0 h-0"
+                        style={{
+                          borderTop: "12px solid transparent",
+                          borderRight: "20px solid white",
+                          borderBottom: "12px solid transparent",
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="bg-gray-800 border-2 border-primary rounded-2xl p-6 md:p-8 shadow-xl relative z-10">
+                    <p className="text-white text-base md:text-lg leading-relaxed mb-4 text-left">
+                      {t("home.testimonial.text")}
+                    </p>
+                    <div className="text-sm md:text-base text-gray-300 leading-relaxed text-left">
+                      <p>
+                        {t("home.testimonial.attribution")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </AnimatedSection>
+
+        {/* Styles Section */}
+        <AnimatedSection>
+          <section className="py-20 bg-gray-900">
+            <div className="container max-w-7xl mx-auto px-4">
+              <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-2 rounded-2xl overflow-hidden bg-gray-800 p-4">
+                    {[
+                      { img: "/over100_1.webp", label: null },
+                      { img: "/over100_4.webp", label: "New" },
+                      { img: "/over100_2.webp", label: "Popular" },
+                      { img: "/over100_5.webp", label: null },
+                      { img: "/over100_3.webp", label: null },
+                      { img: "/over100_6.webp", label: null },
+                      { img: "/over100_8.webp", label: null },
+                      { img: "/over100_7.webp", label: "Popular" },
+                      { img: "/over100_9.webp", label: null },
+                    ].map((item, idx) => {
+                      const badgeLabels = t("generateImages.badges", { returnObjects: true }) as { premium: string; new: string; popular: string };
+                      return (
+                        <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-gray-700">
+                          <OptimizedImage
+                            src={item.img}
+                            alt={t("home.altText.styleNumber", { number: idx + 1 })}
+                            className="w-full h-full object-cover"
+                          />
+                          {item.label && (
+                            <div className="absolute top-2 left-2">
+                              <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                                item.label === "Popular" 
+                                  ? "bg-primary text-white" 
+                                  : "bg-green-500 text-white"
+                              }`}>
+                                {item.label === "Popular" ? badgeLabels.popular : item.label === "New" ? badgeLabels.new : item.label}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="space-y-8 text-white">
+                  <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white">
+                    {t("styles.title")}
+                  </h2>
+                  <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
+                    {t("styles.subtitle")}
+                  </p>
+                  <div>
+                    <Button
+                      asChild
+                      size="lg"
+                      className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    >
+                      <a href={loginUrl}>
+                        {t("styles.cta")} <ArrowRight className="ml-2 w-5 h-5 inline" />
+                      </a>
+                    </Button>
+                  </div>
+                  <div className="flex items-start gap-4 pt-4">
+                    <Quote className="w-12 h-12 text-primary flex-shrink-0 mt-1" />
+                    <div className="flex-1">
+                      <p className="text-lg md:text-xl text-gray-200 mb-3 italic">
+                        "{t("styles.testimonial")}"
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
+                          <span className="text-sm font-medium text-gray-300">A</span>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-white">Aldo M.</span>
+                            <span className="bg-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded">
+                              {t("home.styles.verifiedBuyer")}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </AnimatedSection>
+
+        {/* How It Works Section */}
+        <AnimatedSection>
+          <section id="how-it-works" className="py-20 bg-gray-800">
+            <div className="container">
+              <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-white">
+                {t("howItWorks.title")}
+              </h2>
+
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto mb-12">
+                {(
+                  t("howItWorks.steps", { returnObjects: true }) as Array<{
+                    title: string;
+                    description: string;
+                  }>
+                ).map((step, idx) => {
+                  // Images for each step
+                  const stepImages = [
+                    "/howAISelfieWorks1.webp", // Step 1: Upload selfies
+                    "/howAISelfieWorks2.webp", // Step 2: Choose style
+                    "/howAISelfieWorks3.webp", // Step 3: AI magic
+                    "/howAISelfieWorks4.webp", // Step 4: Download and share
+                  ];
+                  
+                  return (
+                    <AnimatedSection key={idx} delay={idx * 100}>
+                      <Card className="p-6 text-center h-full bg-gray-700 border-gray-600">
+                        {/* Step Image */}
+                        <div className="w-32 h-32 md:w-40 md:h-40 mx-auto mb-4 rounded-lg overflow-hidden shadow-lg">
+                          <OptimizedImage
+                            src={stepImages[idx] || stepImages[0]}
+                            alt={step.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                          {idx + 1}
+                        </div>
+                        <h3 className="text-xl font-bold mb-3 text-white">{step.title}</h3>
+                        <p className="text-gray-300">{step.description}</p>
+                      </Card>
+                    </AnimatedSection>
+                  );
+                })}
+              </div>
+
+              <div className="text-center">
+                <Button asChild size="lg" className="text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light bg-primary hover:bg-primary/90">
+                  <a href={loginUrl}>{t("howItWorks.cta")} →</a>
+                </Button>
+              </div>
+            </div>
+          </section>
+        </AnimatedSection>
+
+        {/* Pricing Section */}
+        <AnimatedSection>
+          <section id="pricing" className="py-20 bg-gray-800">
+            <div className="container">
+              <div className="text-center mb-12">
+                  <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+                    {(() => {
+                      const title = t("pricing.title");
+                      const match = title.match(/(.*?)(5x?\s*(?:less|menos|volte\s+meno))(?:\s+than\s+|\s+que\s+|di\s+)(.*)/i);
+                      if (match) {
+                        return (
+                          <>
+                            {match[1]}
+                            <span className="text-green-400">{match[2]}</span>
+                            {match[3] ? ` ${match[3]}` : ""}
+                          </>
+                        );
+                      }
+                      const parts = title.split(/(5x?\s*(?:less|menos|volte\s+meno))/i);
+                      if (parts.length > 1) {
+                        return parts.map((part, idx) => 
+                          /5x?\s*(?:less|menos|volte\s+meno)/i.test(part) ? (
+                            <span key={idx} className="text-green-400">{part}</span>
+                          ) : (
+                            part
+                          )
+                        );
+                      }
+                      return title;
+                    })()}
+                  </h2>
+                  <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                    {t("pricing.subtitle")}
+                  </p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <AnimatedSection delay={100}>
+                  <Card className="p-8 h-full">
+                    <h3 className="text-2xl font-bold mb-2">{t("pricing.plans.starter.name")}</h3>
+                    <p className="text-muted-foreground mb-4">
+                      {isPage2Variant ? "40 photos" : t("pricing.plans.starter.photos")}
+                    </p>
+                    <div className={`text-5xl font-bold mb-2 ${isPage2Variant && starterPrice.oldFormatted ? "flex items-baseline gap-3" : ""}`}>
+                      <span>
+                        {isPage2Variant ? starterPrice.formatted : t("pricing.plans.starter.price")}
+                      </span>
+                      {isPage2Variant && starterPrice.oldFormatted && (
+                        <span className="text-2xl text-muted-foreground line-through font-normal">
+                          {starterPrice.oldFormatted}
+                        </span>
+                      )}
+                      <span className="text-lg text-muted-foreground ml-2">
+                        {t("pricing.plans.starter.currency")}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-6">
+                      {t("pricing.plans.starter.note")}
+                    </p>
+                    <Button asChild className="w-full rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light" size="lg">
+                      <a href={loginUrl}>{t("hero.cta")}</a>
+                    </Button>
+                  </Card>
+                </AnimatedSection>
+
+                <AnimatedSection delay={200}>
+                  <Card className="p-8 border-2 border-primary relative h-full">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      {t("pricing.plans.pro.badge")}
+                    </Badge>
+                    <h3 className="text-2xl font-bold mb-2">{t("pricing.plans.pro.name")}</h3>
+                    <p className="text-muted-foreground mb-4">
+                      {isPage2Variant ? "60 photos" : t("pricing.plans.pro.photos")}
+                    </p>
+                    <div className="flex items-baseline gap-3 mb-2">
+                      <span className="text-5xl font-bold text-primary">
+                        {isPage2Variant ? proPrice.formatted : t("pricing.plans.pro.price")}
+                      </span>
+                      {isPage2Variant && proPrice.oldFormatted ? (
+                        <span className="text-2xl text-muted-foreground line-through font-normal">
+                          {proPrice.oldFormatted}
+                        </span>
+                      ) : !isPage2Variant && (
+                        <span className="text-2xl text-muted-foreground line-through">
+                          {t("pricing.plans.pro.oldPrice")}
+                        </span>
+                      )}
+                      <span className="text-lg text-muted-foreground">
+                        {t("pricing.plans.pro.currency")}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-6">
+                      {t("pricing.plans.pro.note")}
+                    </p>
+                    <Button asChild className="w-full rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light" size="lg">
+                      <a href={loginUrl}>{t("hero.cta")}</a>
+                    </Button>
+                  </Card>
+                </AnimatedSection>
+
+              <AnimatedSection delay={300}>
+                <Card className="p-8 h-full bg-gray-700 border-gray-600">
+                  <h3 className="text-2xl font-bold mb-2 text-white">{t("pricing.plans.premium.name")}</h3>
+                  <p className="text-gray-300 mb-4">
+                    {isPage2Variant ? "100 photos" : t("pricing.plans.premium.photos")}
+                  </p>
+                  <div className={`text-5xl font-bold mb-2 ${isPage2Variant && premiumPrice.oldFormatted ? "flex items-baseline gap-3" : ""}`}>
+                    <span className="text-white">
+                      {isPage2Variant ? premiumPrice.formatted : t("pricing.plans.premium.price")}
+                    </span>
+                    {isPage2Variant && premiumPrice.oldFormatted && (
+                      <span className="text-2xl text-gray-400 line-through font-normal">
+                        {premiumPrice.oldFormatted}
+                      </span>
+                    )}
+                    <span className="text-lg text-gray-300 ml-2">
+                      {t("pricing.plans.premium.currency")}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-300 mb-6">
+                      {t("pricing.plans.premium.note")}
+                    </p>
+                    <Button asChild className="w-full rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-glow-light" size="lg">
+                      <a href={loginUrl}>{t("hero.cta")}</a>
+                    </Button>
+                  </Card>
+                </AnimatedSection>
+              </div>
+
+              <AnimatedSection delay={400}>
+                <div className="mt-12 max-w-2xl mx-auto">
+                  <h3 className="text-2xl font-bold text-center mb-6 text-white">
+                    {t("pricing.features.title")}
+                  </h3>
+                  <ul className="grid md:grid-cols-2 gap-4">
+                    {(() => {
+                      const items = t("pricing.features.items", { returnObjects: true });
+                      const itemsArray = Array.isArray(items) ? items : (typeof items === 'string' ? [items] : []);
+                      return itemsArray.map(
+                        (item, idx) => (
+                          <li key={idx} className="flex gap-3">
+                            <Check className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                            <span>{item}</span>
+                          </li>
+                        )
+                      );
+                    })()}
+                  </ul>
+                </div>
+              </AnimatedSection>
+            </div>
+          </section>
+        </AnimatedSection>
+
+        {/* Upload Selfies Section */}
+        <AnimatedSection>
+          <section className="py-20 bg-gray-900">
+            <div className="container max-w-7xl mx-auto px-4">
+              <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center relative">
+                <div className="flex justify-center my-6 md:hidden">
+                  <ArrowDown className="w-16 h-16 text-primary" strokeWidth={3} />
+                </div>
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 hidden md:block">
+                  <ArrowRight className="w-20 h-20 md:w-24 md:h-24 text-primary" strokeWidth={3} />
+                </div>
+                <div className="space-y-6">
+                  <h3 className="text-2xl md:text-3xl font-bold text-white mb-6">
+                    {t("home.uploadSelfies.title")}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4 max-w-lg md:max-w-xl">
+                    {[
+                      "/girl_image_sample.webp",
+                      "/girl_image_sample2.webp",
+                      "/girl_image_sample3.webp",
+                      "/girl_image_sample4.webp",
+                    ].map((img, idx) => (
+                      <div
+                        key={idx}
+                        className="aspect-square rounded-lg overflow-hidden bg-gray-800"
+                      >
+                        <OptimizedImage
+                          src={img}
+                          alt={t("home.altText.selfieNumber", { number: idx + 1 })}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="relative">
+                  <div className="relative rounded-2xl overflow-hidden bg-gray-800">
+                    <OptimizedImage
+                      src="/girl_image_result.webp"
+                      alt={t("home.altText.aiGeneratedPhoto")}
+                      className="w-full h-full object-cover aspect-[3/4]"
+                    />
+                    <div className="absolute bottom-4 right-4">
+                      <div className="bg-pink-100 border-2 border-pink-400 text-gray-900 text-[10px] font-bold px-2 py-1 rounded-md shadow-lg">
+                        {t("faq.badge")}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </AnimatedSection>
+
+        {/* FAQ Section */}
+        <AnimatedSection>
+          <FAQ />
+        </AnimatedSection>
+
+        {/* CTA Section */}
+        <AnimatedSection>
+          <section className="py-14 bg-gray-900">
+            <div className="container max-w-7xl mx-auto px-4">
+              <div className="grid md:grid-cols-2 gap-12 items-center">
+                <div className="space-y-6 text-white">
+                  <div>
+                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-white">
+                      {t("ctaSection.title")}
+                    </h2>
+                    <p className="text-xl md:text-2xl text-gray-300">
+                      {t("ctaSection.subtitle")}
+                    </p>
+                  </div>
+                  <Button
+                    asChild
+                    size="lg"
+                    className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  >
+                    <a href={loginUrl}>
+                      {t("ctaSection.button")}
+                      <ArrowRight className="ml-2 w-5 h-5" />
+                    </a>
+                  </Button>
+                  <div className="flex items-center gap-4">
+                    <div className="flex -space-x-2">
+                      {[
+                        "/image.webp",
+                        "/image_1.webp",
+                        "/image_10.webp",
+                        "/image_100.webp",
+                        "/image_101.webp",
+                      ].map((img, idx) => (
+                        <div
+                          key={idx}
+                          className="w-10 h-10 rounded-full border-2 border-primary/50 overflow-hidden bg-gray-800"
+                        >
+                          <OptimizedImage
+                            src={img}
+                            alt={t("home.altText.userNumber", { number: idx + 1 })}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-sm md:text-base text-gray-300">
+                      {t("ctaSection.stats")}
+                    </p>
+                  </div>
+                </div>
+                <div className="relative h-[480px] md:h-[560px]">
+                  <div
+                    className="absolute bottom-0 left-0 md:bottom-0 md:left-0 w-64 md:w-80 h-80 md:h-[480px] rounded-2xl overflow-hidden shadow-2xl"
+                    style={{
+                      transform: "rotate(-6deg)",
+                      zIndex: 1,
+                    }}
+                  >
+                    <OptimizedImage
+                      src="/similar_human2.webp"
+                      alt={t("home.altText.professionalPhotoNumber", { number: 1 })}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div
+                    className="absolute -top-4 left-40 md:-top-8 md:left-56 w-64 md:w-80 h-80 md:h-[480px] rounded-2xl overflow-hidden shadow-2xl"
+                    style={{
+                      zIndex: 2,
+                    }}
+                  >
+                    <OptimizedImage
+                      src="/image_1.webp"
+                      alt={t("home.altText.professionalPhotoNumber", { number: 2 })}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div
+                    className="absolute bottom-0 -right-20 md:bottom-0 md:-right-32 w-64 md:w-80 h-80 md:h-[480px] rounded-2xl overflow-hidden shadow-2xl"
+                    style={{
+                      transform: "rotate(6deg)",
+                      zIndex: 3,
+                    }}
+                  >
+                    <OptimizedImage
+                      src="/image_10.webp"
+                      alt={t("home.altText.professionalPhotoNumber", { number: 3 })}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </AnimatedSection>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -1289,13 +2470,13 @@ export default function Home() {
             <div id="testimonials" className="max-w-7xl mx-auto px-4 scroll-mt-20">
                   {/* Section Title */}
               <div className="text-center mb-6 sm:mb-8 md:mb-12">
-                    <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 leading-tight px-2">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 leading-tight px-2 text-gray-900 dark:text-white">
                       {t("home.testimonialsTitlePart1")}{" "}
                       <span className="text-primary">{t("home.testimonialsTitleProfessional")}</span>{" "}
                       {t("home.testimonialsTitlePart2")}{" "}
                       <span className="text-primary">{t("home.testimonialsTitleAI")}</span>? {t("home.testimonialsTitlePart3")}
                     </h2>
-                    <p className="text-base sm:text-lg text-muted-foreground px-2">
+                    <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 px-2">
                       {t("home.testimonialsSubtitle")}
                     </p>
                   </div>
@@ -1413,14 +2594,14 @@ export default function Home() {
                   return (
                     <Card 
                       key={idx} 
-                      className="bg-white border border-purple-200/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+                      className="bg-white border border-border shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
                     >
                       {/* Profile Section */}
                       <CardContent className="px-5 pt-0 pb-0">
                         <div className="flex items-center gap-2 mb-2">
-                          <Avatar className="w-9 h-9 border-2 border-purple-200">
+                          <Avatar className="w-9 h-9 border-2 border-primary/30">
                             <AvatarImage src={profileImage} alt={review.name} />
-                            <AvatarFallback className="bg-purple-100 text-purple-700">
+                            <AvatarFallback className="bg-primary/10 text-primary">
                               {review.name
                                 .split(" ")
                                 .map((n) => n[0])
@@ -1429,10 +2610,10 @@ export default function Home() {
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-sm leading-tight truncate text-black">
+                            <h3 className="font-bold text-sm leading-tight truncate text-foreground">
                               {review.name}
                             </h3>
-                            <p className="text-xs text-gray-600 truncate">
+                            <p className="text-xs text-muted-foreground truncate">
                               {review.title}
                             </p>
                           </div>
@@ -1440,7 +2621,7 @@ export default function Home() {
 
                         {/* Review Text */}
                         <div className="mb-0">
-                          <p className={`text-xs text-black leading-tight ${shouldTruncate && !isExpanded ? 'line-clamp-4' : ''}`}>
+                          <p className={`text-xs text-foreground leading-tight ${shouldTruncate && !isExpanded ? 'line-clamp-4' : ''}`}>
                             {parts.length > 0 ? parts : displayText}
                           </p>
                           {shouldTruncate && (
@@ -1513,7 +2694,7 @@ export default function Home() {
                       setReviewsToShow(initialCount); // Collapse back to initial state
                     }
                   }}
-                  className="bg-gray-800 hover:bg-gray-700 text-white px-8 py-6 rounded-full text-base font-medium transition-all duration-300 hover:scale-105"
+                  className="bg-primary hover:bg-primary/90 text-white px-8 py-6 rounded-full text-base font-medium transition-all duration-300 hover:scale-105"
                 >
                   {reviewsToShow === 15 
                     ? t("supportReviews.showLess")
@@ -1886,13 +3067,13 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
               {/* Starter Pack */}
               <AnimatedSection delay={100}>
-                <Card className="p-8 h-full">
-                  <h3 className="text-2xl font-bold mb-2">{t("pricing.plans.starter.name")}</h3>
+                <Card className="p-8 h-full bg-white border-border">
+                  <h3 className="text-2xl font-bold mb-2 text-foreground">{t("pricing.plans.starter.name")}</h3>
                   <p className="text-muted-foreground mb-4">
                     {isPage2Variant ? "40 photos" : t("pricing.plans.starter.photos")}
                   </p>
                   <div className={`text-5xl font-bold mb-2 ${isPage2Variant && starterPrice.oldFormatted ? "flex items-baseline gap-3" : ""}`}>
-                    <span>
+                    <span className="text-foreground">
                       {isPage2Variant ? starterPrice.formatted : t("pricing.plans.starter.price")}
                     </span>
                     {isPage2Variant && starterPrice.oldFormatted && (
@@ -1915,11 +3096,11 @@ export default function Home() {
 
               {/* Pro Pack */}
               <AnimatedSection delay={200}>
-                <Card className="p-8 border-2 border-primary relative h-full">
+                <Card className="p-8 border-2 border-primary relative h-full bg-white">
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
                     {t("pricing.plans.pro.badge")}
                   </Badge>
-                  <h3 className="text-2xl font-bold mb-2">{t("pricing.plans.pro.name")}</h3>
+                  <h3 className="text-2xl font-bold mb-2 text-foreground">{t("pricing.plans.pro.name")}</h3>
                   <p className="text-muted-foreground mb-4">
                     {isPage2Variant ? "60 photos" : t("pricing.plans.pro.photos")}
                   </p>
@@ -1951,13 +3132,13 @@ export default function Home() {
 
               {/* Premium Pack */}
               <AnimatedSection delay={300}>
-                <Card className="p-8 h-full">
-                  <h3 className="text-2xl font-bold mb-2">{t("pricing.plans.premium.name")}</h3>
+                <Card className="p-8 h-full bg-white border-border">
+                  <h3 className="text-2xl font-bold mb-2 text-foreground">{t("pricing.plans.premium.name")}</h3>
                   <p className="text-muted-foreground mb-4">
                     {isPage2Variant ? "100 photos" : t("pricing.plans.premium.photos")}
                   </p>
                   <div className={`text-5xl font-bold mb-2 ${premiumPrice.oldFormatted ? "flex items-baseline gap-3" : ""}`}>
-                    <span>
+                    <span className="text-foreground">
                       {premiumPrice.formatted}
                     </span>
                     {premiumPrice.oldFormatted && (
@@ -2351,8 +3532,8 @@ export default function Home() {
         </section>
       </AnimatedSection>
 
-      {/* How It Works Section - At bottom for page3 variant */}
-      {isPage3Variant && howItWorksSection}
+      {/* How It Works Section - At bottom for page3 variant (old version) */}
+      {isPage3Variant && howItWorksSectionOld}
 
       {/* Discount Modal */}
       <DiscountModal open={showDiscountModal} onOpenChange={setShowDiscountModal} />

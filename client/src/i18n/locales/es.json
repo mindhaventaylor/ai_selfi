@@ -1670,6 +1670,7 @@
     "pricing": {
       "title": "Elige Tu Plan",
       "description": "Selecciona el plan que mejor se adapte a tus necesidades. Todos los planes incluyen fotos profesionales generadas con IA.",
+      "processing": "Redirigiendo al checkout...",
       "popular": "POPULAR",
       "discounted": "Descontado",
       "basic": "Básico",
