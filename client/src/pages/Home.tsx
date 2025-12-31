@@ -142,13 +142,17 @@ function BeforeAfterSliderScroll({
               style={{ width: '280px', height: '373px' }}
             >
               <OptimizedImage
-                src={pair.before}
-                alt={`${beforeLabel} ${idx + 1}`}
+                src={pair.after}
+                alt={`${afterLabel} ${idx + 1}`}
                 className="w-full h-full object-cover rounded-2xl"
               />
-              {/* Before Label */}
-              <div className="absolute top-4 left-4 z-20 bg-black/70 text-white text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg">
-                {beforeLabel}
+              {/* After Label - only visible on the right side (50%+) */}
+              <div 
+                className="absolute top-0 right-0 w-1/2 h-full overflow-hidden pointer-events-none"
+              >
+                <div className="absolute top-4 right-4 bg-primary text-white text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg">
+                  {afterLabel}
+                </div>
               </div>
             </div>
           ))}
@@ -164,7 +168,8 @@ function BeforeAfterSliderScroll({
           msOverflowStyle: 'none',
           WebkitOverflowScrolling: 'touch',
           clipPath: 'inset(0 50% 0 0)',
-          pointerEvents: 'none'
+          pointerEvents: 'none',
+          zIndex: 20
         }}
       >
         <div className="flex gap-4 sm:gap-6 md:gap-8" style={{ width: 'max-content' }}>
@@ -175,13 +180,13 @@ function BeforeAfterSliderScroll({
               style={{ width: '280px', height: '373px' }}
             >
               <OptimizedImage
-                src={pair.after}
-                alt={`${afterLabel} ${idx + 1}`}
+                src={pair.before}
+                alt={`${beforeLabel} ${idx + 1}`}
                 className="w-full h-full object-cover rounded-2xl"
               />
-              {/* After Label */}
-              <div className="absolute top-4 right-4 z-20 bg-primary text-white text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg">
-                {afterLabel}
+              {/* Before Label - visible on the left side */}
+              <div className="absolute top-4 left-4 z-20 bg-black/70 text-white text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg">
+                {beforeLabel}
               </div>
             </div>
           ))}
@@ -1933,12 +1938,12 @@ export default function Home() {
             <div className="relative max-w-7xl mx-auto">
               <BeforeAfterSliderScroll
                 imagePairs={[
-                  { before: "/image.webp", after: "/image_1.webp" },
-                  { before: "/image_10.webp", after: "/image_100.webp" },
-                  { before: "/image_101.webp", after: "/image_101_last.webp" },
-                  { before: "/image.webp", after: "/image_1.webp" },
-                  { before: "/image_10.webp", after: "/image_100.webp" },
-                  { before: "/image_101.webp", after: "/image_101_last.webp" },
+                  { before: "/image_before_after/before_image_1.jpg", after: "/image_before_after/after_image_1.jpg" },
+                  { before: "/image_before_after/before_image_2.jpg", after: "/image_before_after/after_image_2.jpg" },
+                  { before: "/image_before_after/before_image_3.jpg", after: "/image_before_after/after_image_3.jpg" },
+                  { before: "/image_before_after/before_image_4.jpg", after: "/image_before_after/after_image_4.jpg" },
+                  { before: "/image_before_after/before_image_5.jpg", after: "/image_before_after/after_image_5.jpg" },
+                  { before: "/image_before_after/before_image_6.jpg", after: "/image_before_after/after_image_6.jpg" },
                 ]}
                 beforeLabel={t("home.beforeLabel") || "Before"}
                 afterLabel={t("home.afterLabel") || "After"}
