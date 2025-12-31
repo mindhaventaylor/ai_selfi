@@ -89,13 +89,13 @@ function BeforeAfterSliderScroll({
         return;
       }
       
-      if (beforeContainer.scrollLeft >= maxScroll - 1) {
-        // Reset to start for seamless loop
-        beforeContainer.scrollLeft = 0;
-        afterContainer.scrollLeft = 0;
+      if (beforeContainer.scrollLeft <= 1) {
+        // Reset to end for seamless loop
+        beforeContainer.scrollLeft = maxScroll;
+        afterContainer.scrollLeft = maxScroll;
       } else {
-        beforeContainer.scrollLeft += scrollSpeedRef.current;
-        afterContainer.scrollLeft += scrollSpeedRef.current;
+        beforeContainer.scrollLeft -= scrollSpeedRef.current;
+        afterContainer.scrollLeft -= scrollSpeedRef.current;
       }
 
       animationFrameRef.current = requestAnimationFrame(scroll);
@@ -103,6 +103,12 @@ function BeforeAfterSliderScroll({
 
     // Start scrolling after a short delay to ensure DOM is ready
     const timeoutId = setTimeout(() => {
+      // Initialize scroll to the end (right side) so it starts showing "after" images
+      const maxScroll = beforeContainer.scrollWidth - beforeContainer.clientWidth;
+      if (maxScroll > 0) {
+        beforeContainer.scrollLeft = maxScroll;
+        afterContainer.scrollLeft = maxScroll;
+      }
       animationFrameRef.current = requestAnimationFrame(scroll);
     }, 200);
 
@@ -124,7 +130,7 @@ function BeforeAfterSliderScroll({
       className="relative w-full" 
       ref={containerRef}
     >
-      {/* Before Images Container (Left side) */}
+      {/* Before Images Container (Bottom layer - shows "before" images) */}
       <div 
         ref={beforeScrollRef}
         className="overflow-x-auto overflow-y-hidden scrollbar-hide"
@@ -142,24 +148,20 @@ function BeforeAfterSliderScroll({
               style={{ width: '280px', height: '373px' }}
             >
               <OptimizedImage
-                src={pair.after}
-                alt={`${afterLabel} ${idx + 1}`}
+                src={pair.before}
+                alt={`${beforeLabel} ${idx + 1}`}
                 className="w-full h-full object-cover rounded-2xl"
               />
-              {/* After Label - only visible on the right side (50%+) */}
-              <div 
-                className="absolute top-0 right-0 w-1/2 h-full overflow-hidden pointer-events-none"
-              >
-                <div className="absolute top-4 right-4 bg-primary text-white text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg">
-                  {afterLabel}
-                </div>
+              {/* Before Label - visible on the left side */}
+              <div className="absolute top-4 left-4 z-10 bg-black/70 text-white text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg">
+                {beforeLabel}
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* After Images Container (Right side, clipped) - fixed at 50% */}
+      {/* After Images Container (Top layer, clipped to right 50% - shows "after" images) */}
       <div 
         ref={afterScrollRef}
         className="absolute top-0 left-0 w-full overflow-x-auto overflow-y-hidden scrollbar-hide"
@@ -167,7 +169,7 @@ function BeforeAfterSliderScroll({
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
           WebkitOverflowScrolling: 'touch',
-          clipPath: 'inset(0 50% 0 0)',
+          clipPath: 'inset(0 0 0 50%)',
           pointerEvents: 'none',
           zIndex: 20
         }}
@@ -180,13 +182,13 @@ function BeforeAfterSliderScroll({
               style={{ width: '280px', height: '373px' }}
             >
               <OptimizedImage
-                src={pair.before}
-                alt={`${beforeLabel} ${idx + 1}`}
+                src={pair.after}
+                alt={`${afterLabel} ${idx + 1}`}
                 className="w-full h-full object-cover rounded-2xl"
               />
-              {/* Before Label - visible on the left side */}
-              <div className="absolute top-4 left-4 z-20 bg-black/70 text-white text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg">
-                {beforeLabel}
+              {/* After Label - visible on the right side */}
+              <div className="absolute top-4 right-4 z-20 bg-primary text-white text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg">
+                {afterLabel}
               </div>
             </div>
           ))}
