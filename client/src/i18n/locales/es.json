@@ -1459,7 +1459,7 @@
   },
   "home": {
     "beforeAfterSubtitle": "Fotos reales generadas para nuestros clientes reales. Vea nuestros resultados y reseñas por sí mismo.",
-    "beforeAfterDisclaimer": "Estas fotos no son reales. 100% Generadas por IA.",
+    "beforeAfterDisclaimer": "Estas fotos fueron generadas usando IA",
     "beforeLabel": "Antes",
     "afterLabel": "Después",
     "examples": [

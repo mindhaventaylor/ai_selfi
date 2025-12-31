@@ -1444,7 +1444,7 @@
   },
   "home": {
     "beforeAfterSubtitle": "Real photos generated for our real customers. See our results and reviews for yourself.",
-    "beforeAfterDisclaimer": "These photos are not real. 100% AI Generated.",
+    "beforeAfterDisclaimer": "These photos were generated using AI",
     "beforeLabel": "Before",
     "afterLabel": "After",
     "examples": [
