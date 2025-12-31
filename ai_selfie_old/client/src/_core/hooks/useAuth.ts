@@ -1,0 +1,246 @@
+import { trpc } from "@/lib/trpc";
+import { TRPCClientError } from "@trpc/client";
+import { supabase } from "@/lib/supabase";
+import { useCallback, useEffect, useMemo } from "react";
+
+type UseAuthOptions = {
+  redirectOnUnauthenticated?: boolean;
+  // redirectPath removed since we use signIn directly
+};
+
+export function useAuth(options?: UseAuthOptions) {
+  const { redirectOnUnauthenticated = false } = options ?? {};
+  const utils = trpc.useUtils();
+
+  const meQuery = trpc.auth.me.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: 30 * 1000, // 30 seconds - treat data as fresh for 30s
+    gcTime: 5 * 60 * 1000, // 5 minutes - cache data for 5 minutes
+    // Don't block UI if query fails or times out - allow UI to render
+    // The loading state will resolve even if the query fails
+    throwOnError: false,
+    // Add timeout to prevent query from hanging indefinitely in production
+    networkMode: 'online',
+    // Ensure query doesn't block rendering - resolve loading state quickly even on slow networks
+    refetchOnMount: true,
+    refetchOnReconnect: false,
+  });
+
+  const logoutMutation = trpc.auth.logout.useMutation({
+    onSuccess: () => {
+      utils.auth.me.setData(undefined, null);
+    },
+  });
+
+  const syncSessionMutation = trpc.auth.syncSession.useMutation();
+
+  const logout = useCallback(async () => {
+    try {
+      // Sign out from Supabase first (this clears Supabase's localStorage items)
+      await supabase.auth.signOut();
+      
+      // Then clear server-side session
+      await logoutMutation.mutateAsync();
+    } catch (error: unknown) {
+      if (
+        error instanceof TRPCClientError &&
+        error.data?.code === "UNAUTHORIZED"
+      ) {
+        // Already logged out, continue
+      } else {
+        console.error("Logout error:", error);
+        // Continue with logout even if there's an error
+      }
+    } finally {
+      // Clear client-side cache
+      utils.auth.me.setData(undefined, null);
+      await utils.auth.me.invalidate();
+      
+      // Clear custom localStorage items
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.removeItem("manus-runtime-user-info");
+        } catch (e) {
+          // Silently fail - localStorage might be disabled
+          console.warn("[useAuth] Could not clear localStorage:", e);
+        }
+      }
+      
+      // Redirect to login page
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+    }
+  }, [logoutMutation, utils]);
+
+  const signIn = useCallback(async () => {
+    // Use the current origin to ensure we redirect back to localhost in development
+    const redirectUrl = `${window.location.origin}/oauth/callback`;
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+          // Skip browser redirect and handle it manually if needed
+          skipBrowserRedirect: false,
+        },
+      });
+      
+      if (error) {
+        console.error("[Auth] Sign in error:", error);
+        throw error;
+      }
+    } catch (err) {
+      console.error("[Auth] Sign in failed:", err);
+      throw err;
+    }
+  }, []);
+
+  const signInWithFacebook = useCallback(async () => {
+    // Use the current origin to ensure we redirect back to localhost in development
+    const redirectUrl = `${window.location.origin}/oauth/callback`;
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'facebook',
+        options: {
+          redirectTo: redirectUrl,
+          // Skip browser redirect and handle it manually if needed
+          skipBrowserRedirect: false,
+        },
+      });
+      
+      if (error) {
+        console.error("[Auth] Facebook sign in error:", error);
+        throw error;
+      }
+    } catch (err) {
+      console.error("[Auth] Facebook sign in failed:", err);
+      throw err;
+    }
+  }, []);
+
+  const signInWithEmail = useCallback(async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        console.error("[Auth] Sign in with email error:", error);
+        throw error;
+      }
+
+      if (data?.session?.access_token) {
+        // Sync session with server
+        await syncSessionMutation.mutateAsync({
+          accessToken: data.session.access_token,
+        });
+        
+        // Refresh user data
+        await utils.auth.me.invalidate();
+      }
+      
+      return data;
+    } catch (err) {
+      console.error("[Auth] Sign in with email failed:", err);
+      throw err;
+    }
+  }, [utils, syncSessionMutation]);
+
+  const signUpWithEmail = useCallback(async (email: string, password: string, name?: string) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/oauth/callback`,
+          data: {
+            name: name || email.split('@')[0],
+          },
+        },
+      });
+      
+      if (error) {
+        console.error("[Auth] Sign up with email error:", error);
+        throw error;
+      }
+
+      // If user is created and session is available (email confirmation disabled)
+      if (data?.session?.access_token) {
+        // Sync session with server
+        await syncSessionMutation.mutateAsync({
+          accessToken: data.session.access_token,
+        });
+        
+        // Refresh user data
+        await utils.auth.me.invalidate();
+      }
+      
+      return data;
+    } catch (err) {
+      console.error("[Auth] Sign up with email failed:", err);
+      throw err;
+    }
+  }, [utils, syncSessionMutation]);
+
+  const state = useMemo(() => {
+    // Safely write to localStorage with error handling
+    // This prevents crashes when localStorage is full, disabled, or in private browsing
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        localStorage.setItem(
+          "manus-runtime-user-info",
+          JSON.stringify(meQuery.data)
+        );
+      }
+    } catch (e) {
+      // Silently fail - localStorage might be full, disabled, or in private mode
+      console.warn("[useAuth] Could not write to localStorage:", e);
+    }
+    
+    // Loading state - will resolve when query completes (success or failure)
+    // The fetch timeout ensures it won't hang indefinitely
+    return {
+      user: meQuery.data ?? null,
+      loading: meQuery.isLoading || logoutMutation.isPending,
+      error: meQuery.error ?? logoutMutation.error ?? null,
+      isAuthenticated: Boolean(meQuery.data),
+    };
+  }, [
+    meQuery.data,
+    meQuery.error,
+    meQuery.isLoading,
+    meQuery.isFetching,
+    logoutMutation.error,
+    logoutMutation.isPending,
+  ]);
+
+  useEffect(() => {
+    if (!redirectOnUnauthenticated) return;
+    if (meQuery.isLoading || logoutMutation.isPending) return;
+    if (state.user) return;
+    if (typeof window === "undefined") return;
+
+    signIn();
+  }, [
+    redirectOnUnauthenticated,
+    meQuery.isLoading,
+    logoutMutation.isPending,
+    state.user,
+    signIn,
+  ]);
+
+  return {
+    ...state,
+    refresh: () => meQuery.refetch(),
+    logout,
+    signIn,
+    signInWithFacebook,
+    signInWithEmail,
+    signUpWithEmail,
+  };
+}

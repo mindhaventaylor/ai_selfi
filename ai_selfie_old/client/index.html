@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2" />
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2" />
+    <link rel="apple-touch-icon" href="%VITE_APP_LOGO%" />
+    <title>%VITE_APP_TITLE%</title>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-WV3GT5F2');</script>
+    <!-- End Google Tag Manager -->
+    <!-- Add Google Fonts here, example:
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    -->
+    <!-- Google tag (gtag.js) - single loader for Ads + GA4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17675352374"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      // Google Ads
+      gtag('config', 'AW-17675352374');
+      // Google Analytics 4 properties
+      gtag('config', 'G-15PQHM7HSR');
+      gtag('config', 'G-JK8K3RNZ4V');
+    </script>
+    <!-- Reddit Pixel -->
+    <script>
+      !function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);rdt('init','a2_i58dh9zd9yl1');rdt('track', 'PageVisit');
+    </script>
+    <!-- DO NOT MODIFY UNLESS TO REPLACE A USER IDENTIFIER -->
+    <!-- End Reddit Pixel -->
+  </head>
+
+  <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WV3GT5F2"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="root"></div>
+    <script>
+      // Add build timestamp to help detect cached bundles
+      window.__BUILD_TIME__ = new Date().toISOString();
+      
+      // Track if main.tsx loaded successfully
+      let mainScriptLoaded = false;
+      let mainScriptError = null;
+      
+      // Check if app loads - use longer timeout in production (30s) vs development (15s)
+      // In production, API calls during login can take longer
+      const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+      const timeoutDuration = isProduction ? 30000 : 15000; // 30s in prod, 15s in dev
+      
+      // Monitor for script errors
+      window.addEventListener('error', function(event) {
+        if (event.filename && event.filename.includes('main.tsx')) {
+          console.error('[HTML] Error loading main.tsx:', event.message, event.filename, event.lineno);
+          mainScriptError = event.message;
+        }
+      }, true);
+      
+      const loadingTimeout = setTimeout(() => {
+        const root = document.getElementById('root');
+        const hasContent = root && (root.children.length > 0 || root.innerHTML.trim().length > 50);
+        
+        console.error('[HTML] Timeout reached after ' + timeoutDuration + 'ms');
+        console.error('[HTML] Root exists:', !!root);
+        console.error('[HTML] Has content:', hasContent);
+        console.error('[HTML] Main script loaded:', mainScriptLoaded);
+        console.error('[HTML] Main script error:', mainScriptError);
+        
+        if (root && !hasContent) {
+          console.error('[HTML] App failed to load - showing error message');
+          root.innerHTML = `
+            <div style="padding: 20px; font-family: sans-serif; text-align: center; max-width: 600px; margin: 50px auto;">
+              <h1>Loading Issue Detected</h1>
+              <p>The app seems to be stuck. This is often caused by cached files or a slow connection.</p>
+              <p style="margin-top: 20px; margin-bottom: 10px;">
+                <button onclick="window.location.reload(true)" style="padding: 12px 24px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; font-size: 16px;">
+                  Hard Reload (Clear Cache)
+                </button>
+              </p>
+              <p style="margin-top: 10px;">
+                <button onclick="localStorage.clear(); sessionStorage.clear(); window.location.reload(true)" style="padding: 10px 20px; cursor: pointer; background: #dc3545; color: white; border: none; border-radius: 4px; font-size: 14px;">
+                  Clear All Data & Reload
+                </button>
+              </p>
+              <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                Keyboard shortcut: <strong>Ctrl+Shift+R</strong> (Windows/Linux) or <strong>Cmd+Shift+R</strong> (Mac)
+              </p>
+              <p style="margin-top: 10px; font-size: 12px; color: #999;">
+                If the problem persists, try opening in an incognito/private window.
+              </p>
+              ${mainScriptError ? `<p style="margin-top: 10px; font-size: 11px; color: #dc3545;"><strong>Error:</strong> ${mainScriptError}</p>` : ''}
+              ${!mainScriptLoaded ? `<p style="margin-top: 10px; font-size: 11px; color: #ff9800;">Main script may not have loaded. Check browser console for details.</p>` : ''}
+            </div>
+          `;
+        }
+      }, timeoutDuration);
+      
+      // Clear timeout if app loads successfully
+      // The main.tsx will clear this when React renders
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          const root = document.getElementById('root');
+          if (root && root.children.length > 0) {
+            clearTimeout(loadingTimeout);
+          }
+        }, 100);
+      });
+      
+      // Also listen for the app rendered callback from main.tsx
+      window.addEventListener('app-rendered', () => {
+        clearTimeout(loadingTimeout);
+      });
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Mark main script as loaded when it executes
+      window.addEventListener('DOMContentLoaded', () => {
+        // Give main.tsx a moment to execute
+        setTimeout(() => {
+          if (window.__APP_RENDERED_CALLBACK__) {
+            mainScriptLoaded = true;
+          } else {
+            console.warn('[HTML] main.tsx may not have loaded - callback not available yet');
+          }
+        }, 500);
+      });
+    </script>
+    <!-- Analytics script will be conditionally injected if env vars are set -->
+  </body>
+
+</html>

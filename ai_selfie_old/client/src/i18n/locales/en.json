@@ -1,0 +1,2217 @@
+{
+  "nav": {
+    "examples": "Examples",
+    "howItWorks": "How It Works",
+    "pricing": "Pricing",
+    "testimonials": "Testimonials",
+    "login": "Sign in",
+    "professionalPhotos": "Professional Photos",
+    "blog": "Blog",
+    "tools": "Tools"
+  },
+  "hero": {
+    "badge": "1.2 milion+ photos generated",
+    "checkmark1": "One-time payment. No subscription",
+    "checkmark2": "Results in 5 minutes",
+    "checkmark3": "100% money back guarantee",
+    "title": "Skip the $500 studio fee. Professional headshots in minutes.",
+    "subtitle": "We turn your casual selfies into **high-quality professional headshots** using specialized AI. Get the studio look without the appointment: **one simple payment**, instant delivery, and photos that look authentically like you.",
+    "cta": "Get my professional headshots",
+    "guarantee": "Full refund guarantee"
+  },
+  "examples": {
+    "title": "Examples of professional AI photos",
+    "subtitle": "These photos look real but were created with AI.",
+    "reviews": [
+      {
+        "name": "Lauren Hayes",
+        "title": "Director of Sales",
+        "review": "I was honestly pretty hesitant to try this. Most AI headshots I’ve seen look super filtered or just plain creepy. But I needed a new photo for a conference bio and didn’t have time to book a photographer.\nI just uploaded a few random selfies from my camera roll, and was blown away. The results look professional but they actually still look like me, not a cartoon version. Already updated my LinkedIn and my Slack profile. If you hate getting your picture taken as much as I do, this is a lifesaver.",
+        "date": "Jan 20, 2025"
+      },
+      {
+        "name": "Rachel Foster",
+        "title": "Founder & CEO",
+        "review": "Running a startup, I have zero bandwidth to coordinate a half-day shoot, hair, makeup, the whole thing. I was honestly skeptical that an AI could capture the right vibe. I wanted to look professional but not stiff, or like a stock photo model.\nI’m actually shocked at how good these came out. It nailed the lighting and gave me that polished, approachable founder look I was going for. We used one for our Series A press announcement last week and nobody batted an eye. Huge time saver.",
+        "date": "Feb 10, 2025"
+      },
+      {
+        "name": "David Ross",
+        "title": "Strategic Consultant",
+        "review": "Look, I avoid cameras at all costs. My LinkedIn photo was from 2018, and I knew I needed something current for a new consulting gig, but I just didn't want to deal with the hassle of a studio.\nI uploaded a few random iPhone shots, and the AI cleaned everything up, fixed the lighting, and put me in a suit that looks tailored, not like a costume. I look professional but not 'fake' or airbrushed. Honestly, it saved me an afternoon and about $400. Highly recommend.",
+        "date": "Mar 5, 2025"
+      },
+      {
+        "name": "Riccardo Moretti",
+        "title": "Business Analyst",
+        "review": "I was extremely skeptical. I’ve tried a couple of other AI tools before and I always ended up looking like a weird video game character or just… off. But my company needed an updated bio pic for the new website and I really didn't have time to schedule a professional shoot.\nI threw in some very average selfies and the results were honestly shocking. It didn't just paste my face onto a suit; the lighting and the expression looked completely natural. It’s the first time I’ve actually liked a \"corporate\" photo of myself in years. A total no-brainer if you're busy.",
+        "date": "Apr 14, 2025"
+      },
+      {
+        "name": "Ashley Davies",
+        "title": "Marketing Manager",
+        "review": "As someone who has worked fully remote since 2020, I honestly don’t even own 'business attire' anymore. My daily uniform is leggings and a sweatshirt. But I was invited to speak on a virtual panel next month and realized my current LinkedIn picture was a cropped photo from a friend's wedding five years ago.\nI was really dreading the idea of buying a blazer just for one headshot, so I tried this as a Hail Mary. I uploaded photos where I had zero makeup on and my hair was in a messy bun. The results are actually wild. It gave me a professional blowout and a sharp jacket that I definitely don't own. I look like the polished, 'together' version of myself that I aspire to be on Monday mornings.",
+        "date": "May 22, 2025"
+      },
+      {
+        "name": "Susan Clarke",
+        "title": "Senior Project Manager",
+        "review": "I’ve been in project management for over 20 years, so I’ve seen plenty of tech fads come and go. I was honestly expecting this to be a gimmick—or worse, that it would airbrush me into looking like a 25-year-old, which would just feel ridiculous at my level.\nI was pleasantly surprised by the nuance. It didn't erase my laugh lines or make me look 'plastic.' It just took my existing photos and gave them a polished, executive presence. It looks like me, just on a very good day with excellent lighting. It’s nice to finally have a LinkedIn photo that actually matches the seniority on my resume.",
+        "date": "Jun 8, 2025"
+      },
+      {
+        "name": "Robert Sterling",
+        "title": "Managing Director",
+        "review": "In my position, maintaining a credible professional image is non-negotiable. I was initially skeptical that an algorithm could replicate the nuance of a studio portrait, but the results are undeniably impressive.\nThe tool generated a dignified, sharp image that was exactly what I required. For any executive looking to update their profile without the logistical downtime of a photoshoot, this is a pragmatic and high-quality solution.",
+        "date": "Jul 15, 2025"
+      },
+      {
+        "name": "Chris Bennett",
+        "title": "HR Consultant",
+        "review": "I look at LinkedIn profiles for a living, so I can usually spot a bad AI headshot from a mile away. The glassy eyes, the weird smooth skin, these all give it away so easily. It’s becoming a huge pet peeve of mine. I only tried this tool because I needed a quick photo for a speaking engagement and my old headshot was from my first job out of college.\nI was fully prepared to hate the results, but I have to eat my words. It actually kept the texture in my face and beard, rather than airbrushing me into a generic 'tech bro.' It looks professional, but approachable, which is the exact vibe you need in People Ops. If it can fool my eye, it’s good.",
+        "date": "Aug 28, 2025"
+      },
+      {
+        "name": "Giulia Bruno",
+        "title": "Social Media Manager",
+        "review": "I’m currently pivoting from agency life to freelancing, and my imposter syndrome was going crazy because my LinkedIn photo was basically a cropped graduation picture from five years ago. I wanted a 'big girl' headshot, but I definitely didn't have $600 to drop on a branding shoot in the city.\nI uploaded a selfie I took in my apartment with my cat literally visible in the background, just to see what would happen. The AI completely erased the mess and gave me this super clean, editorial look. It put me in a blazer that I wish I actually owned. It’s perfect. It makes me look successful and expensive, even though I’m currently working from my couch.",
+        "date": "Sep 12, 2025"
+      }
+    ],
+    "highlightPhrases": [
+      "It's amazing!",
+      "Ideal for those starting with their brand",
+      "I renewed all my photos in 15 minutes",
+      "photo gallery that looked studio-made",
+      "they're amazing"
+    ]
+  },
+  "comparison": {
+    "badge": "Professional AI photo without wasting time",
+    "mainTitle": {
+      "part1": "Traditional photo shoots are made for",
+      "models": "models",
+      "part2": ", not for busy professionals."
+    },
+    "traditional": {
+      "title": "Traditional Photo Sessions",
+      "items": [
+        "Find photographer, schedule appointment, wait weeks for availability",
+        "Travel to the studio (time + gas + traffic stress)",
+        "2-3 hours of your day for the photo session",
+        "Pay $150-$500 per session (no guarantee of good results)",
+        "Feel uncomfortable posing (most of us aren't models)",
+        "Wait 7-14 days to receive edited photos"
+      ],
+      "cost": "Average cost: $150-$500"
+    },
+    "ai": {
+      "title": "Your Photo Session with AISelfie",
+      "items": [
+        "Upload selfies from your phone (5 minutes)",
+        "Choose from 100+ professional poses and ideas",
+        "Receive 40-100 professional photos in 5 minutes",
+        "Pay once $29-$39 (100% refundable)",
+        "No awkward poses - AI does the work",
+        "Instant results, immediate download"
+      ],
+      "stats": "Over 25.256 professional photos created"
+    }
+  },
+  "styles": {
+    "title": "Over 100 Styles That Capture Who You Are",
+    "subtitle": "Your personal brand, your style. Choose from over 100 curated outfits and create the perfect professional look for any occasion—fast, easy and tailored to you.",
+    "testimonial": "It even gave me outfit ideas I hadn't thought of before.",
+    "cta": "Create Your Photos Now"
+  },
+  "howItWorks": {
+    "title": "How AISelfie works",
+    "steps": [
+      {
+        "title": "Upload your Selfies",
+        "description": "Simply upload some photos of yourself so the AI can learn your face."
+      },
+      {
+        "title": "Choose your Style",
+        "description": "Explore over 100+ outfits and choose the one that fits your unique style."
+      },
+      {
+        "title": "Let AI Do Its Magic",
+        "description": "Our AI technology creates your photos, adjusting lighting, background and outfit to give you professional photos that build trust."
+      },
+      {
+        "title": "Download and Share",
+        "description": "In minutes, download your high-quality (4K) photos, ready to use and start showing your best version!"
+      }
+    ],
+    "cta": "Create Your Photos Now"
+  },
+  "ctaSection": {
+    "title": "Boost your personal brand",
+    "subtitle": "Get your professional photos in minutes.",
+    "button": "Create my professional photos",
+    "stats": "More than 25.256 professional photos created"
+  },
+  "guaranteeBanner": {
+    "title": "100% Money-Back Guarantee",
+    "description": "Not satisfied with your photos? Get a full refund within 30 days. No questions asked. We're confident you'll love your results.",
+    "badge": "Risk-Free"
+  },
+  "whyChooseUs": {
+    "title": "Why Choose AISelfie?",
+    "subtitle": "Professional headshots made simple, fast, and affordable",
+    "fast": {
+      "title": "Lightning Fast",
+      "description": "Get your professional photos in under 6 minutes. No waiting, no appointments."
+    },
+    "privacy": {
+      "title": "100% Private",
+      "description": "Your photos are encrypted and deleted after 30 days. Your privacy is our priority."
+    },
+    "quality": {
+      "title": "Studio Quality",
+      "description": "AI-powered technology trained on thousands of professional photos for authentic results."
+    },
+    "guarantee": {
+      "title": "Money-Back Guarantee",
+      "description": "Not satisfied? Get a full refund, no questions asked."
+    }
+  },
+  "security": {
+    "title": "Your Privacy is Protected",
+    "subtitle": "We use bank-level encryption to protect your photos. Your images are automatically deleted after 30 days.",
+    "feature1": {
+      "title": "End-to-End Encryption",
+      "description": "All uploads and processing are encrypted using industry-standard protocols"
+    },
+    "feature2": {
+      "title": "Auto-Deletion",
+      "description": "Your photos are automatically deleted after 30 days. We never store them permanently."
+    },
+    "feature3": {
+      "title": "No Data Sharing",
+      "description": "We never share your photos with third parties. Your data stays private."
+    }
+  },
+  "comparison": {
+    "badge": "Professional AI photo without wasting time",
+    "title": "Traditional Studio vs. AISelfie",
+    "subtitle": "See why thousands choose AI over expensive studio sessions",
+    "bestValue": "Best Value",
+    "traditional": {
+      "title": "Traditional Studio",
+      "item1": "$500+ per session",
+      "item2": "Weeks of waiting for appointment",
+      "item3": "Limited retakes",
+      "item4": "Travel time required",
+      "item5": "No refunds if unsatisfied"
+    },
+    "aiselfie": {
+      "title": "AISelfie",
+      "item1": "Starting at $5 - 100x cheaper",
+      "item2": "Ready in under 6 minutes",
+      "item3": "Unlimited retakes included",
+      "item4": "From anywhere, anytime",
+      "item5": "100% money-back guarantee"
+    },
+    "mainTitle": {
+      "part1": "Traditional photo shoots are made for",
+      "models": "models",
+      "part2": ", not for busy professionals."
+    },
+    "items": [
+      "Find photographer, schedule appointment, wait weeks for availability",
+      "Travel to the studio (time + gas + traffic stress)",
+      "2-3 hours of your day for the photo session",
+      "Pay $150-$500 per session (no guarantee of good results)",
+      "Feel uncomfortable posing (most of us aren't models)",
+      "Wait 7-14 days to receive edited photos"
+    ],
+    "cost": "Average cost: $150-$500"
+  },
+  "trust": {
+    "badge1": "SSL Encrypted",
+    "badge2": "Money-Back Guarantee",
+    "badge3": "1.2M+ Happy Customers",
+    "badge4": "Studio Quality"
+  },
+  "howItWorks": {
+    "title": "How AISelfie works",
+    "totalTime": {
+      "title": "Total Time: Less Than 3 Minutes",
+      "description": "From upload to download, get professional headshots faster than ordering coffee. No appointments, no waiting."
+    },
+    "steps": [
+      {
+        "title": "Upload your Selfies",
+        "description": "Simply upload some photos of yourself so the AI can learn your face."
+      },
+      {
+        "title": "Choose your Style",
+        "description": "Explore over 100+ outfits and choose the one that fits your unique style."
+      },
+      {
+        "title": "Let AI Do Its Magic",
+        "description": "Our AI technology creates your photos, adjusting lighting, background and outfit to give you professional photos that build trust."
+      },
+      {
+        "title": "Download and Share",
+        "description": "In minutes, download your high-quality (4K) photos, ready to use and start showing your best version!"
+      }
+    ],
+    "cta": "Create Your Photos Now"
+  },
+  "pricing": {
+    "title": "Your professional photo for 5x less than a studio session",
+    "subtitle": "Transform your selfies into high-quality AI professional photos. Pay once and receive between 40 and 100 ready images in minutes - no studios, no photographers, no hidden costs.",
+    "features": {
+      "title": "Highlight your personal brand",
+      "items": [
+        "Look professional instantly",
+        "Use on your social media and website",
+        "Boost your personal brand",
+        "Choose from 100+ styles",
+        "100% refundable",
+        "Simple to use"
+      ]
+    },
+    "plans": {
+      "starter": {
+        "name": "Starter Pack",
+        "photos": "40 photos",
+        "price": "$5",
+        "currency": "USD",
+        "note": "One-time payment. No subscription."
+      },
+      "pro": {
+        "name": "Pro Pack",
+        "photos": "100 photos (4k Quality)",
+        "price": "$10",
+        "oldPrice": "$20",
+        "currency": "USD",
+        "note": "One-time payment. No subscription.",
+        "badge": "Popular"
+      },
+      "premium": {
+        "name": "Premium Pack",
+        "photos": "150 photos (4k Quality)",
+        "price": "$15",
+        "currency": "USD",
+        "note": "One-time payment. No subscription."
+      }
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "questions": [
+      {
+        "q": "How long does it take to train an AI model with my photos?",
+        "a": "With the new training model, training time is instant. Upload photos and you can already generate your photos."
+      },
+      {
+        "q": "How long does it take to generate profile photos?",
+        "a": "Photos are ready in 1 to 2 minutes. Previously you need to train the model with your selfies."
+      },
+      {
+        "q": "What type of photos should I upload to create AI profile photos?",
+        "a": "We recommend uploading photos with high variety, a mix of close-up selfies and full-body photos in different places, angles, clothes and expressions. Don't upload photos with low variety, group photos, other people, sunglasses, hats, photos where your face is cut off or not visible."
+      },
+      {
+        "q": "How much will the photos look like me?",
+        "a": "The similarity of the photos to you depends on the quality and variety of the photos you upload. The better and more varied your photos are, the more accurate the AI can be in understanding and representing your unique features. We continue to improve our models every day."
+      },
+      {
+        "q": "Is my information secure? Do my photos and models remain private?",
+        "a": "Yes! The models you create and the photos you upload and take remain private. Your personal data, images and AI models are stored securely, and our system is designed to protect your information from unauthorized access."
+      },
+      {
+        "q": "Who can use my AI profile photos?",
+        "a": "No one. Your photos will be yours only. After 30 days they will be deleted from our servers."
+      },
+      {
+        "q": "Can I get a refund?",
+        "a": "Yes, we offer a full refund guarantee if you are not satisfied with the results."
+      }
+    ],
+    "viewAll": "View all questions",
+    "hideAll": "Hide all"
+  },
+  "footer": {
+    "cta": "Create my professional photos",
+    "product": {
+      "title": "Product",
+      "login": "Login",
+      "examples": "Examples",
+      "blog": "Blog",
+      "history": "History",
+      "pricing": "Pricing",
+      "contact": "Contact",
+      "faq": "FAQ"
+    },
+    "legal": {
+      "title": "Legal",
+      "terms": "Terms of service",
+      "privacy": "Privacy policy",
+      "refund": "Refund policy"
+    },
+    "tools": {
+      "title": "Tools",
+      "freeTool": "📸 Free AI Professional Photo",
+      "pfpMaker": "🎨 PFP Maker",
+      "analyzer": "🔍 Profile Photo Analyzer",
+      "headlineGen": "✍️ Headline Generator",
+      "linkedinFormatter": "✏️ LinkedIn Post Formatter",
+      "aiDirectory": "🤖 AI Tools Directory"
+    },
+    "other": {
+      "affiliates": "💰 Affiliates — Earn 30% per sale",
+      "vibeCoding": "🤖 Learn Vibe Coding"
+    },
+    "social": {
+      "title": "Follow us",
+      "linkedin": "LinkedIn",
+      "executives": "Executives",
+      "corporate": "Corporate",
+      "entrepreneurs": "Entrepreneurs",
+      "aiPhotoshoot": "AI Photo Shoot"
+    },
+    "language": "🇬🇧 English",
+    "copyright": "© 2025 AISelfie. All rights reserved.",
+    "featuredOn": "Featured on Fazier"
+  },
+  "header": {
+    "signIn": "Sign in",
+    "dashboard": "Dashboard",
+    "language": "Language"
+  },
+  "dashboard": {
+    "title": "AI Selfie",
+    "subtitle": "Transform your selfies into professional photos",
+    "generateImages": "Generate Images →",
+    "newModelAvailable": "New AI model available",
+    "moreRealisticPhotos": "More realistic photos and 4k quality",
+    "in60Seconds": "AISelfie in 60\"",
+    "trainModel": "Train a model",
+    "newAIModel": "New AI model",
+    "createCustomAI": "Create your customized AI",
+    "startTraining": "Start Training →",
+    "gallery": "Gallery",
+    "exploreCreations": "Explore creations",
+    "viewGallery": "View Gallery →",
+    "howItWorks": "How it works",
+    "learnProcess": "Learn the process",
+    "moreInfo": "More Information →",
+    "aiselfies": "AISelfies",
+    "videoTime": "0:00 / 1:11",
+    "loading": "Loading...",
+    "photoAlt": "Photo {{number}}",
+    "galleryAlt": "Gallery {{number}}"
+  },
+  "generateImages": {
+    "title": "Choose your Images",
+    "selectGender": "Select Gender",
+    "man": "Man",
+    "woman": "Woman",
+    "background": "Background",
+    "style": "Style",
+    "multipleVariations": "Multiple Variations",
+    "multipleVariationsDesc": "Each selected image will generate 4 unique variations in that style. Click your favorite reference images to start!",
+    "modelTrainingImages": "Model Training Images",
+    "selectReferenceImages": "Select reference images to choose the style of your generated photos",
+    "parameters": "Parameters",
+    "model": "Model",
+    "selectModel": "Select model",
+    "loadingModels": "Loading models...",
+    "noModelsAvailable": "No models available",
+    "training": "Training...",
+    "failed": "Failed",
+    "firstNeedToTrain": "First you need to train a model",
+    "selectModelToGenerate": "Select a model to generate images",
+    "modelStillTraining": "This model is still training. Wait for it to finish.",
+    "modelFailed": "This model failed. Please train a new one.",
+    "imageDimensions": "Image Dimensions",
+    "aspectRatio": "Aspect ratio",
+    "doYouWearGlasses": "Do you wear glasses",
+    "no": "No",
+    "yes": "Yes",
+    "addGlassesToImages": "Add glasses to generated images",
+    "hairColor": "Hair Color (optional)",
+    "default": "Default",
+    "black": "Black",
+    "brown": "Brown",
+    "blonde": "Blonde",
+    "red": "Red",
+    "chooseHairColor": "Choose hair color for your generated images",
+    "hairStyle": "Hair Style (optional)",
+    "noPreference": "No preference",
+    "short": "Short",
+    "medium": "Medium",
+    "long": "Long",
+    "curly": "Curly",
+    "selectHairStyle": "Select a specific hair style for generated images",
+    "uploadImages": "Upload Images",
+    "uploadImagesToGenerate": "Upload images to generate photos",
+    "generate": "Generate",
+    "images": "images",
+    "selectImagesToGenerate": "Select images to generate",
+    "notEnoughCredits": "You don't have enough credits",
+    "needCredits": "need",
+    "haveCredits": "have",
+    "selectModelFirst": "Select a model first",
+    "willUseCredits": "This will use",
+    "credit": "credit",
+    "credits": "credits",
+    "professionalPhotosAlmostReady": "Your professional photos are almost ready",
+    "errorGeneratingImages": "Error generating images",
+    "progress": "Progress",
+    "of": "of",
+    "imagesCompleted": "images completed",
+    "generatingProfessionalPhotos": "Generating your professional photos... Please wait.",
+    "canCloseWindow": "You can close this window. Your photos appear in gallery",
+    "retry": "Retry",
+    "close": "Close",
+    "generating": "Generating...",
+    "pleaseSelectValidModel": "Please select a valid model",
+    "noTrainingImagesFound": "No training images found for this model",
+    "errorGenerating": "Error generating images. Please try again.",
+    "userNotAuthenticated": "User not authenticated",
+    "failedToStartGeneration": "Failed to start generation",
+    "failedToGenerateImages": "Failed to generate images",
+    "pleaseTryAgain": "Please try again",
+    "generationInProgress": "Generation in progress",
+    "modelSelectionHidden": "Model selection hidden",
+    "page2VariantActive": "Page2 Variant Active",
+    "batchNotFound": "Batch not found. The generation may have failed to start. Please try again.",
+    "generationFailed": "Image generation failed. Please try again.",
+    "generatedImageAlt": "Generated image {{number}}",
+    "badges": {
+      "premium": "Premium",
+      "new": "New",
+      "popular": "Popular"
+    },
+    "altText": {
+      "reference": "Reference"
+    }
+  },
+  "login": {
+    "loading": "Loading...",
+    "stats": "70K+ PROFESSIONAL PHOTOS GENERATED",
+    "title": "Transform Selfies into Professional Photos",
+    "subtitle": "Sign up to create your photos",
+    "redirecting": "Redirecting...",
+    "signInWithGoogle": "Sign in with Google",
+    "signInWithFacebook": "Sign in with Facebook",
+    "signInWithEmail": "Sign in with Email",
+    "or": "or",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "alreadyHaveAccount": "Already have an account? Sign in",
+    "dontHaveAccount": "Don't have an account? Sign up",
+    "backToGoogle": "Back to Google sign in",
+    "processing": "Processing...",
+    "emailRequired": "Email and password are required",
+    "nameRequired": "Name is required",
+    "signInError": "Failed to sign in. Please check your credentials.",
+    "signUpError": "Failed to sign up. Please try again.",
+    "moneyBackGuarantee": "100% money-back guarantee",
+    "photosUnder30Minutes": "Your photos in under 3 minutes",
+    "foundedInEurope": "Founded in Europe. We respect your privacy",
+    "thousandsHappyCustomers": "Thousands of happy customers",
+    "bootstrapped": "100% bootstrapped and solo funded",
+    "termsAgreement": "By continuing, you agree to our",
+    "termsOfService": "Terms of Service",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy",
+    "testimonials": [
+      {
+        "text": "I created 40 professional photos in less than 10 minutes. I couldn't believe it was possible to get such realistic results with artificial intelligence. The photos are perfect for my LinkedIn profile and my website.",
+        "author": "Sofia Bianchi",
+        "stars": 5
+      },
+      {
+        "text": "Amazing! I updated all my professional photos in just a few minutes. The quality is incredible and the results are very natural. I've already received several compliments on my new shots.",
+        "author": "Marco Rossi",
+        "stars": 5
+      },
+      {
+        "text": "Perfect for my job! I need professional photos for presentations and company materials, and this tool solved my problem quickly and affordably.",
+        "author": "Chiara Romano",
+        "stars": 5
+      },
+      {
+        "text": "Fantastic! I created an entire gallery of professional photos in less than 15 minutes. What impressed me most is the attention to detail: every photo is perfect and professional.",
+        "author": "Valentina Marchetti",
+        "stars": 5
+      }
+    ]
+  },
+  "notFound": {
+    "title": "404",
+    "heading": "Page Not Found",
+    "description": "Sorry, the page you are looking for doesn't exist.",
+    "description2": "It may have been moved or deleted.",
+    "goHome": "Go Home"
+  },
+  "trainModel": {
+    "title": "Train New Model",
+    "uploadImages": "Upload your images",
+    "uploadImagesDesc": "Upload 1 to 5 photos of the person you want to generate. These images will be used to train your model.",
+    "modelName": "Model Name",
+    "enterModelName": "Enter model name",
+    "type": "Type",
+    "selectGender": "Select gender",
+    "male": "Male",
+    "female": "Female",
+    "uploadYourImages": "Upload your images",
+    "orDragAndDrop": "or drag and drop. JPG or PNG up to 3MB each",
+    "minMaxImages": "Minimum 1 image, maximum 5 images",
+    "previewImages": "Preview Images",
+    "needTrainingCredits": "You need training credits to upload images.",
+    "buyCredits": "Buy Credits",
+    "uploadImagesButton": "Upload Images",
+    "uploading": "Uploading...",
+    "availableTrainingCredits": "Available training credits",
+    "tipsForBestResults": "Tips for getting the best results",
+    "goodPhotos": "Good Photos",
+    "recentPhotos": "Recent photos from the last 2 years",
+    "mixCloseupsFullBody": "Mix of close-ups and full-body photos",
+    "preferablyHighQuality": "Preferably high-quality photos",
+    "varietyAnglesExpressions": "Variety of angles, expressions and outfits",
+    "onlyOnePerson": "Only one person in the photo",
+    "tipSelectGoodPhotos": "TIP: Select photos where you look GOOD",
+    "badPhotos": "Bad Photos",
+    "screenshotsZoomInstagram": "Screenshots from Zoom, Instagram or Facebook",
+    "badLightBlurry": "Bad light, blurry, pixelated, low quality, out of focus or with heavy makeup",
+    "groupPhotosOthers": "Group photos, other people or pets",
+    "funnyExpressions": "Funny expressions",
+    "veryOldPhotos": "Very old photos that no longer represent you",
+    "subjectCutOff": "Subject cut off or not fully visible",
+    "accessoriesGlasses": "Using accessories like glasses, hats or masks",
+    "busyBackgrounds": "Busy backgrounds or scenes with patterns",
+    "photosFromFarAway": "Photos taken from very far away",
+    "tipDontSelectBadPhotos": "TIP: Do NOT select photos where you look BAD",
+    "uploadSuccess": "Upload Successful! 👏",
+    "imagesUploadedSuccessfully": "Your images have been uploaded successfully and your model is being trained. You can start creating your photos right now!",
+    "close": "Close",
+    "createMyPhotos": "Create My Photos",
+    "onlyJpgPng": "Only JPG or PNG files allowed",
+    "fileTooLarge": "File is too large. Maximum 3MB per image.",
+    "pleaseEnterModelName": "Please enter a model name",
+    "pleaseSelectGender": "Please select gender",
+    "pleaseUploadAtLeastOne": "Please upload at least one image",
+    "max5Images": "Maximum 5 images allowed",
+    "errorUploadingImage": "Error uploading image",
+    "errorCreatingSignedUrl": "Error creating signed URL",
+    "errorUploadingModel": "Error uploading model",
+    "uploadSuccessDescription": "Your images have been uploaded and the model is being trained",
+    "sessionExpired": "Session expired",
+    "sessionExpiredDescription": "Your session has expired. Please log in again.",
+    "loginButton": "Log In",
+    "errorCreatingModel": "Error creating model",
+    "imagesOnlyInBrowser": "The images are only in your browser. Click \"Upload Images\" to upload.",
+    "removeImage": "Remove image",
+    "couldNotUploadImages": "Could not upload images",
+    "userNotAuthenticated": "User not authenticated",
+    "maxFilesErrorDesc": "You can select a maximum of {{maxFiles}} images. You already have {{currentCount}} and are trying to add {{newCount}}.",
+    "maxFilesErrorDescSimple": "You can select a maximum of {{maxFiles}} images",
+    "invalidFileTypeDesc": "The file \"{{fileName}}\" is not a valid format",
+    "fileTooLargeDesc": "The file \"{{fileName}}\" is too large (maximum 3MB)",
+    "imagesReadyForUpload": "Images are ready for upload",
+    "pleaseEnterModelNameDesc": "Please enter a name for the model",
+    "pleaseSelectGenderDesc": "Please select the model gender",
+    "pleaseUploadAtLeastOneDesc": "You need to select at least one image",
+    "max5ImagesDesc": "You can select a maximum of 5 images",
+    "needTrainingCreditsDesc": "You need credits to train models",
+    "imageSelected": "image selected",
+    "imagesSelectedPlural": "images selected",
+    "imageReadyToSend": "image ready to send",
+    "imagesReadyToSend": "images ready to send",
+    "summaryTitle": "Summary of what will be sent:",
+    "summaryModel": "Model:",
+    "summaryType": "Type:",
+    "summaryImages": "Images:",
+    "image": "image",
+    "images": "images",
+    "summaryDescription": "Images will be sent to the server and the model will be created in the database.",
+    "buyCreditsToUpload": "to upload",
+    "goodPhotoExampleAlt": "Good photo example {{number}}",
+    "badPhotoExampleAlt": "Bad photo example {{number}}"
+  },
+  "gallery": {
+    "title": "Your Gallery",
+    "sortBy": "Sort by:",
+    "newest": "Newest",
+    "favourites": "Favourites",
+    "cancel": "Cancel",
+    "select": "Select",
+    "delete": "Delete",
+    "download": "Download",
+    "loadingGallery": "Loading gallery...",
+    "showing": "Showing",
+    "of": "of",
+    "images": "images",
+    "noImagesFound": "No images found in your gallery.",
+    "startCreatingImages": "Start creating images to see them here.",
+    "areYouSureDeleteOne": "Are you sure you want to delete this photo?",
+    "areYouSureDeleteMany": "Are you sure you want to delete",
+    "photoAlt": "Photo {{number}}"
+  },
+  "viewModels": {
+    "title": "Trained Models",
+    "subtitle": "Manage and use your trained AI models",
+    "trainNewModel": "Train New Model",
+    "filterByStatus": "Filter by status",
+    "allModels": "All models",
+    "ready": "Ready",
+    "training": "Training",
+    "trainingInProgress": "Training...",
+    "failed": "Failed",
+    "model": "model",
+    "models": "models",
+    "loadingModels": "Loading models...",
+    "noTrainedModels": "You don't have trained models",
+    "noModelsWithStatus": "No models with status",
+    "startTrainingFirst": "Start training your first AI model",
+    "tryAnotherFilter": "Try another filter or create a new model",
+    "trainFirstModel": "Train First Model",
+    "created": "Created",
+    "useModel": "Use Model",
+    "retrain": "Retrain",
+    "areYouSureDeleteModel": "Are you sure you want to delete this model?",
+    "errorDeletingModel": "Error deleting model"
+  },
+  "buyCredits": {
+    "title": "Credits",
+    "subtitle": "You need credits to generate images. Choose a package below. One-time payment.",
+    "starterFeatures": [
+      "40 photos",
+      "Choose Styles and Outfits",
+      "Images in 2K Resolution"
+    ],
+    "proFeatures": [
+      "100 photos",
+      "Images in High Resolution 4K",
+      "Choose Styles and Outfits",
+      "Premium Styles"
+    ],
+    "proCreditsFeatures": [
+      "Text to Image",
+      "Background Editing",
+      "Style Transfer",
+      "YouTube Thumbnails",
+      "and more"
+    ],
+    "premiumFeatures": [
+      "150 photos",
+      "Images in High Resolution 4K",
+      "Choose Styles and Outfits",
+      "Premium Styles",
+      "Premium support",
+      "Early access to new features"
+    ],
+    "premiumCreditsFeatures": [
+      "Text to Image",
+      "Background Editing",
+      "Style Transfer",
+      "YouTube Thumbnails",
+      "and more"
+    ],
+    "giftCards": "Gift Cards",
+    "giftCardsDesc": "Give AI selfies to friends and family.",
+    "buyGiftCards": "Buy Gift Cards",
+    "forBusinesses": "For Businesses",
+    "forBusinessesDesc": "Professional AI photos for teams and businesses",
+    "buy": "Buy",
+    "loading": "Loading...",
+    "starterPack": "Starter Pack",
+    "starterCredits": "40 credits",
+    "proPack": "Pro Pack",
+    "proCredits": "100 credits",
+    "premiumPack": "Premium Pack",
+    "premiumCredits": "150 credits",
+    "photos": "photos",
+    "mostPopular": "Most Popular",
+    "proCreditsLabel": "40 PRO CREDITS",
+    "premiumCreditsLabel": "60 PRO CREDITS",
+    "oneTimePayment": "One-time payment. No subscription.",
+    "refundable": "100% refundable",
+    "moneyBackGuarantee": "100% Money-Back Guarantee if you are not satisfied",
+    "faqTitle": "Frequently Asked Questions",
+    "faq": [
+      {
+        "q": "Do credits expire?",
+        "a": "No, credits do not expire. However, the AI model you trained expires after 30 days. You must use your credits within that time."
+      },
+      {
+        "q": "What style of photos will I receive?",
+        "a": "Once your AI model is trained, you can select different styles from the Create tab. Each time you generate a photo in a selected style, you'll receive 4 different variants in that style. This allows you to experiment with various looks and choose your favorites."
+      },
+      {
+        "q": "How long does it take to generate photos?",
+        "a": "The process happens in two steps: First, we train your AI model, which takes 15-30 minutes. After that, you can generate photos at any time, and each generation takes only 1-2 minutes to create 4 variants."
+      },
+      {
+        "q": "Do you offer refunds?",
+        "a": "Yes, we offer a 100% refund guarantee if you are not satisfied with the quality of your photos. You can request a full refund within the first 7 days after your purchase."
+      },
+      {
+        "q": "What payment methods do you accept?",
+        "a": "We process all transactions using Stripe. You can pay using credit card, PayPal, Apple Pay, Google Pay and more."
+      },
+      {
+        "q": "How do I ensure the quality of my photos?",
+        "a": "Before training a model, we recommend reading our guide. This way you'll ensure that the generated photos are of the best possible quality."
+      },
+      {
+        "q": "Who can use my photos and what about privacy?",
+        "a": "Your photos are exclusively yours. We prioritize your privacy and automatically delete all generated photos from our database after 30 days. The photos you generate are for your personal use and will not be shared or accessible to anyone else."
+      },
+      {
+        "q": "What if the generated photos don't look like me?",
+        "a": "If you follow our instructions for selecting training images, you should get around 80% usable photos that look like you. We continuously update our models to improve accuracy. If you have doubts before starting, don't hesitate to contact us for guidance."
+      },
+      {
+        "q": "Will the AI learn my unique characteristics?",
+        "a": "Yes, our AI is excellent at understanding and replicating what makes you unique. You can also adjust specific characteristics when generating images, such as whether you wear glasses or other distinctive features."
+      },
+      {
+        "q": "Where can I use these photos?",
+        "a": "The photos are versatile and can be used anywhere you need a professional image of yourself. They're perfect for professional profile photos (LinkedIn, company websites), social media (Instagram, Facebook, Twitter) or personal branding. You can choose different dimensions like square format for profile photos or portrait mode for Instagram stories and other vertical designs."
+      }
+    ],
+    "checkoutError": "Failed to create checkout session. Please try again.",
+    "noFaq": "No frequently asked questions available.",
+    "packNotFound": "Pack not found. Please try again.",
+    "checkoutFailed": "Failed to create checkout session. Try again.",
+    "checkoutStartFailed": "Failed to start checkout. Try again."
+  },
+  "payment": {
+    "success": {
+      "title": "Payment Successful!",
+      "message": "Your payment has been processed successfully. Credits have been added to your account.",
+      "goToDashboard": "Go to Dashboard",
+      "continueCreating": "Continue Creating Your Photos",
+      "buyMore": "Buy More Credits",
+      "sessionIdLabel": "Session ID:",
+      "startingGeneration": "Starting image generation...",
+      "generationStartingMessage": "Please wait while we prepare your images..."
+    },
+    "cancel": {
+      "title": "Payment Cancelled",
+      "message": "You cancelled the payment process. No charges were made.",
+      "tryAgain": "Try Again",
+      "goToDashboard": "Go to Dashboard"
+    }
+  },
+  "models": {
+    "title": "Models",
+    "trainNewModel": "Train New Model",
+    "trainNewModelDesc": "Start training your first model",
+    "trainModel": "Train Model",
+    "viewTrainedModels": "View Trained Models",
+    "viewTrainedModelsDesc": "Check the status of your trained models or adjust your images",
+    "viewModels": "View Models"
+  },
+  "dashboardLayout": {
+    "startHere": "Start Here",
+    "models": "Models",
+    "create": "Create",
+    "gallery": "Gallery",
+    "proFeatures": "PRO Features",
+    "credits": "Credits",
+    "buyCredits": "Buy Credits",
+    "giftCards": "Gift Cards",
+    "businesses": "Empresas",
+    "coupons": "Coupons",
+    "settings": "Settings",
+    "general": "General",
+    "support": "Support",
+    "reportBug": "Report a Bug",
+    "suggestFeature": "Suggest a Feature",
+    "whatsapp": "WhatsApp",
+    "reviews": "Reviews",
+    "affiliates": "Afiliados",
+    "pleaseSignIn": "Please sign in to continue",
+    "signIn": "Sign in",
+    "creditsLabel": "Credits",
+    "spanish": "Español",
+    "portuguese": "Português",
+    "english": "English",
+    "italian": "Italiano"
+  },
+  "oauthCallback": {
+    "authenticationError": "Authentication Error",
+    "returnToLogin": "Return to Login",
+    "completingSignIn": "Completing sign in...",
+    "noSessionFound": "No session found. Please try signing in again.",
+    "failedToSyncSession": "Failed to sync session",
+    "networkError": "Network error: Could not connect to server. Please ensure the server is running and try again.",
+    "databaseError": "Database connection error: Could not connect to Supabase database. Please check DATABASE_URL in your .env file and ensure it's correctly configured.",
+    "apiKeyError": "Server configuration error: Invalid Supabase API key. Please check SUPABASE_SERVICE_ROLE_KEY in your .env file.",
+    "tokenError": "Authentication failed: Could not verify your session. Please try signing in again.",
+    "failedToFetchUserData": "Failed to fetch user data after sync",
+    "unknownError": "Unknown error occurred"
+  },
+  "startHere": {
+    "title": "Start Here: Learn how Aiselfie works",
+    "subtitle": "If this is your first time here, I suggest watching the following short video to learn how the app works.",
+    "aiselfies": "AISelfies",
+    "convertSelfiesToProfessional": "Convert your selfies into professional photos",
+    "generateImages": "Generate Images →",
+    "aiselfiIn60Seconds": "Aiselfie in less than 60'",
+    "explainHowAppWorks": "Explain how the app works in less than 60 seconds",
+    "videoPlaceholder": "Video placeholder",
+    "videoWillPlayHere": "Video will play here",
+    "howItWorks": "How it works",
+    "learnProcess": "Learn the process",
+    "content": "Content",
+    "step1": "Step 1: Buy Credits",
+    "step2": "Step 2: Train an AI Model - Tips for Better Results",
+    "step3": "Step 2: Create Photos",
+    "step4": "Step 3: Gallery",
+    "step1Title": "Step 1: Buy Credits",
+    "step1Desc": "Choose from our one-time payment packages. Each package includes credits for both training AI models and generating photos.",
+    "step1Desc2": "Select the package that best suits your needs.",
+    "step1Includes": "Each package includes:",
+    "step1Includes1": "Credits to train AI models (1 or 5 - depending on the chosen package)",
+    "step1Includes2": "Credits to generate photos (1 credit = 1 photo) [these are the credits you see in your profile]",
+    "step1Notes": "Important notes:",
+    "step1Notes1": "All packages are one-time payment - no subscriptions",
+    "step1Notes2": "Credits never expire",
+    "step1Notes3": "For your privacy and data protection, trained AI models expire automatically after 30 days.",
+    "buyCredits": "Buy Credits →",
+    "step2Title": "Step 2: Train an AI Model - Tips for Better Results",
+    "step2Subtitle": "Tips and mistakes to avoid when training your AI model. What photos to choose to train your model.",
+    "goodPhotosForTraining": "Good photos for training:",
+    "goodPhoto1": "Clear and well-lit photos of your face",
+    "goodPhoto2": "Photos taken from different angles",
+    "goodPhoto3": "Natural expressions",
+    "goodPhoto4": "Different lighting conditions",
+    "goodPhoto5": "Simple backgrounds, without distractions",
+    "goodPhoto6": "High quality and sharp images",
+    "goodPhoto7": "Close-ups that clearly show your face",
+    "photosToAvoid": "Photos to avoid:",
+    "badPhoto1": "Group photos",
+    "badPhoto2": "Blurry or low quality photos",
+    "badPhoto3": "Photos with filters or heavy editing",
+    "badPhoto4": "Photos with sunglasses",
+    "badPhoto5": "Photos with objects that cover the face",
+    "badPhoto6": "Extreme or distorted selfies",
+    "badPhoto7": "Photos with excessive makeup",
+    "badPhoto8": "Very old photos or low resolution",
+    "forBestResults": "For best results:",
+    "bestResult1": "Upload 10-20 quality photos",
+    "bestResult2": "Make sure your face is clearly visible",
+    "bestResult3": "Vary expressions and angles",
+    "bestResult4": "Use recent photos that represent you well",
+    "bestResult5": "Avoid very similar photos to each other",
+    "trainYourAIModel": "Train Your AI Model →",
+    "step3Title": "Step 2: Create Photos",
+    "step3Subtitle": "Learn how to create amazing photos with AI.",
+    "step3Desc": "Watch the video above to learn how to create your photos with AI.",
+    "step3DescPage2": "Learn how to create amazing photos with AI. Follow the steps below to generate professional photos in your chosen styles.",
+    "howToCreatePhotos": "How to create photos:",
+    "createPhoto1": "Go to the Create section",
+    "createPhoto2": "Choose your gender (male/female)",
+    "createPhoto3": "Use filters to find styles you like",
+    "createPhoto4": "Click on the styles you want to replicate (each selected style creates 4 variants)",
+    "chooseParameters": "Choose the parameters:",
+    "param1": "Image aspect ratio (1:1 or 9:16)",
+    "param2": "Wear glasses (optional)",
+    "param3": "Hair color (optional)",
+    "param4": "Hair style (optional)",
+    "tipsForBestResults": "Tips for best results:",
+    "tip1": "Start with a test photo without parameters",
+    "tip2": "If results need adjustments, modify the parameters",
+    "tip3": "Try different style categories",
+    "tip4": "Experiment with various looks",
+    "tip5": "Generate multiple sets",
+    "importantNotes": "Important notes:",
+    "note1": "Each selected photo will use 4 credits (4 photos are created per selected style)",
+    "note2": "You can generate as many photos as you have credits",
+    "note3": "Photos will be available in the Gallery 1-2 minutes after confirmation",
+    "note4": "Photos are automatically saved to your gallery",
+    "createYourPhotosWithAI": "Create Your Photos with AI →",
+    "step4Title": "Step 3: Gallery",
+    "step4Subtitle": "Your gallery is where all your generated photos are automatically saved",
+    "whatYouCanDo": "What you can do in the gallery:",
+    "galleryFeature1": "Explore all your generated photos",
+    "galleryFeature2": "View photos in full screen",
+    "galleryFeature3": "Zoom to see details",
+    "galleryFeature4": "Mark and save favorites",
+    "galleryFeature5": "Download photos in high quality",
+    "galleryFeature6": "Delete unwanted photos",
+    "galleryFeature7": "Filter by creation date",
+    "galleryFeature8": "Sort by different criteria",
+    "tipsToOrganize": "Tips to organize your photos:",
+    "organizeTip1": "Mark your favorites for quick access",
+    "organizeTip2": "Use the favorites filter to see only the best",
+    "organizeTip3": "Download the photos you like most",
+    "organizeTip4": "Delete photos you don't need to free up space",
+    "importantInfo": "Important information:",
+    "importantInfoText": "All your photos are private and only you can access them. Photos remain in your gallery until you delete them.",
+    "viewYourGallery": "View Your Gallery →",
+    "photoAlt": "Photo {{number}}",
+    "videoTime": "0:00 / 1:11",
+    "videoTimePlaying": "0:04 / 1:11"
+  },
+  "supportGeneral": {
+    "title": "Support Center",
+    "contactUs": "Contact Us",
+    "contactUsDesc": "Need help? Our support team is here to help you.",
+    "email": "hola@aiselfie.org",
+    "faq": "Frequently Asked Questions",
+    "howDoIStart": "How do I start?",
+    "howDoIStartAnswer": "Sign up to get an account and follow our quick start guide to start using our services.",
+    "whatPaymentMethods": "What payment methods do you accept?",
+    "whatPaymentMethodsAnswer": "We accept all major credit cards and PayPal",
+    "documentation": "Documentation",
+    "documentationDesc": "Explore our complete documentation for detailed guides and tutorials.",
+    "viewTutorial": "View Tutorial"
+  },
+  "settingsGeneral": {
+    "title": "Settings",
+    "language": "Language",
+    "languageDesc": "Choose your preferred language",
+    "spanish": "Español",
+    "portuguese": "Português",
+    "english": "English",
+    "italian": "Italiano",
+    "account": "Account",
+    "accountDesc": "Manage your account and session",
+    "signOut": "Sign out"
+  },
+  "pro": {
+    "title": "Pro Features",
+    "subtitle": "Access PRO features - exclusive for Pro and Premium packs.",
+    "textToImage": "Text to Image",
+    "textToImageDesc": "Generate images using prompts",
+    "generateImages": "Generate Images",
+    "backgroundRemoval": "Background Removal",
+    "backgroundRemovalDesc": "Remove background and customize your photo",
+    "removeBackgrounds": "Remove Backgrounds",
+    "styleTransfer": "Style Transfer",
+    "styleTransferDesc": "Upload an image to copy its style using your AI model.",
+    "tryStyleTransfer": "Try Style Transfer",
+    "imageRestoration": "Image Restoration",
+    "imageRestorationDesc": "Restore and enhance old or damaged photos with AI",
+    "restoreImages": "Restore Images",
+    "youtubeThumbnails": "YouTube Thumbnails",
+    "youtubeThumbnailsDesc": "Create eye-catching thumbnails for your YouTube videos with AI",
+    "proSubscriptionRequired": "Pro subscription required",
+    "imageUpscaling": "Image Upscaling",
+    "imageUpscalingDesc": "Enhance image resolution up to 4x with AI",
+    "comingSoon": "Coming Soon",
+    "underConstruction": "Under Construction",
+    "underConstructionDesc": "We're working hard to bring amazing features to you!",
+    "comingSoonFeatures": "Coming soon features:",
+    "stayTuned": "Stay tuned! Soon you'll have access to all these amazing features.",
+    "backToGenerate": "Back to Generation",
+    "backToPro": "Back to Pro",
+    "buyCredits": "Buy Credits",
+    "thisFeature": "This feature"
+  },
+  "afiliados": {
+    "title": "Earn 30% Commission for every sale you generate",
+    "subtitle": "Join the Aiselfie affiliate program and start generating passive income by promoting our AI profile photo creation tool.",
+    "badge": "Affiliate Program",
+    "registerAsAffiliate": "Register as Affiliate!",
+    "howItWorks": "How It Works",
+    "step1": "Step 1",
+    "step1Title": "Register",
+    "step1Subtitle": "Create your free affiliate account",
+    "step1Desc": "Register in just a few minutes. No credit card required. Get instant access to your affiliate dashboard and marketing materials.",
+    "step2": "Step 2",
+    "step2Title": "Share",
+    "step2Subtitle": "Promote Aiselfie with your unique link",
+    "step2Desc": "Share your unique affiliate link on your blog, social media or with your network.",
+    "step3": "Step 3",
+    "step3Title": "Earn",
+    "step3Subtitle": "Get 30% commission for every sale you generate",
+    "step3Desc": "Our high-converting landing pages and excellent product guarantee great conversion rates.",
+    "whyJoin": "Why Join Our Affiliate Program?",
+    "benefits": [
+      "30% commission for every sale you generate",
+      "Passive income",
+      "60-day attribution period",
+      "Monthly payments",
+      "High-converting landing pages",
+      "Dedicated affiliate support"
+    ],
+    "faqTitle": "Frequently Asked Questions",
+    "faq": [
+      {
+        "q": "How does the affiliate program work?",
+        "a": "You'll get a unique affiliate link to share. When someone signs up using your link and makes a purchase, you'll earn a 30% commission on every sale you generate."
+      },
+      {
+        "q": "When do I get paid?",
+        "a": "We process payments monthly for all commissions earned in the previous month."
+      },
+      {
+        "q": "Is there a minimum payout?",
+        "a": "Yes, the minimum payout is $25. Once you reach this threshold, we'll process your payment in the next payment cycle."
+      }
+    ],
+    "readyToStart": "Ready to Start Earning?",
+    "readyToStartDesc": "Join our affiliate program today and start generating passive income!",
+    "joinAffiliateProgram": "Join the Affiliate Program!"
+  },
+  "coupons": {
+    "title": "Redeem Coupon",
+    "subtitle": "Enter your coupon code below to redeem it.",
+    "couponCode": "Coupon Code",
+    "enterCode": "Enter the code",
+    "redeeming": "Redeeming...",
+    "redeemCoupon": "Redeem Coupon",
+    "pleaseEnterCode": "Please enter a coupon code",
+    "invalidCode": "Invalid coupon code."
+  },
+  "empresas": {
+    "title": "Business Plans",
+    "subtitle": "Professional AI photos for teams and businesses (minimum 5 people)",
+    "businessPlan": "Business Plan",
+    "creditsPerPerson": "40 credits per person",
+    "perPerson": "per person",
+    "features": [
+      "40 credits",
+      "40 photos",
+      "Choose 10 Styles and Outfits",
+      "Premium support"
+    ],
+    "buyCredits": "Buy Credits",
+    "oneTimePayment": "One-time payment. No subscription.",
+    "refundable": "100% refundable",
+    "needCustomQuote": "Need a Custom Quote?",
+    "needCustomQuoteDesc": "For large orders, team packages or custom requirements, contact us.",
+    "contactEmail": "hola@aiselfie.org"
+  },
+  "giftCards": {
+    "title": "Gift Cards",
+    "subtitle": "Give Aiselfie to friends and family.",
+    "buyGiftCard": "Buy Gift Card",
+    "faqTitle": "Frequently Asked Questions",
+    "faq": [
+      {
+        "q": "How do gift cards work?",
+        "a": "When you buy a gift card, you'll receive a unique code that you can share with anyone. The recipient can use this code during checkout to redeem the full value of the gift card package."
+      },
+      {
+        "q": "Can gift cards be used multiple times?",
+        "a": "No, each gift card code can only be used once. The full value of the package will be applied when the code is redeemed."
+      },
+      {
+        "q": "Do gift cards expire?",
+        "a": "No, our gift cards never expire. The recipient can use them whenever they're ready to create their AI-generated photos."
+      },
+      {
+        "q": "What if I buy the wrong package?",
+        "a": "Each gift card is specific to the package purchased (Starter, Pro or Premium). The recipient will receive exactly what's included in that package."
+      },
+      {
+        "q": "How will I receive the gift card?",
+        "a": "After successful payment, you'll be redirected to a confirmation page that displays your unique gift card code. You can copy this code and share it with the recipient."
+      },
+      {
+        "q": "What style of photos will I receive?",
+        "a": "Once your AI model is trained, you can select different styles from the Create tab. Each time you generate a photo in a selected style, you'll receive 4 different variants in that style. This allows you to experiment with various looks and choose your favorites."
+      },
+      {
+        "q": "How long does it take to generate photos?",
+        "a": "The process happens in two steps: First, we train your AI model, which takes 15-25 minutes. After that, you can generate photos at any time, and each generation takes only 1-2 minutes to create 4 variants."
+      },
+      {
+        "q": "Do you offer refunds?",
+        "a": "Yes, we offer a 100% refund guarantee if you are not satisfied with the quality of your photos. You can request a full refund within the first 7 days after your purchase."
+      },
+      {
+        "q": "What payment methods do you accept?",
+        "a": "We process all transactions using Stripe. You can pay using credit card, PayPal, Apple Pay, Google Pay and more."
+      },
+      {
+        "q": "How do I ensure the quality of my photos?",
+        "a": "Before training a model, we recommend reading our guide. This way you'll ensure that the generated photos are of the best possible quality."
+      },
+      {
+        "q": "Who can use my photos and what about privacy?",
+        "a": "Your photos are exclusively yours. We prioritize your privacy and automatically delete all generated photos from our database after 30 days. The photos you generate are for your personal use and will not be shared or accessible to anyone else."
+      },
+      {
+        "q": "What if the generated photos don't look like me?",
+        "a": "If you follow our instructions for selecting training images, you should get around 80% usable photos that look like you. We continuously update our models to improve accuracy. If you have doubts before starting, don't hesitate to contact us for guidance."
+      },
+      {
+        "q": "Will the AI learn my unique characteristics?",
+        "a": "Yes, our AI is excellent at understanding and replicating what makes you unique. You can also adjust specific characteristics when generating images, such as whether you wear glasses or other distinctive features."
+      },
+      {
+        "q": "Where can I use these photos?",
+        "a": "The photos are versatile and can be used anywhere you need a professional image of yourself. They're perfect for professional profile photos (LinkedIn, company websites), social media (Instagram, Facebook, Twitter) or personal branding. You can choose different dimensions like square format for profile photos or portrait mode for Instagram stories and other vertical designs."
+      }
+    ]
+  },
+  "supportReportBug": {
+    "title": "Report a Bug",
+    "subtitle": "Help us improve by reporting any issues you encounter",
+    "formTitle": "Bug Report Form",
+    "formDescription": "Please provide as much detail as possible",
+    "comingSoon": "Bug reporting form coming soon...",
+    "fillRequired": "Please fill in all required fields",
+    "success": "Bug report submitted successfully!",
+    "error": "Failed to submit bug report",
+    "thankYou": "Thank You!",
+    "successMessage": "Your bug report has been submitted successfully. We'll review it and get back to you soon.",
+    "submitAnother": "Submit Another Report",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Brief description of the bug",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Detailed description of what happened",
+    "stepsLabel": "Steps to Reproduce",
+    "stepsPlaceholder": "1. Go to...\n2. Click on...\n3. See error",
+    "expectedLabel": "Expected Behavior",
+    "expectedPlaceholder": "What should have happened",
+    "actualLabel": "Actual Behavior",
+    "actualPlaceholder": "What actually happened",
+    "submitting": "Submitting...",
+    "submit": "Submit Report"
+  },
+  "supportSuggestFeature": {
+    "title": "Suggest a Feature",
+    "subtitle": "Have an idea? We'd love to hear it!",
+    "formTitle": "Feature Suggestion Form",
+    "formDescription": "Share your ideas to help us improve",
+    "comingSoon": "Feature suggestion form coming soon...",
+    "fillRequired": "Please fill in all required fields",
+    "success": "Feature suggestion submitted successfully!",
+    "error": "Failed to submit feature suggestion",
+    "thankYou": "Thank You!",
+    "successMessage": "Your feature suggestion has been submitted successfully. We'll review it and consider it for future updates.",
+    "suggestAnother": "Suggest Another Feature",
+    "titleLabel": "Feature Title",
+    "titlePlaceholder": "Brief name for your feature idea",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Detailed description of the feature you'd like to see",
+    "useCaseLabel": "Use Case",
+    "useCasePlaceholder": "How would you use this feature? What problem would it solve?",
+    "submitting": "Submitting...",
+    "submit": "Submit Suggestion"
+  },
+  "supportWhatsApp": {
+    "redirecting": "Redirecting to WhatsApp...",
+    "notRedirected": "If you are not automatically redirected,",
+    "clickHere": "click here",
+    "message": "Hello, I need help with Aiselfie"
+  },
+  "supportReviews": {
+    "leaveReview": "Leave a Review",
+    "weWouldLove": "We would love to know your experience with AISelfies!",
+    "doYouEnjoy": "Do you enjoy using Aiselfie?",
+    "howWouldYouRate": "On a scale of 1 to 5, how would you rate us?",
+    "continue": "Continue",
+    "whatUsersSay": "What Users Say",
+    "readCommunity": "Read what our community says about AISelfies",
+    "sectionTitlePart1": "Is a",
+    "sectionTitleHighlight": "professional with AI?",
+    "sectionTitlePart2": "See what they say.",
+    "statsText": "More than 75,523 professional photos with artificial intelligence created... and counting.",
+    "statsTextShort": "More than 75,523 professional photos created",
+    "readMore": "Read more",
+    "seeMore": "See more",
+    "showLess": "Show less",
+    "brandName": "Aiselfie",
+    "reviews": [
+      {
+        "name": "Sofia Bianchi",
+        "title": "Digital Marketing Consultant",
+        "review": "I created 40 professional photos in less than 10 minutes. I couldn't believe it was possible to get such realistic results with artificial intelligence. The photos are perfect for my LinkedIn profile and my website. Finally, I have a consistent professional image without having to spend hundreds of euros on a photographer!",
+        "date": "Jan 15, 2025"
+      },
+      {
+        "name": "Marco Rossi",
+        "title": "Entrepreneur and Founder",
+        "review": "Amazing! I updated all my professional photos in just a few minutes. The quality is incredible and the results are very natural. I've already received several compliments on my new shots. Highly recommended for anyone who wants to improve their online presence without investing too much time or money.",
+        "date": "Feb 22, 2025"
+      },
+      {
+        "name": "Giulia Ferrari",
+        "title": "Content Creator and Influencer",
+        "review": "Finally, I found a solution for my professional photos! The process is super simple: I uploaded some selfies and within minutes I had dozens of photos ready. The variety of available styles is impressive. I use them for all my social channels and the feedback has been fantastic.",
+        "date": "Mar 8, 2025"
+      },
+      {
+        "name": "Chiara Romano",
+        "title": "HR Manager",
+        "review": "Perfect for my job! I need professional photos for presentations and company materials, and this tool solved my problem quickly and affordably. The photos are high quality and really look like they were taken in a studio. Great value for money!",
+        "date": "Apr 3, 2025"
+      },
+      {
+        "name": "Matteo Conti",
+        "title": "Financial Consultant",
+        "review": "I didn't think AI could create such realistic photos. I've tried other similar services but the results were always a bit artificial. Here, however, the photos look completely natural. I've already used them for my professional website and clients have really appreciated them.",
+        "date": "May 12, 2025"
+      },
+      {
+        "name": "Valentina Marchetti",
+        "title": "Graphic Designer",
+        "review": "Fantastic! I created an entire gallery of professional photos in less than 15 minutes. What impressed me most is the attention to detail: every photo is perfect and professional. Now I have enough material for all my future projects. Really satisfied!",
+        "date": "Jun 20, 2025"
+      },
+      {
+        "name": "Luca De Santis",
+        "title": "Business Coach",
+        "review": "I updated my professional profile with superior quality photos. The process was fast and intuitive, and the results exceeded my expectations. The photos are so realistic that many colleagues asked me who the photographer was. Recommended to all professionals!",
+        "date": "Jul 5, 2025"
+      },
+      {
+        "name": "Francesca Lombardi",
+        "title": "Lawyer",
+        "review": "Excellent service! I need professional photos for my law firm and this tool allowed me to get them quickly and at an affordable price. The photos are perfect for the website and promotional materials. Customer service is also very helpful.",
+        "date": "Aug 18, 2025"
+      },
+      {
+        "name": "Alessandro Moretti",
+        "title": "IT Consultant",
+        "review": "Impressive results! I created several professional photos for my profile and they're all of excellent quality. The system is easy to use and results arrive in no time. Finally, I have photos that reflect my professionalism without having to organize complicated photo sessions.",
+        "date": "Sep 10, 2025"
+      },
+      {
+        "name": "Davide Colombo",
+        "title": "Architect",
+        "review": "Really professional service. I got high-quality photos that I use for my portfolio and my projects. The variety of available styles allows me to have photos suitable for different contexts. Great investment for anyone who wants to improve their professional image.",
+        "date": "Oct 25, 2025"
+      },
+      {
+        "name": "Martina Rizzo",
+        "title": "Psychologist and Life Coach",
+        "review": "I was pleasantly surprised by the quality of the photos. They're very natural and professional, perfect for my website and marketing materials. The process was simple and fast. I recommend this service to all professionals who want to improve their online presence.",
+        "date": "Nov 8, 2025"
+      },
+      {
+        "name": "Alessia Galli",
+        "title": "Professional Photographer",
+        "review": "As a photographer, I've always been skeptical about AI-generated photos, but I have to admit the results are really impressive. The photos are realistic and high quality. I use them as reference for some of my projects and I'm very satisfied with the service.",
+        "date": "Dec 12, 2025"
+      },
+      {
+        "name": "Matteo Fontana",
+        "title": "Tech Entrepreneur",
+        "review": "I've tried several professional photo services and this is definitely the best. The quality is excellent, the process is fast and the results are always perfect. I updated all my professional photos and received many compliments. Top service!",
+        "date": "Jan 5, 2025"
+      },
+      {
+        "name": "Camilla Esposito",
+        "title": "Journalist and Writer",
+        "review": "Fantastic! I created an entire collection of professional photos for my new book and promotional materials. The variety of styles and quality of images are exceptional. The photos are so realistic they look like they were taken by a professional photographer. Highly recommended!",
+        "date": "Feb 18, 2025"
+      },
+      {
+        "name": "Riccardo Vitale",
+        "title": "Business Consultant",
+        "review": "Excellent service! I got high-quality professional photos in no time. I use them for my website, company presentations and marketing materials. Clients immediately noticed the difference and appreciated my new professional image. Great investment!",
+        "date": "Mar 30, 2025"
+      }
+    ]
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "section1": {
+      "title": "1. Information We Collect",
+      "description": "We collect the following information when you use AISelfie:",
+      "items": [
+        "Account information: name, email and login method",
+        "Uploaded photos: selfies you provide for processing",
+        "Payment data: processed securely by our partners",
+        "Usage data: how you interact with our platform"
+      ]
+    },
+    "section2": {
+      "title": "2. How We Use Your Information",
+      "description": "We use your information to:",
+      "items": [
+        "Process your photos using our AI technology",
+        "Manage your account and provide customer support",
+        "Process payments and prevent fraud",
+        "Improve our services and develop new features",
+        "Send important updates about the service"
+      ]
+    },
+    "section3": {
+      "title": "3. Storage and Security",
+      "description": "Your photos are stored securely on encrypted servers. We implement technical and organizational security measures to protect your data against unauthorized access, loss or alteration. Your original photos are kept only for the time necessary for processing and can be deleted upon request."
+    },
+    "section4": {
+      "title": "4. Data Sharing",
+      "description": "We do not sell your personal information. We may share data only with:",
+      "items": [
+        "Service providers who help us operate the platform",
+        "Payment processors for financial transactions",
+        "Legal authorities when required by law"
+      ]
+    },
+    "section5": {
+      "title": "5. Your Rights",
+      "description": "You have the right to:",
+      "items": [
+        "Access your personal information",
+        "Correct incorrect or incomplete data",
+        "Request deletion of your photos and data",
+        "Export your data in readable format",
+        "Withdraw consent for data processing"
+      ]
+    },
+    "section6": {
+      "title": "6. Cookies and Similar Technologies",
+      "description": "We use cookies and similar technologies to improve your experience, analyze site usage and personalize content. You can manage your cookie preferences through your browser settings."
+    },
+    "section7": {
+      "title": "7. Data Retention",
+      "description": "We keep your information only for the time necessary to provide our services and fulfill legal obligations. Processed photos are stored in your account until you decide to delete them."
+    },
+    "section8": {
+      "title": "8. Changes to this Policy",
+      "description": "We may update this Privacy Policy periodically. We will notify you of significant changes by email or through a notice on our website."
+    },
+    "section9": {
+      "title": "9. Contact",
+      "description": "For questions about privacy or to exercise your rights, contact us through the channels available on our website."
+    },
+    "lastUpdated": "Last updated:"
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "section1": {
+      "title": "1. Acceptance of Terms",
+      "description": "By accessing and using AISelfie, you agree to comply with and be bound by these Terms of Service. If you do not agree with any part of these terms, you should not use our services."
+    },
+    "section2": {
+      "title": "2. Service Description",
+      "description": "AISelfie is a platform that uses artificial intelligence to generate professional photos from selfies provided by users. We offer different photo packages with various styles available."
+    },
+    "section3": {
+      "title": "3. Use of Images",
+      "description": "By uploading your photos to AISelfie, you:",
+      "items": [
+        "Guarantee that you have all rights to the uploaded images",
+        "Grant AISelfie license to process your images using AI",
+        "Retain all ownership rights to the generated photos",
+        "Agree not to use the service for illegal or offensive content"
+      ]
+    },
+    "section4": {
+      "title": "4. Privacy and Security",
+      "description": "We take your privacy seriously. Your photos are processed securely and are not shared with third parties. See our Privacy Policy for more details on how we handle your data."
+    },
+    "section5": {
+      "title": "5. Payments and Refunds",
+      "description": "All payments are processed securely. Our refund policy:",
+      "items": [
+        "Full refund if there is a technical failure in our service",
+        "We do not offer refunds for dissatisfaction with subjective results",
+        "Refund processing within 7 business days"
+      ]
+    },
+    "section6": {
+      "title": "6. Limitation of Liability",
+      "description": "AISelfie is not responsible for indirect, incidental or consequential damages arising from the use or inability to use our services. Generated photos are created by AI and may not perfectly meet all users' expectations."
+    },
+    "section7": {
+      "title": "7. Modifications to Terms",
+      "description": "We reserve the right to modify these terms at any time. We will notify users of significant changes by email or through a notice on our website."
+    },
+    "section8": {
+      "title": "8. Contact",
+      "description": "For questions about these Terms of Service, contact us through WhatsApp or email available on our website."
+    },
+    "lastUpdated": "Last updated:"
+  },
+  "home": {
+    "examples": [
+      {
+        "name": "Alba Ripoll Cucó",
+        "title": "Technology and Automation Consultant",
+        "img": "/image_1.webp"
+      },
+      {
+        "name": "Marta Gimenez Carrion",
+        "title": "Fundadora conmdemarketing",
+        "img": "/image_10.webp"
+      },
+      {
+        "name": "Jorge Bosch Alés",
+        "title": "Creador de Cosas de Freelance",
+        "img": "/image_100.webp"
+      }
+    ],
+    "altText": {
+      "professionalPhoto": "Professional AI Photo",
+      "style": "Style",
+      "aiProfessionalPhoto": "AI Professional Photo",
+      "reviewPhoto": "{{name}} - Photo {{number}}",
+      "reviewProfessionalPhoto": "{{name}} - Professional Photo",
+      "danielaMora": "Daniela Mora Solís",
+      "styleNumber": "Style {{number}}",
+      "selfieNumber": "Selfie {{number}}",
+      "aiGeneratedPhoto": "AI Generated Professional Photo",
+      "userNumber": "User {{number}}",
+      "professionalPhotoNumber": "Professional Photo {{number}}"
+    },
+    "testimonial": {
+      "text": "I've worked with 450 professionals who want to boost their personal brand, and one of their biggest fears is taking photos. With Aiselfie they can get professional images without the discomfort of a traditional session, feeling confident and professional in every photo.",
+      "attribution": "- Daniela Mora Solís • Personal Brand Consultant +400 successful clients | Top 200 Spanish-speaking LinkedIn creators 2024 (Favikon) #64 in Spanish | #1 in Costa Rica | TEDx speaker"
+    },
+    "testimonialsTitlePart1": "Is a",
+    "testimonialsTitleProfessional": "professional",
+    "testimonialsTitlePart2": "photo with",
+    "testimonialsTitleAI": "AI",
+    "testimonialsTitlePart3": "worth it? See what they say.",
+    "testimonialsSubtitle": "More than 25256 professional photos with artificial intelligence created... and counting.",
+    "styles": {
+      "badgePopular": "Popular",
+      "badgeNew": "New",
+      "verifiedBuyer": "Verified Buyer"
+    },
+    "uploadSelfies": {
+      "title": "Upload your selfies"
+    },
+    "boostPersonalBrand": {
+      "title": "Boost your personal brand",
+      "subtitle": "Get your professional photos in minutes.",
+      "cta": "Create my professional photos"
+    },
+    "trustedBy": "TRUSTED BY PROFESSIONALS AT"
+  },
+  "dashboardV2": {
+    "welcome": "Welcome",
+    "gender": "Gender",
+    "age": "Age",
+    "hairColor": "Hair Color",
+    "hairLength": "Hair Length",
+    "hairStyle": "Hair Style",
+    "ethnicity": "Ethnicity",
+    "bodyType": "Body Type",
+    "attire": "Attire",
+    "background": "Background",
+    "upload": "Upload Photos",
+    "back": "Back",
+    "continue": "Continue",
+    "create": "Create",
+    "welcomeTitle": "Create professional AI portraits",
+    "welcomeDescription": "Transform your existing photos into realistic AI portrait photos for your resume, LinkedIn, and social media profiles.",
+    "createHeadshots": "Create headshots",
+    "whatIsYourGender": "What is your gender?",
+    "genderDescription": "We'd love to learn more about you{{name}}! Help us generate perfect photos that reflect who you are.",
+    "male": "Male",
+    "female": "Female",
+    "nonBinary": "Non-binary",
+    "howOldAreYou": "How old are you?",
+    "ageDescription": "We'd love to learn more about you! Help us generate perfect photos that reflect who you are.",
+    "whatIsYourHairColor": "What is your hair color?",
+    "hairColorDescription": "Help us generate photos that truly represent you. If your hair color doesn't match any option exactly, choose the closest match.",
+    "brown": "Brown",
+    "black": "Black",
+    "blonde": "Blonde",
+    "gray": "Gray",
+    "auburn": "Auburn",
+    "red": "Red",
+    "white": "White",
+    "other": "Other",
+    "bald": "Bald",
+    "whatIsYourHairLength": "What is the length of your hair?",
+    "hairLengthDescription": "Help us generate photos that truly represent you. If your hair length falls between options, choose the closest match.",
+    "buzzCut": "Buzz cut",
+    "short": "Short",
+    "mediumLength": "Medium length",
+    "long": "Long",
+    "whatIsYourHairType": "What is your hair type?",
+    "hairTypeDescription": "Help us generate photos that truly represent you. If your hair type falls between options, choose the closest match.",
+    "straight": "Straight",
+    "wavy": "Wavy",
+    "curly": "Curly",
+    "dreadlocks": "Dreadlocks",
+    "whatIsYourEthnicity": "What is your ethnicity?",
+    "ethnicityDescription": "We'd love to learn more about you! Help us generate perfect photos that reflect who you are.",
+    "whiteCaucasian": "White / Caucasian",
+    "blackAfrican": "Black / African descendant",
+    "hispanicLatino": "Hispanic, Latino, of Spanish origin",
+    "asianEast": "Central or East Asia",
+    "asianSouth": "South Asian (Indian, Pakistani, Bangladeshi, etc.)",
+    "asianSoutheast": "Southeast Asian (Vietnamese, Cambodian, etc.)",
+    "middleEastern": "Middle East, North Africa or Arab",
+    "pacificIslander": "Native Hawaiian or other Pacific Islander",
+    "multiracial": "Multiracial",
+    "whatIsYourBodyType": "What is your body type?",
+    "bodyTypeDescription": "Help us generate photos that truly represent you. If you're between body type options, choose the closest match.",
+    "slim": "Slim",
+    "regular": "Regular",
+    "athletic": "Athletic",
+    "mediumLarge": "Medium large",
+    "large": "Large",
+    "plusSize": "Plus size",
+    "selectYourAttire": "Select your attire",
+    "attireDescription": "You will get an equal mix of results with the most popular attires.",
+    "professionalBusiness": "Professional Business",
+    "professionalBusinessDesc": "Formal shirts and suits with matching ties",
+    "businessCasual": "Business Casual",
+    "businessCasualDesc": "Blazers and jackets, long-sleeved shirts",
+    "casual": "Casual",
+    "casualDesc": "Casual everyday wear",
+    "elegant": "Elegant",
+    "elegantDesc": "Elegant and sophisticated style",
+    "formal": "Formal",
+    "formalDesc": "Formal and traditional attire",
+    "attireNote": "You can change your selections with our AI editing tools, even after your photos are generated.",
+    "selectYourBackgrounds": "Select your backgrounds",
+    "backgroundDescription": "Select the backgrounds you want! Most people choose all 4 backgrounds for greater variety.",
+    "city": "City",
+    "cityDesc": "Vibrant urban streets",
+    "nature": "Nature",
+    "natureDesc": "Outdoor parks or tree-lined streets",
+    "office": "Office",
+    "officeDesc": "Bright and minimalist corporate office",
+    "studio": "Studio",
+    "studioDesc": "Professional photography studio",
+    "pricing": {
+      "title": "Choose Your Plan",
+      "description": "Select the plan that best fits your needs. All plans include professional AI-generated photos.",
+      "popular": "POPULAR",
+      "discounted": "Discounted",
+      "basic": "Basic",
+      "basicFeature1": "40 professional photos",
+      "basicFeature2": "Standard quality",
+      "basicFeature3": "Quick delivery",
+      "standard": "Standard",
+      "standardFeature1": "60 professional photos",
+      "standardFeature2": "High quality",
+      "standardFeature3": "Priority processing",
+      "premium": "Premium",
+      "premiumFeature1": "100 professional photos",
+      "premiumFeature2": "Premium quality",
+      "premiumFeature3": "Fastest delivery"
+    },
+    "uploadPhotos": "Upload photos",
+    "uploadDescription": "Now the fun begins! Select at least your best photos. Uploading a mix of close-ups, selfies, and medium-range photos can help the AI better capture your face and body type.",
+    "uploadFromComputer": "Upload from your computer",
+    "uploadFiles": "Upload files",
+    "uploadFormats": "or drag and drop your photos PNG, JPG, HEIC, WEBP up to 120MB",
+    "uploadedImages": "Uploaded images",
+    "maxFilesError": "Too many files",
+    "invalidFileType": "Invalid file type",
+    "fileTooLarge": "File too large",
+    "fileSelected": "file selected",
+    "filesSelected": "files selected",
+    "filesReady": "Files are ready for upload",
+    "fileRemoved": "File removed",
+    "noFilesSelected": "No files selected",
+    "pleaseSelectFiles": "Please select at least one photo to continue",
+    "minFilesError": "Not enough files",
+    "clearAll": "Clear all",
+    "uploadingImages": "Uploading images...",
+    "imagesUploaded": "Images uploaded successfully!",
+    "uploadError": "Failed to upload images",
+    "userNotAuthenticated": "User not authenticated",
+    "pleaseLogin": "Please log in to continue",
+    "couldNotUploadImages": "Could not upload images",
+    "generatingImages": "Generating images...",
+    "generationStarted": "Image generation started!",
+    "generationError": "Failed to generate images",
+    "appName": "AI Selfi",
+    "exampleAlt": "Example {{id}}",
+    "exampleForAlt": "Example for {{label}}",
+    "maxFilesErrorDesc": "You can select a maximum of {{maxFiles}} images. You already have {{currentCount}} and are trying to add {{newCount}}.",
+    "maxFilesErrorDescSimple": "You can select a maximum of {{maxFiles}} images",
+    "invalidFileTypeDesc": "The file \"{{fileName}}\" is not a valid format. Please use PNG, JPG, HEIC, or WEBP.",
+    "fileTooLargeDesc": "The file \"{{fileName}}\" is too large (maximum 120MB)",
+    "fileSizeUnit": "MB",
+    "of": "of",
+    "insufficientCredits": "Insufficient credits",
+    "pleaseBuyCredits": "Please purchase credits to continue"
+  },
+  "errorBoundary": {
+    "title": "An unexpected error occurred.",
+    "reloadPage": "Reload Page"
+  },
+  "refund": {
+    "title": "Refund Policy",
+    "lastUpdated": "Last updated: January 2025",
+    "fullRefundGuarantee": "Full Refund Guarantee",
+    "fullRefundDescription": "At AISelfi, we stand behind the quality of our AI-generated professional photos. We offer a full refund guarantee if you are not satisfied with the results.",
+    "refundEligibility": "Refund Eligibility",
+    "eligibleIf": "You are eligible for a full refund if:",
+    "eligible1": "You are not satisfied with the quality of the generated photos",
+    "eligible2": "The photos do not meet your expectations",
+    "eligible3": "You experience technical issues that prevent you from using the service",
+    "eligible4": "You request a refund within 30 days of purchase",
+    "howToRequest": "How to Request a Refund",
+    "howToRequestDesc": "To request a refund, please contact our support team through one of the following methods:",
+    "method1": "Email us at support@aiselfie.org",
+    "method2": "Use the support form in your dashboard",
+    "method3": "Contact us through WhatsApp (if available)",
+    "requestDetails": "Please include your order number and a brief explanation of why you're requesting a refund. We'll process your refund within 5-7 business days.",
+    "refundProcessing": "Refund Processing",
+    "refundProcessingDesc": "Once your refund is approved, we will process it to the original payment method used for the purchase. Refunds typically appear in your account within 5-10 business days, depending on your payment provider.",
+    "questions": "Questions?",
+    "questionsDesc": "If you have any questions about our refund policy, please don't hesitate to contact our support team. We're here to help ensure you have a positive experience with AISelfi."
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Tips, insights, and guides on professional photography and personal branding",
+    "readMore": "Read more",
+    "backToBlog": "Back to Blog",
+    "posts": {
+      "post1": {
+        "title": "How AI Professional Photos Can Transform Your Personal Brand",
+        "excerpt": "Discover how AI-powered professional photos can revolutionize your personal branding and help you stand out in the digital world.",
+        "date": "January 15, 2025",
+        "publishedOn": "Published on January 15, 2025",
+        "altText": "AI Professional Photos"
+      },
+      "post2": {
+        "title": "5 Reasons Why AI Professional Photos Are Better Than Traditional Photography",
+        "excerpt": "Explore the five key advantages that make AI professional photos superior to traditional photography methods.",
+        "date": "January 20, 2025",
+        "publishedOn": "Published on January 20, 2025",
+        "altText": "AI vs Traditional Photography"
+      },
+      "post3": {
+        "title": "How to Choose the Perfect Professional Photo Style for Your Brand",
+        "excerpt": "Learn how to select the ideal professional photo style that matches your industry, platform, and personal brand values.",
+        "date": "January 25, 2025",
+        "publishedOn": "Published on January 25, 2025",
+        "altText": "Professional Photo Styles"
+      },
+      "post4": {
+        "title": "How to Use AI Professional Photos for LinkedIn Profile",
+        "excerpt": "A complete guide to optimizing your LinkedIn profile with AI-generated professional photos that make a lasting impression.",
+        "date": "February 1, 2025",
+        "publishedOn": "Published on February 1, 2025",
+        "altText": "LinkedIn Profile with AI Photos"
+      },
+      "post5": {
+        "title": "AI Headshots vs Traditional Photography: Cost Comparison",
+        "excerpt": "Compare the costs, time, and quality differences between AI-generated headshots and traditional photography services.",
+        "date": "February 8, 2025",
+        "publishedOn": "Published on February 8, 2025",
+        "altText": "AI vs Traditional Photography Cost"
+      },
+      "post6": {
+        "title": "Best Practices for Training Your AI Model for Professional Photos",
+        "excerpt": "Learn the essential tips and techniques to train your AI model effectively and achieve the best possible professional photo results.",
+        "date": "February 15, 2025",
+        "publishedOn": "Published on February 15, 2025",
+        "altText": "Training AI Model"
+      },
+      "post7": {
+        "title": "Why AI-Generated Professional Photos Are the Future of Personal Branding",
+        "excerpt": "Discover how AI professional photography is revolutionizing personal branding and why it's becoming the preferred choice for professionals worldwide.",
+        "date": "February 22, 2025",
+        "publishedOn": "Published on February 22, 2025",
+        "altText": "Future of Personal Branding"
+      },
+      "post8": {
+        "title": "How to Create Multiple Professional Photo Styles with AI",
+        "excerpt": "Master the art of creating diverse professional photo styles using AI technology to build a comprehensive visual brand identity.",
+        "date": "March 1, 2025",
+        "publishedOn": "Published on March 1, 2025",
+        "altText": "Multiple Photo Styles"
+      },
+      "post9": {
+        "title": "The Complete Guide to AI Professional Photography in 2024",
+        "excerpt": "Everything you need to know about AI professional photography: how it works, benefits, use cases, and how to get started.",
+        "date": "March 8, 2025",
+        "publishedOn": "Published on March 8, 2025",
+        "altText": "AI Professional Photography Guide"
+      }
+    }
+  },
+  "blogPost1": {
+    "title": "How AI Professional Photos Can Transform Your Personal Brand",
+    "publishedOn": "Published on January 15, 2025",
+    "altText": "AI Professional Photos",
+    "intro": "In today's digital world, your professional image is more important than ever. Whether you're building your personal brand on LinkedIn, creating content for social media, or updating your company website, professional photos are essential.",
+    "powerOfPhotography": "The Power of Professional Photography",
+    "powerDesc": "Professional photos can significantly impact how others perceive you. Studies show that people form first impressions in just 0.1 seconds, and your profile photo is often the first thing they see. A high-quality professional photo can:",
+    "power1": "Increase your credibility and trustworthiness",
+    "power2": "Make you stand out in a crowded digital landscape",
+    "power3": "Reflect your professionalism and attention to detail",
+    "power4": "Help you build a consistent brand image across platforms",
+    "traditionalChallenge": "The Traditional Photography Challenge",
+    "traditionalDesc": "Traditional professional photography comes with several challenges:",
+    "traditional1": "High costs: Professional photo sessions can cost hundreds or even thousands of euros",
+    "traditional2": "Time-consuming: Scheduling, travel, and the actual session take significant time",
+    "traditional3": "Limited variety: You typically get a small selection of photos from one session",
+    "traditional4": "Inconvenience: Requires coordinating with photographers and studios",
+    "aiSolution": "AI Professional Photos: The Modern Solution",
+    "aiSolutionDesc": "AI-powered professional photography offers a revolutionary alternative. With AISelfi, you can create stunning professional photos in minutes, not days. Here's how it works:",
+    "aiSolution1": "Upload your selfies: Simply upload a few photos of yourself",
+    "aiSolution2": "Choose your style: Select from over 100+ professional outfits and styles",
+    "aiSolution3": "AI generates your photos: Our advanced AI creates professional-quality images",
+    "aiSolution4": "Download and use: Get your photos in high-resolution 4K format",
+    "benefits": "Benefits of AI Professional Photos",
+    "benefitsDesc": "AI professional photos offer numerous advantages:",
+    "benefit1": "Cost-effective: Get professional photos for a fraction of the cost",
+    "benefit2": "Fast: Receive your photos in minutes, not weeks",
+    "benefit3": "Variety: Generate 40-100 different professional photos",
+    "benefit4": "Convenient: No need to leave your home or schedule appointments",
+    "benefit5": "Consistent: Maintain a cohesive brand image across all platforms",
+    "applications": "Real-World Applications",
+    "applicationsDesc": "AI professional photos are perfect for:",
+    "application1": "LinkedIn profile pictures",
+    "application2": "Company website team pages",
+    "application3": "Social media profiles (Instagram, Facebook, Twitter)",
+    "application4": "Email signatures",
+    "application5": "Business cards and marketing materials",
+    "application6": "Speaking engagement profiles",
+    "application7": "Press releases and media kits",
+    "conclusion": "Conclusion",
+    "conclusionDesc": "Professional photos are essential for building your personal brand in the digital age. AI-powered solutions like AISelfi make it easier, faster, and more affordable than ever to get the professional images you need. Start building your professional brand today with AI professional photos.",
+    "ctaTitle": "Ready to Transform Your Professional Image?",
+    "ctaDesc": "Create your professional AI photos in minutes. Choose from over 100+ styles and get 40-100 high-quality images ready to use.",
+    "ctaButton": "Create Your Professional Photos Now"
+  },
+  "blogPost2": {
+    "title": "5 Reasons Why AI Professional Photos Are Better Than Traditional Photography",
+    "publishedOn": "Published on January 20, 2025",
+    "altText": "AI vs Traditional Photography",
+    "intro": "The photography industry is experiencing a revolution. AI-powered professional photos are changing how people approach personal branding and professional imagery. Here are five compelling reasons why AI professional photos are superior to traditional photography.",
+    "reason1": "Unbeatable Value",
+    "reason1Desc": "Traditional professional photography sessions can cost anywhere from €200 to €1,500 or more. With AI professional photos, you get 40-100 high-quality images for a fraction of that cost. You're essentially paying 5x less while getting significantly more variety and options.",
+    "reason2": "Speed and Convenience",
+    "reason2Desc": "Traditional photography requires scheduling appointments, traveling to studios, and waiting weeks for edited photos. AI professional photos are generated in minutes. You can upload your selfies, choose your styles, and have professional photos ready to use the same day—all from the comfort of your home.",
+    "reason3": "Unlimited Variety",
+    "reason3Desc": "A single traditional photo session might give you 10-20 final images. With AI professional photos, you can generate 40-100 different images in various styles, outfits, and backgrounds. This variety allows you to:",
+    "variety1": "Match different platforms' aesthetic requirements",
+    "variety2": "Update your professional image regularly",
+    "variety3": "Test different styles to see what works best",
+    "variety4": "Have options for different occasions and purposes",
+    "reason4": "Consistent Quality",
+    "reason4Desc": "AI professional photos ensure consistent quality across all your images. Every photo is generated using the same advanced AI technology, ensuring uniform lighting, professional composition, and high resolution. With traditional photography, quality can vary based on the photographer's skill, equipment, and conditions.",
+    "reason5": "Privacy and Control",
+    "reason5Desc": "AI professional photos give you complete control and privacy. You upload your own photos, choose your styles, and generate images without needing to interact with photographers or visit studios. Your images are processed securely, and you maintain full control over your professional image.",
+    "future": "The Future of Professional Photography",
+    "futureDesc": "AI professional photos represent the future of personal branding. They combine the quality of traditional photography with the convenience, affordability, and variety that modern professionals need. As AI technology continues to improve, the gap between AI and traditional photography will only continue to narrow.",
+    "ctaTitle": "Experience the Future of Professional Photos",
+    "ctaDesc": "Join thousands of professionals who have already made the switch to AI professional photos. Get started today and see the difference.",
+    "ctaButton": "Create Your AI Professional Photos"
+  },
+  "blogPost3": {
+    "title": "How to Choose the Perfect Professional Photo Style for Your Brand",
+    "publishedOn": "Published on January 25, 2025",
+    "altText": "Professional Photo Styles",
+    "intro": "Your professional photo is often the first impression people have of you online. Choosing the right style is crucial for building your personal brand. With over 100+ styles available, here's how to select the perfect professional photo style for your brand.",
+    "understandIndustry": "Understand Your Industry",
+    "understandIndustryDesc": "Different industries have different expectations for professional photos:",
+    "industry1": "Corporate/Business: Professional business attire, formal backgrounds, conservative styling",
+    "industry2": "Creative Industries: More casual, artistic backgrounds, creative expression",
+    "industry3": "Tech/Startups: Modern, approachable, slightly casual professional look",
+    "industry4": "Healthcare: Professional, trustworthy, clean and polished",
+    "industry5": "Education: Friendly, approachable, professional but warm",
+    "considerPlatform": "Consider Your Platform",
+    "considerPlatformDesc": "Different platforms may require different styles:",
+    "platform1": "LinkedIn: Professional, business-focused, conservative",
+    "platform2": "Instagram: More casual, creative, personality-driven",
+    "platform3": "Company Website: Match your company's brand aesthetic",
+    "platform4": "Speaking Engagements: Professional but approachable",
+    "matchBrand": "Match Your Personal Brand",
+    "matchBrandDesc": "Your professional photo should reflect your personal brand values:",
+    "brand1": "If you're innovative: Choose modern, cutting-edge styles",
+    "brand2": "If you're traditional: Opt for classic, timeless professional looks",
+    "brand3": "If you're approachable: Select warm, friendly styles with natural lighting",
+    "brand4": "If you're authoritative: Choose strong, confident poses and formal attire",
+    "backgroundSelection": "Background Selection",
+    "backgroundSelectionDesc": "The background of your professional photo sets the tone:",
+    "background1": "Studio backgrounds: Clean, professional, timeless",
+    "background2": "Office backgrounds: Professional, corporate, business-focused",
+    "background3": "Nature backgrounds: Approachable, natural, creative",
+    "background4": "City backgrounds: Modern, dynamic, urban professional",
+    "tipsForSuccess": "Tips for Success",
+    "tipsForSuccessDesc": "Here are some additional tips for choosing the perfect professional photo style:",
+    "tip1": "Start with a few different styles and see which resonates most",
+    "tip2": "Consider your target audience and what they expect",
+    "tip3": "Ensure consistency across all your professional platforms",
+    "tip4": "Update your photos regularly to keep your brand fresh",
+    "tip5": "Test different styles to see what gets the best response",
+    "conclusion": "Conclusion",
+    "conclusionDesc": "Choosing the perfect professional photo style is about understanding your industry, platform, and personal brand. With AI professional photos, you can easily experiment with different styles until you find the perfect match. Remember, your professional photo is an investment in your personal brand—choose wisely.",
+    "ctaTitle": "Find Your Perfect Professional Photo Style",
+    "ctaDesc": "Explore over 100+ professional photo styles and find the perfect match for your personal brand.",
+    "ctaButton": "Browse Professional Photo Styles"
+  },
+  "blogPost4": {
+    "title": "How to Use AI Professional Photos for LinkedIn Profile",
+    "publishedOn": "Published on February 1, 2025",
+    "altText": "LinkedIn Profile with AI Photos",
+    "intro": "Your LinkedIn profile photo is one of the most important elements of your professional online presence. With AI professional photos, you can create a standout profile that makes a lasting impression. Here's how to optimize your LinkedIn profile with AI-generated professional photos.",
+    "whyLinkedIn": "Why Your LinkedIn Photo Matters",
+    "whyLinkedInDesc": "Your LinkedIn profile photo is often the first thing recruiters, clients, and colleagues see. A professional photo can:",
+    "whyLinkedIn1": "Increase profile views by up to 14 times",
+    "whyLinkedIn2": "Build trust and credibility with your network",
+    "whyLinkedIn3": "Make you more memorable and recognizable",
+    "whyLinkedIn4": "Reflect your professionalism and attention to detail",
+    "choosingRightPhoto": "Choosing the Right Photo",
+    "choosingRightPhotoDesc": "When selecting an AI professional photo for LinkedIn, consider these factors:",
+    "choosing1": "Professional attire: Business formal or business casual",
+    "choosing2": "Clean background: Simple, uncluttered backgrounds work best",
+    "choosing3": "Clear face visibility: Your face should be clearly visible and well-lit",
+    "choosing4": "Appropriate expression: Professional, approachable smile",
+    "uploadingToLinkedIn": "Uploading to LinkedIn",
+    "uploadingToLinkedInDesc": "Follow these steps to upload your AI professional photo to LinkedIn:",
+    "uploading1": "Log in to your LinkedIn account",
+    "uploading2": "Click on your profile photo or the 'Edit' button",
+    "uploading3": "Select 'Change Photo' and upload your AI-generated professional photo",
+    "uploading4": "Crop the photo to fit LinkedIn's recommended dimensions (400x400 pixels minimum)",
+    "uploading5": "Save your changes and verify the photo displays correctly",
+    "optimizingProfile": "Optimizing Your Complete Profile",
+    "optimizingProfileDesc": "While your photo is important, ensure your entire LinkedIn profile is optimized:",
+    "optimizing1": "Write a compelling headline that complements your photo",
+    "optimizing2": "Craft a professional summary that tells your story",
+    "optimizing3": "Keep your experience section updated and detailed",
+    "optimizing4": "Add relevant skills and endorsements",
+    "bestPractices": "Best Practices for LinkedIn Photos",
+    "bestPracticesDesc": "Follow these best practices to maximize the impact of your LinkedIn profile photo:",
+    "practice1": "Update your photo regularly to reflect your current appearance",
+    "practice2": "Use the same professional photo across all professional platforms for consistency",
+    "practice3": "Ensure good lighting and high resolution for clarity",
+    "practice4": "Avoid overly casual or inappropriate photos",
+    "practice5": "Test different styles to see which gets the best engagement",
+    "conclusion": "Conclusion",
+    "conclusionDesc": "Your LinkedIn profile photo is a crucial element of your professional brand. With AI professional photos, you can create a high-quality, professional image that helps you stand out and make a strong first impression. Remember to keep your photo updated and consistent with your overall professional brand.",
+    "ctaTitle": "Create Your Perfect LinkedIn Profile Photo",
+    "ctaDesc": "Generate professional AI photos optimized for LinkedIn and boost your professional presence.",
+    "ctaButton": "Create Your LinkedIn Photo"
+  },
+  "blogPost5": {
+    "title": "AI Headshots vs Traditional Photography: Cost Comparison",
+    "publishedOn": "Published on February 8, 2025",
+    "altText": "AI vs Traditional Photography Cost",
+    "intro": "When it comes to professional headshots, you have two main options: traditional photography or AI-generated photos. Understanding the cost differences can help you make an informed decision that fits your budget and needs.",
+    "costComparison": "Cost Comparison",
+    "costComparisonDesc": "Let's break down the costs of both options:",
+    "traditionalPhotography": "Traditional Photography",
+    "traditional1": "Photographer fees: €200-€500+ per session",
+    "traditional2": "Studio rental: €50-€200+ if not included",
+    "traditional3": "Hair and makeup: €50-€150+",
+    "traditional4": "Travel time and expenses: Variable",
+    "traditionalTotal": "Total: €300-€850+ for one session",
+    "aiPhotography": "AI Professional Photos",
+    "ai1": "One-time package purchase: €29-€49",
+    "ai2": "No additional fees or hidden costs",
+    "ai3": "Multiple styles and outfits included",
+    "ai4": "No travel or scheduling required",
+    "aiTotal": "Total: €29-€49 for unlimited styles",
+    "timeComparison": "Time Investment Comparison",
+    "timeComparisonDesc": "Time is also a significant factor to consider:",
+    "time1": "Traditional: 2-4 hours (scheduling, travel, session, waiting for results)",
+    "time2": "AI: 15-30 minutes (upload photos, select styles, receive results)",
+    "time3": "AI saves you 90%+ of the time compared to traditional photography",
+    "qualityComparison": "Quality Comparison",
+    "qualityComparisonDesc": "Both options can produce high-quality results:",
+    "quality1": "Traditional photography offers the photographer's artistic vision and expertise",
+    "quality2": "AI photos provide consistent, professional quality with modern technology",
+    "quality3": "AI allows for more variety and experimentation without additional cost",
+    "quality4": "Both can produce results suitable for professional use",
+    "whenToChoose": "When to Choose Each Option",
+    "whenToChooseDesc": "Consider your specific needs when choosing:",
+    "chooseTraditional": "Choose Traditional Photography If:",
+    "traditionalWhen1": "You need a very specific artistic vision that requires a photographer's expertise",
+    "traditionalWhen2": "You have a large budget and prefer the traditional experience",
+    "traditionalWhen3": "You need photos for a very specific, one-time event",
+    "chooseAI": "Choose AI Professional Photos If:",
+    "aiWhen1": "You want professional quality photos at an affordable price",
+    "aiWhen2": "You need multiple styles and outfits without additional cost",
+    "aiWhen3": "You value convenience and speed",
+    "aiWhen4": "You want to experiment with different looks easily",
+    "conclusion": "Conclusion",
+    "conclusionDesc": "AI professional photos offer exceptional value, providing high-quality results at a fraction of the cost and time of traditional photography. While traditional photography has its place, AI photos are the smart choice for most professionals who need quality headshots without breaking the bank.",
+    "ctaTitle": "Get Professional Photos at a Fraction of the Cost",
+    "ctaDesc": "Experience the value of AI professional photos and save time and money while getting stunning results.",
+    "ctaButton": "Try AI Professional Photos"
+  },
+  "blogPost6": {
+    "title": "Best Practices for Training Your AI Model for Professional Photos",
+    "publishedOn": "Published on February 15, 2025",
+    "altText": "Training AI Model",
+    "intro": "Training your AI model is the foundation of creating high-quality professional photos. The better your training photos, the better your results will be. Follow these best practices to ensure you get the best possible outcomes.",
+    "selectingPhotos": "Selecting the Right Photos",
+    "selectingPhotosDesc": "The photos you choose for training are crucial. Here's what to look for:",
+    "selecting1": "Clear, high-resolution images of your face",
+    "selecting2": "Good lighting that shows your features clearly",
+    "selecting3": "Variety of angles and expressions",
+    "selecting4": "Recent photos that accurately represent how you look now",
+    "selecting5": "Simple backgrounds without distractions",
+    "photoQuality": "Photo Quality Requirements",
+    "photoQualityDesc": "Ensure your training photos meet these quality standards:",
+    "quality1": "High resolution: At least 1024x1024 pixels",
+    "quality2": "Sharp focus: Clear, not blurry",
+    "quality3": "Good lighting: Well-lit, not too dark or overexposed",
+    "quality4": "Natural appearance: Minimal or no filters",
+    "quality5": "Face clearly visible: No sunglasses, masks, or obstructions",
+    "photoVariety": "Photo Variety",
+    "photoVarietyDesc": "Include variety in your training photos:",
+    "variety1": "Different angles: Front-facing, slight side angles",
+    "variety2": "Different expressions: Neutral, smiling, professional",
+    "variety3": "Different lighting conditions: Natural light, studio light",
+    "variety4": "Different backgrounds: Simple, varied backgrounds",
+    "commonMistakes": "Common Mistakes to Avoid",
+    "commonMistakesDesc": "Avoid these common mistakes that can reduce photo quality:",
+    "mistake1": "Using old photos that don't represent your current appearance",
+    "mistake2": "Including group photos or photos with other people",
+    "mistake3": "Using heavily filtered or edited photos",
+    "mistake4": "Uploading too few photos (aim for 10-20 quality photos)",
+    "trainingProcess": "The Training Process",
+    "trainingProcessDesc": "Understanding the training process helps you prepare better:",
+    "process1": "Upload 10-20 high-quality photos of yourself",
+    "process2": "Wait 15-30 minutes for the AI model to train",
+    "process3": "Once trained, you can generate photos in any style",
+    "process4": "The model learns your unique facial features and characteristics",
+    "process5": "Better training photos = better generated results",
+    "optimizingResults": "Optimizing Your Results",
+    "optimizingResultsDesc": "After training, optimize your photo generation:",
+    "optimizing1": "Start with a test photo to see how the model performs",
+    "optimizing2": "Experiment with different styles to find what works best",
+    "optimizing3": "Adjust parameters like hair color, glasses, and aspect ratio",
+    "optimizing4": "Generate multiple variations to find your favorites",
+    "conclusion": "Conclusion",
+    "conclusionDesc": "Training your AI model with high-quality, diverse photos is the key to getting excellent professional photo results. Take time to select the best photos, follow these best practices, and you'll be rewarded with stunning professional photos that accurately represent you.",
+    "ctaTitle": "Start Training Your AI Model",
+    "ctaDesc": "Follow these best practices and create professional photos that truly represent you.",
+    "ctaButton": "Train Your Model"
+  },
+  "blogPost7": {
+    "title": "Why AI-Generated Professional Photos Are the Future of Personal Branding",
+    "publishedOn": "Published on February 22, 2025",
+    "altText": "Future of Personal Branding",
+    "intro": "The world of personal branding is evolving rapidly, and AI-generated professional photos are at the forefront of this transformation. As technology advances, more professionals are discovering the benefits of AI photography for their personal brand.",
+    "evolutionOfBranding": "The Evolution of Personal Branding",
+    "evolutionOfBrandingDesc": "Personal branding has come a long way:",
+    "evolution1": "From expensive studio sessions to accessible AI solutions",
+    "evolution2": "From limited photo options to unlimited style variety",
+    "evolution3": "From time-consuming processes to instant results",
+    "evolution4": "From high costs to affordable professional quality",
+    "whyAI": "Why AI is the Future",
+    "whyAIDesc": "AI professional photos represent the future for several compelling reasons:",
+    "whyAI1": "Accessibility: Professional quality photos are now available to everyone",
+    "whyAI2": "Affordability: Cost-effective solution for professionals at all levels",
+    "whyAI3": "Convenience: Create photos from anywhere, anytime",
+    "whyAI4": "Variety: Access to hundreds of styles and outfits",
+    "whyAI5": "Speed: Get professional photos in minutes, not days",
+    "impactOnPersonalBrand": "Impact on Personal Branding",
+    "impactOnPersonalBrandDesc": "AI photos are transforming how professionals build their brands:",
+    "impact1": "Democratizing professional photography",
+    "impact2": "Enabling consistent branding across all platforms",
+    "impact3": "Allowing for easy updates and experimentation",
+    "impact4": "Supporting diverse professional needs and industries",
+    "industryAdoption": "Industry Adoption",
+    "industryAdoptionDesc": "More industries are embracing AI professional photos:",
+    "industry1": "Tech and startups: Leading the adoption of AI solutions",
+    "industry2": "Corporate professionals: Using AI for consistent brand images",
+    "industry3": "Content creators: Leveraging AI for diverse visual content",
+    "industry4": "Entrepreneurs: Building professional brands affordably",
+    "futureTrends": "Future Trends",
+    "futureTrendsDesc": "The future of AI professional photography looks bright:",
+    "trend1": "Improving AI technology for even more realistic results",
+    "trend2": "Expanding style libraries and customization options",
+    "trend3": "Integration with professional platforms and tools",
+    "trend4": "Growing acceptance and trust in AI-generated content",
+    "gettingStarted": "Getting Started",
+    "gettingStartedDesc": "Ready to embrace the future of personal branding?",
+    "started1": "Choose a platform that offers quality AI professional photos",
+    "started2": "Upload your photos and train your AI model",
+    "started3": "Experiment with different styles and find your perfect look",
+    "started4": "Use your AI photos across all your professional platforms",
+    "conclusion": "Conclusion",
+    "conclusionDesc": "AI-generated professional photos are not just a trend—they're the future of personal branding. As technology continues to improve and become more accessible, professionals worldwide are discovering the power of AI to create stunning, professional images that help them stand out and build their personal brand effectively.",
+    "ctaTitle": "Join the Future of Personal Branding",
+    "ctaDesc": "Experience the power of AI professional photos and transform your personal brand today.",
+    "ctaButton": "Create Your AI Photos"
+  },
+  "blogPost8": {
+    "title": "How to Create Multiple Professional Photo Styles with AI",
+    "publishedOn": "Published on March 1, 2025",
+    "altText": "Multiple Photo Styles",
+    "intro": "One of the biggest advantages of AI professional photos is the ability to create multiple styles and looks from a single training session. Learn how to maximize this capability and build a comprehensive visual brand identity.",
+    "understandingStyles": "Understanding Photo Styles",
+    "understandingStylesDesc": "Professional photo styles vary based on several factors:",
+    "styles1": "Formal vs. casual: Business formal, business casual, or creative casual",
+    "styles2": "Backgrounds: Studio, office, nature, urban, or abstract",
+    "styles3": "Attire: Suits, blazers, casual wear, or industry-specific clothing",
+    "styles4": "Mood: Professional, approachable, authoritative, or creative",
+    "popularStyles": "Popular Professional Photo Styles",
+    "popularStylesDesc": "Here are some of the most popular styles you can create:",
+    "popular1": "Corporate headshot: Classic business professional look",
+    "popular2": "Creative professional: Modern, artistic, and expressive",
+    "popular3": "Casual professional: Approachable and friendly business casual",
+    "popular4": "Industry-specific: Tailored to your specific profession",
+    "popular5": "Social media optimized: Perfect for Instagram, Facebook, and Twitter",
+    "creatingMultipleStyles": "Creating Multiple Styles",
+    "creatingMultipleStylesDesc": "Follow these steps to create diverse professional photo styles:",
+    "creating1": "Train your AI model once with quality photos",
+    "creating2": "Browse the style library and select multiple styles that interest you",
+    "creating3": "Generate photos in each selected style",
+    "creating4": "Review and compare results to find your favorites",
+    "creating5": "Save your preferred styles for future use",
+    "customizingParameters": "Customizing Parameters",
+    "customizingParametersDesc": "Enhance your photos by customizing these parameters:",
+    "parameters1": "Aspect ratio: Square (1:1) for profiles or portrait (9:16) for stories",
+    "parameters2": "Hair color and style: Match your preferences or experiment",
+    "parameters3": "Glasses: Add or remove glasses as needed",
+    "parameters4": "Background: Choose backgrounds that match your brand",
+    "organizingPhotos": "Organizing Your Photos",
+    "organizingPhotosDesc": "Keep your photo collection organized:",
+    "organizing1": "Create folders or categories for different styles",
+    "organizing2": "Tag photos by use case (LinkedIn, website, social media)",
+    "organizing3": "Mark favorites for quick access",
+    "organizing4": "Regularly update your collection with new styles",
+    "tipsForSuccess": "Tips for Success",
+    "tipsForSuccessDesc": "Maximize your results with these tips:",
+    "tip1": "Start with a few styles and expand gradually",
+    "tip2": "Match styles to specific platforms and use cases",
+    "tip3": "Maintain consistency while allowing for variety",
+    "tip4": "Update your photo collection regularly",
+    "tip5": "Experiment with different combinations to find unique looks",
+    "conclusion": "Conclusion",
+    "conclusionDesc": "Creating multiple professional photo styles with AI gives you the flexibility to build a comprehensive visual brand identity. With one training session, you can generate dozens of professional photos in various styles, all perfectly suited to different platforms and purposes. This versatility is one of the key advantages of AI professional photography.",
+    "ctaTitle": "Create Your Professional Photo Collection",
+    "ctaDesc": "Explore our extensive style library and create multiple professional photo styles that represent your brand.",
+    "ctaButton": "Browse Styles"
+  },
+  "blogPost9": {
+    "title": "The Complete Guide to AI Professional Photography in 2024",
+    "publishedOn": "Published on March 8, 2025",
+    "altText": "AI Professional Photography Guide",
+    "intro": "AI professional photography is revolutionizing how people create professional images. This comprehensive guide covers everything you need to know about AI professional photography, from how it works to how to get started.",
+    "whatIsAI": "What is AI Professional Photography?",
+    "whatIsAIDesc": "AI professional photography uses artificial intelligence to generate professional-quality photos from your selfies:",
+    "whatIsAI1": "Upload your photos to train an AI model that learns your unique features",
+    "whatIsAI2": "Select from hundreds of professional styles and outfits",
+    "whatIsAI3": "AI generates professional photos that look like you in different styles",
+    "whatIsAI4": "Get high-quality results in minutes, not days",
+    "howItWorks": "How It Works",
+    "howItWorksDesc": "The AI professional photography process is straightforward:",
+    "works1": "Upload 10-20 quality photos of yourself for training",
+    "works2": "AI analyzes your facial features and creates a personalized model",
+    "works3": "Select professional styles and outfits from the library",
+    "works4": "AI generates professional photos in your chosen styles",
+    "works5": "Download and use your photos across all professional platforms",
+    "benefits": "Benefits of AI Professional Photography",
+    "benefitsDesc": "AI professional photography offers numerous advantages:",
+    "benefit1": "Affordable: Cost-effective compared to traditional photography",
+    "benefit2": "Fast: Get results in minutes instead of days",
+    "benefit3": "Convenient: Create photos from anywhere, anytime",
+    "benefit4": "Variety: Access to hundreds of styles and outfits",
+    "benefit5": "Quality: Professional-grade results that rival traditional photography",
+    "useCases": "Use Cases",
+    "useCasesDesc": "AI professional photos are perfect for:",
+    "useCase1": "LinkedIn profile photos and professional networking",
+    "useCase2": "Company websites and team pages",
+    "useCase3": "Social media profiles and content",
+    "useCase4": "Speaking engagements and conference materials",
+    "useCase5": "Personal branding and marketing materials",
+    "useCase6": "Resumes and professional portfolios",
+    "choosingPlatform": "Choosing the Right Platform",
+    "choosingPlatformDesc": "When selecting an AI professional photography platform, consider:",
+    "choosing1": "Quality of generated photos and realism",
+    "choosing2": "Variety of styles and customization options",
+    "choosing3": "Ease of use and user experience",
+    "choosing4": "Pricing and value for money",
+    "futureOfAI": "The Future of AI Professional Photography",
+    "futureOfAIDesc": "The future looks bright for AI professional photography:",
+    "future1": "Improving technology for even more realistic results",
+    "future2": "Expanding style libraries and customization options",
+    "future3": "Integration with professional tools and platforms",
+    "future4": "Growing mainstream acceptance and adoption",
+    "conclusion": "Conclusion",
+    "conclusionDesc": "AI professional photography is transforming how professionals create and manage their visual brand identity. With its combination of affordability, convenience, quality, and variety, it's becoming the preferred choice for professionals worldwide. Whether you're building your personal brand, updating your LinkedIn profile, or creating marketing materials, AI professional photography offers a modern, efficient solution.",
+    "ctaTitle": "Start Your AI Professional Photography Journey",
+    "ctaDesc": "Join thousands of professionals who have discovered the power of AI professional photography.",
+    "ctaButton": "Get Started Today"
+  },
+  "dashboardV3": {
+    "hero": {
+      "title": "Create professional AI portraits",
+      "subtitle": "Transform your existing photos into realistic AI portrait photos for your resume, LinkedIn, and social media profiles.",
+      "cta": "Create headshots"
+    },
+    "nav": {
+      "start": "Start",
+      "gallery": "Gallery",
+      "credits": "Credits",
+      "settings": "Settings"
+    },
+    "create": {
+      "back": "Back",
+      "uploadTitle": "Upload Photo",
+      "uploadSubtitle": "Upload a selfie to generate your professional headshots.",
+      "dragDrop": "Drag & drop or click to upload",
+      "dragUpload": "Drag or upload image",
+      "supportInfo": "Support jpg/jpeg/png/webp, up to 16MB",
+      "customizeTitle": "Customize",
+      "customizeSubtitle": "Choose your style and preferences.",
+      "tabs": {
+        "female": "Female",
+        "male": "Male",
+        "custom": "Custom"
+      },
+      "styles": {
+        "academic": "Academic",
+        "business": "Business",
+        "casual": "Casual",
+        "energetic": "Energetic",
+        "idPhoto": "ID Photo",
+        "modern": "Modern",
+        "professional": "Professional",
+        "sepia": "Sepia",
+        "sophisticated": "Sophisticated"
+      },
+      "customTab": {
+        "placeholder": "Describe the image you want to generate...",
+        "presets": {
+          "professional": {
+            "label": "Professional",
+            "prompt": "A formal professional headshot with a suit, neutral background, and a confident expression."
+          },
+          "business": {
+            "label": "Business",
+            "prompt": "A modern business headshot with a friendly yet authoritative expression, wearing smart office attire (e.g., blazer without tie or elegant blouse), captured in a bright indoor setting such as an office or co-working space."
+          },
+          "idPhoto": {
+            "label": "ID Photo",
+            "prompt": "Standard ID photo, head-on, neutral expression, no smiling, plain white background, well-lit, no shadows, face fully visible, clear and sharp image, no accessories (e.g., glasses, hats)."
+          }
+        }
+      },
+      "generate": "Generate",
+      "generating": "Generating...",
+      "preparing": "Preparing generation...",
+      "success": "Generation started!",
+      "errors": {
+        "uploadFirst": "Please upload an image first",
+        "loginFirst": "Please login to continue",
+        "promptFirst": "Please enter a prompt",
+        "styleFirst": "Please choose a style",
+        "missingRequirements": "Please upload an image and select a style",
+        "packNotFound": "Pack not found",
+        "checkoutError": "Failed to create checkout session",
+        "generationFailed": "Generation failed"
+      }
+    },
+    "pricing": {
+      "title": "Get Credits",
+      "subtitle": "You need credits to generate images. Choose a plan below.",
+      "plans": {
+        "basic": "Basic",
+        "standard": "Standard",
+        "premium": "Premium"
+      },
+      "popular": "Popular",
+      "photos": "photos",
+      "processing": "Processing...",
+      "buy": "Buy {{plan}} - {{price}}"
+    }
+  }
+}
