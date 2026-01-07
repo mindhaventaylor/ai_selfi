@@ -25,10 +25,14 @@ export default function SettingsGeneral() {
   
   // Check for page2/page3 variant
   const urlParams = new URLSearchParams(window.location.search);
-  const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
-  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
-  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | null;
-  const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
+  const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+  // All variants (page2, page3, page4, page5) use the same design and flow as page2
+  const isPage2Variant = posthogVariant === "page2" || posthogVariant === "page3" || posthogVariant === "page4" || posthogVariant === "page5"
+    || urlVariant === "page2" || urlVariant === "page3" || urlVariant === "page4" || urlVariant === "page5"
+    || cachedVariant === "page2" || cachedVariant === "page3" || cachedVariant === "page4" || cachedVariant === "page5"
+    || firstVariant === "page2" || firstVariant === "page3" || firstVariant === "page4" || firstVariant === "page5";
   const isPage3Variant = posthogVariant === "page3" || urlVariant === "page3" || cachedVariant === "page3" || firstVariant === "page3";
   const [language, setLanguage] = useState(currentLanguage || "it");
   
@@ -167,7 +171,11 @@ export default function SettingsGeneral() {
 
       {/* Bottom Navigation Bar - Mobile Only (Hidden for page1 variant) */}
       {isMobile && (isPage2Variant || isPage3Variant) && (() => {
-        const variantParam = isPage3Variant ? "?variant=page3" : "?variant=page2";
+        // Get variant from URL or localStorage, default to page2
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlVariant = urlParams.get("variant");
+        const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant");
+        const variantParam = urlVariant || cachedVariant ? `?variant=${urlVariant || cachedVariant || "page2"}` : "?variant=page2";
         const navBgClass = isPage3Variant ? "bg-gray-900" : "bg-background";
         const navBorderClass = isPage3Variant ? "border-gray-700" : "border-border";
         const navHoverClass = isPage3Variant ? "hover:bg-gray-800" : "hover:bg-accent";

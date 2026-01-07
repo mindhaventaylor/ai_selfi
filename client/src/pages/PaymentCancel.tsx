@@ -12,7 +12,8 @@ export default function PaymentCancel() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const variant = urlParams.get("variant");
-    const isPage2 = variant === "page2";
+    // All variants (page2, page3, page4, page5) use DashboardV2 design and flow
+    const isPage2 = variant === "page2" || variant === "page3" || variant === "page4" || variant === "page5";
     const isPage3 = variant === "page3";
 
     // Check localStorage for page2 form data
@@ -25,13 +26,13 @@ export default function PaymentCancel() {
 
     if (isFromPage3) {
       // For page3, redirect back to dashboard and let DashboardV3 show the toast
-      setLocation("/dashboard?variant=page3&payment=cancelled");
+      setLocation(`/dashboard?variant=${variant || "page3"}&payment=cancelled`);
       return;
     }
 
     if (isFromPage2) {
-      // For page2, never show this page—redirect back to plans and let DashboardV2 show the toast.
-      setLocation("/dashboard?variant=page2&step=pricing&payment=cancelled");
+      // For page2, page3, page4, page5 - never show this page—redirect back to plans and let DashboardV2 show the toast.
+      setLocation(`/dashboard?variant=${variant || "page2"}&step=pricing&payment=cancelled`);
     }
   }, [setLocation, t]);
 

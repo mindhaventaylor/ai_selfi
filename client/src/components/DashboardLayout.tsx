@@ -121,23 +121,24 @@ function DashboardLayoutContent({
   
   // Check for variant in URL and localStorage
   const urlParams = new URLSearchParams(window.location.search);
-  const urlVariantRaw = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
+  const urlVariantRaw = urlParams.get("variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
   // Normalize page1 to page2 - page1 should never be used
   const urlVariant = urlVariantRaw === "page1" ? "page2" : urlVariantRaw;
-  const cachedVariantRaw = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
+  const cachedVariantRaw = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
   const cachedVariant = cachedVariantRaw === "page1" ? "page2" : cachedVariantRaw;
-  const firstVariantRaw = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | null;
+  const firstVariantRaw = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
   const firstVariant = firstVariantRaw === "page1" ? "page2" : firstVariantRaw;
-  const isPage2Variant = variant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
-  const isPage3Variant = variant === "page3" || urlVariant === "page3" || cachedVariant === "page3" || firstVariant === "page3";
+  // All variants (page2, page3, page4, page5) use the same design and flow as page2
+  const isPage2Variant = variant === "page2" || variant === "page3" || variant === "page4" || variant === "page5"
+    || urlVariant === "page2" || urlVariant === "page3" || urlVariant === "page4" || urlVariant === "page5"
+    || cachedVariant === "page2" || cachedVariant === "page3" || cachedVariant === "page4" || cachedVariant === "page5"
+    || firstVariant === "page2" || firstVariant === "page3" || firstVariant === "page4" || firstVariant === "page5";
   
   // Determine current variant to pass to generate page (normalized)
   // Default to page2 if no variant is found
+  // All variants (page2, page3, page4, page5) use the same design and flow
   const currentVariant = urlVariant || firstVariant || cachedVariant || variant || "page2";
-  const createPath =
-    currentVariant === "page3"
-      ? "/dashboard?variant=page3"
-      : `/dashboard/generate?variant=${currentVariant}`;
+  const createPath = `/dashboard/generate?variant=${currentVariant}`;
   
   const allMenuItems = [
     { icon: HelpCircle, label: t("dashboardLayout.startHere"), path: "/dashboard/start" },
@@ -182,22 +183,27 @@ function DashboardLayoutContent({
     };
   }, [urlSearch]);
   
-  // Check if we're on /dashboard/generate with variant=page2 and no batchId
+  // Check if we're on /dashboard/generate with variant=page2/page3/page4/page5 and no batchId
   // This determines if DashboardV2 will be rendered (which hides the layout)
   // We need to check this synchronously to avoid showing the header during redirects
+  // All variants (page2, page3, page4, page5) use the same design and flow as page2
+  // IMPORTANT: The layout should NOT be hidden on /dashboard route - DashboardV2 should show with sidebar
+  // Only hide layout on /dashboard/generate when there's no batchId
   const shouldHideLayout = (() => {
     const urlParams = new URLSearchParams(urlSearch);
     const urlVariant = urlParams.get("variant");
     const batchId = urlParams.get("batchId");
     
+    // Check if variant is one of the page variants (page2, page3, page4, page5)
+    const isPageVariant = urlVariant === "page2" || urlVariant === "page3" || urlVariant === "page4" || urlVariant === "page5";
+    
     if (location === "/dashboard/generate") {
-      // If variant is page2 and no batchId, DashboardV2 will be rendered, so hide layout
-      return urlVariant === "page2" && !batchId;
+      // Only hide layout on /dashboard/generate when variant is page2/page3/page4/page5 and no batchId
+      // This allows DashboardV2 to render in full-screen mode for the generation flow
+      return isPageVariant && !batchId;
     }
-    if (location === "/dashboard") {
-      // For /dashboard route, check if variant=page2 (DashboardV2 will be rendered)
-      return urlVariant === "page2";
-    }
+    // Don't hide layout on /dashboard route - DashboardV2 should show with sidebar
+    // The /dashboard route shows the DashboardV2 welcome/onboarding flow which should include the sidebar
     return false;
   })();
   
@@ -269,7 +275,7 @@ function DashboardLayoutContent({
 
   return (
     <>
-      {showFullLayout && !isPage3Variant && (
+      {showFullLayout && (
       <div className="relative" ref={sidebarRef}>
         <Sidebar
           collapsible="icon"
@@ -497,38 +503,21 @@ function DashboardLayoutContent({
       )}
 
       <SidebarInset 
-        style={!showFullLayout || isPage3Variant ? { marginLeft: 0 } : undefined}
-        className={isPage3Variant ? 'bg-gray-900' : ''}
+        style={!showFullLayout ? { marginLeft: 0 } : undefined}
       >
-        {/* Top Header Bar - only show when full layout is enabled and NOT variant 3 */}
-        {showFullLayout && !isPage3Variant && (
-        <div className={`sticky top-0 z-40 border-b ${isPage3Variant ? 'border-gray-700 bg-gray-900/95' : 'border-border bg-background/95'} backdrop-blur supports-[backdrop-filter]:backdrop-blur`}>
+        {/* Top Header Bar - show when full layout is enabled */}
+        {showFullLayout && (
+        <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:backdrop-blur">
           <div className="flex h-14 items-center justify-between gap-3 px-6">
-            {/* Left side: Logo/Name for page3, empty for others */}
-            {isPage3Variant ? (
-              <div 
-                className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={() => setLocation("/dashboard?variant=page3")}
-              >
-                <img
-                  src={APP_LOGO}
-                  className="h-8 w-8 rounded-lg object-cover shrink-0"
-                  alt="Logo"
-                />
-                <span className="font-bold text-lg bg-gradient-to-r from-pink-400 to-orange-500 bg-clip-text text-transparent">
-                  Alselfie
-                </span>
-              </div>
-            ) : (
-              <div />
-            )}
+            {/* Left side: Empty div */}
+            <div />
             
             {/* Right side controls */}
             <div className="flex items-center gap-3">
             {/* Language Selector */}
             <DropdownMenu open={languageOpen} onOpenChange={setLanguageOpen}>
               <DropdownMenuTrigger asChild>
-                <button className={`h-9 w-9 rounded-full border ${isPage3Variant ? 'border-gray-700 hover:bg-gray-800' : 'border-border hover:bg-accent'} transition-colors flex items-center justify-center`}>
+                <button className="h-9 w-9 rounded-full border border-border hover:bg-accent transition-colors flex items-center justify-center">
                   <span className="text-lg">
                     {currentLanguage === "es" ? "🇪🇸" : 
                      currentLanguage === "pt-BR" ? "🇧🇷" : 
@@ -536,7 +525,7 @@ function DashboardLayoutContent({
                   </span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className={isPage3Variant ? 'bg-gray-800 border-gray-700' : ''}>
+              <DropdownMenuContent align="end">
                 <DropdownMenuItem 
                   onClick={() => {
                     changeLanguage("es");
@@ -576,21 +565,19 @@ function DashboardLayoutContent({
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Help/Book Icon - hidden for page3 */}
-            {!isPage3Variant && (
-              <button 
-                className={`h-9 w-9 rounded-full border ${isPage3Variant ? 'border-gray-700 hover:bg-gray-800' : 'border-border hover:bg-accent'} transition-colors flex items-center justify-center`}
-                onClick={() => setLocation("/dashboard/start")}
-              >
-                <BookOpen className="h-4 w-4" />
-              </button>
-            )}
+            {/* Help/Book Icon */}
+            <button 
+              className="h-9 w-9 rounded-full border border-border hover:bg-accent transition-colors flex items-center justify-center"
+              onClick={() => setLocation("/dashboard/start")}
+            >
+              <BookOpen className="h-4 w-4" />
+            </button>
 
             {/* Credits Button */}
             <Button
               type="button"
               variant="outline"
-              className={`h-9 rounded-full px-4 gap-2 cursor-pointer ${isPage3Variant ? 'border-gray-700 bg-gray-800 text-white hover:bg-gray-700 hover:text-white' : ''}`}
+              className="h-9 rounded-full px-4 gap-2 cursor-pointer"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -604,18 +591,18 @@ function DashboardLayoutContent({
                 }
               }}
             >
-              <Clock className={`h-4 w-4 ${isPage3Variant ? 'text-white' : ''}`} />
+              <Clock className="h-4 w-4" />
               <span>{t("dashboardLayout.creditsLabel")}: {user?.credits ?? 0}</span>
             </Button>
 
             {/* User Avatar or Login Button */}
             {user ? (
               <Avatar 
-                className={`h-9 w-9 border-2 ${isPage3Variant ? 'border-gray-700' : 'border-border'} cursor-pointer hover:ring-2 hover:ring-primary transition-all`}
+                className="h-9 w-9 border-2 border-border cursor-pointer hover:ring-2 hover:ring-primary transition-all"
                 onClick={() => setLocation("/dashboard/settings/general")}
               >
                 <AvatarImage src={user?.avatarUrl || undefined} alt={user?.name || "User"} />
-                <AvatarFallback className={`text-xs font-medium ${isPage3Variant ? 'bg-gray-800 text-white' : ''}`}>
+                <AvatarFallback className="text-xs font-medium">
                   {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
@@ -634,7 +621,7 @@ function DashboardLayoutContent({
         </div>
         )}
 
-        {showFullLayout && isMobile && !isPage3Variant && (
+        {showFullLayout && isMobile && (
           <div className="flex border-b h-14 items-center justify-between bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="h-9 w-9 rounded-lg bg-background" />
@@ -648,14 +635,14 @@ function DashboardLayoutContent({
             </div>
           </div>
         )}
-        <main className={`flex-1 ${isPage3Variant ? 'bg-gray-900' : ''}`}>{children}</main>
+        <main className="flex-1">{children}</main>
       </SidebarInset>
 
       {/* Login Modal */}
       <LoginModal
         open={showLoginModal}
         onOpenChange={setShowLoginModal}
-        variant={isPage2Variant ? "page2" : isPage3Variant ? "page3" : undefined}
+        variant={urlVariant || cachedVariant || firstVariant || variant || undefined}
       />
     </>
   );

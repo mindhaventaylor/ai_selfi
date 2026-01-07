@@ -27,14 +27,14 @@ export default function Dashboard() {
   // Use useMemo to avoid reading from localStorage on every render
   const forcedVariantRaw = useMemo(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get("variant") as "page1" | "page2" | "page3" | null;
+    return urlParams.get("variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
   }, []);
   // Normalize page1 to page2 - page1 should never be used
   const forcedVariant = forcedVariantRaw === "page1" ? "page2" : forcedVariantRaw;
   
   // Also check localStorage directly - use state initialized once to avoid re-reading on every render
-  const [cachedVariantRaw] = useState<"page1" | "page2" | "page3" | null>(() => {
-    return safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
+  const [cachedVariantRaw] = useState<"page1" | "page2" | "page3" | "page4" | "page5" | null>(() => {
+    return safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
   });
   // Normalize page1 to page2
   const cachedVariant = cachedVariantRaw === "page1" ? "page2" : cachedVariantRaw;
@@ -74,24 +74,21 @@ export default function Dashboard() {
     );
   }
 
-  // Show DashboardV2 if variant is page2
+  // Show DashboardV2 for all variants (page2, page3, page4, page5) - all use the same design and flow
   // Note: DashboardLayout is already provided by App.tsx, so we don't wrap again
-  if (variant === "page2") {
+  if (variant === "page2" || variant === "page3" || variant === "page4" || variant === "page5") {
     return <DashboardV2 />;
-  }
-
-  // Show DashboardV3 if variant is page3
-  if (variant === "page3") {
-    return <DashboardV3 />;
   }
   
 
-  // Check for page2 variant for content filtering
+  // Check for page2 variant for content filtering (page2, page3, page4, page5 all use page2 design)
   const urlParams = new URLSearchParams(window.location.search);
-  const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
-  const cachedVariantForContent = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
-  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | null;
-  const isPage2Variant = urlVariant === "page2" || cachedVariantForContent === "page2" || firstVariant === "page2";
+  const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+  const cachedVariantForContent = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+  const isPage2Variant = urlVariant === "page2" || urlVariant === "page3" || urlVariant === "page4" || urlVariant === "page5" 
+    || cachedVariantForContent === "page2" || cachedVariantForContent === "page3" || cachedVariantForContent === "page4" || cachedVariantForContent === "page5"
+    || firstVariant === "page2" || firstVariant === "page3" || firstVariant === "page4" || firstVariant === "page5";
 
   // Mock photos for the grid background
   const gridPhotos = [

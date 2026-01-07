@@ -259,8 +259,14 @@ Output should be a vertical rectangle. Entire head should be visible`;
           safeLocalStorage.removeItem("dashboardV3_generationIntent");
           safeLocalStorage.removeItem("dashboardV3_formData");
           
+          // Get variant from URL or localStorage
+          const urlParams = new URLSearchParams(window.location.search);
+          const urlVariant = urlParams.get("variant");
+          const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant");
+          const variant = urlVariant || cachedVariant || "page3";
+          
           if (result.batchId) {
-            window.location.href = `/dashboard/generate?variant=page3&batchId=${result.batchId}`;
+            window.location.href = `/dashboard/generate?variant=${variant}&batchId=${result.batchId}`;
           } else {
             throw new Error("No batchId returned from generation");
           }
@@ -317,8 +323,14 @@ Output should be a vertical rectangle. Entire head should be visible`;
           safeLocalStorage.removeItem("dashboardV2_generationIntent");
           safeLocalStorage.removeItem("dashboardV2_formData");
           
+          // Get variant from URL or localStorage
+          const urlParams = new URLSearchParams(window.location.search);
+          const urlVariant = urlParams.get("variant");
+          const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant");
+          const variant = urlVariant || cachedVariant || "page2";
+          
           if (result.batchId) {
-            window.location.href = `/dashboard/generate?variant=page2&batchId=${result.batchId}`;
+            window.location.href = `/dashboard/generate?variant=${variant}&batchId=${result.batchId}`;
           } else {
             throw new Error("No batchId returned from generation");
           }
@@ -331,7 +343,11 @@ Output should be a vertical rectangle. Entire head should be visible`;
         });
         
         setTimeout(() => {
-          const variant = generationIntentV3 ? "page3" : "page2";
+          // Try to get variant from URL or localStorage, default to page2
+          const urlParams = new URLSearchParams(window.location.search);
+          const urlVariant = urlParams.get("variant");
+          const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant");
+          const variant = urlVariant || cachedVariant || (generationIntentV3 ? "page3" : "page2");
           setLocation(`/dashboard?variant=${variant}`);
         }, 3000);
       }
@@ -343,12 +359,18 @@ Output should be a vertical rectangle. Entire head should be visible`;
   const handleContinue = () => {
     if (isProcessing) return;
     
+    // Try to get variant from URL or localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlVariant = urlParams.get("variant");
+    const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant");
+    const variant = urlVariant || cachedVariant;
+    
     if (hasPage3FormData) {
-      setLocation("/dashboard?variant=page3");
+      setLocation(`/dashboard?variant=${variant || "page3"}`);
     } else if (hasPage2FormData) {
-      setLocation("/dashboard?variant=page2");
+      setLocation(`/dashboard?variant=${variant || "page2"}`);
     } else {
-      setLocation("/dashboard");
+      setLocation(variant ? `/dashboard?variant=${variant}` : "/dashboard");
     }
   };
 

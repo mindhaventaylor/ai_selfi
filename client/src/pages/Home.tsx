@@ -301,10 +301,14 @@ export default function Home() {
     }
     
     const urlParams = new URLSearchParams(window.location.search);
-    const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
-    const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
-    const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | null;
-    const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
+    const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+    const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+    const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+    // All variants (page2, page3, page4, page5) use the same design and flow as page2
+    const isPage2Variant = posthogVariant === "page2" || posthogVariant === "page3" || posthogVariant === "page4" || posthogVariant === "page5"
+      || urlVariant === "page2" || urlVariant === "page3" || urlVariant === "page4" || urlVariant === "page5"
+      || cachedVariant === "page2" || cachedVariant === "page3" || cachedVariant === "page4" || cachedVariant === "page5"
+      || firstVariant === "page2" || firstVariant === "page3" || firstVariant === "page4" || firstVariant === "page5";
     const isPage3Variant = posthogVariant === "page3" || urlVariant === "page3" || cachedVariant === "page3" || firstVariant === "page3";
     const isPage2Or3Variant = isPage2Variant || isPage3Variant;
     const activeVariant = urlVariant || posthogVariant || cachedVariant || firstVariant;
@@ -585,8 +589,9 @@ export default function Home() {
   const scrollTransformLeft = `translateX(-${scrollY * 0.8}px) translateY(-${scrollY * 0.1}px) scale(${heroImageScale})`;
   const scrollTransformRight = `translateX(${scrollY * 0.8}px) translateY(-${scrollY * 0.1}px) scale(${heroImageScale})`;
 
-  // Variant 3 landing page (from finished_variant3 branch)
-  if (isPage3Variant) {
+  // Variant 3 uses the same design and flow as Variation 2 - removed special handling
+  // All variants (page2, page3, page4, page5) now use the same design below
+  if (false && isPage3Variant) { // Disabled - page3 now uses same design as page2 (matches line 1696 return)
     // Calculate opacity and transformation based on scroll for variant 3
     const heroImageOpacity = Math.max(0, 1 - scrollY / 400);
     const heroImageScale = Math.max(0.8, 1 + scrollY / 500);
@@ -1434,18 +1439,15 @@ export default function Home() {
                     <p className="text-muted-foreground mb-4">
                       {isPage2Variant ? "40 photos" : t("pricing.plans.starter.photos")}
                     </p>
-                    <div className={`text-5xl font-bold mb-2 ${isPage2Variant && starterPrice.oldFormatted ? "flex items-baseline gap-3" : ""}`}>
+                    <div className={`text-5xl font-bold mb-2 ${starterPrice.oldFormatted ? "flex items-baseline gap-3" : ""}`}>
                       <span>
-                        {isPage2Variant ? starterPrice.formatted : t("pricing.plans.starter.price")}
+                        {starterPrice.formatted}
                       </span>
-                      {isPage2Variant && starterPrice.oldFormatted && (
+                      {starterPrice.oldFormatted && (
                         <span className="text-2xl text-muted-foreground line-through font-normal">
                           {starterPrice.oldFormatted}
                         </span>
                       )}
-                      <span className="text-lg text-muted-foreground ml-2">
-                        {t("pricing.plans.starter.currency")}
-                      </span>
                     </div>
                     <p className="text-sm text-muted-foreground mb-6">
                       {t("pricing.plans.starter.note")}
@@ -1467,20 +1469,13 @@ export default function Home() {
                     </p>
                     <div className="flex items-baseline gap-3 mb-2">
                       <span className="text-5xl font-bold text-primary">
-                        {isPage2Variant ? proPrice.formatted : t("pricing.plans.pro.price")}
+                        {proPrice.formatted}
                       </span>
-                      {isPage2Variant && proPrice.oldFormatted ? (
+                      {proPrice.oldFormatted && (
                         <span className="text-2xl text-muted-foreground line-through font-normal">
                           {proPrice.oldFormatted}
                         </span>
-                      ) : !isPage2Variant && (
-                        <span className="text-2xl text-muted-foreground line-through">
-                          {t("pricing.plans.pro.oldPrice")}
-                        </span>
                       )}
-                      <span className="text-lg text-muted-foreground">
-                        {t("pricing.plans.pro.currency")}
-                      </span>
                     </div>
                     <p className="text-sm text-muted-foreground mb-6">
                       {t("pricing.plans.pro.note")}
@@ -1497,18 +1492,15 @@ export default function Home() {
                   <p className="text-gray-300 mb-4">
                     {isPage2Variant ? "100 photos" : t("pricing.plans.premium.photos")}
                   </p>
-                  <div className={`text-5xl font-bold mb-2 ${isPage2Variant && premiumPrice.oldFormatted ? "flex items-baseline gap-3" : ""}`}>
+                  <div className={`text-5xl font-bold mb-2 ${premiumPrice.oldFormatted ? "flex items-baseline gap-3" : ""}`}>
                     <span className="text-white">
-                      {isPage2Variant ? premiumPrice.formatted : t("pricing.plans.premium.price")}
+                      {premiumPrice.formatted}
                     </span>
-                    {isPage2Variant && premiumPrice.oldFormatted && (
+                    {premiumPrice.oldFormatted && (
                       <span className="text-2xl text-gray-400 line-through font-normal">
                         {premiumPrice.oldFormatted}
                       </span>
                     )}
-                    <span className="text-lg text-gray-300 ml-2">
-                      {t("pricing.plans.premium.currency")}
-                    </span>
                   </div>
                   <p className="text-sm text-gray-300 mb-6">
                       {t("pricing.plans.premium.note")}
@@ -3026,7 +3018,7 @@ export default function Home() {
             {/* Discount Badge - Aragon style */}
             <div className="text-center mb-6">
               <Badge className="px-4 py-2 text-base font-semibold bg-primary/10 text-primary border-primary/20">
-                {t("pricing.discountBadge") || "20% off all packages limited time only!"}
+                {t("pricing.discountBadge") || "70% off all packages - limited time only!"}
               </Badge>
             </div>
             

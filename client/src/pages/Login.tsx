@@ -47,10 +47,14 @@ export default function Login() {
     }
     
     const urlParams = new URLSearchParams(window.location.search);
-    const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
-    const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
-    const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | null;
-    const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
+    const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+    const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+    const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+    // All variants (page2, page3, page4, page5) use the same design and flow as page2
+    const isPage2Variant = posthogVariant === "page2" || posthogVariant === "page3" || posthogVariant === "page4" || posthogVariant === "page5"
+      || urlVariant === "page2" || urlVariant === "page3" || urlVariant === "page4" || urlVariant === "page5"
+      || cachedVariant === "page2" || cachedVariant === "page3" || cachedVariant === "page4" || cachedVariant === "page5"
+      || firstVariant === "page2" || firstVariant === "page3" || firstVariant === "page4" || firstVariant === "page5";
     const isPage3Variant = posthogVariant === "page3" || urlVariant === "page3" || cachedVariant === "page3" || firstVariant === "page3";
     const isPage2Or3Variant = isPage2Variant || isPage3Variant;
     
@@ -231,10 +235,11 @@ export default function Login() {
   // COMMENTED OUT: Reviews/testimonials section removed as they were distracting users
   // const currentTestimonial = testimonials && testimonials.length > 0 ? testimonials[currentTestimonialIndex] : null;
 
-  const bgClass = isVariant3 ? "bg-gray-900" : "bg-background";
-  const textClass = isVariant3 ? "text-white" : "";
-  const textMutedClass = isVariant3 ? "text-gray-300" : "text-muted-foreground";
-  const dividerBgClass = isVariant3 ? "bg-gray-900" : "bg-background";
+  // Variation 3 (page3) now uses the same design as Variation 2 (page2) - removed special dark colors
+  const bgClass = "bg-background";
+  const textClass = "";
+  const textMutedClass = "text-muted-foreground";
+  const dividerBgClass = "bg-background";
 
   return (
     <div className={`min-h-screen flex items-start justify-center ${bgClass} pt-6 lg:pt-24 px-4 lg:px-0`}>

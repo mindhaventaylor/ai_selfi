@@ -21,7 +21,7 @@ const FIRST_VARIANT_KEY = "aiselfi_first_dashboard_variant"; // Store the first 
 const POSTHOG_API_KEY = "phc_67dWkHktFLDuxuUy7zOYyyRBwOj25sw3plZHtKjZzy0";
 const FEATURE_FLAG_KEY = "dashboard-variant";
 
-export type DashboardVariant = "page1" | "page2" | "page3";
+export type DashboardVariant = "page1" | "page2" | "page3" | "page4" | "page5";
 
 // Normalize page1 to page2 - page1 should never be used
 function normalizeVariant(variant: DashboardVariant | null): DashboardVariant {
@@ -58,7 +58,7 @@ export function usePostHogVariant(userId?: string | number): {
       return;
     }
     
-    if (urlVariantRaw && (urlVariantRaw === "page1" || urlVariantRaw === "page2" || urlVariantRaw === "page3")) {
+    if (urlVariantRaw && (urlVariantRaw === "page1" || urlVariantRaw === "page2" || urlVariantRaw === "page3" || urlVariantRaw === "page4" || urlVariantRaw === "page5")) {
       // If variant is provided in URL, normalize page1 to page2 and update it as the new default (first variant)
       // This allows users to change their default by changing the URL
       safeLocalStorage.setItem(FIRST_VARIANT_KEY, urlVariant);
@@ -142,7 +142,7 @@ export function usePostHogVariant(userId?: string | number): {
             const firstVariantRaw = safeLocalStorage.getItem(FIRST_VARIANT_KEY) as DashboardVariant | null;
             const firstVariant = normalizeVariant(firstVariantRaw);
             
-            if (firstVariantRaw && (firstVariantRaw === "page1" || firstVariantRaw === "page2" || firstVariantRaw === "page3")) {
+            if (firstVariantRaw && (firstVariantRaw === "page1" || firstVariantRaw === "page2" || firstVariantRaw === "page3" || firstVariantRaw === "page4" || firstVariantRaw === "page5")) {
               // User already has a first variant - normalize and use it
               setVariant(firstVariant);
               safeLocalStorage.setItem(VARIANT_CACHE_KEY, firstVariant);
@@ -168,7 +168,7 @@ export function usePostHogVariant(userId?: string | number): {
             const cachedVariantRaw = safeLocalStorage.getItem(VARIANT_CACHE_KEY) as DashboardVariant | null;
             const cachedVariant = normalizeVariant(cachedVariantRaw);
             
-            if (cachedVariantRaw && (cachedVariantRaw === "page1" || cachedVariantRaw === "page2" || cachedVariantRaw === "page3")) {
+            if (cachedVariantRaw && (cachedVariantRaw === "page1" || cachedVariantRaw === "page2" || cachedVariantRaw === "page3" || cachedVariantRaw === "page4" || cachedVariantRaw === "page5")) {
               // Store as first variant (normalized) and use it
               safeLocalStorage.setItem(FIRST_VARIANT_KEY, cachedVariant);
               setVariant(cachedVariant);
@@ -195,7 +195,11 @@ export function usePostHogVariant(userId?: string | number): {
               // Get feature flag value
               const flagValue = window.posthog.getFeatureFlag(FEATURE_FLAG_KEY);
               const newVariant: DashboardVariant =
-                flagValue === "page2" ? "page2" : flagValue === "page3" ? "page3" : "page2";
+                flagValue === "page2" ? "page2" 
+                : flagValue === "page3" ? "page3"
+                : flagValue === "page4" ? "page4"
+                : flagValue === "page5" ? "page5"
+                : "page2";
               
               // Store as first variant (persistent, never changes)
               safeLocalStorage.setItem(FIRST_VARIANT_KEY, newVariant);
@@ -228,7 +232,7 @@ export function usePostHogVariant(userId?: string | number): {
       // Check if first variant exists
       const firstVariantRaw = safeLocalStorage.getItem(FIRST_VARIANT_KEY) as DashboardVariant | null;
       const firstVariant = normalizeVariant(firstVariantRaw);
-      if (firstVariantRaw && (firstVariantRaw === "page1" || firstVariantRaw === "page2" || firstVariantRaw === "page3")) {
+      if (firstVariantRaw && (firstVariantRaw === "page1" || firstVariantRaw === "page2" || firstVariantRaw === "page3" || firstVariantRaw === "page4" || firstVariantRaw === "page5")) {
         // Use first variant if it exists (normalized)
         setVariant(firstVariant);
         safeLocalStorage.setItem(VARIANT_CACHE_KEY, firstVariant);
@@ -241,7 +245,7 @@ export function usePostHogVariant(userId?: string | number): {
         // Check cache
         const cachedRaw = safeLocalStorage.getItem(VARIANT_CACHE_KEY) as DashboardVariant | null;
         const cached = normalizeVariant(cachedRaw);
-        if (cachedRaw && (cachedRaw === "page1" || cachedRaw === "page2" || cachedRaw === "page3")) {
+        if (cachedRaw && (cachedRaw === "page1" || cachedRaw === "page2" || cachedRaw === "page3" || cachedRaw === "page4" || cachedRaw === "page5")) {
           // Save cache as first variant if it doesn't exist (normalized)
           safeLocalStorage.setItem(FIRST_VARIANT_KEY, cached);
           setVariant(cached);
@@ -272,7 +276,11 @@ export function usePostHogVariant(userId?: string | number): {
         
         const flagValue = window.posthog?.getFeatureFlag(FEATURE_FLAG_KEY);
         const newVariant: DashboardVariant =
-          flagValue === "page2" ? "page2" : flagValue === "page3" ? "page3" : "page2";
+          flagValue === "page2" ? "page2" 
+          : flagValue === "page3" ? "page3"
+          : flagValue === "page4" ? "page4"
+          : flagValue === "page5" ? "page5"
+          : "page2";
         
         // Only update if first variant is not set
         if (!safeLocalStorage.getItem(FIRST_VARIANT_KEY)) {

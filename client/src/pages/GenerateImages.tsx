@@ -122,9 +122,9 @@ export default function GenerateImages() {
   const targetProgressRef = useRef<number>(0); // Track target progress for smooth animation
   const totalImagesToGenerateRef = useRef<number>(4); // Default to 4, will be updated when generation starts
 
-  // Check for variant - ONLY use URL parameter (explicit variant=page2 or page3 required)
+  // Check for variant - ONLY use URL parameter (explicit variant=page2, page3, page4, or page5 required)
   const urlParams = new URLSearchParams(window.location.search);
-  const urlVariantRaw = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
+  const urlVariantRaw = urlParams.get("variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
   // Normalize page1 to page2 - page1 should never be used
   const urlVariant = urlVariantRaw === "page1" ? "page2" : urlVariantRaw;
   
@@ -2796,7 +2796,8 @@ Output should be a vertical rectangle. Entire head should be visible`;
 
       {/* Bottom Navigation Bar - Mobile Only (Hidden for page1 variant) */}
       {isMobile && (isPage2Variant || isPage3Variant) && (() => {
-        const variantParam = isPage3Variant ? "?variant=page3" : "?variant=page2";
+        // Use the actual variant from URL, default to page2
+        const variantParam = urlVariant ? `?variant=${urlVariant}` : "?variant=page2";
         return (
         <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 shadow-lg">
           <div className="max-w-4xl mx-auto px-4 py-3">
@@ -2868,7 +2869,7 @@ Output should be a vertical rectangle. Entire head should be visible`;
             setPendingAction(null);
           }
         }}
-        variant={isPage2Variant ? "page2" : isPage3Variant ? "page3" : undefined}
+        variant={urlVariant || undefined}
       />
     </div>
   );

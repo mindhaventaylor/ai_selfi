@@ -29,10 +29,14 @@ export function Header() {
   const loginUrl = returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : "/login";
 
   // Detect variant for header styling
-  const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
-  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
-  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | null;
-  const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
+  const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+  // All variants (page2, page3, page4, page5) use the same design and flow as page2
+  const isPage2Variant = posthogVariant === "page2" || posthogVariant === "page3" || posthogVariant === "page4" || posthogVariant === "page5"
+    || urlVariant === "page2" || urlVariant === "page3" || urlVariant === "page4" || urlVariant === "page5"
+    || cachedVariant === "page2" || cachedVariant === "page3" || cachedVariant === "page4" || cachedVariant === "page5"
+    || firstVariant === "page2" || firstVariant === "page3" || firstVariant === "page4" || firstVariant === "page5";
   const isPage3Variant = posthogVariant === "page3" || urlVariant === "page3" || cachedVariant === "page3" || firstVariant === "page3";
 
   const languages = [
@@ -47,29 +51,16 @@ export function Header() {
   const currentFlag = currentLang?.flag || "🌐";
 
   // Determine header styling based on variant
-  const headerBgClass = isPage3Variant 
-    ? "bg-gray-900/80 backdrop-blur-xl supports-[backdrop-filter]:bg-gray-900/70 border-gray-700/40"
-    : isPage2Variant
+  // Variation 3 (page3) now uses the same design as Variation 2 (page2) - removed special dark colors
+  const headerBgClass = isPage2Variant
     ? "bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/70 border-border/40"
     : "bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 border-border/40";
   
-  const textColorClass = isPage3Variant 
-    ? "text-white"
-    : isPage2Variant
-    ? "text-foreground"
-    : "text-foreground";
+  const textColorClass = "text-foreground";
   
-  const navLinkClass = isPage3Variant
-    ? "text-sm font-medium text-gray-300 hover:text-primary transition-all duration-300 relative group py-2"
-    : isPage2Variant
-    ? "text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-300 relative group py-2"
-    : "text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-300 relative group py-2";
+  const navLinkClass = "text-sm font-medium text-foreground/80 hover:text-primary transition-all duration-300 relative group py-2";
   
-  const logoTextClass = isPage3Variant
-    ? "font-bold text-xl tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/80 transition-all duration-300"
-    : isPage2Variant
-    ? "font-bold text-xl tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/80 transition-all duration-300"
-    : "font-bold text-xl tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/80 transition-all duration-300";
+  const logoTextClass = "font-bold text-xl tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/80 transition-all duration-300";
 
   return (
     <header className={`sticky top-0 z-50 w-full border-b ${headerBgClass} shadow-sm`}>
@@ -152,7 +143,7 @@ export function Header() {
                 </span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className={`rounded-xl border-border/50 shadow-lg backdrop-blur-xl ${isPage3Variant ? 'bg-gray-800/95' : 'bg-background/95'}`}>
+            <DropdownMenuContent align="end" className="rounded-xl border-border/50 shadow-lg backdrop-blur-xl bg-background/95">
               {languages.map((lang) => (
                 <DropdownMenuItem
                   key={lang.code}

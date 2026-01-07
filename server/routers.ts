@@ -1,7 +1,7 @@
 import { COOKIE_NAME, PRODUCTION_DOMAIN } from "../shared/const.js";
 import { desc, eq, and, inArray } from "drizzle-orm";
 import { z } from "zod";
-import { creditPacks, models, photos, transactions, users, modelTrainingImages, photoGenerationBatches, photoGenerationQueue, page2GenerationBatches, page2GenerationQueue, bugReports, featureSuggestions } from "../drizzle/schema.js";
+import { creditPacks, models, photos, transactions, users, modelTrainingImages, photoGenerationBatches, photoGenerationQueue, page2GenerationBatches, page2GenerationQueue, bugReports, featureSuggestions, variantPricing } from "../drizzle/schema.js";
 import { getDb, upsertUser } from "./db.js";
 import { getSessionCookieOptions } from "./_core/cookies.js";
 import { supabaseServer } from "./_core/lib/supabase.js";
@@ -333,6 +333,7 @@ export const appRouter = router({
         packId: z.number(),
         currency: z.enum(["USD", "EUR"]).optional().default("USD"),
         variant: z.string().optional(),
+        packKey: z.string().optional(), // "starter" | "pro" | "premium" | "basic" | "standard" - helps with dynamic pricing
       }))
       .mutation(async ({ ctx, input }) => {
         const db = await getDb();
@@ -404,10 +405,154 @@ export const appRouter = router({
           nodeEnv: process.env.NODE_ENV,
         });
 
-        // Use same price for EUR as USD (no conversion)
-        const basePriceUSD = parseFloat(pack.price.toString());
-        const finalPrice = basePriceUSD;
+        // Try to get dynamic pricing from variant_pricing if variant is provided
+        let finalPrice = parseFloat(pack.price.toString());
         const currency = input.currency.toLowerCase() as "usd" | "eur";
+        
+        console.log(`[Payment] Creating checkout session:`, {
+          packId: input.packId,
+          packPrice: pack.price,
+          packCredits: pack.credits,
+          variant: input.variant,
+          packKey: input.packKey,
+          currency: currency,
+        });
+        
+        if (input.variant && (input.variant === "page2" || input.variant === "page3" || input.variant === "page4" || input.variant === "page5")) {
+          // For page2/page3/page4/page5 variants, try to get dynamic pricing
+          // Map packKey: starter/pro/premium → basic/standard/premium for page variants
+          let variantPackKey: string;
+          
+          if (input.packKey) {
+            // Use packKey from input if provided
+            // Map starter/pro/premium to basic/standard/premium for page variants
+            const packKeyMap: Record<string, string> = {
+              "starter": "basic",
+              "pro": "standard",
+              "premium": "premium",
+              "basic": "basic",
+              "standard": "standard",
+            };
+            variantPackKey = packKeyMap[input.packKey] || input.packKey;
+            console.log(`[Payment] Mapped packKey ${input.packKey} to ${variantPackKey} for variant ${input.variant}`);
+          } else {
+            // Fallback: try to determine packKey from credits
+            const packCredits = pack.credits;
+            const creditsToPackKeyMap: Record<number, string> = {
+              // Map common credit amounts to packKeys for page2/page3/page4/page5
+              40: "basic",
+              60: "standard", 
+              100: "premium",
+            };
+            variantPackKey = creditsToPackKeyMap[packCredits] || "basic";
+            console.log(`[Payment] Determined packKey ${variantPackKey} from credits ${packCredits} for variant ${input.variant}`);
+          }
+          
+          try {
+            // Try to fetch dynamic pricing from variant_pricing
+            const usdCurrency = "USD";
+            let variantPrice: number | null = null;
+            
+            console.log(`[Payment] Fetching dynamic pricing for variant=${input.variant}, packKey=${variantPackKey}, currency=${usdCurrency}`);
+            
+            if (db) {
+              // First try to find active pricing
+              let [pricing] = await db
+                .select()
+                .from(variantPricing)
+                .where(
+                  and(
+                    eq(variantPricing.packKey, variantPackKey),
+                    eq(variantPricing.variant, input.variant),
+                    eq(variantPricing.currency, usdCurrency),
+                    eq(variantPricing.isActive, true)
+                  )
+                )
+                .limit(1);
+              
+              // If no active pricing found, try to find any pricing (inactive as fallback)
+              if (!pricing) {
+                console.warn(`[Payment] No active pricing found, trying inactive pricing as fallback for variant=${input.variant}, packKey=${variantPackKey}`);
+                [pricing] = await db
+                  .select()
+                  .from(variantPricing)
+                  .where(
+                    and(
+                      eq(variantPricing.packKey, variantPackKey),
+                      eq(variantPricing.variant, input.variant),
+                      eq(variantPricing.currency, usdCurrency)
+                    )
+                  )
+                  .limit(1);
+              }
+              
+              if (pricing) {
+                variantPrice = typeof pricing.price === 'bigint' 
+                  ? Number(pricing.price)
+                  : typeof pricing.price === 'number'
+                  ? pricing.price
+                  : Number(pricing.price) || null;
+                const isActive = pricing.isActive ? 'active' : 'inactive';
+                console.log(`[Payment] Found dynamic pricing from DB (${isActive}): ${variantPrice} cents (${variantPrice / 100} dollars)`);
+              } else {
+                console.warn(`[Payment] No dynamic pricing found in DB for variant=${input.variant}, packKey=${variantPackKey}`);
+              }
+            } else {
+              // REST API fallback - first try active
+              let { data, error } = await supabaseServer
+                .from('variant_pricing')
+                .select('price, isActive')
+                .eq('packKey', variantPackKey)
+                .eq('variant', input.variant)
+                .eq('currency', usdCurrency)
+                .eq('isActive', true)
+                .single();
+              
+              // If no active pricing found, try inactive as fallback
+              if (error || !data) {
+                console.warn(`[Payment] No active pricing found via REST API, trying inactive pricing as fallback for variant=${input.variant}, packKey=${variantPackKey}`);
+                const result = await supabaseServer
+                  .from('variant_pricing')
+                  .select('price, isActive')
+                  .eq('packKey', variantPackKey)
+                  .eq('variant', input.variant)
+                  .eq('currency', usdCurrency)
+                  .single();
+                data = result.data;
+                error = result.error;
+              }
+              
+              if (!error && data) {
+                variantPrice = typeof data.price === 'number' ? data.price : Number(data.price) || null;
+                const isActive = data.isActive ? 'active' : 'inactive';
+                console.log(`[Payment] Found dynamic pricing from REST API (${isActive}): ${variantPrice} cents (${variantPrice / 100} dollars)`);
+              } else {
+                console.warn(`[Payment] No dynamic pricing found via REST API for variant=${input.variant}, packKey=${variantPackKey}:`, error);
+              }
+            }
+            
+            if (variantPrice !== null && variantPrice > 0) {
+              // Use dynamic pricing (convert from cents to dollars)
+              finalPrice = variantPrice / 100;
+              console.log(`[Payment] ✅ Using dynamic pricing: $${finalPrice} for ${input.variant} ${variantPackKey} (pack price was $${pack.price})`);
+            } else {
+              console.warn(`[Payment] ⚠️ Dynamic pricing not found or invalid, using pack price: $${finalPrice}`);
+            }
+          } catch (error: any) {
+            console.error(`[Payment] ❌ Failed to fetch dynamic pricing for ${input.variant} ${variantPackKey}:`, error?.message || error);
+            // Fall back to pack price
+          }
+        } else {
+          console.log(`[Payment] No variant provided or variant is not page2/page3/page4/page5, using pack price: $${finalPrice}`);
+        }
+        
+        // Use same price for EUR as USD (no conversion)
+        const basePriceUSD = finalPrice;
+
+        // Convert final price to cents for Stripe
+        const finalPriceCents = Math.round(finalPrice * 100);
+        
+        console.log(`[Payment] Creating Stripe checkout with price: $${finalPrice} (${finalPriceCents} cents)`);
 
         // Create Stripe Checkout Session
         const session = await stripe.checkout.sessions.create({
@@ -420,17 +565,16 @@ export const appRouter = router({
                   name: `${pack.credits} Credits`,
                   description: `Purchase ${pack.credits} credits for AI image generation`,
                 },
-                unit_amount: Math.round(finalPrice * 100), // Convert to cents
+                unit_amount: finalPriceCents, // Use price in cents
               },
               quantity: 1,
             },
           ],
           mode: "payment",
           success_url: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: input.variant === "page2" 
-            ? `${baseUrl}/dashboard?variant=page2&step=pricing&payment=cancelled`
-            : input.variant === "page3"
-            ? `${baseUrl}/payment/cancel?variant=page3`
+          // All variants (page2, page3, page4, page5) use DashboardV2 design and flow
+          cancel_url: (input.variant === "page2" || input.variant === "page3" || input.variant === "page4" || input.variant === "page5")
+            ? `${baseUrl}/dashboard?variant=${input.variant}&step=pricing&payment=cancelled`
             : `${baseUrl}/payment/cancel`,
           client_reference_id: ctx.user.id.toString(),
           metadata: {
@@ -441,12 +585,12 @@ export const appRouter = router({
           },
         });
 
-        // Create pending transaction
+        // Create pending transaction (use finalPrice for consistency)
         if (db) {
           await db.insert(transactions).values({
             userId: ctx.user.id,
             packId: pack.id,
-            amount: pack.price.toString(),
+            amount: finalPrice.toString(),
             status: "pending",
             stripePaymentId: session.id,
           });
@@ -457,7 +601,7 @@ export const appRouter = router({
             .insert({
               userId: ctx.user.id,
               packId: pack.id,
-              amount: pack.price.toString(),
+              amount: finalPrice.toString(),
               status: "pending",
               stripePaymentId: session.id,
             });
@@ -2763,6 +2907,132 @@ Output should be a vertical rectangle. Entire head should be visible`;
         } catch (error: any) {
           console.error("[Support] Error creating feature suggestion:", error);
           throw new Error(error?.message || "Failed to create feature suggestion");
+        }
+      }),
+  }),
+  pricing: router({
+    getVariantPricing: publicProcedure
+      .input(z.object({
+        packKey: z.string(),
+        variant: z.enum(['page1', 'page2', 'page3', 'page4', 'page5']),
+        currency: z.enum(['USD', 'EUR']),
+      }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        
+        // Always use USD for pricing
+        const usdCurrency = 'USD';
+        
+        try {
+          if (db) {
+            // Use direct DB connection - always fetch USD pricing
+            const [pricing] = await db
+              .select()
+              .from(variantPricing)
+              .where(
+                and(
+                  eq(variantPricing.packKey, input.packKey),
+                  eq(variantPricing.variant, input.variant),
+                  eq(variantPricing.currency, usdCurrency),
+                  eq(variantPricing.isActive, true)
+                )
+              )
+              .limit(1);
+            
+            if (!pricing) {
+              return null;
+            }
+            
+            // Ensure proper type conversion (integers) - handle BigInt and other types
+            const priceValue = typeof pricing.price === 'bigint' 
+              ? Number(pricing.price) 
+              : typeof pricing.price === 'string' 
+                ? parseInt(pricing.price, 10) 
+                : Number(pricing.price) || 0;
+            
+            const oldPriceValue = pricing.oldPrice 
+              ? (typeof pricing.oldPrice === 'bigint' 
+                  ? Number(pricing.oldPrice) 
+                  : typeof pricing.oldPrice === 'string' 
+                    ? parseInt(pricing.oldPrice, 10) 
+                    : Number(pricing.oldPrice))
+              : undefined;
+            
+            const creditsValue = pricing.credits 
+              ? (typeof pricing.credits === 'bigint' 
+                  ? Number(pricing.credits) 
+                  : typeof pricing.credits === 'string' 
+                    ? parseInt(pricing.credits, 10) 
+                    : Number(pricing.credits))
+              : undefined;
+            
+            // Build result object, only including defined values
+            const result: { price: number; oldPrice?: number; credits?: number } = {
+              price: priceValue,
+            };
+            
+            if (oldPriceValue !== undefined && oldPriceValue !== null) {
+              result.oldPrice = oldPriceValue;
+            }
+            
+            if (creditsValue !== undefined && creditsValue !== null) {
+              result.credits = creditsValue;
+            }
+            
+            return result;
+          } else {
+            // Fallback to Supabase REST API - always fetch USD pricing
+            const { data, error } = await supabaseServer
+              .from('variant_pricing')
+              .select('price, oldPrice, credits')
+              .eq('packKey', input.packKey)
+              .eq('variant', input.variant)
+              .eq('currency', usdCurrency)
+              .eq('isActive', true)
+              .single();
+            
+            if (error || !data) {
+              if (error) {
+                console.error("[Pricing] Error fetching pricing:", error);
+              }
+              return null;
+            }
+            
+            // Ensure proper type conversion (integers) - handle string numbers from Supabase
+            const priceValue = typeof data.price === 'string' 
+              ? parseInt(data.price, 10) 
+              : Number(data.price) || 0;
+            
+            const oldPriceValue = data.oldPrice 
+              ? (typeof data.oldPrice === 'string' 
+                  ? parseInt(data.oldPrice, 10) 
+                  : Number(data.oldPrice))
+              : undefined;
+            
+            const creditsValue = data.credits 
+              ? (typeof data.credits === 'string' 
+                  ? parseInt(data.credits, 10) 
+                  : Number(data.credits))
+              : undefined;
+            
+            // Build result object, only including defined values
+            const result: { price: number; oldPrice?: number; credits?: number } = {
+              price: priceValue,
+            };
+            
+            if (oldPriceValue !== undefined && oldPriceValue !== null) {
+              result.oldPrice = oldPriceValue;
+            }
+            
+            if (creditsValue !== undefined && creditsValue !== null) {
+              result.credits = creditsValue;
+            }
+            
+            return result;
+          }
+        } catch (error: any) {
+          console.error("[Pricing] Error fetching variant pricing:", error);
+          return null;
         }
       }),
   }),

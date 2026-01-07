@@ -56,26 +56,37 @@ export default function BuyCredits() {
   const { variant: posthogVariant } = usePostHogVariant(user?.id);
   const autoBuyRef = useRef<boolean>(false);
   
-  // Check for page2 and page3 variants
+  // Check for all page variants (page2, page3, page4, page5)
   const urlParams = new URLSearchParams(window.location.search);
-  const urlVariant = urlParams.get("variant") as "page1" | "page2" | "page3" | null;
+  const urlVariantRaw = urlParams.get("variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+  // Normalize page1 to page2 - page1 should never be used
+  const urlVariant = urlVariantRaw === "page1" ? "page2" : urlVariantRaw;
   const planParam = urlParams.get("plan") as "basic" | "standard" | "premium" | null;
-  const cachedVariant = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | null;
-  const firstVariant = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | null;
-  const isPage2Variant = posthogVariant === "page2" || urlVariant === "page2" || cachedVariant === "page2" || firstVariant === "page2";
-  const isPage3Variant = posthogVariant === "page3" || urlVariant === "page3" || cachedVariant === "page3" || firstVariant === "page3";
+  const cachedVariantRaw = safeLocalStorage.getItem("aiselfi_dashboard_variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+  const cachedVariant = cachedVariantRaw === "page1" ? "page2" : cachedVariantRaw;
+  const firstVariantRaw = safeLocalStorage.getItem("aiselfi_first_dashboard_variant") as "page1" | "page2" | "page3" | "page4" | "page5" | null;
+  const firstVariant = firstVariantRaw === "page1" ? "page2" : firstVariantRaw;
+  
+  // All variants (page2, page3, page4, page5) use the same design and flow as page2
+  const isPage2Variant = posthogVariant === "page2" || posthogVariant === "page3" || posthogVariant === "page4" || posthogVariant === "page5"
+    || urlVariant === "page2" || urlVariant === "page3" || urlVariant === "page4" || urlVariant === "page5"
+    || cachedVariant === "page2" || cachedVariant === "page3" || cachedVariant === "page4" || cachedVariant === "page5"
+    || firstVariant === "page2" || firstVariant === "page3" || firstVariant === "page4" || firstVariant === "page5";
+  
+  // Determine current variant (for pricing and credits)
+  const currentVariant = urlVariant || firstVariant || cachedVariant || posthogVariant || "page2";
   
   // Removed console.log statements for production
 
   const createCheckoutMutation = trpc.payment.createCheckoutSession.useMutation();
   const { data: packs, isLoading: isLoadingPacks, error: packsError } = trpc.payment.listPacks.useQuery();
 
-  // Get localized prices (with page2 variant support)
+  // Get localized prices (with all page variants support)
   const starterPrice = getLocalizedPrice("starter", currency, isPage2Variant);
   const proPrice = getLocalizedPrice("pro", currency, isPage2Variant);
   const premiumPrice = getLocalizedPrice("premium", currency, isPage2Variant);
   
-  // Get credits count for page2
+  // Get credits count based on current variant (page2, page3, page4, page5 all use page2 structure)
   const starterCredits = isPage2Variant ? getPage2Credits("starter") : 40;
   const proCredits = isPage2Variant ? getPage2Credits("pro") : 100;
   const premiumCredits = isPage2Variant ? getPage2Credits("premium") : 150;
@@ -87,7 +98,7 @@ export default function BuyCredits() {
   const premiumCreditsFeatures = t("buyCredits.premiumCreditsFeatures", { returnObjects: true }) as string[];
   const faqItems = t("buyCredits.faq", { returnObjects: true }) as Array<{ q: string; a: string }>;
 
-  const handleBuyClick = async (packId: number | null) => {
+  const handleBuyClick = async (packId: number | null, packKey?: "starter" | "pro" | "premium") => {
     if (!packId) {
       toast.error(t("buyCredits.packNotFound"));
       return;
@@ -107,6 +118,8 @@ export default function BuyCredits() {
       const result = await createCheckoutMutation.mutateAsync({ 
         packId,
         currency: currency,
+        variant: currentVariant, // Pass current variant for correct redirect URLs
+        packKey: packKey, // Pass packKey for dynamic pricing
       });
       
       if (result?.url) {
@@ -124,30 +137,40 @@ export default function BuyCredits() {
     }
   };
 
-  // Map hardcoded packs to database packs by price
-  // For page1: Starter = $5, Pro = $10, Premium = $15
-  // For page2: Starter = $5, Pro = $10, Premium = $15
-  const getPackIdByBasePrice = (basePriceUSD: number): number | null => {
+  // Map packs to database packs by price using dynamic pricing
+  // Uses prices from getLocalizedPrice which are variant-specific
+  const getPackIdByPrice = (priceInCents: number, expectedCredits: number): number | null => {
     if (!packs || packs.length === 0) {
-      console.warn("[BuyCredits] No packs available for price matching:", basePriceUSD);
+      console.warn("[BuyCredits] No packs available for price matching:", priceInCents, "cents");
       return null;
     }
     
-    // Find pack with matching base USD price (convert to cents for comparison)
-    // Packs in database should have base USD prices
+    // Find pack with matching price AND credits (convert to cents for comparison)
     // Use a small tolerance (1 cent) to handle floating point precision issues
-    const targetCents = Math.round(basePriceUSD * 100);
+    const targetCents = Math.round(priceInCents);
     
-    const pack = packs.find(p => {
+    // First try exact match (price AND credits)
+    let pack = packs.find(p => {
       const packPrice = parseFloat(p.price.toString());
       const packCents = Math.round(packPrice * 100);
-      const match = Math.abs(packCents - targetCents) <= 1; // Allow 1 cent tolerance
-      
-      return match;
+      const priceMatch = Math.abs(packCents - targetCents) <= 1; // Allow 1 cent tolerance
+      const creditsMatch = p.credits === expectedCredits;
+      return priceMatch && creditsMatch;
+    });
+    
+    if (pack) {
+      return pack.id;
+    }
+    
+    // If no exact match, try price only (fallback)
+    pack = packs.find(p => {
+      const packPrice = parseFloat(p.price.toString());
+      const packCents = Math.round(packPrice * 100);
+      return Math.abs(packCents - targetCents) <= 1; // Allow 1 cent tolerance
     });
     
     if (!pack) {
-      console.warn(`[BuyCredits] No pack found for price $${basePriceUSD} (${targetCents} cents). Available packs:`, 
+      console.warn(`[BuyCredits] No pack found for price ${targetCents} cents with ${expectedCredits} credits. Available packs:`, 
         packs.map(p => ({ 
           id: p.id, 
           price: parseFloat(p.price.toString()), 
@@ -197,16 +220,20 @@ export default function BuyCredits() {
       return pack?.id || null;
     };
 
-    // Expected credits for each plan
-    const expectedStarterCredits = isPage2Variant ? 40 : 40;
-    const expectedProCredits = isPage2Variant ? 60 : 100;
-    const expectedPremiumCredits = isPage2Variant ? 100 : 150;
+    // Expected credits for each plan (using dynamic credits from getPage2Credits)
+    const expectedStarterCredits = starterCredits;
+    const expectedProCredits = proCredits;
+    const expectedPremiumCredits = premiumCredits;
 
-    // Try to find packs by price AND credits first
-    // All variations use same prices: $5, $10, $15
-    let mappedStarter = findPackByPriceAndCredits(5, expectedStarterCredits);
-    let mappedPro = findPackByPriceAndCredits(10, expectedProCredits);
-    let mappedPremium = findPackByPriceAndCredits(15, expectedPremiumCredits);
+    // Use dynamic prices from getLocalizedPrice (in cents)
+    const starterPriceCents = starterPrice.amount;
+    const proPriceCents = proPrice.amount;
+    const premiumPriceCents = premiumPrice.amount;
+
+    // Try to find packs by price AND credits using dynamic prices
+    let mappedStarter = findPackByPriceAndCredits(starterPriceCents / 100, expectedStarterCredits);
+    let mappedPro = findPackByPriceAndCredits(proPriceCents / 100, expectedProCredits);
+    let mappedPremium = findPackByPriceAndCredits(premiumPriceCents / 100, expectedPremiumCredits);
     
     const needsFallback = !mappedStarter || !mappedPro || !mappedPremium;
     // For page2 variant, ALWAYS use fallback mapping regardless of price match
@@ -324,19 +351,19 @@ export default function BuyCredits() {
       pro: mappedPro,
       premium: mappedPremium
     });
-  }, [packs, isPage2Variant]);
+  }, [packs, isPage2Variant, starterPrice, proPrice, premiumPrice, starterCredits, proCredits, premiumCredits]);
 
   // Use mapped pack IDs from state
   const starterPackId = mappedPackIds.starter;
   const proPackId = mappedPackIds.pro;
   const premiumPackId = mappedPackIds.premium;
 
-  // Map plan parameter to packId
-  const getPackIdByPlan = (plan: "basic" | "standard" | "premium"): number | null => {
-    if (plan === "basic") return starterPackId;
-    if (plan === "standard") return proPackId;
-    if (plan === "premium") return premiumPackId;
-    return null;
+  // Map plan parameter to packId and packKey
+  const getPackIdByPlan = (plan: "basic" | "standard" | "premium"): { packId: number | null; packKey: "starter" | "pro" | "premium" } => {
+    if (plan === "basic") return { packId: starterPackId, packKey: "starter" };
+    if (plan === "standard") return { packId: proPackId, packKey: "pro" };
+    if (plan === "premium") return { packId: premiumPackId, packKey: "premium" };
+    return { packId: null, packKey: "starter" };
   };
 
   // Auto-buy when plan parameter is present and packs are loaded
@@ -350,7 +377,7 @@ export default function BuyCredits() {
         return;
       }
       
-      const targetPackId = getPackIdByPlan(planParam);
+      const { packId: targetPackId, packKey: targetPackKey } = getPackIdByPlan(planParam);
       
       if (targetPackId) {
         autoBuyRef.current = true;
@@ -362,6 +389,8 @@ export default function BuyCredits() {
             const result = await createCheckoutMutation.mutateAsync({ 
               packId: targetPackId,
               currency: currency,
+              variant: currentVariant, // Pass current variant for correct redirect URLs
+              packKey: targetPackKey, // Pass packKey for dynamic pricing
             });
             
             if (result?.url) {
@@ -573,7 +602,7 @@ export default function BuyCredits() {
                 <Button
                   className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
-                  onClick={() => handleBuyClick(starterPackId)}
+                  onClick={() => handleBuyClick(starterPackId, "starter")}
                   disabled={isLoadingPacks || !starterPackId || loadingPackId === starterPackId}
                   title={!starterPackId ? (t("buyCredits.packNotFound") || "Pack not available. Please try again later.") : undefined}
                 >
@@ -659,7 +688,7 @@ export default function BuyCredits() {
                 <Button
                   className="w-full bg-yellow-500 hover:bg-yellow-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
-                  onClick={() => handleBuyClick(proPackId)}
+                  onClick={() => handleBuyClick(proPackId, "pro")}
                   disabled={isLoadingPacks || !proPackId || loadingPackId === proPackId}
                   title={!proPackId ? (t("buyCredits.packNotFound") || "Pack not available. Please try again later.") : undefined}
                 >
@@ -742,7 +771,7 @@ export default function BuyCredits() {
                 <Button
                   className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
-                  onClick={() => handleBuyClick(premiumPackId)}
+                  onClick={() => handleBuyClick(premiumPackId, "premium")}
                   disabled={isLoadingPacks || !premiumPackId || loadingPackId === premiumPackId}
                   title={!premiumPackId ? (t("buyCredits.packNotFound") || "Pack not available. Please try again later.") : undefined}
                 >
@@ -806,8 +835,8 @@ export default function BuyCredits() {
       </div>
 
       {/* Bottom Navigation Bar - Mobile Only (Hidden for page1 variant) */}
-      {isMobile && (isPage2Variant || isPage3Variant) && (() => {
-        const variantParam = isPage3Variant ? "?variant=page3" : "?variant=page2";
+      {isMobile && isPage2Variant && (() => {
+        const variantParam = currentVariant ? `?variant=${currentVariant}` : "?variant=page2";
         return (
         <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 shadow-lg">
           <div className="max-w-4xl mx-auto px-4 py-3">

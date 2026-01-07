@@ -42,6 +42,19 @@ export const creditPacks = pgTable("credit_packs", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
+export const variantPricing = pgTable("variant_pricing", {
+  id: serial("id").primaryKey(),
+  packKey: text("packKey").notNull(), // "starter" | "pro" | "premium" | "business" | "basic" | "standard"
+  variant: text("variant").notNull(), // "page1" | "page2"
+  currency: text("currency").notNull(), // "USD" | "EUR"
+  price: integer("price").notNull(), // Price in cents
+  oldPrice: integer("oldPrice"), // Original price before discount (in cents)
+  credits: integer("credits"), // Number of credits/photos (for page2)
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
 // Define coupons first (before transactions references them)
 export const coupons = pgTable("coupons", {
   id: serial("id").primaryKey(),
@@ -310,3 +323,5 @@ export type BugReport = typeof bugReports.$inferSelect;
 export type InsertBugReport = typeof bugReports.$inferInsert;
 export type FeatureSuggestion = typeof featureSuggestions.$inferSelect;
 export type InsertFeatureSuggestion = typeof featureSuggestions.$inferInsert;
+export type VariantPricing = typeof variantPricing.$inferSelect;
+export type InsertVariantPricing = typeof variantPricing.$inferInsert;
