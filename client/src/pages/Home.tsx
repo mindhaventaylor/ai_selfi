@@ -89,13 +89,13 @@ function BeforeAfterSliderScroll({
         return;
       }
       
-      if (beforeContainer.scrollLeft >= maxScroll - 1) {
-        // Reset to start for seamless loop
-        beforeContainer.scrollLeft = 0;
-        afterContainer.scrollLeft = 0;
+      if (beforeContainer.scrollLeft <= 1) {
+        // Reset to end for seamless loop
+        beforeContainer.scrollLeft = maxScroll;
+        afterContainer.scrollLeft = maxScroll;
       } else {
-        beforeContainer.scrollLeft += scrollSpeedRef.current;
-        afterContainer.scrollLeft += scrollSpeedRef.current;
+        beforeContainer.scrollLeft -= scrollSpeedRef.current;
+        afterContainer.scrollLeft -= scrollSpeedRef.current;
       }
 
       animationFrameRef.current = requestAnimationFrame(scroll);
@@ -103,6 +103,12 @@ function BeforeAfterSliderScroll({
 
     // Start scrolling after a short delay to ensure DOM is ready
     const timeoutId = setTimeout(() => {
+      // Initialize scroll to the end (right side) so it starts showing "after" images
+      const maxScroll = beforeContainer.scrollWidth - beforeContainer.clientWidth;
+      if (maxScroll > 0) {
+        beforeContainer.scrollLeft = maxScroll;
+        afterContainer.scrollLeft = maxScroll;
+      }
       animationFrameRef.current = requestAnimationFrame(scroll);
     }, 200);
 
@@ -124,7 +130,7 @@ function BeforeAfterSliderScroll({
       className="relative w-full" 
       ref={containerRef}
     >
-      {/* Before Images Container (Left side) */}
+      {/* Before Images Container (Bottom layer - shows "before" images) */}
       <div 
         ref={beforeScrollRef}
         className="overflow-x-auto overflow-y-hidden scrollbar-hide"
@@ -146,8 +152,8 @@ function BeforeAfterSliderScroll({
                 alt={`${beforeLabel} ${idx + 1}`}
                 className="w-full h-full object-cover rounded-2xl"
               />
-              {/* Before Label */}
-              <div className="absolute top-4 left-4 z-20 bg-black/70 text-white text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg">
+              {/* Before Label - visible on the left side */}
+              <div className="absolute top-4 left-4 z-10 bg-black/70 text-white text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg">
                 {beforeLabel}
               </div>
             </div>
@@ -155,7 +161,7 @@ function BeforeAfterSliderScroll({
         </div>
       </div>
 
-      {/* After Images Container (Right side, clipped) - fixed at 50% */}
+      {/* After Images Container (Top layer, clipped to right 50% - shows "after" images) */}
       <div 
         ref={afterScrollRef}
         className="absolute top-0 left-0 w-full overflow-x-auto overflow-y-hidden scrollbar-hide"
@@ -163,8 +169,9 @@ function BeforeAfterSliderScroll({
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
           WebkitOverflowScrolling: 'touch',
-          clipPath: 'inset(0 50% 0 0)',
-          pointerEvents: 'none'
+          clipPath: 'inset(0 0 0 50%)',
+          pointerEvents: 'none',
+          zIndex: 20
         }}
       >
         <div className="flex gap-4 sm:gap-6 md:gap-8" style={{ width: 'max-content' }}>
@@ -179,7 +186,7 @@ function BeforeAfterSliderScroll({
                 alt={`${afterLabel} ${idx + 1}`}
                 className="w-full h-full object-cover rounded-2xl"
               />
-              {/* After Label */}
+              {/* After Label - visible on the right side */}
               <div className="absolute top-4 right-4 z-20 bg-primary text-white text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg">
                 {afterLabel}
               </div>
@@ -1925,12 +1932,12 @@ export default function Home() {
             <div className="relative max-w-7xl mx-auto">
               <BeforeAfterSliderScroll
                 imagePairs={[
-                  { before: "/image.webp", after: "/image_1.webp" },
-                  { before: "/image_10.webp", after: "/image_100.webp" },
-                  { before: "/image_101.webp", after: "/image_101_last.webp" },
-                  { before: "/image.webp", after: "/image_1.webp" },
-                  { before: "/image_10.webp", after: "/image_100.webp" },
-                  { before: "/image_101.webp", after: "/image_101_last.webp" },
+                  { before: "/image_before_after/before_image_1.jpg", after: "/image_before_after/after_image_1.jpg" },
+                  { before: "/image_before_after/before_image_2.jpg", after: "/image_before_after/after_image_2.jpg" },
+                  { before: "/image_before_after/before_image_3.jpg", after: "/image_before_after/after_image_3.jpg" },
+                  { before: "/image_before_after/before_image_4.jpg", after: "/image_before_after/after_image_4.jpg" },
+                  { before: "/image_before_after/before_image_5.jpg", after: "/image_before_after/after_image_5.jpg" },
+                  { before: "/image_before_after/before_image_6.jpg", after: "/image_before_after/after_image_6.jpg" },
                 ]}
                 beforeLabel={t("home.beforeLabel") || "Before"}
                 afterLabel={t("home.afterLabel") || "After"}
@@ -2239,219 +2246,121 @@ export default function Home() {
       </AnimatedSection>
       )}
 
-      {/* As Seen On Company Carousel - For Variant 1 only, after Why Choose Us */}
+      {/* As Seen On Section - For Variant 1 only, after Why Choose Us */}
       {!isPage2Variant && !isPage3Variant && (
-      <div className="py-3 md:py-4 overflow-hidden bg-gray-50 border-y border-border/50">        <div className="container">
+      <div className="py-8 md:py-12 bg-white/50 dark:bg-gray-900/50">
+        <div className="container max-w-7xl mx-auto px-4">
           {/* Section Title */}
-          <div className="text-center mb-4 md:mb-8">
-            <h2 className="text-lg md:text-xl font-semibold text-muted-foreground uppercase tracking-wider">
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-semibold text-muted-foreground uppercase tracking-wider">
               {t("home.trustedBy")}
             </h2>
           </div>
           
-          <style>{`
-            @keyframes scroll {
-              0% {
-                transform: translateX(0);
-              }
-              100% {
-                transform: translateX(calc(-50% - 0px));
-              }
-            }
-            .animate-scroll {
-              animation: scroll 60s linear infinite;
-              display: flex;
-              width: max-content;
-            }
-            .animate-scroll:hover {
-              animation-play-state: paused;
-            }
-            .animate-scroll.paused {
-              animation-play-state: paused;
-            }
-            @media (max-width: 768px) {
-              .animate-scroll {
-                animation: scroll 22s linear infinite;
-              }
-            }
-          `}</style>
-          
-          {/* Scrolling Companies Container */}
-          <div className="overflow-hidden relative">
-            <div 
-              className="flex items-center flex-nowrap gap-2 sm:gap-8 md:gap-12 lg:gap-16 animate-scroll transition-opacity duration-300 cursor-pointer will-change-transform"
-              onClick={(e) => {
-                const target = e.currentTarget;
-                target.classList.toggle('paused');
-              }}
-              title="Click to pause/resume"
-            >
-                {/* First set of companies */}
-                {[
-                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_white_microsoft.png" },
-                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_white_jpmorgan.png" },
-                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_white_deloitte.png" },
-                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_white_amazon.png" },
-                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/5_white_goldmansachs.png" },
-                  { name: "Accenture", image: "/logos/trusted_by_professionals/7_white_accenture.png" },
-                  { name: "Nike", image: "/logos/trusted_by_professionals/8_white_nike.png" },
-                  { name: "PwC", image: "/logos/trusted_by_professionals/9_white_pwc.png" },
-                  { name: "Disney", image: "/logos/trusted_by_professionals/10_white_disney.png" },
-                  { name: "KPMG", image: "/logos/trusted_by_professionals/11_white_kpmg.png" },
-                ].map((company, idx) => (
-                  <Fragment key={`first-${idx}`}>
-                    {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-gray-100 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
-                      <OptimizedImage 
-                        src={company.image} 
-                        alt={company.name}
-                        width={120}
-                        height={60}
-                              className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain opacity-90 hover:opacity-100 transition-all duration-200 brightness-0 hover:brightness-100"
-                      />
-                    </div>
-                  </Fragment>
-                ))}
-                
-                {/* Divider between sets */}
-                <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>
-                
-                {/* Duplicate set for seamless loop */}
-                {[
-                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_white_microsoft.png" },
-                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_white_jpmorgan.png" },
-                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_white_deloitte.png" },
-                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_white_amazon.png" },
-                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/5_white_goldmansachs.png" },
-                  { name: "Accenture", image: "/logos/trusted_by_professionals/7_white_accenture.png" },
-                  { name: "Nike", image: "/logos/trusted_by_professionals/8_white_nike.png" },
-                  { name: "PwC", image: "/logos/trusted_by_professionals/9_white_pwc.png" },
-                  { name: "Disney", image: "/logos/trusted_by_professionals/10_white_disney.png" },
-                  { name: "KPMG", image: "/logos/trusted_by_professionals/11_white_kpmg.png" },
-                ].map((company, idx) => (
-                  <Fragment key={`second-${idx}`}>
-                    {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-gray-100 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
-                      <OptimizedImage 
-                        src={company.image} 
-                        alt={company.name}
-                        width={120}
-                        height={60}
-                              className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain opacity-90 hover:opacity-100 transition-all duration-200 brightness-0 hover:brightness-100"
-                      />
-                    </div>
-                  </Fragment>
-                ))}
-            </div>
+          {/* Media Outlets Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 md:gap-8">
+            {[
+              { 
+                name: "Forbes", 
+                image: "/as_seen_on/logo-Forbes.png", 
+                quote: "How AI is leveling the playing field for the modern executive's personal brand."
+              },
+              { 
+                name: "Business Insider", 
+                image: "/as_seen_on/Business-Insider.png", 
+                quote: "This AI tool generates $500-quality headshots in under 10 minutes for less than the price of a lunch."
+              },
+              { 
+                name: "The Wall Street Journal", 
+                image: "/as_seen_on/The-Wall-Street-Journal.png", 
+                quote: "The end of the awkward office photoshoot: Why senior professionals are switching to AI portraits."
+              },
+              { 
+                name: "TODAY Show", 
+                image: "/as_seen_on/today.png", 
+                quote: "Need a new LinkedIn photo? This simple tool turns your phone's selfies into professional portraits instantly."
+              },
+              { 
+                name: "MarketWatch", 
+                image: "/as_seen_on/marketwatch.png", 
+                quote: "Cutting the corporate fat: How professionals saved $10M this year by skipping traditional photographers."
+              },
+            ].map((outlet, idx) => (
+              <div key={idx} className="flex flex-col items-center text-center px-4 py-6">
+                <div className="mb-4 flex items-center justify-center h-16 md:h-20">
+                  <OptimizedImage 
+                    src={outlet.image} 
+                    alt={outlet.name}
+                    width={150}
+                    height={80}
+                    className="max-h-16 md:max-h-20 w-auto object-contain opacity-90 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300"
+                  />
+                </div>
+                <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                  "{outlet.quote}"
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
       )}
 
-      {/* As Seen On Company Carousel - For Variant 3, stays in original position */}
+      {/* As Seen On Section - For Variant 3, stays in original position */}
       {isPage3Variant && (
-      <div className="py-3 md:py-4 overflow-hidden bg-gray-50 border-y border-border/50">        <div className="container">
+      <div className="py-8 md:py-12 bg-white/50 dark:bg-gray-900/50">
+        <div className="container max-w-7xl mx-auto px-4">
           {/* Section Title */}
-          <div className="text-center mb-4 md:mb-8">
-            <h2 className="text-lg md:text-xl font-semibold text-muted-foreground uppercase tracking-wider">
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-semibold text-muted-foreground uppercase tracking-wider">
               {t("home.trustedBy")}
             </h2>
           </div>
           
-          <style>{`
-            @keyframes scroll {
-              0% {
-                transform: translateX(0);
-              }
-              100% {
-                transform: translateX(calc(-50% - 0px));
-              }
-            }
-            .animate-scroll {
-              animation: scroll 60s linear infinite;
-              display: flex;
-              width: max-content;
-            }
-            .animate-scroll:hover {
-              animation-play-state: paused;
-            }
-            .animate-scroll.paused {
-              animation-play-state: paused;
-            }
-            @media (max-width: 768px) {
-              .animate-scroll {
-                animation: scroll 22s linear infinite;
-              }
-            }
-          `}</style>
-          
-          {/* Scrolling Companies Container */}
-          <div className="overflow-hidden relative">
-            <div 
-              className="flex items-center flex-nowrap gap-2 sm:gap-8 md:gap-12 lg:gap-16 animate-scroll transition-opacity duration-300 cursor-pointer will-change-transform"
-              onClick={(e) => {
-                const target = e.currentTarget;
-                target.classList.toggle('paused');
-              }}
-              title="Click to pause/resume"
-            >
-                {/* First set of companies */}
-                {[
-                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_white_microsoft.png" },
-                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_white_jpmorgan.png" },
-                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_white_deloitte.png" },
-                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_white_amazon.png" },
-                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/5_white_goldmansachs.png" },
-                  { name: "Accenture", image: "/logos/trusted_by_professionals/7_white_accenture.png" },
-                  { name: "Nike", image: "/logos/trusted_by_professionals/8_white_nike.png" },
-                  { name: "PwC", image: "/logos/trusted_by_professionals/9_white_pwc.png" },
-                  { name: "Disney", image: "/logos/trusted_by_professionals/10_white_disney.png" },
-                  { name: "KPMG", image: "/logos/trusted_by_professionals/11_white_kpmg.png" },
-                ].map((company, idx) => (
-                  <Fragment key={`first-${idx}`}>
-                    {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-gray-100 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
-                      <OptimizedImage 
-                        src={company.image} 
-                        alt={company.name}
-                        width={120}
-                        height={60}
-                              className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain opacity-90 hover:opacity-100 transition-all duration-200 brightness-0 hover:brightness-100"
-                      />
-                    </div>
-                  </Fragment>
-                ))}
-                
-                {/* Divider between sets */}
-                <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>
-                
-                {/* Duplicate set for seamless loop */}
-                {[
-                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_white_microsoft.png" },
-                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_white_jpmorgan.png" },
-                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_white_deloitte.png" },
-                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_white_amazon.png" },
-                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/5_white_goldmansachs.png" },
-                  { name: "Accenture", image: "/logos/trusted_by_professionals/7_white_accenture.png" },
-                  { name: "Nike", image: "/logos/trusted_by_professionals/8_white_nike.png" },
-                  { name: "PwC", image: "/logos/trusted_by_professionals/9_white_pwc.png" },
-                  { name: "Disney", image: "/logos/trusted_by_professionals/10_white_disney.png" },
-                  { name: "KPMG", image: "/logos/trusted_by_professionals/11_white_kpmg.png" },
-                ].map((company, idx) => (
-                  <Fragment key={`second-${idx}`}>
-                    {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-gray-100 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
-                      <OptimizedImage 
-                        src={company.image} 
-                        alt={company.name}
-                        width={120}
-                        height={60}
-                              className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain opacity-90 hover:opacity-100 transition-all duration-200 brightness-0 hover:brightness-100"
-                      />
-                    </div>
-                  </Fragment>
-                ))}
-            </div>
+          {/* Media Outlets Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 md:gap-8">
+            {[
+              { 
+                name: "Forbes", 
+                image: "/as_seen_on/logo-Forbes.png", 
+                quote: "How AI is leveling the playing field for the modern executive's personal brand."
+              },
+              { 
+                name: "Business Insider", 
+                image: "/as_seen_on/Business-Insider.png", 
+                quote: "This AI tool generates $500-quality headshots in under 10 minutes for less than the price of a lunch."
+              },
+              { 
+                name: "The Wall Street Journal", 
+                image: "/as_seen_on/The-Wall-Street-Journal.png", 
+                quote: "The end of the awkward office photoshoot: Why senior professionals are switching to AI portraits."
+              },
+              { 
+                name: "TODAY Show", 
+                image: "/as_seen_on/today.png", 
+                quote: "Need a new LinkedIn photo? This simple tool turns your phone's selfies into professional portraits instantly."
+              },
+              { 
+                name: "MarketWatch", 
+                image: "/as_seen_on/marketwatch.png", 
+                quote: "Cutting the corporate fat: How professionals saved $10M this year by skipping traditional photographers."
+              },
+            ].map((outlet, idx) => (
+              <div key={idx} className="flex flex-col items-center text-center px-4 py-6">
+                <div className="mb-4 flex items-center justify-center h-16 md:h-20">
+                  <OptimizedImage 
+                    src={outlet.image} 
+                    alt={outlet.name}
+                    width={150}
+                    height={80}
+                    className="max-h-16 md:max-h-20 w-auto object-contain opacity-90 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300"
+                  />
+                </div>
+                <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                  "{outlet.quote}"
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -2697,110 +2606,61 @@ export default function Home() {
                     </div>
             </section>
 
-      {/* As Seen On Company Carousel - For Variant 2 only, after How It Works */}
+      {/* As Seen On Section - For Variant 2 only, after How It Works */}
       {isPage2Variant && (
-      <div className="py-3 md:py-4 overflow-hidden bg-gray-50 border-y border-border/50">        <div className="container">
+      <div className="py-8 md:py-12 bg-white/50 dark:bg-gray-900/50">
+        <div className="container max-w-7xl mx-auto px-4">
           {/* Section Title */}
-          <div className="text-center mb-4 md:mb-8">
-            <h2 className="text-lg md:text-xl font-semibold text-muted-foreground uppercase tracking-wider">
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-semibold text-muted-foreground uppercase tracking-wider">
               {t("home.trustedBy")}
             </h2>
           </div>
           
-          <style>{`
-            @keyframes scroll {
-              0% {
-                transform: translateX(0);
-              }
-              100% {
-                transform: translateX(calc(-50% - 0px));
-              }
-            }
-            .animate-scroll {
-              animation: scroll 60s linear infinite;
-              display: flex;
-              width: max-content;
-            }
-            .animate-scroll:hover {
-              animation-play-state: paused;
-            }
-            .animate-scroll.paused {
-              animation-play-state: paused;
-            }
-            @media (max-width: 768px) {
-              .animate-scroll {
-                animation: scroll 22s linear infinite;
-              }
-            }
-          `}</style>
-          
-          {/* Scrolling Companies Container */}
-          <div className="overflow-hidden relative">
-            <div 
-              className="flex items-center flex-nowrap gap-2 sm:gap-8 md:gap-12 lg:gap-16 animate-scroll transition-opacity duration-300 cursor-pointer will-change-transform"
-              onClick={(e) => {
-                const target = e.currentTarget;
-                target.classList.toggle('paused');
-              }}
-              title="Click to pause/resume"
-            >
-                {/* First set of companies */}
-                {[
-                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_white_microsoft.png" },
-                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_white_jpmorgan.png" },
-                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_white_deloitte.png" },
-                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_white_amazon.png" },
-                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/5_white_goldmansachs.png" },
-                  { name: "Accenture", image: "/logos/trusted_by_professionals/7_white_accenture.png" },
-                  { name: "Nike", image: "/logos/trusted_by_professionals/8_white_nike.png" },
-                  { name: "PwC", image: "/logos/trusted_by_professionals/9_white_pwc.png" },
-                  { name: "Disney", image: "/logos/trusted_by_professionals/10_white_disney.png" },
-                  { name: "KPMG", image: "/logos/trusted_by_professionals/11_white_kpmg.png" },
-                ].map((company, idx) => (
-                  <Fragment key={`first-v2-${idx}`}>
-                    {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-gray-100 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
-                      <OptimizedImage 
-                        src={company.image} 
-                        alt={company.name}
-                        width={120}
-                        height={60}
-                              className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain opacity-90 hover:opacity-100 transition-all duration-200 brightness-0 hover:brightness-100"
-                      />
-                    </div>
-                  </Fragment>
-                ))}
-                
-                {/* Divider between sets */}
-                <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>
-                
-                {/* Duplicate set for seamless loop */}
-                {[
-                  { name: "Microsoft", image: "/logos/trusted_by_professionals/1_white_microsoft.png" },
-                  { name: "J.P. Morgan", image: "/logos/trusted_by_professionals/2_white_jpmorgan.png" },
-                  { name: "Deloitte", image: "/logos/trusted_by_professionals/3_white_deloitte.png" },
-                  { name: "Amazon", image: "/logos/trusted_by_professionals/4_white_amazon.png" },
-                  { name: "Goldman Sachs", image: "/logos/trusted_by_professionals/5_white_goldmansachs.png" },
-                  { name: "Accenture", image: "/logos/trusted_by_professionals/7_white_accenture.png" },
-                  { name: "Nike", image: "/logos/trusted_by_professionals/8_white_nike.png" },
-                  { name: "PwC", image: "/logos/trusted_by_professionals/9_white_pwc.png" },
-                  { name: "Disney", image: "/logos/trusted_by_professionals/10_white_disney.png" },
-                  { name: "KPMG", image: "/logos/trusted_by_professionals/11_white_kpmg.png" },
-                ].map((company, idx) => (
-                  <Fragment key={`second-v2-${idx}`}>
-                    {idx > 0 && <div className="w-px h-12 sm:h-16 bg-border/60 flex-shrink-0"></div>}
-                    <div className="flex items-center flex-shrink-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 rounded-xl hover:bg-gray-100 transition-colors duration-200 text-center min-w-[100px] sm:min-w-[130px] md:min-w-[150px]">
-                      <OptimizedImage 
-                        src={company.image} 
-                        alt={company.name}
-                        width={120}
-                        height={60}
-                              className="w-20 h-10 sm:w-24 sm:h-12 md:w-32 md:h-16 object-contain opacity-90 hover:opacity-100 transition-all duration-200 brightness-0 hover:brightness-100"
-                      />
-                        </div>
-                  </Fragment>
-                ))}
-                      </div>
+          {/* Media Outlets Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 md:gap-8">
+            {[
+              { 
+                name: "Forbes", 
+                image: "/as_seen_on/logo-Forbes.png", 
+                quote: "How AI is leveling the playing field for the modern executive's personal brand."
+              },
+              { 
+                name: "Business Insider", 
+                image: "/as_seen_on/Business-Insider.png", 
+                quote: "This AI tool generates $500-quality headshots in under 10 minutes for less than the price of a lunch."
+              },
+              { 
+                name: "The Wall Street Journal", 
+                image: "/as_seen_on/The-Wall-Street-Journal.png", 
+                quote: "The end of the awkward office photoshoot: Why senior professionals are switching to AI portraits."
+              },
+              { 
+                name: "TODAY Show", 
+                image: "/as_seen_on/today.png", 
+                quote: "Need a new LinkedIn photo? This simple tool turns your phone's selfies into professional portraits instantly."
+              },
+              { 
+                name: "MarketWatch", 
+                image: "/as_seen_on/marketwatch.png", 
+                quote: "Cutting the corporate fat: How professionals saved $10M this year by skipping traditional photographers."
+              },
+            ].map((outlet, idx) => (
+              <div key={idx} className="flex flex-col items-center text-center px-4 py-6">
+                <div className="mb-4 flex items-center justify-center h-16 md:h-20">
+                  <OptimizedImage 
+                    src={outlet.image} 
+                    alt={outlet.name}
+                    width={150}
+                    height={80}
+                    className="max-h-16 md:max-h-20 w-auto object-contain opacity-90 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300"
+                  />
+                </div>
+                <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                  "{outlet.quote}"
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
