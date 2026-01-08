@@ -41,7 +41,6 @@ import BlogPost9 from "./pages/BlogPost9";
 import Refund from "./pages/Refund";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
-import { WhatsAppButton } from "./components/WhatsAppButton";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import DashboardLayout from "./components/DashboardLayout";
 import "./i18n/config";
@@ -177,7 +176,6 @@ function Router() {
         </Switch>
       </main>
       {!isDashboard && <Footer />}
-      {!isDashboard && <WhatsAppButton />}
     </>
   );
 }
