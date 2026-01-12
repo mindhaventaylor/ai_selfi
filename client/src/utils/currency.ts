@@ -131,31 +131,31 @@ async function getPricingFromDB(
 }
 
 // Fallback prices in case database is unavailable (USD cents)
-// All with 70% discount: oldPrice = price / 0.3
+// All with 70% discount: oldPrice = Math.ceil((price / 0.3) / 100) * 100 (arredondado para cima para número inteiro)
 const FALLBACK_PRICES = {
   page1: {
-    starter: { price: 500, oldPrice: 1667 },    // $5 (era $16.67 - 70% desconto)
-    pro: { price: 700, oldPrice: 2333 },        // $7 (era $23.33 - 70% desconto)
+    starter: { price: 500, oldPrice: 1700 },    // $5 (era $17.00 - 70% desconto, arredondado para cima)
+    pro: { price: 700, oldPrice: 2400 },        // $7 (era $24.00 - 70% desconto, arredondado para cima)
     premium: { price: 1500, oldPrice: 5000 },  // $15 (era $50.00 - 70% desconto)
     business: { price: 1500, oldPrice: 5000 },
   },
   page2: {
-    basic: { price: 500, oldPrice: 1667, credits: 40 },    // $5 (era $16.67)
-    standard: { price: 700, oldPrice: 2333, credits: 60 }, // $7 (era $23.33)
+    basic: { price: 500, oldPrice: 1700, credits: 40 },    // $5 (era $17.00, arredondado para cima)
+    standard: { price: 700, oldPrice: 2400, credits: 60 }, // $7 (era $24.00, arredondado para cima)
     premium: { price: 1500, oldPrice: 5000, credits: 100 }, // $15 (era $50.00)
   },
   page3: {
     basic: { price: 1200, oldPrice: 4000, credits: 40 },    // $12 (era $40.00)
     standard: { price: 1500, oldPrice: 5000, credits: 60 }, // $15 (era $50.00)
-    premium: { price: 2500, oldPrice: 8333, credits: 100 }, // $25 (era $83.33)
+    premium: { price: 2500, oldPrice: 8400, credits: 100 }, // $25 (era $84.00, arredondado para cima)
   },
   page4: {
-    basic: { price: 2900, oldPrice: 9667, credits: 40 },    // $29 (era $96.67)
+    basic: { price: 2900, oldPrice: 9700, credits: 40 },    // $29 (era $97.00, arredondado para cima)
     standard: { price: 3900, oldPrice: 13000, credits: 60 }, // $39 (era $130.00)
-    premium: { price: 5900, oldPrice: 19667, credits: 100 }, // $59 (era $196.67)
+    premium: { price: 5900, oldPrice: 19700, credits: 100 }, // $59 (era $197.00, arredondado para cima)
   },
   page5: {
-    basic: { price: 3500, oldPrice: 11667, credits: 40 },   // $35 (era $116.67)
+    basic: { price: 3500, oldPrice: 11700, credits: 40 },   // $35 (era $117.00, arredondado para cima)
     standard: { price: 4500, oldPrice: 15000, credits: 60 }, // $45 (era $150.00)
     premium: { price: 7500, oldPrice: 25000, credits: 100 }, // $75 (era $250.00)
   },
