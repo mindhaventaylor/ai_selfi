@@ -667,7 +667,15 @@ export const appRouter = router({
               .select('credits')
               .eq('id', ctx.user.id)
               .single();
-            return { success: true, message: "Already processed", credits: userData?.credits || currentCredits, alreadyProcessed: true };
+            return { 
+              success: true, 
+              message: "Already processed", 
+              credits: userData?.credits || currentCredits, 
+              alreadyProcessed: true,
+              amount: (session.amount_total || 0) / 100,
+              currency: session.currency || "USD",
+              transactionId: typeof session.payment_intent === 'string' ? session.payment_intent : input.sessionId
+            };
           }
           
           // Add credits to user (always add if payment is successful and not already processed)
@@ -704,7 +712,15 @@ export const appRouter = router({
           
           console.log(`[Payment] ✅ Manually added ${credits} credits to user ${ctx.user.id}. New total: ${newCredits}`);
           
-          return { success: true, message: "Credits added", credits: newCredits, added: credits };
+          return { 
+            success: true, 
+            message: "Credits added", 
+            credits: newCredits, 
+            added: credits,
+            amount: (session.amount_total || 0) / 100,
+            currency: session.currency || "USD",
+            transactionId: typeof session.payment_intent === 'string' ? session.payment_intent : input.sessionId
+          };
         } catch (error: any) {
           console.error(`[Payment] Error verifying session:`, error);
           return { success: false, message: error.message, credits: ctx.user.credits || 0 };
