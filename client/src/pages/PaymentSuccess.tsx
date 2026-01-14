@@ -168,14 +168,14 @@ export default function PaymentSuccess() {
               // Track Google Ads conversion on first success
               if (typeof window !== "undefined" && (window as any).gtag && !verifyResult.alreadyProcessed) {
                 try {
-                  // Track Google Ads conversion
+                  // Using label 4sUGCMun08gbELbyoexB from Tag Assistant screenshot
                   (window as any).gtag('event', 'conversion', {
-                    'send_to': 'AW-17675352374/c9B8CKy5velbELbyoexB',
+                    'send_to': 'AW-17675352374/4sUGCMun08gbELbyoexB',
                     'value': verifyResult.amount || 1.0,
                     'currency': verifyResult.currency || 'USD',
-                    'transaction_id': (verifyResult.transactionId || sessionId || '').toString().slice(0, 64)
+                    'transaction_id': (sessionId || '').toString().slice(0, 64)
                   });
-                  console.log('[Google Ads] Purchase conversion tracked:', verifyResult.transactionId || sessionId);
+                  console.log('[Google Ads] Purchase conversion tracked:', sessionId);
                 } catch (error) {
                   console.error('[Google Ads] Error tracking conversion:', error);
                 }

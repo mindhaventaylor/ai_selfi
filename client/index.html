@@ -32,8 +32,20 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      // Google Ads
-      gtag('config', 'AW-17675352374');
+      
+      // Google Ads - with transaction ID if present in URL (helps with URL-based conversions)
+      // Extract session_id from URL if on payment-success page
+      const adsConfig = {};
+      if (window.location.pathname.includes('payment-success')) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sid = urlParams.get('session_id');
+        if (sid) {
+          adsConfig['transaction_id'] = sid.slice(0, 64);
+        }
+      }
+      
+      gtag('config', 'AW-17675352374', adsConfig);
+      
       // Google Analytics 4 properties
       gtag('config', 'G-15PQHM7HSR');
       gtag('config', 'G-JK8K3RNZ4V');
