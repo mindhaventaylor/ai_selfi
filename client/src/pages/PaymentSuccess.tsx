@@ -9,14 +9,6 @@ import { toast } from "sonner";
 import { exampleImages } from "@/data/exampleImages";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { safeLocalStorage } from "@/utils/localStorage";
-import { sha256 } from "@/utils/crypto";
-
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-    __ec_set?: boolean;
-  }
-}
 
 export default function PaymentSuccess() {
   const { t } = useTranslation();
@@ -61,25 +53,6 @@ export default function PaymentSuccess() {
       }
     }
   }, [sessionId]);
-
-  // Track Google Ads Enhanced Conversions
-  useEffect(() => {
-    if (user?.email && typeof window !== "undefined" && window.gtag && !window.__ec_set) {
-      const trackEnhancedConversion = async () => {
-        try {
-          const hashedEmail = await sha256(user.email!);
-          window.gtag!('set', 'user_data', {
-            email: hashedEmail
-          });
-          window.__ec_set = true;
-          console.log('[Google Ads] Enhanced conversion user data set (hashed email)');
-        } catch (error) {
-          console.error('[Google Ads] Error setting enhanced conversion data:', error);
-        }
-      };
-      trackEnhancedConversion();
-    }
-  }, [user?.email]);
 
   // Main effect - verify payment, add credits, then generate
   useEffect(() => {
