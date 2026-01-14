@@ -33,22 +33,34 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       
-      // Google Ads - with transaction ID if present in URL (helps with URL-based conversions)
-      // Extract session_id from URL if on payment-success page
-      const adsConfig = {};
-      if (window.location.pathname.includes('payment-success')) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const sid = urlParams.get('session_id');
-        if (sid) {
-          adsConfig['transaction_id'] = sid.slice(0, 64);
-        }
-      }
-      
-      gtag('config', 'AW-17675352374', adsConfig);
+      // Google Ads config
+      gtag('config', 'AW-17675352374');
       
       // Google Analytics 4 properties
       gtag('config', 'G-15PQHM7HSR');
       gtag('config', 'G-JK8K3RNZ4V');
+      
+      // Push transaction_id to dataLayer for GTM on payment success page
+      // This must happen BEFORE GTM fires the conversion tag
+      if (window.location.pathname.includes('payment-success')) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+        if (sessionId) {
+          // Push to dataLayer so GTM can use it as a variable
+          window.dataLayer.push({
+            'event': 'payment_success',
+            'transaction_id': sessionId.slice(0, 64),
+            'order_id': sessionId.slice(0, 64)
+          });
+          
+          // Also fire the conversion event directly with gtag (as per Google's documentation)
+          // This is the recommended format from Google's event snippet example
+          gtag('event', 'conversion', {
+            'send_to': 'AW-17675352374/4sUGCMun08gbELbyoexB',
+            'transaction_id': sessionId.slice(0, 64)
+          });
+        }
+      }
     </script>
     <!-- Reddit Pixel -->
     <script>

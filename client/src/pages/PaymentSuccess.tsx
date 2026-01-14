@@ -165,17 +165,23 @@ export default function PaymentSuccess() {
             if (verifyResult.success) {
               console.log(`[PaymentSuccess] ✅ Credits verified/added. User now has ${verifyResult.credits} credits`);
               
-              // Track Google Ads conversion on first success
-              if (typeof window !== "undefined" && (window as any).gtag && !verifyResult.alreadyProcessed) {
+              // Track Google Ads conversion on first success (with value/currency)
+              // Format follows Google's official documentation:
+              // gtag('event', 'conversion', {'send_to': 'AW-XXXXX/LABEL', 'value': X, 'currency': 'USD', 'transaction_id': 'ORDER_ID'});
+              if (typeof window !== "undefined" && (window as any).gtag && !verifyResult.alreadyProcessed && sessionId) {
                 try {
-                  // Using label 4sUGCMun08gbELbyoexB from Tag Assistant screenshot
+                  // Fire conversion event with value - same transaction_id as index.html for deduplication
                   (window as any).gtag('event', 'conversion', {
                     'send_to': 'AW-17675352374/4sUGCMun08gbELbyoexB',
                     'value': verifyResult.amount || 1.0,
-                    'currency': verifyResult.currency || 'USD',
-                    'transaction_id': (sessionId || '').toString().slice(0, 64)
+                    'currency': (verifyResult.currency || 'USD').toUpperCase(),
+                    'transaction_id': sessionId.slice(0, 64)
                   });
-                  console.log('[Google Ads] Purchase conversion tracked:', sessionId);
+                  console.log('[Google Ads] Purchase conversion tracked with value:', {
+                    transaction_id: sessionId.slice(0, 64),
+                    value: verifyResult.amount,
+                    currency: verifyResult.currency
+                  });
                 } catch (error) {
                   console.error('[Google Ads] Error tracking conversion:', error);
                 }
